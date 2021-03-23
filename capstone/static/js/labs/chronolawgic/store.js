@@ -54,7 +54,6 @@ const store = new Vuex.Store({
         events: [],
         cases: [],
         templateEvent: {
-            url: "",
             name: "",
             short_description: "",
             long_description: "",
