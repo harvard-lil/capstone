@@ -14,6 +14,7 @@
                     'min-height': '1rem'
                 }"
            @click="openModal(event_data)"
+           @blur="handleFocus(event_data)"
            @focus="handleFocus(event_data)"
            :data-toggle="$store.state.isAuthor ? 'modal' : ''"
            :data-target="$store.state.isAuthor ? '#add-event-modal': ''"
@@ -44,15 +45,21 @@ export default {
       if (this.$store.state.isAuthor) {
         this.$parent.$parent.openModal(event_data, 'event')
       } else {
-        this.toggleEventPreview(event_data)
+        this.toggleEventPreview(event_data, true)
       }
     },
     handleFocus(event_data) {
-      if (this.$store.state.isAuthor) return;
-      this.toggleEventPreview(event_data)
+      this.toggleEventPreview(event_data, true)
     },
-    toggleEventPreview(event_data) {
-      this.$parent.previewEvent(event_data);
+    handleBlur(event_data) {
+      this.toggleEventPreview(event_data, false)
+    },
+    toggleEventPreview(event_data, open) {
+      if (this.$store.state.isAuthor) return;
+      if (open)
+        this.$parent.previewEvent(event_data);
+      else
+        this.$parent.clearPreviewEvent()
     },
     fillRefGenerator(event_data, year_value) {
       const firstEventYear = parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear();
