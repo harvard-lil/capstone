@@ -4,14 +4,16 @@
       <h3>Timelines
         <a href=".." class="btn btn-tertiary info icon-link">?</a>
       </h3>
-      <div class="add-timeline">
-
+      <div v-if="this.$store.state.user.is_authenticated === 'True'" class="add-timeline">
         <button type="button" class="btn btn-tertiary" @click="$store.dispatch('requestCreateTimeline')">
           Add a timeline
           <add-icon></add-icon>
         </button>
       </div>
-
+      <div v-else class="add-timeline">
+        You need to be logged in to your free case.law account to use Chronolawgic timelines. For more information on this tool,
+        <a href="../">click here</a>.
+      </div>
     </div>
     <section id="timeline">
       <div class="timelines">

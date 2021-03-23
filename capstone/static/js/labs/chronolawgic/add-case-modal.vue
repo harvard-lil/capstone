@@ -19,7 +19,7 @@
               <span>Search using:</span>
               <item-dropdown class="form-label-group" id="field-search-dropdown" :field="extraFields.cap"
                              :original_display_val="extraFields.cap.value ? extraFields.cap.value : extraFields.cap.label"
-                             :choices="[['short name', 'short name'], ['citation', 'citation']]">
+                             :choices="[['name abbreviation', 'name abbreviation'], ['citation', 'citation']]">
               </item-dropdown>
 
               <span class="button-container">
@@ -160,8 +160,8 @@ export default {
         },
         cap: {
           name: 'search by',
-          label: 'short name',
-          value: 'short name'
+          label: 'name abbreviation',
+          value: 'name abbreviation'
         }
       },
       showLoading: false,
@@ -230,7 +230,7 @@ export default {
       if (this.searchText) {
         this.showLoading = true;
 
-        let query = this.extraFields.cap.value === 'citation' ? 'cite' : 'short_name'
+        let query = this.extraFields.cap.value === 'citation' ? 'cite' : 'name_abbreviation'
         let url = store.state.urls.api_root + "cases?" + query + "=" + this.searchText;
         axios.get(url)
             .then(response => response.data)

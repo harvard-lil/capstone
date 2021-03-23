@@ -38,7 +38,9 @@ def chronolawgic_api_retrieve(request, timeline_id=None):
         })
 
     if not timeline_id:
-        return JsonResponse({'status': 'err', 'reason': 'forbidden'}, status=403)
+        return JsonResponse({
+            'status': 'ok',
+            'timelines': []})
 
     try:
         timeline = Timeline.objects.get(pk=timeline_id)
@@ -111,6 +113,7 @@ def chronolawgic_api_create(request):
         'is_owner': request.user == timeline.created_by
     })
 
+
 def chronolawgic_api_update(request, timeline_id):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
@@ -126,6 +129,7 @@ def chronolawgic_api_update(request, timeline_id):
     try:
         parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
         bad_values = validate_timeline(parsed)
+
         if bad_values:
             return JsonResponse(
                 {'status': 'err',
