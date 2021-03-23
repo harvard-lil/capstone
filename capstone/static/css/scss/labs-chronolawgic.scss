@@ -99,6 +99,9 @@
     white-space: nowrap;
     cursor: pointer;
   }
+  .my-timelines-link {
+    font-size: $font-size-sm;
+  }
 }
 
 .header-section.expanded {
