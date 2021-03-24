@@ -255,8 +255,6 @@ main#main-app {
   .header-section {
     height: 100px;
     padding: 0.5em;
-    /*    overflow: hidden;
-    position: fixed;*/
     background-color: $color-white;
     z-index: 1000;
 
@@ -462,9 +460,12 @@ main#main-app {
         background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
         background-position: center;
         background-size: 250px;
-
+        display: flex;
+        justify-content: center;
         .year {
           text-align: center;
+          align-self: center;
+          justify-content: center;
         }
       }
 
@@ -630,6 +631,13 @@ main#main-app {
 
 @include media-breakpoint-down(sm) {
 
+  #labs-nav {
+    z-index: 1050;
+    #burger-icon {
+      z-index: 1055;
+    }
+  }
+
   main#main-app {
 
     .top-menu {
@@ -637,12 +645,34 @@ main#main-app {
       .zoom-section {
         display: none;
       }
+
+    }
+    div.timeline-section-titles {
+      grid-template-columns: 25% 75%;
+      margin-top: 35px;
+      h6 {
+        position: fixed;
+        z-index: 1000;
+      }
+
+      .caselaw-section {
+        h6 {
+          background-color: $highlight;
+        }
+      }
+      .other-events-section {
+        h6 {
+          background-color: $color-white;
+        }
+      }
     }
     .header-section {
       height: 50px;
       padding: 0.25em;
-      overflow: auto;
-
+      position: fixed;
+      width: 100%;
+      z-index: 1020;
+      box-shadow: 0 0px 10px #DDD;
       &:first-child {
         border: none;
       }
@@ -650,6 +680,9 @@ main#main-app {
       h4 {
         font-size: 18px;
         margin-bottom: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #timeline-title {
@@ -666,12 +699,27 @@ main#main-app {
         cursor: pointer;
       }
       .my-timelines-link {
-        font-size: $font-size-sm;
-      }
-    }
-    button.btn.btn-tertiary.btn-add-event {
         display: none;
       }
+      .header-section.expanded {
+        #timeline-title {
+          width: 90%;
+        }
+        #timeline-description {
+          width: 90%;
+        }
+      }
+    }
+    .header-section.expanded {
+      h4 {
+        overflow: visible;
+        white-space: normal;
+      }
+    }
+
+    button.btn.btn-tertiary.btn-add-event {
+        display: none;
+    }
 
      div.year {
       width: 100%;
@@ -681,9 +729,11 @@ main#main-app {
       min-height: 8rem;
       font-size: 18px;
       div.year_scale {
-        svg{
-          transform: scale(0.5);
-          transform-origin: top left;
+        display: flex;
+        div.simple-mobile-year-label {
+          font-size: .85rem;
+          background-color: white;
+          align-self: center
         }
       }
        div.spans {
@@ -719,7 +769,7 @@ main#main-app {
           padding: 0.5rem 0.75rem;
           align-self: end;
           span.case-name{
-            font-weight: $font-weight-bold;
+            font-weight: $font-weight-semibold;
           }
 
           &:hover, &:focus, &:active {
@@ -733,7 +783,23 @@ main#main-app {
     }
   }
 
-  main#main-app.event-expand {
+  main#main-app.mobile-event-expanded {
+      #timeline {
+        div.timeline-section-titles {
+          grid-template-columns: 25% 75%;
+          margin-top: 35px;
+          .caselaw-section {
+            h6 {
+              background-color: $color-white;
+            }
+          }
+          .other-events-section {
+            h6 {
+              background-color: $highlight;
+            }
+          }
+        }
+      }
      div.year {
       width: 100%;
       display: grid;
@@ -742,23 +808,42 @@ main#main-app {
       min-height: 8rem;
       font-size: 18px;
 
-      div.year_placeholder {
-        div.year_scale {
-          background-color: purple;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          svg {
-            max-width: 5%;
+      div.spans {
+         padding-left: 2rem;
+        .event_col {
+          min-width: 1rem;
+          .fill {
+            width: 1rem;
+            .event_label {
+              display: block;
+              left: -15%;
+            }
           }
         }
       }
+      div.event-preview {
+          margin-left: auto;
+          margin-right: auto;
+      }
+      div.case_placeholder {
+        margin-left: auto;
+        margin-right: auto;
+        background-color: $color-medium-gray;
+        font-size: $font-size-sm;
+        height: 3rem;
+        width: 3rem;
+        text-align: center;
+        .case_count {
+          font-weight: $font-weight-black;
+          font-size: 1.25rem;
+        }
+        .case_count:before {
+          content:"\a";
+          white-space: pre;
+        }
+      }
      }
-    article.case_placeholder {
-      display: block;
-    }
   }
 
 }
-
 
