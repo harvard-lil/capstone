@@ -1,11 +1,10 @@
 <template>
-  <main id="main-app" @keyup.esc="handleEscape">
+  <main id="main-app" ref="main-app-container" :class="{'mobile-event-expanded': $store.getters.mobileEventsExpanded }" @keyup.esc="handleEscape">
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
-        <h4 id="timeline-title">{{ $store.state.title }}</h4>
+        <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
         <div id="timeline-description" v-text="$store.state.description" @click="toggleHeader()"></div>
         <div class="my-timelines-link" v-if="$store.state.isAuthor"><router-link to="/"><ViewList></ViewList>my timelines</router-link></div>
-
       </header>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
         <div class="empty-space"></div>
@@ -25,7 +24,7 @@
     </div>
     <section id="timeline">
       <div class="row timeline-section-titles">
-        <div class="caselaw-section">
+        <div class="caselaw-section" @click="$store.commit('unExpandMobileEvents')">
           <button v-if="$store.state.isAuthor" type="button"
                   @click="openModal(null, 'case')"
                   class="btn btn-tertiary btn-add-event"
@@ -35,7 +34,7 @@
           </button>
           <h6>CASELAW</h6>
         </div>
-        <div class="other-events">
+        <div class="other-events" @click="$store.commit('expandMobileEvents')">
           <div class="other-events-section">
             <h6>EVENTS</h6>
             <button v-if="this.$store.state.isAuthor"
@@ -113,14 +112,6 @@ export default {
     title() {
       return this.$store.state.title
     },
-    isAuthor() {
-      return this.$store.state.isAuthor
-    },
-  },
-  watch: {
-    title() {
-      this.repopulateTimeline();
-    }
   },
   data() {
     return {
@@ -133,12 +124,26 @@ export default {
       years: {},
       event: null,
       events: [],
-      cases: []
+      cases: [],
+      windowWidth: window.innerWidth,
+    }
+  },
+  watch: {
+    title() {
+      this.repopulateTimeline();
+    },
+    windowWidth(newWidth, oldWidth) {
+      if (this.widthToBreakpoint(newWidth) !== this.widthToBreakpoint(oldWidth)) {
+        this.$store.commit('setBreakPoint', this.widthToBreakpoint(newWidth));
+      }
     }
   },
   methods: {
     check() {
       this.checked = !this.checked;
+    },
+    onResize() {
+      this.windowWidth = window.innerWidth
     },
     openModal(item, typeOfItem) {
       if (item && typeof item.id === 'number')
@@ -165,6 +170,20 @@ export default {
       this.showReadOnly = false;
       this.event = null;
       EventBus.$emit('closeModal')
+    },
+    widthToBreakpoint(newWidth) {
+       switch (true) {
+          case (newWidth < 576):
+            return "xs";
+          case (newWidth < 768):
+            return "sm";
+          case (newWidth < 992):
+            return "md";
+          case (newWidth < 11200):
+            return "lg";
+          default:
+            return "xl";
+      }
     },
     toggleHeader() {
       this.headerExpanded = !this.headerExpanded;
@@ -226,10 +245,19 @@ export default {
       }
     },
   },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
+  },
   created() {
     EventBus.$on('openModal', (item, typeOfItem) => {
       this.openModal(item, typeOfItem);
     });
+  },
+  mounted() {
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.onResize);
+    });
+    this.$store.commit('setBreakPoint', this.widthToBreakpoint(this.windowWidth))
   }
 };
 </script>

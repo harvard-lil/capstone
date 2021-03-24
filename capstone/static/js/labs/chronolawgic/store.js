@@ -30,6 +30,8 @@ importChoices.colors = [
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
+        mobileEventsExpanded: false,
+        breakPoint: 'lg',
         user: importUser,
         choices: importChoices,
         requestStatus: 'nominal', // can be nominal, success, error, or pending. Prone to race conditions, so use only for user feedback until its improved
@@ -73,6 +75,9 @@ const store = new Vuex.Store({
 
     },
     mutations: {
+        expandMobileEvents(state) { state.mobileEventsExpanded = true },
+        setBreakPoint(state, newBreakPoint) { state.breakPoint = newBreakPoint },
+        unExpandMobileEvents(state) { state.mobileEventsExpanded = false },
         toggleMinimized(state) { state.minimized =!state.minimized },
         setAvailableTimelines(state, json) {
             state.availableTimelines = json
@@ -183,6 +188,11 @@ const store = new Vuex.Store({
         }
     },
     getters: {
+        breakPoint: state => state.breakPoint,
+        isMobile: (state) => {
+            return state.breakPoint === 'xs' || state.breakPoint === 'sm';
+        },
+        mobileEventsExpanded: state => state.mobileEventsExpanded,
         minimized: state => state.minimized,
         cases: state => state.cases,
         choices: state => state.choices,
