@@ -25,16 +25,21 @@
 <script>
 import LinkCase from '../../../../static/img/icons/open_in_new-24px.svg';
 import {EventBus} from "./event-bus.js";
+import store from "./store";
 
 export default {
   name: "Case",
   props: ['case_data', 'year_value'],
-  data() {
-    return {
-      dataTarget: '#readonly-modal'
-    }
-  },
   components: {LinkCase},
+  computed: {
+    dataTarget: () => {
+      if (store.getters.isMobile || !store.state.isAuthor) {
+        return '#readonly-modal'
+      } else {
+        return '#add-case-modal'
+      }
+    },
+  },
   methods: {
     openModal(item) {
       this.$parent.$parent.openModal(item, 'case')
@@ -49,14 +54,6 @@ export default {
       this.$parent.repopulateTimeline();
     }
   },
-  beforeMount() {
-    if (this.$store.getters.isMobile) {
-      this.dataTarget = '#readonly-modal'
-    } else if (this.$store.state.isAuthor) {
-      this.dataTarget = '#add-case-modal'
-    }
-  }
-
 }
 </script>
 
