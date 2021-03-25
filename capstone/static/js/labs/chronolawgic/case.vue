@@ -4,7 +4,7 @@
           @focus="handleFocus"
           @click="openModal(case_data)"
           data-toggle="modal"
-          :data-target="$store.state.isAuthor ? '#add-case-modal' : '#readonly-modal'"
+          :data-target="dataTarget"
           tabindex="0">
     <article class="case">
       <header>
@@ -29,6 +29,11 @@ import {EventBus} from "./event-bus.js";
 export default {
   name: "Case",
   props: ['case_data', 'year_value'],
+  data() {
+    return {
+      dataTarget: '#readonly-modal'
+    }
+  },
   components: {LinkCase},
   methods: {
     openModal(item) {
@@ -42,6 +47,13 @@ export default {
     },
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
+    }
+  },
+  beforeMount() {
+    if (this.$store.getters.isMobile) {
+      this.dataTarget = '#readonly-modal'
+    } else if (this.$store.state.isAuthor) {
+      this.dataTarget = '#add-case-modal'
     }
   }
 

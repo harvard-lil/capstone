@@ -1,10 +1,16 @@
 <template>
-  <main id="main-app" ref="main-app-container" :class="{'mobile-event-expanded': $store.getters.mobileEventsExpanded }" @keyup.esc="handleEscape">
+  <main id="main-app" ref="main-app-container" :class="{'mobile-event-expanded': $store.getters.mobileEventsExpanded }"
+        @keyup.esc="handleEscape">
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
         <div id="timeline-description" v-text="$store.state.description" @click="toggleHeader()"></div>
-        <div class="my-timelines-link" v-if="$store.state.isAuthor"><router-link to="/"><ViewList></ViewList>my timelines</router-link></div>
+        <div class="my-timelines-link" v-if="$store.state.isAuthor">
+          <router-link to="/">
+            <ViewList></ViewList>
+            my timelines
+          </router-link>
+        </div>
       </header>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
         <div class="empty-space"></div>
@@ -54,33 +60,29 @@
     </section>
 
     <!-- ALL MODALS -->
-    <template v-if="$store.state.isAuthor">
-      <add-case-modal v-if="showCase"
-                      data-toggle="modal"
-                      data-target="#add-case-modal"
-                      :modal.sync="showCase"
-                      :case="event"
-                      :shown="showCase">
-      </add-case-modal>
-      <add-event-modal v-else-if="showEvent"
-                       data-toggle="modal"
-                       data-target="#add-event-modal"
-                       :modal.sync="showEvent"
-                       :event="event"
-                       :shown="showEvent">
-      </add-event-modal>
-    </template>
-    <!-- if user is not author of timeline, show readonly modal -->
-    <template v-else>
-      <readonly-modal
-          v-if="showReadOnly"
-          data-toggle="modal"
-          data-target="#readonly-modal"
-          :modal.sync="showReadOnly"
-          :event="event"
-          :shown="showReadOnly">
-      </readonly-modal>
-    </template>
+    <add-case-modal v-if="showCase"
+                    data-toggle="modal"
+                    data-target="#add-case-modal"
+                    :modal.sync="showCase"
+                    :case="event"
+                    :shown="showCase">
+    </add-case-modal>
+    <add-event-modal v-else-if="showEvent"
+                     data-toggle="modal"
+                     data-target="#add-event-modal"
+                     :modal.sync="showEvent"
+                     :event="event"
+                     :shown="showEvent">
+    </add-event-modal>
+    <!-- if user is not author of timeline or on small screen, show readonly modal -->
+    <readonly-modal
+        v-if="showReadOnly"
+        data-toggle="modal"
+        data-target="#readonly-modal"
+        :modal.sync="showReadOnly"
+        :event="event"
+        :shown="showReadOnly">
+    </readonly-modal>
   </main>
 
 </template>
@@ -156,13 +158,12 @@ export default {
       this.showCase = false;
       this.showReadOnly = false;
 
-      if (this.$store.state.isAuthor) {
+      if (this.$store.state.isAuthor && !this.$store.getters.isMobile) {
         this.showEvent = typeOfItem === 'event';
         this.showCase = typeOfItem === 'case';
       } else {
         this.showReadOnly = true;
       }
-
     },
     closeModal() {
       this.showEvent = false;
@@ -172,17 +173,17 @@ export default {
       EventBus.$emit('closeModal')
     },
     widthToBreakpoint(newWidth) {
-       switch (true) {
-          case (newWidth < 576):
-            return "xs";
-          case (newWidth < 768):
-            return "sm";
-          case (newWidth < 992):
-            return "md";
-          case (newWidth < 11200):
-            return "lg";
-          default:
-            return "xl";
+      switch (true) {
+        case (newWidth < 576):
+          return "xs";
+        case (newWidth < 768):
+          return "sm";
+        case (newWidth < 992):
+          return "md";
+        case (newWidth < 11200):
+          return "lg";
+        default:
+          return "xl";
       }
     },
     toggleHeader() {

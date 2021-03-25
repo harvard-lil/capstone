@@ -32,16 +32,16 @@
              @click="openModal(event_data)"
              @blur="handleFocus(event_data)"
              @focus="handleFocus(event_data)"
-             :data-toggle="$store.state.isAuthor ? 'modal' : ''"
-             :data-target="$store.state.isAuthor ? '#add-event-modal': ''"
+             :data-toggle="dataToggle"
+             :data-target="dataTarget"
              :data-event-fill="event_data.id"
              :ref="fillRefGenerator(event_data, year_value)">
           <div class="event_label"
                :style="{'width': event_data.name.length + 'rem' }"
                v-if="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear()"
                v-text="event_data.name"
-               :ref="'event-label' + event_data.id"
-          ></div>
+               :ref="'event-label' + event_data.id">
+          </div>
 
         </div>
       </template>
@@ -54,15 +54,22 @@
 export default {
   name: "TimelineSlice",
   props: ['year_value', 'event_list'],
+  data() {
+    return {
+      dataTarget: '',
+      dataToggle: '',
+      showPreview: true
+    }
+  },
   methods: {
     closeModal() {
       this.$emit('closeModal')
     },
     openModal(event_data) {
-      if (this.$store.state.isAuthor) {
-        this.$parent.$parent.openModal(event_data, 'event')
-      } else {
+      if (this.showPreview) {
         this.toggleEventPreview(event_data, true)
+      } else {
+        this.$parent.$parent.openModal(event_data, 'event')
       }
     },
     handleFocus(event_data) {
@@ -72,7 +79,7 @@ export default {
       this.toggleEventPreview(event_data, false)
     },
     toggleEventPreview(event_data, open) {
-      if (this.$store.state.isAuthor) return;
+      if (!this.showPreview) return;
       if (open)
         this.$parent.previewEvent(event_data);
       else
@@ -88,5 +95,19 @@ export default {
       }
     },
   },
+  beforeMount() {
+    // if author and on large screen, show add event modal
+    if (this.$store.state.isAuthor && !this.$store.getters.isMobile) {
+      this.dataToggle = 'modal'
+      this.dataTarget = '#add-event-modal'
+      this.showPreview = false
+      // if on mobile, show read only modal
+    } else if (this.$store.getters.isMobile) {
+      this.dataToggle = 'modal'
+      this.dataTarget = '#readonly-modal'
+      this.showPreview = false
+    }
+    // default behavior: show event preview non-authors on large screens
+  }
 }
 </script>
