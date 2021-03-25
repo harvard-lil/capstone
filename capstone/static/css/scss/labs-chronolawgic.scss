@@ -407,7 +407,6 @@ main#main-app {
         height: 130px;
         padding: 0.5rem 0.75rem;
         align-self: end;
-
         &:hover, &:focus, &:active {
           background-color: $highlight;
         }
@@ -764,8 +763,10 @@ main#main-app {
       flex-direction: column;
       button.case-button {
         article.case {
+          float: right;
           width: 14rem;
           height: 7rem;
+          overflow: scroll;
           padding: 0.5rem 0.75rem;
           align-self: end;
           span.case-name{
