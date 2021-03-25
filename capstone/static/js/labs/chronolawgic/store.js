@@ -316,6 +316,10 @@ const store = new Vuex.Store({
             })
         },
         requestTimeline: function ({commit}, timelineId) {
+            // clear timeline if it exists
+            commit('setTimelineId', '')
+            commit('setTimeline', {title: ''})
+
             commit('setRequestStatus', 'pending');
             axios
                 .get(this.state.urls.chronolawgic_api_retrieve + timelineId)
