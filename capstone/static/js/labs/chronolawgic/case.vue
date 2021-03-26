@@ -30,6 +30,11 @@ import store from "./store";
 export default {
   name: "Case",
   props: ['case_data', 'year_value'],
+  data() {
+    return {
+      dataTarget: '#readonly-modal'
+    }
+  },
   components: {LinkCase},
   computed: {
     dataTarget: () => {

@@ -74,7 +74,7 @@
                      :event="event"
                      :shown="showEvent">
     </add-event-modal>
-    <!-- if user is not author of timeline, show readonly modal -->
+    <!-- if user is not author of timeline or on small screen, show readonly modal -->
     <readonly-modal
         v-if="showReadOnly"
         data-toggle="modal"

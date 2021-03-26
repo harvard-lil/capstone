@@ -114,5 +114,19 @@ export default {
       }
     },
   },
+  beforeMount() {
+    // if author and on large screen, show add event modal
+    if (this.$store.state.isAuthor && !this.$store.getters.isMobile) {
+      this.dataToggle = 'modal'
+      this.dataTarget = '#add-event-modal'
+      this.showPreview = false
+      // if on mobile, show read only modal
+    } else if (this.$store.getters.isMobile) {
+      this.dataToggle = 'modal'
+      this.dataTarget = '#readonly-modal'
+      this.showPreview = false
+    }
+    // default behavior: show event preview non-authors on large screens
+  }
 }
 </script>
