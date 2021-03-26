@@ -10,7 +10,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.stop id="form-search-cap" v-if="!(this.case && typeof(this.case.id) === 'number')">
+          <form @submit.stop.prevent id="form-search-cap" v-if="!(this.case && typeof(this.case.id) === 'number')">
             <h6>Search CAP</h6>
             <div class="form-label-group" id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
@@ -63,8 +63,6 @@
             <div class="form-label-group" id="field-group-short">
               <textarea v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
                         class="form-control"></textarea>
-              <!--              <input v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"-->
-              <!--                     class="form-control">-->
             </div>
             <div class="form-label-group" id="field-group-date">
               <input v-model="newCase.decision_date" id="field-decision-date" placeholder="DECISION DATE" type="date"
@@ -97,7 +95,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.case">
+          <template v-if="this.case && this.case.id">
             <button type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">
               Delete
             </button>
@@ -106,7 +104,7 @@
               Update
             </button>
           </template>
-          <template v-if="!this.case">
+          <template v-else>
             <button type="button" class="btn btn-primary btn-highlight" @click.stop="addCase"
                     data-dismiss="modal">
               ADD
