@@ -269,25 +269,12 @@ export default {
   },
   watch: {
     case(existingCase) {
-      if (existingCase && existingCase.id) {
-        this.setupExisting();
-      } else {
-        this.setupDefaults();
-      }
+      existingCase ? this.setupExisting() : this.setupDefaults()
     }
   },
   mounted() {
     this.choices = store.getters.choices;
-    if (this.case) {
-      this.setupExisting()
-    } else {
-      this.setupDefaults();
-    }
+    this.case ? this.setupExisting() : this.setupDefaults();
   },
 }
 </script>
-<style scoped>
-/*#add-case-modal {*/
-/*  display: block;*/
-/*}*/
-</style>
