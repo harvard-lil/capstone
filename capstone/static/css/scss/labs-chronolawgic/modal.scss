@@ -19,6 +19,10 @@ input.form-control, textarea.form-control {
   font-family: $font-serif;
 }
 
+.form-control::placeholder {
+  font-family: $font-family-monospace;
+}
+
 textarea::placeholder {
   font-family: $font-family-monospace;
 }
@@ -345,3 +349,4 @@ textarea::placeholder {
     font-family: $font-serif;
   }
 }
+

@@ -12,12 +12,15 @@
         <div class="modal-body">
           <form @submit.stop.prevent id="form-search-cap" v-if="!(this.case && typeof(this.case.id) === 'number')">
             <h6>Search CAP</h6>
-            <div class="form-label-group" id="field-group-search">
+            <div id="field-group-search">
               <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
                      class="form-control">
-              <label for="field-search-cap">SEARCH BY {{ extraFields.cap.value }}</label>
               <span>Search using:</span>
-              <v-select :options="['name abbreviation', 'citation']"></v-select>
+              <v-select :options="['name abbreviation', 'citation']"
+                        v-model="extraFields.cap.value"
+                        :clearable="false"
+                        placeholder="search">
+              </v-select>
 
               <span class="button-container">
                 <search-button :showLoading="showLoading"></search-button>
@@ -208,6 +211,8 @@ export default {
       this.newCase.citation = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.frontend_url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
+      this.newCase.jurisdiction = this.chosenCase.jurisdiction.name_long
+      this.newCase.court = this.chosenCase.court.name
     },
     searchCAP() {
       this.showNoSearchResults = false
