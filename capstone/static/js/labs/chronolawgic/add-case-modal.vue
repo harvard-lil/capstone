@@ -21,7 +21,6 @@
                         :clearable="false"
                         placeholder="search">
               </v-select>
-
               <span class="button-container">
                 <search-button :showLoading="showLoading"></search-button>
               </span>
