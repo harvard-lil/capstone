@@ -78,13 +78,6 @@ textarea::placeholder {
       cursor: pointer;
     }
   }
-
-  .color-square {
-    width: 20px;
-    height: 20px;
-    float: left;
-    margin-right: 5px;
-  }
 }
 
 .modal-content {
@@ -293,6 +286,13 @@ textarea::placeholder {
   }
 }
 
+.color-square {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  margin-right: 5px;
+  border: 1px solid $color-black;
+}
+
 #add-event-modal {
   form {
     display: grid;
@@ -335,10 +335,12 @@ textarea::placeholder {
 
 #readonly-modal {
   word-wrap: break-word;
+
   .short-description {
     font-style: italic;
     color: $color-violet-gray-dark;
   }
+
   p {
     font-family: $font-serif;
   }
