@@ -27,6 +27,23 @@ importChoices.colors = [
     "#3E667A",
 ]
 
+// jurisdictions
+const jurisdictions = [];
+for (let i = 0; i < importChoices.jurisdictions.length; i++) {
+    jurisdictions.push(importChoices.jurisdictions[i][1])
+}
+importChoices.jurisdictions = jurisdictions;
+
+// courts
+const courts = [];
+for (let i = 0; i < importChoices.courts.length; i++) {
+    courts.push({
+        slug: importChoices.courts[i][0],
+        courtName: importChoices.courts[i][1]
+        })
+}
+importChoices.courts = courts;
+
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {

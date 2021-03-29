@@ -17,10 +17,7 @@
                      class="form-control">
               <label for="field-search-cap">SEARCH BY {{ extraFields.cap.value }}</label>
               <span>Search using:</span>
-              <item-dropdown class="form-label-group" id="field-search-dropdown" :field="extraFields.cap"
-                             :original_display_val="extraFields.cap.value ? extraFields.cap.value : extraFields.cap.label"
-                             :choices="[['name abbreviation', 'name abbreviation'], ['citation', 'citation']]">
-              </item-dropdown>
+              <v-select :options="['name abbreviation', 'citation']"></v-select>
 
               <span class="button-container">
                 <search-button :showLoading="showLoading"></search-button>
@@ -74,15 +71,21 @@
             <textarea v-model="newCase.long_description" id="field-long-description" placeholder="LONGER DESCRIPTION"
                       class="form-control"></textarea>
             </div>
-            <item-dropdown class="form-label-group" id="field-group-jurisdiction" :field="extraFields.jurisdiction"
-                           :original_display_val="extraFields.jurisdiction.value ? extraFields.jurisdiction.value : extraFields.jurisdiction.label"
-                           :choices="choices.jurisdictions">
-            </item-dropdown>
-            <item-dropdown class="form-label-group" id="field-group-reporter" :field="extraFields.reporter"
-                           :original_display_val="extraFields.reporter.value ? extraFields.reporter.value : extraFields.reporter.label"
-                           :choices="choices.reporters">
-            </item-dropdown>
+            <v-select transition=""
+                      label="jurisdiction"
+                      placeholder="JURISDICTION"
+                      :options="choices.jurisdictions"
+                      @input="chooseJurisdiction"
+                      v-model="newCase.jurisdiction">
+            </v-select>
+            <v-select transition=""
+                      label="courtName"
+                      placeholder="COURT"
+                      :options="choices.courts"
+                      @input="chooseCourt"
+                      v-model="newCase.court">
 
+            </v-select>
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
             <b>Please correct the following error(s):</b>
@@ -120,14 +123,14 @@
 <script>
 import axios from "axios";
 import store from "./store";
-import ItemDropdown from "./item-dropdown"
+import vSelect from 'vue-select'
 import CaseResult from '../../search/case-result.vue'
 import SearchButton from '../../vue-shared/search-button';
 
 export default {
   name: "add-case-modal",
   components: {
-    ItemDropdown,
+    vSelect,
     CaseResult,
     SearchButton
   },
@@ -146,16 +149,6 @@ export default {
       newCase: {},
       errors: [],
       extraFields: { // need more info to interact with dropdown fields
-        jurisdiction: {
-          name: 'jurisdiction',
-          label: 'jurisdiction',
-          value: 'jurisdiction',
-        },
-        reporter: {
-          name: 'reporter',
-          label: 'reporter',
-          value: 'reporter',
-        },
         cap: {
           name: 'search by',
           label: 'name abbreviation',
@@ -178,14 +171,12 @@ export default {
     closeModal() {
       this.$parent.closeModal();
       this.$parent.repopulateTimeline();
-      this.setupDefaults();
+      this.setupCase()
     },
     updateCase() {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = this.unbind(this.newCase)
-      caselaw.jurisdiction = this.extraFields.jurisdiction.value
-      caselaw.reporter = this.extraFields.reporter.value
       store.commit('updateCase', caselaw)
       this.closeModal()
     },
@@ -193,8 +184,6 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = this.unbind(this.newCase)
-      caselaw.jurisdiction = this.extraFields.jurisdiction.value
-      caselaw.reporter = this.extraFields.reporter.value
       store.commit('addCase', caselaw);
       this.closeModal();
     },
@@ -219,9 +208,6 @@ export default {
       this.newCase.citation = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.frontend_url;
       this.newCase.decision_date = this.formatDate(this.chosenCase.decision_date);
-
-      this.extraFields.jurisdiction.value = this.chosenCase.jurisdiction.name;
-      this.extraFields.reporter.value = this.chosenCase.reporter.full_name;
     },
     searchCAP() {
       this.showNoSearchResults = false
@@ -246,33 +232,33 @@ export default {
     },
     clearContent() {
       this.closeModal();
-      this.setNewCase();
+      this.setupCase();
     },
     unbind(obj) {
       return JSON.parse(JSON.stringify(obj))
     },
-    setNewCase() {
-      this.newCase = this.unbind(store.getters.templateCase);
+    setupCase(existingCase) {
+      this.newCase = existingCase ? this.unbind(this.case) : this.unbind(store.getters.templateCase);
     },
-    setupDefaults() {
-      this.extraFields.jurisdiction.value = "jurisdiction"
-      this.extraFields.reporter.value = "reporter"
-      this.setNewCase();
+    chooseJurisdiction(jur) {
+      if (jur)
+        this.newCase.jurisdiction = jur
+      this.newCase = this.unbind(this.newCase)
     },
-    setupExisting() {
-      this.newCase = this.unbind(this.case)
-      this.extraFields.jurisdiction.value = this.newCase.jurisdiction
-      this.extraFields.reporter.value = this.newCase.reporter
+    chooseCourt(court) {
+      if (court)
+        this.newCase.court = court.courtName
+      this.newCase = this.unbind(this.newCase)
     }
   },
   watch: {
     case(existingCase) {
-      existingCase ? this.setupExisting() : this.setupDefaults()
+      this.setupCase(existingCase)
     }
   },
   mounted() {
     this.choices = store.getters.choices;
-    this.case ? this.setupExisting() : this.setupDefaults();
+    this.setupCase(this.case)
   },
 }
 </script>
