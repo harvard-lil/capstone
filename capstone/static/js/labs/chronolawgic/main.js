@@ -10,6 +10,8 @@ Vue.config.productionTip = false;
 
 Vue.use(VueRouter);
 export const router = new VueRouter({
+    mode: 'history',
+    base: 'labs/chronolawgic/timeline/',
     routes: [
         {path: '/', component: Admin, name: 'admin'},
         {path: '/:timeline', component: Timeline, name: 'timeline'},

@@ -16,7 +16,7 @@ class LabMarkdownView(MarkdownView):
 
 # # # # START CHRONOLAWGIC # # # #
 
-def chronolawgic(request):
+def chronolawgic(request, timeline_id=None):
     return render(request, "lab/chronolawgic/timeline.html")
 
 
