@@ -29,7 +29,6 @@
     "tone": "^13.4.9",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.2",
-    "vue-select": "^3.11.2",
     "vue-slider-component": "^3.0.32",
     "vuex": "^3.5.1",
     "vuex-map-fields": "^1.4.0"
@@ -52,6 +51,7 @@
     "tar": "^4.4.8",
     "url-polyfill": "^1.1.3",
     "vue-router": "^3.0.2",
+    "vue-select": "^3.11.2",
     "vue-svg-loader": "^0.16.0",
     "vue-template-compiler": "^2.6.11",
     "webpack-bundle-tracker": "^0.4.2-beta"
