@@ -58,11 +58,11 @@ def test_create_timeline(client, auth_client):
 def test_timeline_retrieve(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     # allow retrieval by anyone
-    response = client.get(retrieve_url + str(tl.id))
+    response = client.get(retrieve_url + str(tl.uuid))
     check_response(response, content_type="application/json")
     timeline_response = response.json()["timeline"]
     # also of course by authenticated users
-    response = auth_client.get(retrieve_url + str(tl.id))
+    response = auth_client.get(retrieve_url + str(tl.uuid))
     check_response(response, content_type="application/json")
     assert timeline_response["title"] == timeline["title"]
 
@@ -88,13 +88,13 @@ def test_timeline_retrieve(client, auth_client):
 @pytest.mark.django_db
 def test_timeline_update(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
-    response = auth_client.get(retrieve_url + str(tl.id))
+    response = auth_client.get(retrieve_url + str(tl.uuid))
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == timeline["title"]
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
     response = auth_client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == new_title
@@ -102,20 +102,20 @@ def test_timeline_update(client, auth_client):
     new_title = "My third timeline attempt"
     timeline["title"] = new_title
 
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
 
     # don't allow unauthenticated users
     response = client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, status_code=403, content_type="application/json")
 
-    response = auth_client.get(retrieve_url + str(tl.id))
+    response = auth_client.get(retrieve_url + str(tl.uuid))
     assert response.json()["timeline"]["title"] != timeline["title"]
 
 
 @pytest.mark.django_db
 def test_timeline_update_validation(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.id)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
     response = auth_client.post(update_url, {"timeline": {
         "description": "And my very best one"
     }}, format='json')
@@ -199,11 +199,11 @@ def test_timeline_update_validation(client, auth_client):
 def test_timeline_delete(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
 
-    response = auth_client.get(retrieve_url + str(tl.id))
+    response = auth_client.get(retrieve_url + str(tl.uuid))
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == timeline["title"]
 
-    delete_url = reverse('labs:chronolawgic-api-delete', args=[str(tl.id)])
+    delete_url = reverse('labs:chronolawgic-api-delete', args=[str(tl.uuid)])
 
     # don't allow unauthenticated users
     response = client.delete(delete_url)

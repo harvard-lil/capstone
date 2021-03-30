@@ -1,5 +1,5 @@
 import shortuuid
-from django.db import models, IntegrityError, transaction
+from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
 from capapi.models import CapUser
 
@@ -16,7 +16,7 @@ class Timeline(models.Model):
     timeline = JSONField(default=dict)
 
     def save(self, bypass_uuid_check=False, *args, **kwargs):
-        if self._state.adding:
+        if self._state.adding or bypass_uuid_check:
             collision = Timeline.objects.filter(uuid=self.uuid).count() > 0
             attempts = 0
             while collision:

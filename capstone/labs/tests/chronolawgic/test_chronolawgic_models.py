@@ -2,7 +2,7 @@ import pytest
 from labs.models import Timeline
 
 cases = [
-    {'id': 1, 'url': 'https://cite.case.law/ill/1/176/', 'name': 'Case 2', 'citation': '1 Mass. 1', 'created_by': 1,
+    {'id': 1, 'url': 'https://cite.case.law/ill/1/176/', 'name': 'Case 2', 'citation': '1 Mass. 1',
      'reporter': "Abb. Pr.- Abbott's Practice Reports", 'jurisdiction': 'California',
      'decision_date': '1898-12-31',
      'long_description': 'abcdefghijklmnopqrstuvwxyz',
@@ -26,16 +26,19 @@ timeline_data = {"title": "My first timeline", "description": "And my very best 
 
 
 @pytest.mark.django_db
-def test_uuid_workflow():
-    timeline = Timeline(timeline=timeline_data)
-    timeline.save()
+def test_uuid_workflow(cap_user):
+    timeline1 = Timeline(timeline=timeline_data, created_by=cap_user)
+    timeline1.save()
 
-    assert Timeline(timeline=timeline_data).objects.count() == 1
+    assert Timeline.objects.count() == 1
 
-    timeline = Timeline(timeline=timeline_data)
-    timeline.save()
+    timeline2 = Timeline(timeline=timeline_data, created_by=cap_user)
+    timeline2.uuid = timeline1.uuid
+    timeline2.save()
+    timeline2.refresh_from_db()
 
-    assert Timeline(timeline=timeline_data).objects.count() == 2
+    assert Timeline.objects.count() == 2
+    assert timeline2.uuid != timeline1.uuid
 
 
 
