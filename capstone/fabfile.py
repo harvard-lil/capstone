@@ -36,7 +36,7 @@ from django.conf import settings
 from fabric.api import local
 from fabric.decorators import task
 
-from capapi.models import CapUser
+from capapi.models import CapUser, EmailBlocklist
 from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
     Court, Reporter, PageStructure, CaseAnalysis
 
@@ -1626,6 +1626,31 @@ def ingest_labs_fixtures():
 
     for db, app, models in fixtures:
         management.call_command('loaddata', *models, database=db)
+
+
+@task
+def block_domain(domain, notes=""):
+    users = CapUser.objects.filter(email__iendswith=f'@{domain}')
+    if users:
+        emails = [u.email for u in users]
+        min_date = min(u.date_joined for u in users)
+        max_date = max(u.date_joined for u in users)
+        if notes:
+            notes += " "
+        notes += f"Blocked accounts created {min_date} to {max_date}."
+        print(f"Existing users to block, created {min_date} to {max_date}: {emails}")
+    else:
+        print("No existing users to block.")
+    if input("Continue? [y/N] ").lower() != "y":
+        return
+    with transaction.atomic():
+        EmailBlocklist.objects.create(domain=domain, notes=notes)
+        for user in users:
+            user.case_allowance_remaining = 0
+            user.total_case_allowance = 0
+            user.is_active = False
+            user.save()
+    print("Done.")
 
 
 if __name__ == "__main__":

@@ -352,6 +352,9 @@ class EmailBlocklist(models.Model):
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.domain
+
     @classmethod
     def email_allowed(cls, email):
         """
