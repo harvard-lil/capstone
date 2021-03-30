@@ -43,5 +43,3 @@ def test_validate_timeline():
     assert "Unexpected event field(s): {'bad'}" in validated[0]
 
 
-
-
