@@ -304,9 +304,6 @@ assets. Under the hood, use of the local dev server vs. production assets is con
 
     $ yarn add --dev package
 
-After changing package.json or yarn.lock, you should run `fab update_docker_image_version` to ensure that docker users
-get the updates, but note that Circle CI will take care of building JS assets and updating the Docker image version.
-
 *Yarn and docker:* `yarn` will also work inside docker-compose:
 
     $ docker-compose run web yarn build
