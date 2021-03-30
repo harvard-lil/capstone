@@ -148,16 +148,14 @@ export default {
       this.windowWidth = window.innerWidth
     },
     openModal(item, typeOfItem) {
-      if (item && typeof item.id === 'number')
-        this.event = JSON.parse(JSON.stringify(item))
-      else {
-        this.event = null;
-      }
-
       this.showEvent = false;
       this.showCase = false;
       this.showReadOnly = false;
+      this.event = null;
 
+      if (item) {
+        this.event = JSON.parse(JSON.stringify(item))
+      }
       if (this.$store.state.isAuthor && !this.$store.getters.isMobile) {
         this.showEvent = typeOfItem === 'event';
         this.showCase = typeOfItem === 'case';

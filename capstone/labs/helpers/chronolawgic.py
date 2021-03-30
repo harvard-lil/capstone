@@ -26,6 +26,7 @@ def validate_timeline(timeline):
         {'name': 'jurisdiction', 'type': str, 'required': False},
         {'name': 'decision_date', 'type': str, 'required': True},
         {'name': 'reporter', 'type': str, 'required': False},
+        {'name': 'court', 'type': str, 'required': False},
         {'name': 'url', 'type': str, 'required': False},
         {'name': 'citation', 'type': str, 'required': False},
         {'name': 'categories', 'type': list, 'required': False},

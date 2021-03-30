@@ -50,15 +50,34 @@
 </template>
 
 <script>
+import store from "./store";
 
 export default {
   name: "TimelineSlice",
   props: ['year_value', 'event_list'],
-  data() {
-    return {
-      dataTarget: '',
-      dataToggle: '',
-      showPreview: true
+  computed: {
+    dataToggle: () => {
+      // attribute for showing either modal or event preview
+      if (store.getters.isMobile || (store.state.isAuthor && !store.getters.isMobile)) {
+        return 'modal'
+      } else {
+        return ''
+      }
+    },
+    dataTarget: () => {
+      // attribute for showing what kind of modal or event preview
+      if (store.getters.isMobile) {
+        return '#readonly-modal'
+      } else if (store.state.isAuthor && !store.getters.isMobile) {
+        return '#add-event-modal'
+      } else {
+        // keeping blank will show event preview
+        return ''
+      }
+    },
+    showPreview: () => {
+      // showing preview or showing modal
+      return !store.state.isAuthor && !store.getters.isMobile
     }
   },
   methods: {
@@ -95,19 +114,5 @@ export default {
       }
     },
   },
-  beforeMount() {
-    // if author and on large screen, show add event modal
-    if (this.$store.state.isAuthor && !this.$store.getters.isMobile) {
-      this.dataToggle = 'modal'
-      this.dataTarget = '#add-event-modal'
-      this.showPreview = false
-      // if on mobile, show read only modal
-    } else if (this.$store.getters.isMobile) {
-      this.dataToggle = 'modal'
-      this.dataTarget = '#readonly-modal'
-      this.showPreview = false
-    }
-    // default behavior: show event preview non-authors on large screens
-  }
 }
 </script>

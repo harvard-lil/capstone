@@ -19,6 +19,10 @@ input.form-control, textarea.form-control {
   font-family: $font-serif;
 }
 
+.form-control::placeholder {
+  font-family: $font-family-monospace;
+}
+
 textarea::placeholder {
   font-family: $font-family-monospace;
 }
@@ -77,13 +81,6 @@ textarea::placeholder {
       background-color: $highlight;
       cursor: pointer;
     }
-  }
-
-  .color-square {
-    width: 20px;
-    height: 20px;
-    float: left;
-    margin-right: 5px;
   }
 }
 
@@ -293,6 +290,13 @@ textarea::placeholder {
   }
 }
 
+.color-square {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  margin-right: 5px;
+  border: 1px solid $color-black;
+}
+
 #add-event-modal {
   form {
     display: grid;
@@ -335,11 +339,14 @@ textarea::placeholder {
 
 #readonly-modal {
   word-wrap: break-word;
+
   .short-description {
     font-style: italic;
     color: $color-violet-gray-dark;
   }
+
   p {
     font-family: $font-serif;
   }
 }
+
