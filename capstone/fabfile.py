@@ -100,6 +100,7 @@ def update_docker_image_version():
     import re
 
     # get hash of Dockerfile input files
+    # if this list changes, also update .circleci/config.yml
     paths = ['Dockerfile', 'requirements.txt', 'yarn.lock']
     hasher = hashlib.sha256()
     for path in paths:

@@ -26,8 +26,9 @@ jobs:
       # Docker image building and caching
       # This block shaves a minute or two off of the test runtime by using cached docker images.
       # Otherwise we could omit this step entirely and let `docker-compose run` build what it needs to.
+      # List of files in the cache key should match the ones checked in update_docker_image_version.
       - restore_cache:
-          key: docker-images-{{ checksum "docker-compose.yml" }}
+          key: docker-images-{{ checksum "docker-compose.yml" }}-{{ checksum "Dockerfile" }}-{{ checksum "requirements.txt" }}-{{ checksum "yarn.lock" }}
       - run:
           name: "Build docker images"
           command: |
@@ -40,7 +41,7 @@ jobs:
               docker save -o ~/docker-cache.tar capstone capstone-postgres
             fi
       - save_cache:
-          key: docker-images-{{ checksum "docker-compose.yml" }}
+          key: docker-images-{{ checksum "docker-compose.yml" }}-{{ checksum "Dockerfile" }}-{{ checksum "requirements.txt" }}-{{ checksum "yarn.lock" }}
           paths:
             - "~/docker-cache.tar"
 
