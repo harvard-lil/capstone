@@ -101,7 +101,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.case && this.case.id">
+          <template v-if="this.case && this.case.name">
             <button type="button" class="btn btn-primary" @click="deleteCase" data-dismiss="modal">
               Delete
             </button>
