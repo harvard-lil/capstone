@@ -29,7 +29,6 @@
     "tone": "^13.4.9",
     "vue": "^2.5.17",
     "vue-chartjs": "^3.4.2",
-    "vue-select": "^3.11.2",
     "vue-slider-component": "^3.0.32",
     "vuex": "^3.5.1",
     "vuex-map-fields": "^1.4.0"
