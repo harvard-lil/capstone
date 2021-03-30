@@ -73,57 +73,7 @@
   </head>
 
   <body class="hamburger-menu-closed" tabindex="-1">
-
-    <a class="skip" href="#main">Skip to main content</a>
-
-    <nav id="labs-nav" aria-label="main" {% if nav_class %}class="{{nav_class}}"{% endif %}>
-      <div class="labs-logo">
-            <a class="nav-branding" href="{% url 'labs:labs' %}" aria-label="CAP Labs Home"></a>
-      </div>
-      <div class="hamburger">
-          <button id="burger-icon">
-            <div class="burger-item"></div>
-            <div class="burger-item"></div>
-            <div class="burger-item"></div>
-          </button>
-      </div>
-
-      <div class="project-title">
-        <span class="project-name">
-           <a class="nav-link" href="{% url 'labs:chronolawgic-dashboard' %}">
-             {% block project_name %} {% endblock %}
-           </a>
-        </span>
-      </div>
-
-      <div class="nav-content lab-nav-content">
-        <ul class="nav">
-          <li class="nav-item" id="nav-account">
-            {% if request.user.is_authenticated %}
-              <a class="nav-link" href="{% url "user-details" %}">
-                ACCOUNT
-              </a>
-            {% else %}
-              <a class="nav-link "
-                 href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">
-                LOG IN
-              </a>
-            {% endif %}
-          </li>
-          <li class="nav-item" id="nav-about">
-              <a class="nav-link" href="{% url "labs:labs" %}">
-                LABS
-              </a>
-          </li>
-          <li class="nav-item" id="nav-linkback">
-              <div class="mini-branding">
-                    <a class="nav-branding" href="{% url "home" %}" aria-label="CAP Labs Home"></a>
-              </div>
-          </li>
-        </ul>
-      </div>
-
-    </nav>
+    {% include "includes/nav.html" %}
 
 
     <div id="content-and-footer" tabindex="-1">

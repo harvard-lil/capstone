@@ -13,6 +13,10 @@
 @import "labs-chronolawgic/modal.scss";
 
 
+#main-nav {
+  z-index: 999999;
+}
+
 main.admin {
   .top-menu {
     padding: 2em;
