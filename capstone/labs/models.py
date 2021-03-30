@@ -1,27 +1,30 @@
-import uuid
-
+import shortuuid
 from django.db import models, IntegrityError, transaction
 from django.contrib.postgres.fields import JSONField
 from capapi.models import CapUser
 
+
 #======================== CHRONOLAWGIC
 
 
+def get_short_uuid():
+    return shortuuid.ShortUUID().random(length=10)
+
 class Timeline(models.Model):
     created_by = models.ForeignKey(CapUser, on_delete=models.DO_NOTHING, related_name="timeline")
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    uuid = models.CharField(max_length=10, default=get_short_uuid)
     timeline = JSONField(default=dict)
 
     def save(self, bypass_uuid_check=False, *args, **kwargs):
-        attempts = 0
-        while attempts < 5:
-            try:
-                with transaction.atomic():
-                    return super(Timeline, self).save(*args, **kwargs)
-            except IntegrityError as e:
-                attempts += 1
+        if self._state.adding:
+            collision = Timeline.objects.filter(uuid=self.uuid).count() > 0
+            attempts = 0
+            while collision:
                 if attempts > 4:
-                    raise
-                self.code = uuid.uuid4()
-
-        raise IntegrityError("Could Not Save Timeline")
+                    raise Exception('Cannot generate unique timeline id')
+                attempts += 1
+                new_uuid = get_short_uuid()
+                self.uuid = new_uuid
+                collision = Timeline.objects.filter(uuid=self.uuid).count() > 0
+        with transaction.atomic():
+            return super(Timeline, self).save(*args, **kwargs)

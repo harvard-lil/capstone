@@ -20,8 +20,8 @@ if settings.LABS:
         # your timeline list, create, delete
         path('chronolawgic/api/create/', views.chronolawgic_api_create, name='chronolawgic-api-create'),
         path('chronolawgic/api/retrieve/', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
-        path('chronolawgic/api/retrieve/<str:timeline_id>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
-        path('chronolawgic/api/update/<int:timeline_id>', views.chronolawgic_api_update, name='chronolawgic-api-update'),
-        path('chronolawgic/api/update_admin/<int:timeline_id>', views.chronolawgic_api_update_admin, name='chronolawgic-api-update-admin'),
-        path('chronolawgic/api/delete/<int:timeline_id>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
+        path('chronolawgic/api/retrieve/<str:timeline_uuid>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
+        path('chronolawgic/api/update/<str:timeline_uuid>', views.chronolawgic_api_update, name='chronolawgic-api-update'),
+        path('chronolawgic/api/update_admin/<str:timeline_uuid>', views.chronolawgic_api_update_admin, name='chronolawgic-api-update-admin'),
+        path('chronolawgic/api/delete/<str:timeline_uuid>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
     ]

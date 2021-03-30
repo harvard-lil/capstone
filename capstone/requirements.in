@@ -12,6 +12,8 @@ geoip2              # local IP geolocation
 numpy               # simhash calculation
 requests
 
+shortuuid           # for chronolawgic timeline uuids
+
 # celery
 celery[redis,sqs]   # task queue
 pycurl              # let celery talk to SQS queue
