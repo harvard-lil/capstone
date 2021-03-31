@@ -90,7 +90,6 @@ def pip_compile(args=''):
     command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
-    update_docker_image_version()
 
 @task
 def update_docker_image_version():
