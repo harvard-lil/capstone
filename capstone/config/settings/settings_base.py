@@ -695,5 +695,5 @@ RESOLVE_FRONTEND_PREFIX = 'http://cite.case.test:8000'
 
 PYTHON_BINARY = sys.executable
 
-# show labs features
-LABS = False
+# a list of labs projects to hide
+LABS_HIDDEN = []

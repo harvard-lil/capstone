@@ -88,5 +88,5 @@ ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]
 # Reveal 'draft' markdown documents
 DOCS_SHOW_DRAFTS = True
 
-# show labs features
-LABS = True
+# a list of labs projects to hide
+LABS_HIDDEN = []
