@@ -1618,8 +1618,6 @@ def print_harvard_ip_ranges():
 
 @task
 def ingest_labs_fixtures():
-    if not settings.LABS:
-        return
     fixtures = [
         ('default', 'labs', ('timeline', )),
     ]

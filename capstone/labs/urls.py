@@ -11,7 +11,7 @@ urlpatterns = [
 
 # Project URLs- make discreet groups of URLs for each project
 
-if 'chronolawgic' in settings.LABS_HIDDEN:
+if 'chronolawgic' not in settings.LABS_HIDDEN:
     # # # # chronolawgic # # # #
     urlpatterns += [
         path('chronolawgic/', LabMarkdownView.as_view(template_name='lab/chronolawgic/about-chronolawgic.md'),
