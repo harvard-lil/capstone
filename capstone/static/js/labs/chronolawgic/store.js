@@ -13,19 +13,36 @@ const importChoices = choices; // defined in timeline.html
 const importUser = user; // defined in timeline.html
 
 importChoices.colors = [
-    ["#00db67", "#00db67"],
-    ["#ccff6d", "#ccff6d"],
-    ["#dbc600", "#DBC600"],
-    ["#DB8F00", "#DB8F00"],
-    ["#FF8E7A", "#FF8E7A"],
-    ["#ff736c", "#ff736c"],
-    ["#e5435c", "#e5435c"],
-    ["#986D81", "#986D81"],
-    ["#7e84ff", "#7e84ff"],
-    ["#3656f6", "#3656f6"],
-    ["#00B7DB", "#00B7DB"],
-    ["#3E667A", "#3E667A"],
+    "#00db67",
+    "#ccff6d",
+    "#DBC600",
+    "#DB8F00",
+    "#FF8E7A",
+    "#ff736c",
+    "#e5435c",
+    "#986D81",
+    "#7e84ff",
+    "#3656f6",
+    "#00B7DB",
+    "#3E667A",
 ]
+
+// jurisdictions
+const jurisdictions = [];
+for (let i = 0; i < importChoices.jurisdictions.length; i++) {
+    jurisdictions.push(importChoices.jurisdictions[i][1])
+}
+importChoices.jurisdictions = jurisdictions;
+
+// courts
+const courts = [];
+for (let i = 0; i < importChoices.courts.length; i++) {
+    courts.push({
+        slug: importChoices.courts[i][0],
+        courtName: importChoices.courts[i][1]
+        })
+}
+importChoices.courts = courts;
 
 Vue.use(Vuex);
 const store = new Vuex.Store({
@@ -316,6 +333,10 @@ const store = new Vuex.Store({
             })
         },
         requestTimeline: function ({commit}, timelineId) {
+            // clear timeline if it exists
+            commit('setTimelineId', '')
+            commit('setTimeline', {title: ''})
+
             commit('setRequestStatus', 'pending');
             axios
                 .get(this.state.urls.chronolawgic_api_retrieve + timelineId)

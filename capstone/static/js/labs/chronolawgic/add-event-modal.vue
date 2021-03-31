@@ -10,7 +10,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="addEvent">
+          <form @click.stop.prevent @submit.prevent="addEvent">
             <div class="form-label-group" id="field-group-name">
               <input v-model="newEvent.name" id="field-event-name" placeholder="NAME" required
                      class="form-control">
@@ -38,12 +38,23 @@
                      class="form-control">
               <label for="field-event-start-date">END DATE</label>
             </div>
-
-            <item-dropdown class="form-label-group" id="field-group-color" :field="extraFields.colors"
-                           :original_display_val="extraFields.colors.value ? extraFields.colors.value : extraFields.colors.label"
-                           choices_type="colors"
-                           :choices="choices.colors">
-            </item-dropdown>
+            <v-select transition=""
+                      class="color-dropdown"
+                      label="color"
+                      @input="setSelected"
+                      v-model="newEvent.color"
+                      :options="choices.colors">
+              <template #selected-option="{ color }">
+                color: <span :style="{backgroundColor: color}" class="color-square">
+                  {{ color }}
+                </span>
+              </template>
+              <template #option="{ color }">
+                <span :style="{backgroundColor: color}" class="color-square">
+                  {{ color }}
+                </span>
+              </template>
+            </v-select>
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
             <b>Please correct the following error(s):</b>
@@ -77,8 +88,8 @@
 
 <script>
 import store from "./store";
-import ItemDropdown from "./item-dropdown"
-
+import vSelect from 'vue-select'
+import "vue-select/dist/vue-select.css";
 
 export default {
   name: "add-event-modal",
@@ -88,25 +99,18 @@ export default {
     'event'
   ],
   components: {
-    ItemDropdown
+    vSelect
   },
   data() {
     return {
       choices: {},
       newEvent: {},
       errors: [],
-      extraFields: {
-        colors: {
-          name: 'color',
-          label: 'color',
-          value: ''
-        }
-      }
     }
   },
   methods: {
     getRandomColor() {
-      return this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)][0]
+      return this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)]
     },
     clearContent() {
       this.newEvent = store.getters.templateEvent;
@@ -126,12 +130,11 @@ export default {
     closeModal() {
       this.$parent.closeModal();
       this.$parent.repopulateTimeline();
-      this.setupDefaults();
+      this.setupEvent();
     },
     addEvent() {
       this.checkForm();
       if (this.errors.length) return;
-      this.newEvent.color = this.extraFields.colors.value
       store.commit('addEvent', this.newEvent)
       this.closeModal();
     },
@@ -143,49 +146,31 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let event = this.unbind(this.newEvent)
-      event.color = this.extraFields.colors.value
       store.commit('updateEvent', event)
       this.closeModal()
     },
     unbind(obj) {
       return JSON.parse(JSON.stringify(obj))
     },
-    setupDefaults() {
-      // choose random color as default
-      this.extraFields.colors.value = this.getRandomColor();
-      // set template
-      this.newEvent = this.unbind(store.getters.templateEvent);
+    setupEvent(existingEvent) {
+      this.newEvent = existingEvent ? this.unbind(this.event) : this.unbind(store.getters.templateEvent);
+      if (!this.newEvent.color)
+        this.newEvent.color = this.getRandomColor();
     },
-    setupExisting() {
-      if (this.event.color) {
-        this.extraFields.colors.value = this.event.color
-      } else {
-        this.extraFields.colors.value = this.getRandomColor();
-      }
-      this.newEvent = this.unbind(this.event)
+    setSelected(color) {
+      this.newEvent.color = color
+      // seems to be necessary because sometimes color is not updated when event exists
+      this.newEvent = this.unbind(this.newEvent)
     }
   },
   watch: {
     event(existingEvent) {
-      if (existingEvent) {
-        this.setupExisting()
-      } else {
-        this.setupDefaults()
-      }
+      this.setupEvent(existingEvent)
     },
   },
   mounted() {
     this.choices = store.getters.choices;
-    if (this.event) {
-      this.setupExisting()
-    } else {
-      this.setupDefaults()
-    }
+    this.setupEvent(this.event)
   }
 }
 </script>
-<style scoped>
-/*#add-event-modal {*/
-/*  display: block;*/
-/*}*/
-</style>
