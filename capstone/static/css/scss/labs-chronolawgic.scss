@@ -160,9 +160,11 @@ main.admin {
     font-weight: $font-weight-semibold;
     min-height: 2em;
   }
+
   .title_edit {
     height: 2em;
   }
+
   .description {
     grid-area: description;
     font-family: $font-sans-serif;
@@ -285,6 +287,7 @@ main#main-app {
       white-space: nowrap;
       cursor: pointer;
     }
+
     .my-timelines-link {
       font-size: $font-size-sm;
     }
@@ -366,218 +369,223 @@ main#main-app {
     background-color: white;
   }
 
-    font-family: $font-monospace;
+  font-family: $font-monospace;
 
-    section#timeline {
-      grid-area: timeline;
-      padding-top: 0;
+  section#timeline {
+    grid-area: timeline;
+    padding-top: 0;
+  }
+
+  div.year {
+    max-width: 6fr;
+    width: 100%;
+    display: grid;
+    grid-template-areas: "incidental years spans .";
+    grid-template-columns: 65% 10% 10% 15%;
+    min-height: 8rem;
+    font-size: 18px;
+
+    div.incidental {
+      grid-area: incidental;
+      justify-content: flex-end;
+      display: flex;
     }
 
-    div.year {
-      max-width: 6fr;
-      width: 100%;
+    .case-button {
+      padding: 0;
+      margin: 0.5rem;
+      background-color: white;
+      border: 0;
+    }
+
+    article.case {
+      cursor: pointer;
+      font-family: $font-serif;
+      line-height: $line-height-sm;
+      font-weight: normal;
+      text-align: left;
+      font-size: $font-size-sm;
+      background-color: $color-white;
+      border: 1px solid $color-black;
+      width: 20rem;
+      height: 130px;
+      padding: 0.5rem 0.75rem;
+      align-self: end;
+
+      &:hover, &:focus, &:active {
+        background-color: $highlight;
+      }
+    }
+
+    header {
+      grid-area: casename;
       display: grid;
-      grid-template-areas: "incidental years spans .";
-      grid-template-columns: 65% 10% 10% 15%;
-      min-height: 8rem;
-      font-size: 18px;
+      grid-template-columns: 90% 10%;
+      grid-template-areas: "name link";
+      font-size: 1.3em;
+      line-height: 1.2em;
+      padding: 0;
+    }
 
-      div.incidental {
-        grid-area: incidental;
-        justify-content: flex-end;
-        display: flex;
+    .case-link {
+      svg {
+        fill: $color-violet;
       }
 
-      .case-button {
-        padding: 0;
-        margin: 0.5rem;
-        background-color: white;
-        border: 0;
-      }
-
-      article.case {
-        cursor: pointer;
-        font-family: $font-serif;
-        line-height: $line-height-sm;
-        font-weight: normal;
-        text-align: left;
-        font-size: $font-size-sm;
-        background-color: $color-white;
-        border: 1px solid $color-black;
-        width: 20rem;
-        height: 130px;
-        padding: 0.5rem 0.75rem;
-        align-self: end;
-        &:hover, &:focus, &:active {
-          background-color: $highlight;
-        }
-      }
-
-      header {
-        grid-area: casename;
-        display: grid;
-        grid-template-columns: 90% 10%;
-        grid-template-areas: "name link";
-        font-size: 1.3em;
-        line-height: 1.2em;
-        padding: 0;
-      }
-
-      .case-link {
+      &:hover, &:focus, &:active {
         svg {
-          fill: $color-violet;
-        }
-
-        &:hover, &:focus, &:active {
-          svg {
-            fill: $color-black;
-          }
+          fill: $color-black;
         }
       }
+    }
 
-      section.subhead {
-        padding: 0;
-        grid-area: subhead;
-        font-weight: $font-weight-black;
-        font-size: 0.75rem;
-      }
+    section.subhead {
+      padding: 0;
+      grid-area: subhead;
+      font-weight: $font-weight-black;
+      font-size: 0.75rem;
+    }
 
-      section.desc {
-        padding: 0;
-        grid-area: desc;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.8em;
-        line-height: 1.3em;
-        text-transform: none;
-        max-height: 8em;
-      }
+    section.desc {
+      padding: 0;
+      grid-area: desc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.8em;
+      line-height: 1.3em;
+      text-transform: none;
+      max-height: 8em;
+    }
 
-      div.year_scale {
-        grid-area: years;
-        font-family: $font-family-monospace;
-        z-index: 999;
-        background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
-        background-position: center;
-        background-size: 250px;
-        display: flex;
+    div.year_scale {
+      grid-area: years;
+      font-family: $font-family-monospace;
+      z-index: 999;
+      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
+      background-position: center;
+      background-size: 250px;
+      display: flex;
+      justify-content: center;
+
+      .year {
+        text-align: center;
+        align-self: center;
         justify-content: center;
-        .year {
-          text-align: center;
-          align-self: center;
-          justify-content: center;
-        }
-      }
-
-      .event_col {
-        min-width: 1.25rem;
-        background-color: $color-gray;
-      }
-
-      div.spans {
-        padding-left: 2rem;
-        grid-area: spans;
-        display: grid;
-        grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-        background-color: $color-gray;
-      }
-
-      .event_label {
-        transform: rotate(90deg);
-        transform-origin: 0 100% 0;
-        overflow: visible;
-        z-index: 1;
-        position: relative;
-        top: -1.25rem;
-        left: 0;
-        margin: 0;
-        font-weight: $font-weight-semibold;
-        font-size: $font-size-sm;
-        color: $color-white;
-        height: 1.25rem;
-        line-height: 1.25rem;
-        padding-left: 1rem;
-      }
-
-      .fill {
-        height: 100%;
-        width: 100%;
-        margin: 0;
-        border: 0;
-        padding: 0;
-        cursor: pointer;
-      }
-
-      .first-event-year {
-        border-top: 1rem solid $color-black;
-      }
-
-      .last-event-year {
-        border-bottom: 1rem solid $color-violet-gray;
-      }
-
-      .ec_1 {
-        grid-area: ec_1;
-      }
-
-      .ec_2 {
-        grid-area: ec_2;
-      }
-
-      .ec_3 {
-        grid-area: ec_3;
-      }
-
-      .ec_4 {
-        grid-area: ec_4;
-      }
-
-      .ec_5 {
-        grid-area: ec_5;
-      }
-
-      .ec_6 {
-        grid-area: ec_6;
-      }
-
-      .ec_7 {
-        grid-area: ec_7;
-      }
-
-      .ec_8 {
-        grid-area: ec_8;
-      }
-
-      .ec_9 {
-        grid-area: ec_9;
-      }
-
-      .ec_10 {
-        grid-area: ec_10;
-      }
-
-      .ec_11 {
-        grid-area: ec_11;
-      }
-
-      .ec_12 {
-        grid-area: ec_12;
       }
     }
 
-    div.year.placeholder {
-      div.year_scale {
-        cursor: pointer;
-        display: flex;
-        svg{
-          margin-left: auto;
-          background-color: white;
-          margin-right: auto;
-        }
-      }
+    .event_col {
+      min-width: 1.25rem;
+      background-color: $color-gray;
     }
 
+    div.spans {
+      padding-left: 2rem;
+      grid-area: spans;
+      display: grid;
+      grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      background-color: $color-gray;
+    }
+
+    .event_label {
+      transform: rotate(90deg);
+      transform-origin: 0 100% 0;
+      z-index: 1;
+      position: relative;
+      top: -1.25rem;
+      left: 0;
+      margin: 0;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-sm;
+      color: $color-white;
+      height: 1.25rem;
+      line-height: 1.25rem;
+      padding-left: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 7rem;
+    }
+
+    .fill {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .first-event-year {
+      border-top: 1rem solid $color-black;
+    }
+
+    .last-event-year {
+      border-bottom: 1rem solid $color-violet-gray;
+    }
+
+    .ec_1 {
+      grid-area: ec_1;
+    }
+
+    .ec_2 {
+      grid-area: ec_2;
+    }
+
+    .ec_3 {
+      grid-area: ec_3;
+    }
+
+    .ec_4 {
+      grid-area: ec_4;
+    }
+
+    .ec_5 {
+      grid-area: ec_5;
+    }
+
+    .ec_6 {
+      grid-area: ec_6;
+    }
+
+    .ec_7 {
+      grid-area: ec_7;
+    }
+
+    .ec_8 {
+      grid-area: ec_8;
+    }
+
+    .ec_9 {
+      grid-area: ec_9;
+    }
+
+    .ec_10 {
+      grid-area: ec_10;
+    }
+
+    .ec_11 {
+      grid-area: ec_11;
+    }
+
+    .ec_12 {
+      grid-area: ec_12;
+    }
+  }
+
+  div.year.placeholder {
+    div.year_scale {
+      cursor: pointer;
+      display: flex;
+
+      svg {
+        margin-left: auto;
+        background-color: white;
+        margin-right: auto;
+      }
+    }
+  }
 
 
   .event-preview {
@@ -591,9 +599,11 @@ main#main-app {
     word-break: break-word;
     background-color: white;
     position: relative;
+
     h5 {
       margin-bottom: 0;
     }
+
     .event-preview-body {
       padding: 0.6rem 0.6rem 0 0.6rem;
     }
@@ -633,6 +643,7 @@ main#main-app {
 
   #labs-nav {
     z-index: 1050;
+
     #burger-icon {
       z-index: 1055;
     }
@@ -642,14 +653,17 @@ main#main-app {
 
     .top-menu {
       display: flex;
+
       .zoom-section {
         display: none;
       }
 
     }
+
     div.timeline-section-titles {
       grid-template-columns: 25% 75%;
       margin-top: 35px;
+
       h6 {
         position: fixed;
         z-index: 1000;
@@ -660,12 +674,14 @@ main#main-app {
           background-color: $highlight;
         }
       }
+
       .other-events-section {
         h6 {
           background-color: $color-white;
         }
       }
     }
+
     .header-section {
       height: 50px;
       padding: 0.25em;
@@ -673,6 +689,7 @@ main#main-app {
       width: 100%;
       z-index: 1020;
       box-shadow: 0 0px 10px #DDD;
+
       &:first-child {
         border: none;
       }
@@ -698,18 +715,22 @@ main#main-app {
         white-space: nowrap;
         cursor: pointer;
       }
+
       .my-timelines-link {
         display: none;
       }
+
       .header-section.expanded {
         #timeline-title {
           width: 90%;
         }
+
         #timeline-description {
           width: 90%;
         }
       }
     }
+
     .header-section.expanded {
       h4 {
         overflow: visible;
@@ -718,50 +739,59 @@ main#main-app {
     }
 
     button.btn.btn-tertiary.btn-add-event {
-        display: none;
+      display: none;
     }
 
-     div.year {
+    div.year {
       width: 100%;
       display: grid;
       grid-template-areas: "incidental years spans";
       grid-template-columns: 65% 10% 25%;
       min-height: 8rem;
       font-size: 18px;
+
       div.year_scale {
         display: flex;
+
         div.simple-mobile-year-label {
           font-size: .85rem;
           background-color: white;
           align-self: center
         }
       }
-       div.spans {
-         padding-left: 1rem;
+
+      div.spans {
+        padding-left: 1rem;
+
         .event_col {
           min-width: 5px;
+
           .fill {
             width: 5px;
+
             .event_label {
               display: none;
             }
           }
         }
       }
-     }
-      div.year.placeholder {
-        div.year_scale {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            svg {
-              transform: none;
-            }
+    }
+
+    div.year.placeholder {
+      div.year_scale {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          transform: none;
         }
       }
+    }
 
     div.incidental {
       flex-direction: column;
+
       button.case-button {
         article.case {
           float: right;
@@ -770,7 +800,8 @@ main#main-app {
           overflow: scroll;
           padding: 0.5rem 0.75rem;
           align-self: end;
-          span.case-name{
+
+          span.case-name {
             font-weight: $font-weight-semibold;
           }
 
@@ -779,6 +810,7 @@ main#main-app {
           }
         }
       }
+
       article.case_placeholder {
         display: none;
       }
@@ -786,23 +818,26 @@ main#main-app {
   }
 
   main#main-app.mobile-event-expanded {
-      #timeline {
-        div.timeline-section-titles {
-          grid-template-columns: 25% 75%;
-          margin-top: 35px;
-          .caselaw-section {
-            h6 {
-              background-color: $color-white;
-            }
+    #timeline {
+      div.timeline-section-titles {
+        grid-template-columns: 25% 75%;
+        margin-top: 35px;
+
+        .caselaw-section {
+          h6 {
+            background-color: $color-white;
           }
-          .other-events-section {
-            h6 {
-              background-color: $highlight;
-            }
+        }
+
+        .other-events-section {
+          h6 {
+            background-color: $highlight;
           }
         }
       }
-     div.year {
+    }
+
+    div.year {
       width: 100%;
       display: grid;
       grid-template-areas: "incidental years spans";
@@ -811,11 +846,14 @@ main#main-app {
       font-size: 18px;
 
       div.spans {
-         padding-left: 2rem;
+        padding-left: 2rem;
+
         .event_col {
           min-width: 1rem;
+
           .fill {
             width: 1rem;
+
             .event_label {
               display: block;
               left: -15%;
@@ -823,10 +861,12 @@ main#main-app {
           }
         }
       }
+
       div.event-preview {
-          margin-left: auto;
-          margin-right: auto;
+        margin-left: auto;
+        margin-right: auto;
       }
+
       div.case_placeholder {
         margin-left: auto;
         margin-right: auto;
@@ -835,16 +875,18 @@ main#main-app {
         height: 3rem;
         width: 3rem;
         text-align: center;
+
         .case_count {
           font-weight: $font-weight-black;
           font-size: 1.25rem;
         }
+
         .case_count:before {
-          content:"\a";
+          content: "\a";
           white-space: pre;
         }
       }
-     }
+    }
   }
 
 }

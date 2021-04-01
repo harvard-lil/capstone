@@ -47,6 +47,9 @@ textarea::placeholder {
   font-family: $font-monospace;
   font-size: 1.2rem;
   font-weight: $font-weight-semibold;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .modal-dialog {
@@ -139,6 +142,7 @@ textarea::placeholder {
           "jur        long"
           "reporter   long";
     grid-column-gap: .8em;
+    grid-template-columns: 1fr 1fr;
     grid-row-gap: 0.2em;
   }
 
