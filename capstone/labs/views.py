@@ -2,6 +2,7 @@ import json
 
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
 from labs.models import Timeline
 
 from capweb.views import MarkdownView
@@ -20,6 +21,7 @@ def chronolawgic(request, timeline_uuid=None):
     return render(request, "lab/chronolawgic/timeline.html")
 
 
+@never_cache
 def chronolawgic_api_retrieve(request, timeline_uuid=None):
     if request.method != 'GET':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
