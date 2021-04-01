@@ -118,13 +118,13 @@ def chronolawgic_api_update(request, timeline_uuid):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
-    if not request.user.is_authenticated:
-        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
-
     try:
         timeline = Timeline.objects.get(uuid=timeline_uuid)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
         parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
