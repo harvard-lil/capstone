@@ -202,6 +202,9 @@ export default {
       const firstYear = this.$store.getters.firstYear;
       const finalYear = this.$store.getters.lastYear;
 
+      // clear years
+      this.years = {};
+
       // all the years need to be in place before the next loop because it does some logic based on future years
       for (let y = firstYear; y <= finalYear; y++) {
         this.$set(this.years, y, {
