@@ -115,7 +115,7 @@ export default {
     },
     setLabelWidth(end_date, start_date) {
       // A small attempt at giving longer events longer title allotments
-      let yearRange = end_date.split('-')[0] - start_date.split('-')[0]
+      let yearRange = new Date(end_date).getUTCFullYear() - new Date(start_date).getUTCFullYear()
       let base_size = 36 // px
       let width;
       width = yearRange * base_size

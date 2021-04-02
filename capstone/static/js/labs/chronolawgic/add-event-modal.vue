@@ -126,6 +126,9 @@ export default {
       if (!this.newEvent.end_date) {
         this.errors.push('End date is required.')
       }
+      if (new Date(this.newEvent.end_date) - new Date(this.newEvent.start_date) < 0) {
+        this.errors.push('Start date must be earlier than end date.')
+      }
     },
     closeModal() {
       this.$parent.closeModal();
