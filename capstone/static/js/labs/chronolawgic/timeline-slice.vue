@@ -37,7 +37,7 @@
              :data-event-fill="event_data.id"
              :ref="fillRefGenerator(event_data, year_value)">
           <div class="event_label"
-               :style="{'width': event_data.name.length + 'rem' }"
+               :style="{'width': event_data.end_date - event_data.start_date + 'rem' }"
                v-if="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear()"
                v-text="event_data.name"
                :ref="'event-label' + event_data.id">

@@ -13,10 +13,10 @@
           <form @submit.stop.prevent id="form-search-cap" v-if="!(this.case && typeof(this.case.id) === 'number')">
             <h6>Search CAP</h6>
             <div id="field-group-search">
-              <input v-model="searchText" id="field-search-cap" placeholder="ENTER CITATION"
+              <input v-model="searchText" id="field-search-cap" :placeholder="'Enter '+ extraFields.cap.value"
                      class="form-control">
               <span>Search using:</span>
-              <v-select :options="['name abbreviation', 'citation']"
+              <v-select :options="['Name abbreviation', 'Citation']"
                         v-model="extraFields.cap.value"
                         :clearable="false"
                         placeholder="search">
@@ -27,7 +27,7 @@
               </span>
             </div>
             <ul v-if="searchResults.length" class="results-list">
-              <div v-for="result in searchResults" @click="chooseCase(result)"
+              <div v-for="result in searchResults" @click="autofillCase(result)"
                    class="result-container"
                    :class="chosenCase.id === result.id ? 'chosen' : ''"
                    :key="result.id">
@@ -38,11 +38,6 @@
             <ul v-if="showNoSearchResults" class="results-list">
               <li class="result-container p-2">No results found</li>
             </ul>
-            <div class="row mb-4 mt-2" v-if="chosenCase && chosenCase.name_abbreviation">
-              <button type="button" class="btn btn-tertiary pl-0 " @click="autofillCase">AUTOFILL WITH
-                "{{ chosenCase.name_abbreviation.slice(0, 20) }}..."
-              </button>
-            </div>
             <hr>
           </form>
           <form @submit.stop id="form-add-case">
@@ -76,18 +71,17 @@
             </div>
             <v-select transition=""
                       label="jurisdiction"
-                      placeholder="JURISDICTION"
+                      placeholder="Jurisdiction"
                       :options="choices.jurisdictions"
                       @input="chooseJurisdiction"
                       v-model="newCase.jurisdiction">
             </v-select>
             <v-select transition=""
                       label="courtName"
-                      placeholder="COURT"
+                      placeholder="Court"
                       :options="choices.courts"
                       @input="chooseCourt"
                       v-model="newCase.court">
-
             </v-select>
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
@@ -154,8 +148,8 @@ export default {
       extraFields: { // need more info to interact with dropdown fields
         cap: {
           name: 'search by',
-          label: 'name abbreviation',
-          value: 'name abbreviation'
+          label: 'Name abbreviation',
+          value: 'Name abbreviation'
         }
       },
       showLoading: false,
@@ -206,7 +200,8 @@ export default {
       let month = date_parts.length >= 2 ? date_parts[1] : "01";
       return year + "-" + month + "-" + day;
     },
-    autofillCase() {
+    autofillCase(result) {
+      this.chosenCase = result;
       this.newCase.name = this.chosenCase.name_abbreviation;
       this.newCase.citation = this.chosenCase.citations[0].cite;
       this.newCase.url = this.chosenCase.frontend_url;
