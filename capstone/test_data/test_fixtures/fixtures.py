@@ -7,6 +7,8 @@ from time import time
 from xdist.scheduler import LoadFileScheduling
 import mock
 from moto import mock_s3
+from retry.api import retry_call
+from elasticsearch.exceptions import ConnectionError
 
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
@@ -385,6 +387,8 @@ def inline_image_src():
 @pytest.fixture()
 def elasticsearch(settings):
     settings.MAINTAIN_ELASTICSEARCH_INDEX = True
-    fabfile.rebuild_search_index(force=True)
+    # retry for 60 seconds to make sure the Elasticsearch server is up
+    retry_call(lambda: fabfile.rebuild_search_index(force=True),
+               tries=60, delay=1, exceptions=ConnectionError)
     yield
     call_command('search_index', '--delete', '-f')
