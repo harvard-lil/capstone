@@ -16,7 +16,7 @@
               <input v-model="searchText" id="field-search-cap" :placeholder="'Enter '+ extraFields.cap.value"
                      class="form-control">
               <span>Search using:</span>
-              <v-select :options="['Name abbreviation', 'Citation']"
+              <v-select :options="['Name abbreviation', 'Citation', 'Search']"
                         v-model="extraFields.cap.value"
                         :clearable="false"
                         placeholder="search">
@@ -214,7 +214,14 @@ export default {
       if (this.searchText) {
         this.showLoading = true;
 
-        let query = this.extraFields.cap.value === 'Citation' ? 'cite' : 'name_abbreviation'
+        let query;
+        if (this.extraFields.cap.value === 'Citation') {
+          query = 'cite'
+        } else if (this.extraFields.cap.value === 'Name abbreviation') {
+          query = 'name_abbreviation'
+        } else {
+          query = 'search'
+        }
         let url = store.state.urls.api_root + "cases?" + query + "=" + this.searchText;
         axios.get(url)
             .then(response => response.data)
