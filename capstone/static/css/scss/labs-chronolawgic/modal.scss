@@ -11,6 +11,11 @@
   }
 }
 
+::placeholder {
+  font-size: 0.8em;
+}
+
+
 input.form-control, textarea.form-control {
   background-color: $color-light-gray;
   border: 0;
@@ -310,6 +315,7 @@ textarea::placeholder {
     display: grid;
     grid-template-areas:
           "name          short"
+          "url           long"
           "start_date    long"
           "end_date      long"
           "color         long";
@@ -336,7 +342,7 @@ textarea::placeholder {
     grid-area: long;
 
     textarea {
-      min-height: 8em;
+      min-height: 11em;
     }
   }
 
@@ -347,6 +353,21 @@ textarea::placeholder {
 
 #readonly-modal {
   word-wrap: break-word;
+  overflow-y: scroll;
+
+  .modal-header {
+    background-color: transparent;
+    border: 0;
+
+    .modal-title {
+      font-family: $font-serif;
+      font-weight: normal;
+    }
+
+    .close {
+      border: 0;
+    }
+  }
 
   .short-description {
     font-style: italic;

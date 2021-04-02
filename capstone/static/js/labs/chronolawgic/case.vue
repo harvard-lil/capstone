@@ -14,8 +14,7 @@
           <link-case/>
         </a>
       </header>
-      <section class="desc">
-        {{ case_data.short_description }}
+      <section class="desc" v-html="case_data.short_description">
       </section>
     </article>
 

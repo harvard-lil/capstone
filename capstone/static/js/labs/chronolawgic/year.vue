@@ -93,9 +93,6 @@ export default {
       this.event = event_data;
       EventBus.$emit('closePreview', this.year_value);
     },
-    hoveringHandle(year_data, status) {
-      this.showAddButton = status;
-    },
   },
   mounted() {
     EventBus.$on('closePreview', (year_value) => {
