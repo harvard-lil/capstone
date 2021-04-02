@@ -37,7 +37,7 @@
              :data-event-fill="event_data.id"
              :ref="fillRefGenerator(event_data, year_value)">
           <div class="event_label"
-               :style="{'width': event_data.end_date - event_data.start_date + 'rem' }"
+               :style="{'width': setLabelWidth(event_data.end_date, event_data.start_date) }"
                v-if="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear()"
                v-text="event_data.name"
                :ref="'event-label' + event_data.id">
@@ -113,6 +113,15 @@ export default {
         return "last_year_fill_" + event_data.id
       }
     },
+    setLabelWidth(end_date, start_date) {
+      // A small attempt at giving longer events longer title allotments
+      let yearRange = new Date(end_date).getUTCFullYear() - new Date(start_date).getUTCFullYear()
+      let base_size = 110 // px
+      let width;
+      width = yearRange * base_size
+      width = width < base_size ? base_size : width
+      return width + 'px'
+    }
   },
 }
 </script>

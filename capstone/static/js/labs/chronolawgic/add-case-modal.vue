@@ -214,7 +214,7 @@ export default {
       if (this.searchText) {
         this.showLoading = true;
 
-        let query = this.extraFields.cap.value === 'citation' ? 'cite' : 'name_abbreviation'
+        let query = this.extraFields.cap.value === 'Citation' ? 'cite' : 'name_abbreviation'
         let url = store.state.urls.api_root + "cases?" + query + "=" + this.searchText;
         axios.get(url)
             .then(response => response.data)
