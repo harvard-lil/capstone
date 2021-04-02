@@ -353,7 +353,34 @@ textarea::placeholder {
 
 #readonly-modal {
   word-wrap: break-word;
-  overflow-y: scroll;
+
+  a {
+    text-decoration: underline;
+  }
+
+  .label {
+    color: #878787;
+  }
+  hr {
+    border-bottom: 1px dashed #cacaca;
+    border-top: 0;
+  }
+  article.info {
+    font-family: $font-sans-serif;
+
+    p {
+      margin-bottom: 0;
+      font-family: $font-sans-serif;
+    }
+  }
+
+  .modal-dialog {
+    overflow-y: scroll;
+  }
+
+  .modal-body {
+    padding: 0 2em;
+  }
 
   .modal-header {
     background-color: transparent;
@@ -362,16 +389,20 @@ textarea::placeholder {
     .modal-title {
       font-family: $font-serif;
       font-weight: normal;
+      padding: 0.5em 1em;
+      white-space: normal;
     }
+
 
     .close {
       border: 0;
+      font-weight: normal;
     }
   }
 
   .short-description {
-    font-style: italic;
     color: $color-violet-gray-dark;
+    margin-top: 1em;
   }
 
   p {

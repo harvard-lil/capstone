@@ -16,6 +16,11 @@
                      class="form-control">
               <label for="field-event-name">EVENT NAME</label>
             </div>
+            <div class="form-label-group" id="field-group-url">
+              <input v-model="newEvent.url" id="field-event-url" placeholder="URL"
+                     class="form-control">
+              <label for="field-event-url">SOURCE URL</label>
+            </div>
             <div class="form-label-group" id="field-group-short-description">
               <input v-model="newEvent.short_description" id="field-event-short-description"
                      placeholder="SHORT DESCRIPTION"

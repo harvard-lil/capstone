@@ -78,6 +78,7 @@ const store = new Vuex.Store({
             long_description: "",
             start_date: "",
             end_date: "",
+            url: "",
         },
         templateCase: {
             url: "",
