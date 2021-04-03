@@ -293,6 +293,7 @@ main#main-app {
 
     .my-timelines-link {
       font-size: $font-size-sm;
+
       svg {
         margin-bottom: 5px;
         stroke-width: 1.5;
@@ -415,6 +416,7 @@ main#main-app {
       height: 130px;
       padding: 0.5rem 0.75rem;
       align-self: end;
+      text-transform: none;
 
       &:hover, &:focus, &:active {
         background-color: $highlight;
@@ -510,6 +512,10 @@ main#main-app {
       overflow: hidden;
       text-overflow: ellipsis;
       min-width: 7rem;
+    }
+    // colors that are too light for white
+    .light-color > .event_label {
+      color: $color-black;
     }
 
     .fill {
@@ -694,6 +700,7 @@ main#main-app {
       z-index: 1020;
       box-shadow: 0 0 10px #DDD;
       display: inline-table;
+
       &:first-child {
         border: none;
       }
@@ -804,10 +811,6 @@ main#main-app {
           overflow: scroll;
           padding: 0.5rem 0.75rem;
           align-self: end;
-
-          span.case-name {
-            font-weight: $font-weight-semibold;
-          }
 
           &:hover, &:focus, &:active {
             background-color: $highlight;

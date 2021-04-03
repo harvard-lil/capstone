@@ -16,7 +16,7 @@
               <input v-model="searchText" id="field-search-cap" :placeholder="'Enter '+ extraFields.cap.value"
                      class="form-control">
               <span>Search using:</span>
-              <v-select :options="['Name abbreviation', 'Citation', 'Search']"
+              <v-select :options="['Name abbreviation', 'Citation', 'Text search']"
                         v-model="extraFields.cap.value"
                         :clearable="false"
                         placeholder="search">

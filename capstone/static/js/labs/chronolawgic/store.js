@@ -15,16 +15,16 @@ const importUser = user; // defined in timeline.html
 importChoices.colors = [
     "#00db67",
     "#ccff6d",
-    "#DBC600",
-    "#DB8F00",
-    "#FF8E7A",
+    "#dbc600",
+    "#db8f00",
+    "#ff8e7a",
     "#ff736c",
     "#e5435c",
-    "#986D81",
+    "#986d81",
     "#7e84ff",
     "#3656f6",
-    "#00B7DB",
-    "#3E667A",
+    "#00b7db",
+    "#3e667a",
 ]
 
 // jurisdictions
