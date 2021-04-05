@@ -8,14 +8,14 @@ export default Vue.component('YearLabel', {
       <text style="font-family: 'source-code', monospace;" transform="matrix(2 0 0 2 80 75)" >{{year}}</text>
       <g id="circles" v-if="yearHover">
         <g style="cursor:pointer;" @click="addCase(year)" data-toggle="modal" data-target="#add-case-modal">
-          <circle style="fill:#FFF;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" cx="40" cy="63.2" r="20"/>
-          <line style="fill:none;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" x1="40" y1="52" x2="40" y2="73"/>
-          <line style="fill:none;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" x1="29.5" y1="62.5" x2="50.5" y2="62.5"/>
+          <circle style="fill:#FFF;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" cx="40" cy="63.2" r="20"/>
+          <line style="fill:none;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" x1="40" y1="52" x2="40" y2="73"/>
+          <line style="fill:none;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" x1="29.5" y1="62.5" x2="50.5" y2="62.5"/>
         </g>
         <g style="cursor:pointer;" @click="addEvent(year)" data-toggle="modal" data-target="#add-event-modal">
-          <circle style="fill:#EEE;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" cx="210" cy="63.2" r="20"/>
-          <line style="fill:none;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" x1="210" y1="52" x2="210" y2="73"/>
-          <line style="fill:none;stroke:#363636;stroke-width:4;stroke-miterlimit:10;" x1="199.5" y1="62.5" x2="220.5" y2="62.5"/>
+          <circle style="fill:#EEE;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" cx="210" cy="63.2" r="20"/>
+          <line style="fill:none;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" x1="210" y1="52" x2="210" y2="73"/>
+          <line style="fill:none;stroke:#363636;stroke-width:3;stroke-miterlimit:10;" x1="199.5" y1="62.5" x2="220.5" y2="62.5"/>
         </g>
       </g>
     </svg>`,

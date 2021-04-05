@@ -260,7 +260,7 @@ main#main-app {
 
   .header-section {
     height: 100px;
-    padding: 0.5em;
+    padding: 1em;
     background-color: $color-white;
     z-index: 1000;
 
@@ -276,9 +276,12 @@ main#main-app {
 
     #timeline-title {
       width: 370px;
+      margin-left: 10px;
+      font-size: 1.8em;
     }
 
     #timeline-description {
+      margin-left: 10px;
       font-size: $font-size-sm;
       line-height: $line-height-sm;
       width: 80%;
@@ -290,14 +293,16 @@ main#main-app {
 
     .my-timelines-link {
       font-size: $font-size-sm;
+
+      svg {
+        margin-bottom: 5px;
+        stroke-width: 1.5;
+      }
     }
   }
 
   .header-section.expanded {
-    height: 200px;
-
     #timeline-description {
-      height: 100px;
       font-size: $font-size-sm;
       line-height: $line-height-sm;
       width: 80%;
@@ -411,6 +416,7 @@ main#main-app {
       height: 130px;
       padding: 0.5rem 0.75rem;
       align-self: end;
+      text-transform: none;
 
       &:hover, &:focus, &:active {
         background-color: $highlight;
@@ -461,7 +467,7 @@ main#main-app {
       grid-area: years;
       font-family: $font-family-monospace;
       z-index: 999;
-      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, #EEE 50%);
+      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%);
       background-position: center;
       background-size: 250px;
       display: flex;
@@ -506,6 +512,10 @@ main#main-app {
       overflow: hidden;
       text-overflow: ellipsis;
       min-width: 7rem;
+    }
+    // colors that are too light for white
+    .light-color > .event_label {
+      color: $color-black;
     }
 
     .fill {
@@ -610,7 +620,7 @@ main#main-app {
 
     .see-more {
       padding: 0 0.6rem 0.6rem 0.6rem;
-      font-size: medium;
+      font-size: small;
       text-transform: none;
       float: right;
     }
@@ -683,12 +693,13 @@ main#main-app {
     }
 
     .header-section {
-      height: 50px;
+      height: 80px;
       padding: 0.25em;
       position: fixed;
       width: 100%;
       z-index: 1020;
-      box-shadow: 0 0px 10px #DDD;
+      box-shadow: 0 0 10px #DDD;
+      display: inline-table;
 
       &:first-child {
         border: none;
@@ -800,10 +811,6 @@ main#main-app {
           overflow: scroll;
           padding: 0.5rem 0.75rem;
           align-self: end;
-
-          span.case-name {
-            font-weight: $font-weight-semibold;
-          }
 
           &:hover, &:focus, &:active {
             background-color: $highlight;

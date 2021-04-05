@@ -16,6 +16,7 @@ def validate_timeline(timeline):
         {'name': 'end_date', 'type': str, 'required': True},
         {'name': 'color', 'type': str, 'required': False},
         {'name': 'categories', 'type': list, 'required': False},
+        {'name': 'url', 'type': str, 'required': False},
     ]
 
     case_fields = [

@@ -8,7 +8,9 @@
           'fill': true,
           'first-event-year': parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear(),
           'last-event-year': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear(),
-        }" v-if="Object.keys(event_data).length > 0"
+          'light-color': checkIfLight(event_data.color)
+        }"
+             v-if="Object.keys(event_data).length > 0"
              :tabindex="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear() ? '0' : '-1'"
              :style="{
                       'background-color': event_data.color,
@@ -22,7 +24,9 @@
           'fill': true,
           'first-event-year': parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear(),
           'last-event-year': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear(),
-        }" v-if="Object.keys(event_data).length > 0"
+          'light-color': checkIfLight(event_data.color)
+        }"
+             v-if="Object.keys(event_data).length > 0"
              :tabindex="parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear() ? '0' : '-1'"
              :style="{
                       'background-color': event_data.color,
@@ -121,6 +125,11 @@ export default {
       width = yearRange * base_size
       width = width < base_size ? base_size : width
       return width + 'px'
+    },
+    checkIfLight(color) {
+      // add class if font needs to be black
+      let lightColors = ["#00db67", "#ccff6d", "#dbc600", "#db8f00"]
+      return lightColors.indexOf(color.toLowerCase()) > -1
     }
   },
 }

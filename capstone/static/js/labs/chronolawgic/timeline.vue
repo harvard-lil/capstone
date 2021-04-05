@@ -4,11 +4,10 @@
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
-        <div id="timeline-description" v-text="$store.state.description" @click="toggleHeader()"></div>
+        <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description" @click="toggleHeader()"></div>
         <div class="my-timelines-link" v-if="$store.state.isAuthor">
-          <router-link to="/">
-            <ViewList></ViewList>
-            my timelines
+          <router-link to="/" class="btn btn-tertiary">
+            BACK TO MY TIMELINES
           </router-link>
         </div>
       </header>
@@ -93,7 +92,6 @@ import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
-import ViewList from '../../../../static/img/icons/view_list.svg';
 import Year from './year';
 import {EventBus} from "./event-bus.js";
 
@@ -108,7 +106,6 @@ export default {
     Year,
     MinimizeIcon,
     MaximizeIcon,
-    ViewList
   },
   computed: {
     title() {
@@ -185,7 +182,8 @@ export default {
       }
     },
     toggleHeader() {
-      this.headerExpanded = !this.headerExpanded;
+      if (this.$store.state.description)
+        this.headerExpanded = !this.headerExpanded;
     },
     toggleKey() {
       this.keyShown = !this.keyShown;
