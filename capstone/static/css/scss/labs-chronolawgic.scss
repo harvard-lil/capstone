@@ -222,17 +222,11 @@ main#main-app {
       text-align: right;
     }
 
-    .zoom-toggles {
+
+    .toggles {
       position: fixed;
       right: 0.5em;
       z-index: 999;
-    }
-
-    .zoom-toggle {
-      width: 55px;
-      height: 55px;
-      background-color: #ccc;
-      margin-right: 0;
 
       svg {
         color: $color-medium-gray;
@@ -241,6 +235,34 @@ main#main-app {
         top: 25%;
         position: relative;
       }
+    }
+
+    .key {
+      grid-area: other-events;
+      cursor: pointer;
+      width: 55px;
+      height: 55px;
+      background-color: $color-white;
+
+      svg {
+        color: $color-black;
+      }
+
+      &.selected, &:hover, &:active, &:focus {
+        svg {
+          transform: rotate(90deg);
+        }
+
+        background-color: $highlight;
+      }
+    }
+
+
+    .zoom-toggle {
+      width: 55px;
+      height: 55px;
+      background-color: #ccc;
+      margin-right: 0;
 
       &.selectable {
         background-color: $color-white;
@@ -389,7 +411,6 @@ main#main-app {
     grid-template-columns: 65% 10% 10% 15%;
     min-height: 8rem;
     font-size: 18px;
-
     div.incidental {
       grid-area: incidental;
       justify-content: flex-end;
@@ -467,8 +488,7 @@ main#main-app {
       grid-area: years;
       font-family: $font-family-monospace;
       z-index: 999;
-      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%);
-      background-position: center;
+      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%) center;
       background-size: 250px;
       display: flex;
       justify-content: center;
@@ -895,6 +915,12 @@ main#main-app {
       }
     }
   }
+}
 
+
+// categories
+.shape {
+  width: 50px;
+  height: 50px;
 }
 
