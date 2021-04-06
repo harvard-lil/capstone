@@ -266,6 +266,10 @@ decorator==4.4.1 \
     #   ipython
     #   networkx
     #   retry
+dictdiffer==0.8.1 \
+    --hash=sha256:1adec0d67cdf6166bda96ae2934ddb5e54433998ceab63c984574d187cc563d2 \
+    --hash=sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390
+    # via -r requirements.in
 diff-match-patch==20181111 \
     --hash=sha256:a809a996d0f09b9bbd59e9bbd0b71eed8c807922512910e05cbd3f9480712ddb
     # via -r requirements.in
