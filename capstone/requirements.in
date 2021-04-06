@@ -12,7 +12,9 @@ geoip2              # local IP geolocation
 numpy               # simhash calculation
 requests
 
+# chronolawgic
 shortuuid           # for chronolawgic timeline uuids
+dictdiffer          # supports a hack to avoid clobbering timelines with outdated data
 
 # celery
 celery[redis,sqs]   # task queue

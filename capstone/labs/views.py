@@ -1,4 +1,5 @@
 import json
+from dictdiffer import diff as dictdiff
 
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -69,25 +70,25 @@ def chronolawgic_api_update_admin(request, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
-        timeline = Timeline.objects.get(uuid=timeline_uuid)
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
-    if not request.user.is_authenticated or timeline.created_by.pk != request.user.pk:
+    if not request.user.is_authenticated or timeline_record.created_by.pk != request.user.pk:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        timeline_content = json.loads(request.body.decode())
-        timeline.timeline['title'] = timeline_content['title']
-        timeline.timeline['description'] = timeline_content['description']
-        timeline.save()
+        incoming_timeline = json.loads(request.body.decode())
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
 
+    timeline_record.timeline['title'] = incoming_timeline['title']
+    timeline_record.timeline['description'] = incoming_timeline['description']
+    timeline_record.save()
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline.timeline,
-        'id': timeline.uuid,
-        'is_owner': True if request.user == timeline.created_by else False
+        'timeline': timeline_record.timeline,
+        'id': timeline_record.uuid,
+        'is_owner': True if request.user == timeline_record.created_by else False
     })
 
 def chronolawgic_api_create(request):
@@ -121,34 +122,49 @@ def chronolawgic_api_update(request, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
-        timeline = Timeline.objects.get(uuid=timeline_uuid)
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
-    if not request.user.is_authenticated or request.user != timeline.created_by:
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        parsed = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
-        bad_values = validate_timeline(parsed)
+        incoming_timeline = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
 
-        if bad_values:
-            return JsonResponse(
-                {'status': 'err',
-                 'reason': 'data_validation',
-                 'details': "Timeline Validation Errors: {}".format(bad_values)
-                 }, status=400)
-
-        timeline.timeline = parsed
-        timeline.save()
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
 
+    bad_values = validate_timeline(incoming_timeline)
+    if bad_values:
+        return JsonResponse(
+            {'status': 'err',
+             'reason': 'data_validation',
+             'details': "Timeline Validation Errors: {}".format(bad_values)
+             }, status=400)
+
+    # fixing a bug where an out-of-sync timeine in the user's browser clobbered an entire timeline.
+    number_of_items_modified = len(
+        set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(timeline_record.timeline, incoming_timeline)
+             if thing[0] != 'remove']
+    ))
+
+    number_of_items_removed = len([thing[0] for thing in dictdiff(timeline_record.timeline, incoming_timeline)
+                             if thing[0] == 'remove'])
+
+    if number_of_items_modified > 1 or number_of_items_removed > 1:
+        return JsonResponse({'status': 'err', 'reason': "Timeline out of sync. More than one change or remove detected—"
+                                                        " aborted change protect timeline. Please refresh "
+                                                        "Chronolawgic. Did we mention this app is beta?😬"}, status=500)
+
+    timeline_record.timeline = incoming_timeline
+    timeline_record.save()
+
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline.timeline,
-        'id': timeline.uuid,
-        'is_owner': True if request.user == timeline.created_by else False
+        'timeline': timeline_record.timeline,
+        'id': timeline_record.uuid,
+        'is_owner': True if request.user == timeline_record.created_by else False
     })
 
 

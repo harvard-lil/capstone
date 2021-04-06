@@ -1,4 +1,5 @@
 import pytest
+import copy
 from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
@@ -27,6 +28,7 @@ events = [
      'long_description': 'abcdefghijklmnopqrstuvwxyz',
      'short_description': 'abc'}
 ]
+complete_timeline = {"title": "My first timeline", "description": "And my very best one", 'events': events, 'cases': cases}
 
 
 @pytest.mark.django_db
@@ -53,16 +55,84 @@ def test_create_timeline(client, auth_client):
     check_response(response, content_type="application/json")
     assert Timeline.objects.count() == 1
 
+@pytest.mark.django_db
+def test_clobber_stopper(auth_client):
+    # should not allow editing more than 1 case or event per request
+    tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=complete_timeline)
+
+
+    # modify one event field
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['events'][0]['name'] = 'another name'
+
+    # one field in one event different from the DB version— no problem
+    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, content_type="application/json")
+
+    # last test modified timeline, so change it back
+    tl.timeline = complete_timeline
+    tl.save()
+
+    # modify three event fields – no problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['events'][0]['name'] = 'another name'
+    modified_timeline['events'][0]['end_date'] = '1848-12-31'
+    modified_timeline['events'][0]['short_description'] = '1999-12-31'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, content_type="application/json")
+    tl.timeline = complete_timeline
+    tl.save()
+
+    #modify one case field – no problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['cases'][0]['name'] = 'another name'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, content_type="application/json")
+    tl.timeline = complete_timeline
+    tl.save()
+
+    # modify three case fields - no problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['cases'][0]['name'] = 'another name'
+    modified_timeline['cases'][0]['decision_date'] = '1848-12-31'
+    modified_timeline['cases'][0]['short_description'] = '1999-12-31'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, content_type="application/json")
+    tl.timeline = complete_timeline
+    tl.save()
+
+    #modify two cases - problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['cases'][0]['name'] = 'another name'
+    modified_timeline['cases'][1]['short_description'] = '1999-12-31'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, status_code=500, content_type="application/json")
+
+    # modify two events - problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['events'][0]['name'] = 'another name'
+    modified_timeline['events'][1]['end_date'] = '1848-12-31'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, status_code=500, content_type="application/json")
+
+    # modify case and event - problem
+    modified_timeline = copy.deepcopy(complete_timeline)
+    modified_timeline['events'][0]['name'] = 'another name'
+    modified_timeline['cases'][1]['short_description'] = '1999-12-31'
+    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
+    check_response(response, status_code=500, content_type="application/json")
+
 
 @pytest.mark.django_db
 def test_timeline_retrieve(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     # allow retrieval by anyone
-    response = client.get(retrieve_url + str(tl.uuid))
+    response = client.get(retrieve_url + tl.uuid)
     check_response(response, content_type="application/json")
     timeline_response = response.json()["timeline"]
     # also of course by authenticated users
-    response = auth_client.get(retrieve_url + str(tl.uuid))
+    response = auth_client.get(retrieve_url + tl.uuid)
     check_response(response, content_type="application/json")
     assert timeline_response["title"] == timeline["title"]
 
@@ -88,13 +158,13 @@ def test_timeline_retrieve(client, auth_client):
 @pytest.mark.django_db
 def test_timeline_update(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
-    response = auth_client.get(retrieve_url + str(tl.uuid))
+    response = auth_client.get(retrieve_url + tl.uuid)
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == timeline["title"]
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
     response = auth_client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == new_title
@@ -102,20 +172,20 @@ def test_timeline_update(client, auth_client):
     new_title = "My third timeline attempt"
     timeline["title"] = new_title
 
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
 
     # don't allow unauthenticated users
     response = client.post(update_url, {"timeline": timeline}, format='json')
     check_response(response, status_code=403, content_type="application/json")
 
-    response = auth_client.get(retrieve_url + str(tl.uuid))
+    response = auth_client.get(retrieve_url + tl.uuid)
     assert response.json()["timeline"]["title"] != timeline["title"]
 
 
 @pytest.mark.django_db
 def test_timeline_update_validation(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
-    update_url = reverse('labs:chronolawgic-api-update', args=[str(tl.uuid)])
+    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
     response = auth_client.post(update_url, {"timeline": {
         "description": "And my very best one"
     }}, format='json')
@@ -199,11 +269,11 @@ def test_timeline_update_validation(client, auth_client):
 def test_timeline_delete(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
 
-    response = auth_client.get(retrieve_url + str(tl.uuid))
+    response = auth_client.get(retrieve_url + tl.uuid)
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == timeline["title"]
 
-    delete_url = reverse('labs:chronolawgic-api-delete', args=[str(tl.uuid)])
+    delete_url = reverse('labs:chronolawgic-api-delete', args=[tl.uuid])
 
     # don't allow unauthenticated users
     response = client.delete(delete_url)
