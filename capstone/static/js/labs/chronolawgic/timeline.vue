@@ -12,8 +12,10 @@
         </div>
       </header>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
-        <div class="empty-space"></div>
-        <ul class="inline-list zoom-toggles">
+        <ul class="inline-list toggles">
+          <li class="list-inline-item key"
+              @click="toggleKey"
+              :class="{'selected': keyShown}"><key-icon></key-icon></li>
           <li class="list-inline-item zoom-toggle zoom-in"
               :class="{selectable: !$store.state.minimized}"
               @click="$store.commit('toggleMinimized')">
@@ -27,6 +29,7 @@
         </ul>
       </div>
     </div>
+    <categories v-if="keyShown"></categories>
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section" @click="$store.commit('unExpandMobileEvents')">
@@ -89,10 +92,12 @@
 import MinimizeIcon from '../../../../static/img/icons/minimize-2.svg';
 import MaximizeIcon from '../../../../static/img/icons/maximize-2.svg';
 import AddIcon from '../../../../static/img/icons/plus-circle.svg';
+import KeyIcon from '../../../../static/img/icons/key.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
 import Year from './year';
+import Categories from './categories.vue';
 import {EventBus} from "./event-bus.js";
 
 
@@ -102,10 +107,12 @@ export default {
     AddCaseModal,
     AddEventModal,
     AddIcon,
+    KeyIcon,
     ReadonlyModal,
     Year,
     MinimizeIcon,
     MaximizeIcon,
+    Categories
   },
   computed: {
     title() {
@@ -122,8 +129,6 @@ export default {
       keyShown: false,
       years: {},
       event: null,
-      events: [],
-      cases: [],
       windowWidth: window.innerWidth,
     }
   },
@@ -135,7 +140,10 @@ export default {
       if (this.widthToBreakpoint(newWidth) !== this.widthToBreakpoint(oldWidth)) {
         this.$store.commit('setBreakPoint', this.widthToBreakpoint(newWidth));
       }
-    }
+    },
+    // years () {
+    //   this.repopulateTimeline()
+    // }
   },
   methods: {
     check() {
@@ -196,7 +204,8 @@ export default {
       /*
       there are certainly better ways to do this— this is just the way it came out for the MVP
        */
-
+      console.log("timeline.vue repopulateTimeline")
+      this.years = {}
       const firstYear = this.$store.getters.firstYear;
       const finalYear = this.$store.getters.lastYear;
 
