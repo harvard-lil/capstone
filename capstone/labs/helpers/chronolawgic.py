@@ -5,10 +5,11 @@ def validate_timeline(timeline):
         {'name': 'description', 'type': str, 'required': False},
         {'name': 'cases', 'type': list, 'required': False},
         {'name': 'events', 'type': list, 'required': False},
+        {'name': 'categories', 'type': list, 'required': False},
     ]
 
     event_fields = [
-        {'name': 'id', 'type': int, 'required': True},
+        {'name': 'id', 'type': str, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
@@ -20,7 +21,7 @@ def validate_timeline(timeline):
     ]
 
     case_fields = [
-        {'name': 'id', 'type': int, 'required': True},
+        {'name': 'id', 'type': str, 'required': True},
         {'name': 'name', 'type': str, 'required': True},
         {'name': 'short_description', 'type': str, 'required': False},
         {'name': 'long_description', 'type': str, 'required': False},
@@ -31,6 +32,13 @@ def validate_timeline(timeline):
         {'name': 'url', 'type': str, 'required': False},
         {'name': 'citation', 'type': str, 'required': False},
         {'name': 'categories', 'type': list, 'required': False},
+    ]
+
+    category_fields = [
+        {'name': 'id', 'type': str, 'required': True},
+        {'name': 'name', 'type': str, 'required': True},
+        {'name': 'color', 'type': str, 'required': True},
+        {'name': 'shape', 'type': str, 'required': True},
     ]
 
     bad = []
@@ -77,6 +85,7 @@ def validate_timeline(timeline):
             for case in timeline['cases']:
                 case_extraneous = set(case.keys()) - set(known_case_field_names)
                 if case_extraneous:
+                    import pdb; pdb.set_trace()
                     bad.append("Unexpected case field(s): {}. Expecting {}".format(
                         case_extraneous,
                         known_case_field_names
@@ -88,5 +97,24 @@ def validate_timeline(timeline):
                 if type(case[field['name']]) != field['type']:
                     bad.append("Case Has Wrong Data Type for {}. Should be {}. Value: {}".format(
                              field['name'], field['type'], case[field['name']]))
+
+    if 'categories' in timeline:
+        known_category_field_names = [field['name'] for field in category_fields]
+        for field in category_fields:
+            for category in timeline['categories']:
+                category_extraneous = set(category.keys()) - set(known_category_field_names)
+                if category_extraneous:
+                    bad.append("Unexpected category field(s): {}. Expecting {}".format(
+                        category_extraneous,
+                        known_category_field_names
+                    ))
+
+                if field['name'] not in category:
+                    if field['required']:
+                        bad.append("Case Missing: {}".format(field['name']))
+                    break
+                if type(category[field['name']]) != field['type']:
+                    bad.append("Case Has Wrong Data Type for {}. Should be {}. Value: {}".format(
+                        field['name'], field['type'], category[field['name']]))
 
     return bad
