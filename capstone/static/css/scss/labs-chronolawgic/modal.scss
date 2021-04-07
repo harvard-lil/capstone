@@ -411,3 +411,60 @@ textarea::placeholder {
   }
 }
 
+#categories-modal {
+  position: absolute;
+  z-index: 9999;
+  right: 18em;
+  top: 7.2em;
+  display: grid;
+  grid-template-areas:
+          "shape-label input-label color-label"
+          "row";
+  grid-column-gap: .8em;
+  grid-template-columns: 4em 1fr 2em;
+
+  #shape-label {
+    grid-area: shape-label;
+  }
+
+  #input-label {
+    grid-area: input-label;
+  }
+
+  .vs__search {
+    display: none;
+  }
+  .vs__selected-options {
+    padding: 0;
+  }
+  ul {
+    grid-area: row
+  }
+
+  li.category {
+    display: grid;
+    grid-template-areas: "shape input color";
+    grid-template-columns: 4em 1fr 2em;
+    grid-column-gap: 0.8em;
+  }
+
+  #color-label {
+    grid-area: color-label;
+  }
+
+  .shape-select {
+    grid-area: shape;
+  }
+
+  .shape-name {
+    grid-area: input;
+  }
+
+  .shape-color.v-select {
+    grid-area: color;
+  }
+  .color-square {
+    width: 20px;
+    height: 20px;
+  }
+}
