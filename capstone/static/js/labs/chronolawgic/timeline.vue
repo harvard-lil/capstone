@@ -4,7 +4,8 @@
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
-        <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description" @click="toggleHeader()"></div>
+        <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description"
+             @click="toggleHeader()"></div>
         <div class="my-timelines-link" v-if="$store.state.isAuthor">
           <router-link to="/" class="btn btn-tertiary">
             BACK TO MY TIMELINES
@@ -15,7 +16,10 @@
         <ul class="inline-list toggles">
           <li class="list-inline-item key"
               @click="toggleKey"
-              :class="{'selected': keyShown}"><key-icon></key-icon></li>
+              data-target="#categories-modal"
+              :class="{'selected': keyShown}">
+            <key-icon></key-icon>
+          </li>
           <li class="list-inline-item zoom-toggle zoom-in"
               :class="{selectable: !$store.state.minimized}"
               @click="$store.commit('toggleMinimized')">
@@ -27,9 +31,9 @@
             <maximize-icon></maximize-icon>
           </li>
         </ul>
+        <categories v-if="keyShown"></categories>
       </div>
     </div>
-    <categories v-if="keyShown"></categories>
     <section id="timeline">
       <div class="row timeline-section-titles">
         <div class="caselaw-section" @click="$store.commit('unExpandMobileEvents')">

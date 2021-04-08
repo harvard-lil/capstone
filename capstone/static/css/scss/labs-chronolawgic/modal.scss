@@ -145,10 +145,10 @@ textarea::placeholder {
           "citation   long"
           "date       long"
           "jur        long"
-          "reporter   long";
+          "reporter   long"
+          "category   category";
     grid-template-columns: 1fr 1fr;
     grid-column-gap: .8em;
-    grid-template-columns: 1fr 1fr;
     grid-row-gap: 0.2em;
   }
 
@@ -362,10 +362,12 @@ textarea::placeholder {
   .label {
     color: #878787;
   }
+
   hr {
     border-bottom: 1px dashed #cacaca;
     border-top: 0;
   }
+
   article.info {
     font-family: $font-sans-serif;
 
@@ -412,16 +414,17 @@ textarea::placeholder {
 }
 
 #categories-modal {
-  position: absolute;
   z-index: 9999;
-  right: 18em;
-  top: 7.2em;
-  display: grid;
-  grid-template-areas:
-          "shape-label input-label color-label"
-          "row";
-  grid-column-gap: .8em;
-  grid-template-columns: 4em 1fr 2em;
+  right: 1em;
+  top: 6em;
+
+  .modal-header {
+    background-color: transparent;
+  }
+
+  .categories-modal-dialog {
+    margin: 0 auto;
+  }
 
   #shape-label {
     grid-area: shape-label;
@@ -434,17 +437,19 @@ textarea::placeholder {
   .vs__search {
     display: none;
   }
+
   .vs__selected-options {
     padding: 0;
   }
+
   ul {
     grid-area: row
   }
 
   li.category {
     display: grid;
-    grid-template-areas: "shape input color";
-    grid-template-columns: 4em 1fr 2em;
+    grid-template-areas: "shape input color remove";
+    grid-template-columns: 4em 1fr 4em 1em;
     grid-column-gap: 0.8em;
   }
 
@@ -460,11 +465,35 @@ textarea::placeholder {
     grid-area: input;
   }
 
-  .shape-color.v-select {
+  .shape-color {
     grid-area: color;
   }
+
   .color-square {
     width: 20px;
     height: 20px;
+    display: inline-block;
+  }
+
+  .category-remove {
+    grid-area: remove
+  }
+}
+
+#add-case-modal, #add-event-modal, #categories-modal {
+  .vs__search::placeholder,
+  .vs__dropdown-toggle {
+    background: #f7f7f9 !important;
+    border: 0;
+    border-radius: 0;
+    font-size: 1rem;
+    color: #495057;
+    opacity: 1;
+    text-transform: uppercase;
+  }
+
+  .vs__clear,
+  .vs__open-indicator {
+    fill: $color-medium-gray;
   }
 }

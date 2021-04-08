@@ -1,6 +1,6 @@
 <template>
   <div id="categories-modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
+    <div class="categories-modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">CATEGORIES</h5>
@@ -23,7 +23,6 @@
             <button class="btn btn-primary" @click="addCategoryFields">Add category
               <add-icon></add-icon>
             </button>
-            <button class="btn btn-secondary">Cancel</button>
             <button class="btn btn-primary" @click="saveCategories">Save</button>
           </div>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">

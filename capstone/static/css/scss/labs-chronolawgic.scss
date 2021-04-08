@@ -19,6 +19,7 @@
 
 main.admin {
   .top-menu {
+    right: 0.5em;
     padding: 2em;
     display: grid;
     grid-template-areas: ". title ."
@@ -218,14 +219,14 @@ main#main-app {
 
     .zoom-section {
       grid-area: other-events;
-      background-color: $color-gray;
+      background-color: transparent;
       text-align: right;
+      position: fixed;
+      right: 0.5em;
     }
 
 
     .toggles {
-      position: fixed;
-      right: 0.5em;
       z-index: 999;
 
       svg {
@@ -411,6 +412,7 @@ main#main-app {
     grid-template-columns: 65% 10% 10% 15%;
     min-height: 8rem;
     font-size: 18px;
+
     div.incidental {
       grid-area: incidental;
       justify-content: flex-end;
@@ -448,10 +450,15 @@ main#main-app {
       grid-area: casename;
       display: grid;
       grid-template-columns: 90% 10%;
-      grid-template-areas: "name link";
       font-size: 1.3em;
       line-height: 1.2em;
       padding: 0;
+    }
+
+    .categories {
+      ul, li {
+        margin: 0;
+      }
     }
 
     .case-link {
@@ -468,20 +475,18 @@ main#main-app {
 
     section.subhead {
       padding: 0;
-      grid-area: subhead;
       font-weight: $font-weight-black;
       font-size: 0.75rem;
     }
 
     section.desc {
       padding: 0;
-      grid-area: desc;
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.8em;
       line-height: 1.3em;
       text-transform: none;
-      max-height: 8em;
+      max-height: 5em;
     }
 
     div.year_scale {
@@ -533,6 +538,7 @@ main#main-app {
       text-overflow: ellipsis;
       min-width: 7rem;
     }
+
     // colors that are too light for white
     .light-color > .event_label {
       color: $color-black;
@@ -824,6 +830,7 @@ main#main-app {
       flex-direction: column;
 
       button.case-button {
+
         article.case {
           float: right;
           width: 14rem;
@@ -923,4 +930,3 @@ main#main-app {
   width: 50px;
   height: 50px;
 }
-
