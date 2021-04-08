@@ -214,4 +214,14 @@
       "description": "{{ formatted_name|elide:db_case|striptags }}"
     }
   </script>
+  {# for staff, show question mark after case citations that don't point to a CAP case #}
+  {% if request.user.is_staff %}
+    <style>
+      a.citation:not([data-case-ids]):after {
+        content: '?';
+        border: 1px gray solid;
+        color: gray;
+      }
+    </style>
+  {% endif %}
 {% endblock %}

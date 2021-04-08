@@ -8,19 +8,20 @@ import csv
 import gzip
 import json
 from datetime import datetime, date
-from reporters_db import EDITIONS, VARIATIONS_ONLY
 
 from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
 
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, normalize_cite
+from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
+from scripts.helpers import normalize_cite
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
     update_elasticsearch_from_queue, run_text_analysis_for_vol
 
 import fabfile
-from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
+from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged, \
+    set_case_text
 
 
 @pytest.mark.django_db
@@ -259,64 +260,51 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db
-def test_extract_citations(case_factory, tmpdir, settings, elasticsearch):
-    from scripts.extract_cites import EDITIONS as processed_editions
-    settings.MISSED_CITATIONS_DIR = str(tmpdir)
-    blocked_by_date = set(k for k in list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys()) if all(c['start_year']>2000 for c in processed_editions[k]))
+def test_extract_citations(case_factory, settings, elasticsearch):
     legitimate_cites = [
         "225 F. Supp. 552",                         # correct
-        ["125 f supp 152", "125 F. Supp. 152"],     # normalized
+        ["1 F Supp 1", "1 F. Supp. 1"],     # normalized
+        ["2 F.-'Supp.- 2", "2 F. Supp. 2"], # extra cruft matched by get_cite_extractor
+        ["125 Yt. 152", "125 Vt. 152"],             # custom reporters added by patch_reporters_db
         ["125 Burnett (Wis.) 152", "125 Bur. 152"], # normalized
         ["1 F. 2d 2", "1 F.2d 2"],                  # not matched as "1 F. 2"
-        "2 1/2 Mass. 1",                            # special volume numbers
-        "3 Suppl. Mass. 2",                         # special volume numbers
-        "1 La.App. 5 Cir. 2",                       # not matched as "1 La.App. 5"
         "2000 WL 12345",                            # vendor cite
     ]
-    legitimate_cites += ["1 %s 1" % c for c in EDITIONS.keys() if c not in blocked_by_date]
-    legitimate_cites += [["1 %s 1" % k, "1 %s 1" % v] for k, vv in VARIATIONS_ONLY.items() for v in vv if k not in blocked_by_date]
     legitimate_cites_normalized = set(normalize_cite(c if type(c) is str else c[1]) for c in legitimate_cites)
     legitimate_cites = [c if type(c) is str else c[0] for c in legitimate_cites]
     illegitimate_cites = [
         "2 Dogs 3",             # unrecognized reporter
         "3 Dogs 4",             # duplicate unrecognized reporter
         "1 or 2",               # not matched as 1 Or. 2
-        "word1 Mass. 2word",    # not matched if part of larger word
-        "1 Mass.\n 2",          # no match across newlines
-        "1 A.3d 1",             # no match to reporter that started publishing in 2010
+        "125 f. supp.-' 152",   # limit on how much cruft matched by get_cite_extractor -- only 2 at end
     ]
-    illegitimate_cites += ["1 %s 1" % c for c in blocked_by_date]
-    case = case_factory(body_cache__text=", some text, ".join(legitimate_cites+illegitimate_cites), decision_date=datetime(2000, 1, 1))
-    fabfile.extract_all_citations()
+    case = case_factory(decision_date=datetime(2000, 1, 1))
+    case_text = ", some text, ".join(legitimate_cites+illegitimate_cites)
+    set_case_text(case, case_text)
+    case.sync_case_body_cache()
     update_elasticsearch_from_queue()
 
     # check extracted cites
     cites = list(ExtractedCitation.objects.all())
     cite_set = set(c.cite for c in cites)
-    normalized_cite_set = set(c.normalized_cite for c in cites)
+    normalized_cite_set = set(c.rdb_normalized_cite for c in cites)
     assert cite_set == set(legitimate_cites)
     assert normalized_cite_set == legitimate_cites_normalized
     assert all(c.cited_by_id == case.pk for c in cites)
-    assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == cite_set
-    assert set(c['normalized_cite'] for c in CaseDocument.get(id=case.pk).extractedcitations) == normalized_cite_set
+    assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extracted_citations) == cite_set
+    assert set(c['rdb_normalized_cite'] for c in CaseDocument.get(id=case.pk).extracted_citations) == normalized_cite_set
 
     # remove a cite and add a cite --
     # make sure IDs of unchanged cites are still the same
     removed_cite_str = legitimate_cites[0]
     added_cite_str = '123 F. Supp. 456'
-    case.body_cache.text = case.body_cache.text.replace(removed_cite_str, '') + ', some text, ' + added_cite_str
-    case.body_cache.save()
-    fabfile.extract_all_citations()
+    case_text = case_text.replace(removed_cite_str, '') + ', some text, ' + added_cite_str
+    set_case_text(case, case_text)
+    case.sync_case_body_cache()
     new_cites = list(ExtractedCitation.objects.all())
     removed_cite = next(c for c in cites if c.cite == removed_cite_str)
     added_cite = next(c for c in new_cites if c.cite == added_cite_str)
     assert {(c.id, c.cite) for c in new_cites} == ({(c.id, c.cite) for c in cites} | {(added_cite.id, added_cite.cite)}) - {(removed_cite.id, removed_cite.cite)}
-
-    # check missed_citations files
-    misses = json.loads(Path(settings.MISSED_CITATIONS_DIR, "missed_citations-%s.json" % case.volume_id).read_text())[str(case.id)]
-    assert misses["not_found"] == {"Dogs": 2}
-    assert misses["blocked"] == {"or": 1}
-    assert misses["invalid_date"] == {k: 1 for k in blocked_by_date | {"A.3d"}}
 
 
 @pytest.mark.django_db
@@ -331,7 +319,7 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
     # full sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=5, update=2, insert=1):
+    with django_assert_num_queries(select=7, update=2, insert=1):
         sync_case_body_cache_for_vol(volume_metadata.barcode)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
@@ -378,43 +366,48 @@ def test_run_text_analysis(transactional_db, reset_sequences, case):
 
 
 @pytest.mark.django_db
-def test_export_citation_graph(case_factory, tmpdir, elasticsearch, extracted_citation_factory, citation_factory, jurisdiction_factory):
+def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_factory, jurisdiction_factory):
     output_folder = Path(str(tmpdir))
+
     (
         cite_from, cite_to, different_jur_cite, cite_to_aka, another_cite_to,
         cite_not_in_cap, duplicate_cite, future_cite
-    ) = ["%s Cite %s" % (i, i) for i in range(1, 9)]
+    ) = ["%s U.S. %s" % (i, i) for i in range(1, 9)]
 
     jur1, jur2, jur3 = [jurisdiction_factory() for _ in range(3)]
 
-    # source case
+    # cases
     case_from = case_factory(citations__cite=cite_from, decision_date=datetime(2000, 1, 1), jurisdiction=jur1)
-    extracted_citation_factory(cite=cite_from, cited_by_id=case_from.id)  # cite to self is ignored
-
-    # dest case should appear
     case_to = case_factory(citations__cite=cite_to, decision_date=datetime(1990, 1, 1), jurisdiction=jur1)
-    extracted_citation_factory(cite=cite_to, cited_by_id=case_from.id)
     citation_factory(cite=cite_to_aka, case=case_to)
-    extracted_citation_factory(cite=cite_to_aka, cited_by_id=case_from.id)  # we should only include this parallel cite once
-
-    # different jur source case
-    different_jur_case = case_factory(citations__cite=different_jur_cite, decision_date=datetime(2000, 1, 1), jurisdiction=jur2)
-    extracted_citation_factory(cite=cite_to, cited_by_id=different_jur_case.id)
-
-    # second dest case should appear
     another_case_to = case_factory(citations__cite=another_cite_to, decision_date=datetime(1990, 1, 1), jurisdiction=jur3)
-    extracted_citation_factory(cite=another_cite_to, cited_by_id=case_from.id)
+    different_jur_case = case_factory(citations__cite=different_jur_cite, decision_date=datetime(2000, 1, 1), jurisdiction=jur2)
+    [case_factory(citations__cite=duplicate_cite, jurisdiction=jur1) for _ in range(3)]  # ambiguous cases
+    case_factory(citations__cite=future_cite, decision_date=datetime(2010, 1, 1), jurisdiction=jur1)  # future case
 
-    # multiple cases with same cite should be filtered out
-    [case_factory(citations__cite=duplicate_cite, jurisdiction=jur1) for _ in range(3)]
-    extracted_citation_factory(cite=duplicate_cite, cited_by_id=case_from.id)
+    # case text to extract
+    set_case_text(case_from, f"""
+        Cite to self ignored during extraction: {cite_from}
+        Cite to another case included, but only once: {cite_to}, {cite_to_aka}
+        Cite to yet another case: {another_cite_to}
+        Ambiguous cites not included: {duplicate_cite}
+        Unknown cites excluded: {cite_not_in_cap}
+        Cites into the future excluded: {future_cite}
+    """)
+    set_case_text(different_jur_case, f"""
+        Cite to case: {cite_to}
+    """)
 
-    # cites matching zero cases should be filtered out
-    extracted_citation_factory(cite=cite_not_in_cap, cited_by_id=case_from.id)
+    # extract cites
+    case_from.sync_case_body_cache()
+    different_jur_case.sync_case_body_cache()
 
-    # citations to future cases should be filtered out
-    case_factory(citations__cite=future_cite, decision_date=datetime(2010, 1, 1), jurisdiction=jur1)
-    extracted_citation_factory(cite=future_cite, cited_by_id=case_from.id)
+    # all cites found
+    extracted = case_from.extracted_citations.all()
+    assert set(e.cite for e in extracted) == {
+        cite_to, cite_to_aka, another_cite_to,
+        duplicate_cite, cite_not_in_cap, future_cite
+    }
 
     # perform export
     fabfile.export_citation_graph(output_folder=str(output_folder))

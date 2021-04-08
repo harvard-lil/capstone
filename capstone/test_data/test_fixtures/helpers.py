@@ -74,7 +74,6 @@ def xml_equal(s1, s2, **kwargs):
     return elements_equal(e1, e2, **kwargs)
 
 
-# helpers
 def get_timestamp(case):
     from capdb.models import CaseLastUpdate
     [[t]] = CaseLastUpdate.objects.filter(case_id=case.id).values_list('timestamp')
@@ -89,3 +88,10 @@ def check_timestamps_changed(case, timestamp):
 
 def check_timestamps_unchanged(case, timestamp):
     assert get_timestamp(case) == timestamp
+
+
+def set_case_text(case, text):
+    page = case.structure.pages.first()
+    page.blocks[1]["tokens"][3] = text
+    page.blocks[2]["tokens"][3] = ""
+    page.save()

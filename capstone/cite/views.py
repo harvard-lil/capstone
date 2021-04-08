@@ -34,10 +34,10 @@ from natsort import natsorted
 from capapi import serializers
 from capapi.documents import CaseDocument, ResolveDocument
 from capapi.authentication import SessionAuthentication
-from capapi.resources import link_to_cites, api_request
+from capapi.resources import api_request
 from capapi.views.api_views import CaseDocumentViewSet
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseFont, PageStructure, EditLog, \
-    ExtractedCitation, CorrectionLog
+    CorrectionLog
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
@@ -238,12 +238,6 @@ def case_editor(request, case_id):
                 if pages_to_save:
                     PageStructure.objects.bulk_update(pages_to_save, ['blocks'])
                     case.sync_case_body_cache(blocks_by_id=PageStructure.blocks_by_id(pages))
-
-                    # re-extract citations
-                    existing_cites = {c.cite: c for c in ExtractedCitation.objects.filter(cited_by=case)}
-                    new_cites = {c.cite: c for c in case.extract_citations()[0]}
-                    ExtractedCitation.objects.filter(id__in=[v.id for k, v in existing_cites.items() if k not in new_cites]).delete()
-                    ExtractedCitation.objects.bulk_create([v for k, v in new_cites.items() if k not in existing_cites])
                 case.save()
                 case.reindex()  # manual reindex for instant results
 
@@ -410,8 +404,6 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     case_html = None
     if serialized_data['casebody']['status'] == 'ok':
         case_html = serialized_data['casebody']['data']
-        # link all captured cites
-        case_html = link_to_cites(case_html, serialized_data['cites_to'])
 
     if settings.GEOLOCATION_FEATURE and request.META.get('HTTP_X_FORWARDED_FOR'):
         # Trust x-forwarded-for in this case because we don't mind being lied to, and would rather show accurate

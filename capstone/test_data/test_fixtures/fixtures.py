@@ -388,7 +388,12 @@ def inline_image_src():
 def elasticsearch(settings):
     settings.MAINTAIN_ELASTICSEARCH_INDEX = True
     # retry for 60 seconds to make sure the Elasticsearch server is up
-    retry_call(lambda: fabfile.rebuild_search_index(force=True),
-               tries=60, delay=1, exceptions=ConnectionError)
+    retry_call(
+        lambda: fabfile.rebuild_search_index(force=True, indexes="cases,resolve", populate="false"),
+        tries=60,
+        delay=1,
+        exceptions=ConnectionError)
+    # populate cases index separately so we don't ingest all of courtlistener into resolve index
+    fabfile.populate_search_index()
     yield
     call_command('search_index', '--delete', '-f')

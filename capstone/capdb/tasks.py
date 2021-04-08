@@ -1,17 +1,12 @@
-import re
-import json
 from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
-from pathlib import Path
 
 from celery import shared_task
 from celery.exceptions import Reject
 from elasticsearch import ElasticsearchException
-from elasticsearch.helpers import BulkIndexError
 from urllib3.exceptions import ReadTimeoutError
-from django.db import connections
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
 from django.utils import timezone
 
 from capdb.models import *
@@ -179,6 +174,8 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
         to_update = []
         to_create = []
         all_analyses = []
+        all_cites_to_delete = []
+        all_cites_to_create = []
         query = volume.case_metadatas.select_related('body_cache')
 
         # full rendering of HTML/XML
@@ -188,7 +185,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
             fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
             labels_by_block_id = PageStructure.labels_by_block_id(pages)
             update_fields = ['html', 'xml', 'text', 'json']
-            query = query.select_related('structure')
+            query = query.select_related('structure').prefetch_related('citations', 'extracted_citations')
 
         # just rendering text/json
         else:
@@ -198,7 +195,12 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
 
         # do processing
         for case_metadata in query:
-            changed, analyses = case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender, save=False)
+            changed, analyses, cites_to_delete, cites_to_create = case_metadata.sync_case_body_cache(
+                blocks_by_id,
+                fonts_by_id,
+                labels_by_block_id,
+                rerender=rerender,
+                save=False)
             if changed:
                 all_analyses.extend(analyses)
                 body_cache = case_metadata.body_cache
@@ -206,6 +208,8 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
                     to_update.append(body_cache)
                 else:
                     to_create.append(body_cache)
+                all_cites_to_create += cites_to_create
+                all_cites_to_delete += cites_to_delete
 
         # save
         if to_create:
@@ -214,6 +218,10 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
             CaseBodyCache.objects.bulk_update(to_update, update_fields)
         if all_analyses:
             CaseAnalysis.bulk_upsert(all_analyses)
+        if all_cites_to_delete:
+            ExtractedCitation.objects.filter(id__in=[c.id for c in all_cites_to_delete]).delete()
+        if all_cites_to_create:
+            ExtractedCitation.objects.bulk_create(all_cites_to_create)
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
@@ -419,45 +427,3 @@ def retrieve_images_from_cases(self, volume_id, update_existing=True):
 
         for case in cases:
             case.retrieve_and_store_images()
-
-
-@shared_task(bind=True, acks_late=True)
-def extract_citations_per_vol(self, volume_id):
-    with record_task_status_for_volume(self, volume_id):
-
-        cases = (CaseMetadata.objects
-                 .filter(volume_id=volume_id, in_scope=True)
-                 .exclude(body_cache=None)
-                 .select_related('body_cache')
-                 .prefetch_related('citations')
-                 .only('body_cache__text'))
-        comparison_fields = ('normalized_cite', 'page_number_original', 'volume_number_original', 'reporter_name_original', 'cited_by_id', 'cite')
-
-        extracted_citations = []  # successfully extracted citations
-        citation_misses_per_case = {}  # extracted possible citations with errors
-        for case in cases:
-            case_citations, misses = case.extract_citations()
-            extracted_citations.extend(case_citations)
-            citation_misses_per_case[case.id] = misses
-
-        # update cites for volume --
-        # fetch all existing cites for volume, delete any where the comparison_fields don't match,
-        # and save any new ones
-        existing_cites = {
-            tuple(getattr(c, f) for f in comparison_fields): c
-            for c in ExtractedCitation.objects.filter(cited_by__volume_id=volume_id)
-        }
-        extracted_citations_to_save = []
-        for c in extracted_citations:
-            key = tuple(getattr(c, f) for f in comparison_fields)
-            if key in existing_cites:
-                del existing_cites[key]
-            else:
-                extracted_citations_to_save.append(c)
-        with transaction.atomic(using='capdb'):
-            ExtractedCitation.objects.bulk_create(extracted_citations_to_save)
-            ExtractedCitation.objects.filter(pk__in=[c.id for c in existing_cites.values()]).delete()
-
-        # write possible cites with errors
-        Path(settings.MISSED_CITATIONS_DIR).mkdir(exist_ok=True)
-        Path(settings.MISSED_CITATIONS_DIR, "missed_citations-%s.json" % volume_id).write_text(json.dumps(citation_misses_per_case))

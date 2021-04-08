@@ -4,6 +4,7 @@ from datetime import datetime
 from collections import OrderedDict, defaultdict
 from pathlib import Path
 
+from django.utils.functional import partition
 from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,6 +21,7 @@ from capapi.middleware import add_cache_header
 from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
+from scripts.helpers import normalize_cite
 from user_data.models import UserHistory
 
 
@@ -109,7 +111,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
         'cite': 'citations.normalized_cite',
-        'cites_to': 'extractedcitations.normalized_cite',
+        'cites_to': 'extracted_citations.normalized_cite',
+        'cites_to_id': 'extracted_citations.target_cases',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
@@ -197,7 +200,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
         if not id.isdigit():
-            normalized_cite = models.normalize_cite(id)
+            normalized_cite = normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)
@@ -229,6 +232,14 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         return response
 
     def list(self, request, *args, **kwargs):
+        # cites_to can contain citations or IDs, so split out IDs into separate
+        # cites_to_id parameter
+        if 'cites_to' in request.query_params:
+            request._request.GET = params = request._request.GET.copy()
+            cites_to, cites_to_id = partition(lambda c: c.isdigit(), params.getlist('cites_to'))
+            params.setlist('cites_to', cites_to)
+            params.setlist('cites_to_id', cites_to_id)
+
         response = super(CaseDocumentViewSet, self).list(request, *args, **kwargs)
 
         if request.accepted_renderer.format == 'csv':

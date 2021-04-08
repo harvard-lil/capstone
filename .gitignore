@@ -24,6 +24,7 @@ capstone/test_data/ngrams/
 capstone/test_data/case-images/
 capstone/test_data/GeoLite2-City.mmdb
 capstone/test_data/downloads/
+capstone/.hyperscan
 !capstone/test_data/downloads/fake_volume.pdf
 !capstone/test_data/downloads/README.md
 *.ipynb*

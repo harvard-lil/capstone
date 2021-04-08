@@ -1,6 +1,9 @@
 FROM registry.lil.tools/library/python:3.7-buster
 ENV PYTHONUNBUFFERED 1
 
+# Enable apt-get -t buster-backports
+RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+
 # Get build dependencies and packages required by the app
 # FIRST LINE:
 # redis-server for pytest-redis (https://github.com/ClearcodeHQ/pytest-redis/issues/108)
@@ -13,10 +16,13 @@ ENV PYTHONUNBUFFERED 1
 #  ldd /node_modules/puppeteer/.local-chromium/linux-672088/chrome-linux/chrome | grep not
 # and then looking for relevant packages listed in
 #  https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
+# FOURTH LINE:
+# libhyperscan-dev for pip hyperscan package
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
     && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
-    && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3
+    && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
+    && apt-get -t buster-backports install -y libhyperscan-dev
 
 # pip
 RUN mkdir /app

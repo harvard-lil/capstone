@@ -43,19 +43,19 @@
 
     {% if text %}
       <div class="col-centered col-lg-8 col-sm-10">
-        {% if citations %}
+        {% if results %}
           <p id="results_count_focus" tabindex="-1" class="hitcount">Extracted citation results</p>
           <form method="POST">
-            {% for citation in citations %}
+            {% for result in results %}
               <div class="result">
                 <div class="result-title">
-                  "{{ citation.before }}
-                  <span class="font-weight-bold">{{ citation.cite }}</span>
-                  {{ citation.after }}"
+                  "{{ result.before }}
+                  <span class="font-weight-bold">{{ result.cite }}</span>
+                  {{ result.after }}"
                 </div>
                 <ul>
-                  {% if citation.cases %}
-                    {% for case in citation.cases %}
+                  {% if result.cases %}
+                    {% for case in result.cases %}
                       <li>
                         {% if case.pdf_available %}
                           <input type="checkbox" name="case_ids" value="{{ case.pk }}" id="case-id-{{ case.pk }}"
