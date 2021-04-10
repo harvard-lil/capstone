@@ -90,8 +90,8 @@
                       transition=""
                       label="name"
                       v-model="newCase.categories"
-                      placeholder="Category"
-                      :options="categories">
+                      placeholder="Categories"
+                      :options="$store.state.categories">
               <template #selected-option="{ color, shape, name }">
                 <shape-component :width="20" :color="color" :shapetype="shape"></shape-component>
                 <span v-text="name"></span>
@@ -279,7 +279,9 @@ export default {
     hydrateCategories(categories = []) {
       let hydratedCats = [];
       for (let i = 0; i < categories.length; i++) {
-        hydratedCats.push(store.getters.category(categories[i]))
+        let cat = store.getters.category(categories[i])
+        if (cat)
+          hydratedCats.push(cat)
       }
       return hydratedCats
     },

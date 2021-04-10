@@ -1,4 +1,3 @@
-
 def validate_timeline(timeline):
     timeline_fields = [
         {'name': 'title', 'type': str, 'required': True},
@@ -59,7 +58,7 @@ def validate_timeline(timeline):
             break
         if type(timeline[field['name']]) != field['type']:
             bad.append("Wrong Data Type for {}. Should be {}. Value: {}".format(
-                     field['name'], field['type'], timeline[field['name']]))
+                field['name'], field['type'], timeline[field['name']]))
 
     if 'events' in timeline:
         known_event_field_names = [field['name'] for field in event_fields]
@@ -77,7 +76,7 @@ def validate_timeline(timeline):
                     break
                 if type(event[field['name']]) != field['type']:
                     bad.append("Event Has Wrong Data Type for {}. Should be {}. Value: {}".format(
-                             field['name'], field['type'], event[field['name']]))
+                        field['name'], field['type'], event[field['name']]))
 
     if 'cases' in timeline:
         known_case_field_names = [field['name'] for field in case_fields]
@@ -85,7 +84,6 @@ def validate_timeline(timeline):
             for case in timeline['cases']:
                 case_extraneous = set(case.keys()) - set(known_case_field_names)
                 if case_extraneous:
-                    import pdb; pdb.set_trace()
                     bad.append("Unexpected case field(s): {}. Expecting {}".format(
                         case_extraneous,
                         known_case_field_names
@@ -96,7 +94,7 @@ def validate_timeline(timeline):
                     break
                 if type(case[field['name']]) != field['type']:
                     bad.append("Case Has Wrong Data Type for {}. Should be {}. Value: {}".format(
-                             field['name'], field['type'], case[field['name']]))
+                        field['name'], field['type'], case[field['name']]))
 
     if 'categories' in timeline:
         known_category_field_names = [field['name'] for field in category_fields]
