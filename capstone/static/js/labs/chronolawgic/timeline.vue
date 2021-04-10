@@ -15,6 +15,7 @@
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
         <ul class="inline-list toggles">
           <li class="list-inline-item key"
+              v-if="$store.state.isAuthor || ($store.state.categories && $store.state.categories.length)"
               @click="toggleKey"
               data-target="#categories-modal"
               :class="{'selected': keyShown}">
