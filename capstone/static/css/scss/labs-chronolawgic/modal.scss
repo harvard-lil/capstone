@@ -1,3 +1,12 @@
+.modal-dialog {
+  border: 0;
+  box-shadow: none;
+}
+
+.modal-content {
+  border: 2px solid $color-black;
+}
+
 .form-errors {
   color: red;
 }
@@ -59,9 +68,7 @@ textarea::placeholder {
 
 .modal-dialog {
   font-family: $font-monospace;
-  border: 2px solid $color-black;
   box-sizing: border-box;
-  box-shadow: 0 4px 4px 3px rgba(0, 0, 0, 0.36);
   max-width: 700px;
   max-height: 80%;
 
@@ -145,7 +152,7 @@ textarea::placeholder {
           "citation   long"
           "date       long"
           "jur        long"
-          "reporter   long"
+          "court      long"
           "category   category";
     grid-template-columns: 1fr 1fr;
     grid-column-gap: .8em;
@@ -242,8 +249,15 @@ textarea::placeholder {
     grid-area: jur;
   }
 
-  #field-group-reporter {
-    grid-area: reporter;
+  #field-group-court {
+    grid-area: court;
+  }
+
+  #field-group-categories {
+    grid-area: category;
+    span {
+      text-transform: none;
+    }
   }
 
   .results-list {
@@ -392,7 +406,7 @@ textarea::placeholder {
     .modal-title {
       font-family: $font-serif;
       font-weight: normal;
-      padding: 0.5em 1em;
+      padding: 0.5em 0.8em;
       white-space: normal;
     }
 
@@ -411,15 +425,29 @@ textarea::placeholder {
   p {
     font-family: $font-serif;
   }
+
+  .category-name {
+    margin-left: 0.2em;
+    font-family: $font-monospace;
+    font-size: 0.8em;
+  }
 }
 
 #categories-modal {
-  z-index: 9999;
-  right: 1em;
-  top: 6em;
+  min-width: 200px;
 
   .modal-header {
     background-color: transparent;
+    border-bottom: 1px solid $color-black;
+
+    .close {
+      border-left: 1px solid $color-black;
+    }
+  }
+
+  .modal-content {
+    box-shadow: 0 2px 3px 0 #e1e1e1;
+    border: 0;
   }
 
   .categories-modal-dialog {
@@ -427,11 +455,9 @@ textarea::placeholder {
   }
 
   #shape-label {
-    grid-area: shape-label;
   }
 
   #input-label {
-    grid-area: input-label;
   }
 
   .vs__search {
@@ -443,7 +469,8 @@ textarea::placeholder {
   }
 
   ul {
-    grid-area: row
+    grid-area: row;
+    margin-bottom: 0;
   }
 
   li.category {
@@ -451,10 +478,36 @@ textarea::placeholder {
     grid-template-areas: "shape input color remove";
     grid-template-columns: 4em 1fr 4em 1em;
     grid-column-gap: 0.8em;
+    margin-bottom: 0.5em;
+    text-align: left;
   }
 
-  #color-label {
-    grid-area: color-label;
+  .category-readonly {
+    text-align: left;
+    margin-bottom: 0.8em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .name {
+      margin-left: 0.5em;
+    }
+  }
+
+  .btn-group {
+    margin-top: 1.2em;
+    margin-bottom: 0;
+    .btn:first-child {
+      float: left;
+      text-decoration: none;
+      svg {
+        margin-bottom: 7px;
+      }
+    }
+    .btn-primary {
+      padding: 0.3em 0.5em;
+    }
   }
 
   .shape-select {
@@ -463,6 +516,7 @@ textarea::placeholder {
 
   .shape-name {
     grid-area: input;
+    font-family: $font-serif;
   }
 
   .shape-color {
@@ -495,5 +549,13 @@ textarea::placeholder {
   .vs__clear,
   .vs__open-indicator {
     fill: $color-medium-gray;
+  }
+
+  .vs__dropdown-menu {
+    min-width: auto;
+  }
+
+  .vs__dropdown-toggle {
+    height: 100%;
   }
 }

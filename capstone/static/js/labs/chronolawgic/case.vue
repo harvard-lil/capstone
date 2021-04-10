@@ -9,7 +9,7 @@
     <article class="case">
       <header>
           <span class="categories"
-                v-if="case_data.categories && case_data.categories.length">
+                v-if="categories && categories.length">
             <ul class="list-inline">
               <li class="list-inline-item"
                   v-for="category in categories"
@@ -18,23 +18,25 @@
                 <shape-component :width="20"
                                  :title="category.name"
                                  :color="category.color"
-                                 :shapetype="category.shape"></shape-component>
+                                 :shapetype="category.shape">
+                </shape-component>
               </li>
             </ul>
           </span>
+        <!--this is just for name placement if we don't have categories-->
         <span v-else class="case-name">{{ case_data.name }}</span>
         <a class="case-link" v-if="case_data.url"
            :href="case_data.url" target="_blank" @click.stop>
           <link-case/>
         </a>
-        <span v-if="case_data.categories && case_data.categories.length" class="case-name">{{ case_data.name }}</span>
+        <!--this is just for name placement if we have categories-->
+        <span v-if="categories && categories.length" class="case-name">{{ case_data.name }}</span>
 
       </header>
       <section class="desc">
         {{ case_data.short_description }}
       </section>
     </article>
-
   </button>
 </template>
 
@@ -88,14 +90,23 @@ export default {
     hydrateCategories() {
       this.categories = [];
       for (let i = 0; i < this.case_data.categories.length; i++) {
-        this.categories.push(this.timelineCategories.find(cat => cat.id === this.case_data.categories[i]))
+        let foundCat = this.timelineCategories.find(cat => cat.id === this.case_data.categories[i])
+        if (foundCat) {
+          this.categories.push(foundCat)
+        }
       }
     }
   },
   mounted() {
     if (this.case_data.categories) {
-      this.hydrateCategories()
+      this.hydrateCategories();
     }
+    EventBus.$on('updateCategories', (categories) => {
+      if (!this.case_data.categories)
+        return;
+      this.timelineCategories = categories;
+      this.hydrateCategories();
+    });
   }
 }
 </script>
