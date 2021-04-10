@@ -145,9 +145,6 @@ export default {
         this.$store.commit('setBreakPoint', this.widthToBreakpoint(newWidth));
       }
     },
-    // years () {
-    //   this.repopulateTimeline()
-    // }
   },
   methods: {
     check() {
@@ -208,7 +205,6 @@ export default {
       /*
       there are certainly better ways to do this— this is just the way it came out for the MVP
        */
-      console.log("timeline.vue repopulateTimeline")
       this.years = {}
       const firstYear = this.$store.getters.firstYear;
       const finalYear = this.$store.getters.lastYear;

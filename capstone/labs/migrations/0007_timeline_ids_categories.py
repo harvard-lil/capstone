@@ -5,7 +5,7 @@ from labs.models import get_short_uuid
 
 
 # Move IDS for cases, events, and categories to strings from integers
-def fill_reporter_slug(apps, schema_editor):
+def change_ids(apps, schema_editor):
     Timeline = apps.get_model("labs", "Timeline")
     for timeline in Timeline.objects.all():
         for event in timeline.timeline['events']:
@@ -24,11 +24,28 @@ def fill_reporter_slug(apps, schema_editor):
         timeline.save()
 
 
+def add_categories(apps, schema_editor):
+    Timeline = apps.get_model("labs", "Timeline")
+
+    for timeline in Timeline.objects.all():
+        for event in timeline.timeline['events']:
+            if 'categories' not in event:
+                event['categories'] = []
+        for case in timeline.timeline['cases']:
+            if 'categories' not in case:
+                case['categories'] = []
+        if 'categories' not in timeline.timeline:
+            timeline.timeline['categories'] = []
+
+        timeline.save()
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ('labs', '0006_auto_20210401_1246'),
     ]
 
     operations = [
-        migrations.RunPython(fill_reporter_slug, migrations.RunPython.noop),
+        migrations.RunPython(change_ids, migrations.RunPython.noop),
+        migrations.RunPython(add_categories, migrations.RunPython.noop),
     ]

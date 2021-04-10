@@ -1,9 +1,10 @@
 <template>
   <li class="category">
     <v-select :options="shapes"
+              transition=""
               class="shape-select"
               v-model="content.shape"
-               :filterable="false"
+              :filterable="false"
               :clearable="false"
               label="shape">
       <template #selected-option="{ shape }">
@@ -33,6 +34,9 @@
         </span>
       </template>
     </v-select>
+    <button type="button" @click="$parent.removeCategory(content.id)" class="close category-remove" data-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </li>
 </template>
 
@@ -51,7 +55,7 @@ export default {
   },
   data() {
     return {
-      shapes: ['circle', 'polygon1', 'polygon2', 'rectangle', 'rhombus', 'triangle'],
+      shapes: ['circle', 'polygon1', 'polygon2', 'rhombus', 'triangle'],
       colors: [],
     }
   },
@@ -59,7 +63,6 @@ export default {
     getRandom(someList) {
       return someList[Math.floor(Math.random() * someList.length)]
     },
-
   },
 
   mounted() {

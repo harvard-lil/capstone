@@ -23,8 +23,9 @@ importChoices.colors = [
     "#986d81",
     "#7e84ff",
     "#3656f6",
-    "#00b7db",
+    "#2f2f2f",
     "#3e667a",
+    "#00b7db",
 ]
 
 // jurisdictions
@@ -89,8 +90,13 @@ const store = new Vuex.Store({
             jurisdiction: "",
             reporter: "",
             decision_date: "",
+            categories: [],
         },
-
+        templateCategory: {
+            name: "",
+            shape: "",
+            color: ""
+        },
     },
     mutations: {
         expandMobileEvents(state) {
@@ -195,10 +201,10 @@ const store = new Vuex.Store({
             state.cases.splice(caselaw_index, 1);
             this.dispatch('requestUpdateTimeline');
         },
-        addCategories(state, categories) {
+        saveCategories(state, categories) {
             state.categories = categories;
-            for (let i = 0; i < state.categories; i++) {
-                if (!state.categories[i].id) {
+            for (let i = 0; i < state.categories.length; i++) {
+                if (!(state.categories[i].id)) {
                     state.categories[i].id = store.generateUUID()
                 }
             }
@@ -220,6 +226,7 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         templateCase: state => state.templateCase,
+        templateCategory: state => state.templateCategory,
         firstYear: (state) => {
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
@@ -274,7 +281,10 @@ const store = new Vuex.Store({
         },
         categories: (state) => {
             return state.categories
-        }
+        },
+        category: (state) => (id) => {
+          return state.categories.find(cat => cat.id === id)
+        },
     },
     actions: {
         requestCreateTimeline: function ({commit}) {

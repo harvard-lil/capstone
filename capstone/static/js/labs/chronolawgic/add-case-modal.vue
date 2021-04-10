@@ -70,6 +70,7 @@
                       class="form-control"></textarea>
             </div>
             <v-select transition=""
+                      id="field-group-jurisdiction"
                       label="jurisdiction"
                       placeholder="Jurisdiction"
                       :options="choices.jurisdictions"
@@ -77,11 +78,28 @@
                       v-model="newCase.jurisdiction">
             </v-select>
             <v-select transition=""
+                      id="field-group-court"
                       label="courtName"
                       placeholder="Court"
                       :options="choices.courts"
-                      @input="chooseCourt"
                       v-model="newCase.court">
+            </v-select>
+            <v-select multiple
+                      id="field-group-categories"
+                      :filterable="false"
+                      transition=""
+                      label="name"
+                      v-model="newCase.categories"
+                      placeholder="Category"
+                      :options="categories">
+              <template #selected-option="{ color, shape, name }">
+                <shape-component :width="20" :color="color" :shapetype="shape"></shape-component>
+                <span v-text="name"></span>
+              </template>
+              <template #option="{ color, shape, name }">
+                <shape-component :width="28" :color="color" :shapetype="shape"></shape-component>
+                <span v-text="name"></span>
+              </template>
             </v-select>
           </form>
           <div v-if="errors.length" class="form-errors p-2 mt-2 small">
@@ -120,16 +138,18 @@
 <script>
 import axios from "axios";
 import store from "./store";
-import vSelect from 'vue-select'
-import CaseResult from '../../search/case-result.vue'
+import vSelect from 'vue-select';
+import CaseResult from '../../search/case-result.vue';
 import SearchButton from '../../vue-shared/search-button';
+import ShapeComponent from './shape-component';
 
 export default {
   name: "add-case-modal",
   components: {
     vSelect,
     CaseResult,
-    SearchButton
+    SearchButton,
+    ShapeComponent,
   },
   props: [
     'shown',
@@ -153,6 +173,7 @@ export default {
         }
       },
       showLoading: false,
+      categories: []
     }
   },
   methods: {
@@ -174,6 +195,15 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = this.unbind(this.newCase)
+
+      if (!caselaw.jurisdiction)
+        caselaw.jurisdiction = ''
+
+      if (!caselaw.court)
+        caselaw.court = ''
+
+      // only save category ids
+      caselaw.categories = caselaw.categories.map(category => category.id)
       store.commit('updateCase', caselaw)
       this.closeModal()
     },
@@ -181,6 +211,8 @@ export default {
       this.checkForm();
       if (this.errors.length) return;
       let caselaw = this.unbind(this.newCase)
+      // only save category ids
+      caselaw.categories = caselaw.categories.map(category => category.id)
       store.commit('addCase', caselaw);
       this.closeModal();
     },
@@ -244,8 +276,16 @@ export default {
     unbind(obj) {
       return JSON.parse(JSON.stringify(obj))
     },
+    hydrateCategories(categories = []) {
+      let hydratedCats = [];
+      for (let i = 0; i < categories.length; i++) {
+        hydratedCats.push(store.getters.category(categories[i]))
+      }
+      return hydratedCats
+    },
     setupCase(existingCase) {
       this.newCase = existingCase ? this.unbind(this.case) : this.unbind(store.getters.templateCase);
+      this.newCase.categories = this.hydrateCategories(this.newCase.categories)
     },
     chooseJurisdiction(jur) {
       if (jur)
@@ -256,15 +296,16 @@ export default {
       if (court)
         this.newCase.court = court.courtName
       this.newCase = this.unbind(this.newCase)
-    }
+    },
   },
   watch: {
     case(existingCase) {
       this.setupCase(existingCase)
     }
   },
-  mounted() {
+  beforeMount() {
     this.choices = store.getters.choices;
+    this.categories = store.getters.categories;
     this.setupCase(this.case)
   },
 }

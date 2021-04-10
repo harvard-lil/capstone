@@ -228,7 +228,7 @@ main#main-app {
 
     .toggles {
       z-index: 999;
-
+      margin-bottom: 0;
       svg {
         color: $color-medium-gray;
         display: block;
@@ -337,6 +337,7 @@ main#main-app {
   #timeline {
     background-color: $color-gray;
     padding: 0;
+    margin-top: -10em;
 
     .timeline-section-titles {
       display: grid;
@@ -359,7 +360,7 @@ main#main-app {
         float: right;
         justify-content: flex-end;
         padding-bottom: 3em;
-        padding-top: 2em;
+        padding-top: 12em;
         border-right: 1px solid $color-black;
 
         h6 {
@@ -372,6 +373,10 @@ main#main-app {
         button {
           padding-top: 0;
         }
+      }
+
+      .other-events {
+        padding-top: 10em;
       }
 
       .other-events-section {
@@ -686,7 +691,6 @@ main#main-app {
   }
 
   main#main-app {
-
     .top-menu {
       display: flex;
 
@@ -698,7 +702,6 @@ main#main-app {
 
     div.timeline-section-titles {
       grid-template-columns: 25% 75%;
-      margin-top: 35px;
 
       h6 {
         position: fixed;
