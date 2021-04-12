@@ -74,7 +74,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.event && typeof(this.event.id) === 'number'">
+          <template v-if="this.event && this.event.id">
             <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
               Delete
             </button>
@@ -82,7 +82,7 @@
               Update
             </button>
           </template>
-          <template v-if="!(this.event && typeof(this.event.id) === 'number')">
+          <template v-if="!(this.event) || !(this.event.name)">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
