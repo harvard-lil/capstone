@@ -19,6 +19,7 @@
 
 main.admin {
   .top-menu {
+    right: 0.5em;
     padding: 2em;
     display: grid;
     grid-template-areas: ". title ."
@@ -218,22 +219,16 @@ main#main-app {
 
     .zoom-section {
       grid-area: other-events;
-      background-color: $color-gray;
+      background-color: transparent;
       text-align: right;
-    }
-
-    .zoom-toggles {
       position: fixed;
       right: 0.5em;
-      z-index: 999;
     }
 
-    .zoom-toggle {
-      width: 55px;
-      height: 55px;
-      background-color: #ccc;
-      margin-right: 0;
 
+    .toggles {
+      z-index: 999;
+      margin-bottom: 0;
       svg {
         color: $color-medium-gray;
         display: block;
@@ -241,6 +236,34 @@ main#main-app {
         top: 25%;
         position: relative;
       }
+    }
+
+    .key {
+      grid-area: other-events;
+      cursor: pointer;
+      width: 55px;
+      height: 55px;
+      background-color: $color-white;
+
+      svg {
+        color: $color-black;
+      }
+
+      &.selected, &:hover, &:active, &:focus {
+        svg {
+          transform: rotate(90deg);
+        }
+
+        background-color: $highlight;
+      }
+    }
+
+
+    .zoom-toggle {
+      width: 55px;
+      height: 55px;
+      background-color: #ccc;
+      margin-right: 0;
 
       &.selectable {
         background-color: $color-white;
@@ -314,6 +337,7 @@ main#main-app {
   #timeline {
     background-color: $color-gray;
     padding: 0;
+    margin-top: -10em;
 
     .timeline-section-titles {
       display: grid;
@@ -336,7 +360,7 @@ main#main-app {
         float: right;
         justify-content: flex-end;
         padding-bottom: 3em;
-        padding-top: 2em;
+        padding-top: 12em;
         border-right: 1px solid $color-black;
 
         h6 {
@@ -349,6 +373,10 @@ main#main-app {
         button {
           padding-top: 0;
         }
+      }
+
+      .other-events {
+        padding-top: 10em;
       }
 
       .other-events-section {
@@ -427,10 +455,15 @@ main#main-app {
       grid-area: casename;
       display: grid;
       grid-template-columns: 90% 10%;
-      grid-template-areas: "name link";
       font-size: 1.3em;
       line-height: 1.2em;
       padding: 0;
+    }
+
+    .categories {
+      ul, li {
+        margin: 0;
+      }
     }
 
     .case-link {
@@ -447,28 +480,25 @@ main#main-app {
 
     section.subhead {
       padding: 0;
-      grid-area: subhead;
       font-weight: $font-weight-black;
       font-size: 0.75rem;
     }
 
     section.desc {
       padding: 0;
-      grid-area: desc;
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.8em;
       line-height: 1.3em;
       text-transform: none;
-      max-height: 8em;
+      max-height: 5em;
     }
 
     div.year_scale {
       grid-area: years;
       font-family: $font-family-monospace;
       z-index: 999;
-      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%);
-      background-position: center;
+      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%) center;
       background-size: 250px;
       display: flex;
       justify-content: center;
@@ -513,6 +543,7 @@ main#main-app {
       text-overflow: ellipsis;
       min-width: 7rem;
     }
+
     // colors that are too light for white
     .light-color > .event_label {
       color: $color-black;
@@ -660,7 +691,6 @@ main#main-app {
   }
 
   main#main-app {
-
     .top-menu {
       display: flex;
 
@@ -672,7 +702,6 @@ main#main-app {
 
     div.timeline-section-titles {
       grid-template-columns: 25% 75%;
-      margin-top: 35px;
 
       h6 {
         position: fixed;
@@ -804,6 +833,7 @@ main#main-app {
       flex-direction: column;
 
       button.case-button {
+
         article.case {
           float: right;
           width: 14rem;
@@ -895,6 +925,11 @@ main#main-app {
       }
     }
   }
-
 }
 
+
+// categories
+.shape {
+  width: 50px;
+  height: 50px;
+}

@@ -46,9 +46,11 @@
             <v-select transition=""
                       class="color-dropdown"
                       label="color"
+                      :filterable="false"
+                      :clearable="false"
                       @input="setSelected"
                       v-model="newEvent.color"
-                      :options="choices.colors">
+                      :options="colors">
               <template #selected-option="{ color }">
                 color: <span :style="{backgroundColor: color}" class="color-square">
                   {{ color }}
@@ -72,7 +74,7 @@
           <button type="button" class="btn btn-tertiary" @click.stop="closeModal" data-dismiss="modal">
             Cancel
           </button>
-          <template v-if="this.event && typeof(this.event.id) === 'number'">
+          <template v-if="this.event && this.event.id">
             <button type="button" class="btn btn-primary" @click="deleteEvent" data-dismiss="modal">
               Delete
             </button>
@@ -80,7 +82,7 @@
               Update
             </button>
           </template>
-          <template v-if="!(this.event && typeof(this.event.id) === 'number')">
+          <template v-if="!(this.event) || !(this.event.name)">
             <button type="button" class="btn btn-primary" @click.stop="addEvent"
                     :data-dismiss="$parent.showEvent ? 'none' : 'modal'">ADD
             </button>
@@ -108,14 +110,14 @@ export default {
   },
   data() {
     return {
-      choices: {},
+      colors: [],
       newEvent: {},
       errors: [],
     }
   },
   methods: {
     getRandomColor() {
-      return this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)]
+      return this.colors[Math.floor(Math.random() * this.colors.length)]
     },
     clearContent() {
       this.newEvent = store.getters.templateEvent;
@@ -177,7 +179,7 @@ export default {
     },
   },
   mounted() {
-    this.choices = store.getters.choices;
+    this.colors = store.getters.choices.colors;
     this.setupEvent(this.event)
   }
 }
