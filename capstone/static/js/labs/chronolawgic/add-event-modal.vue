@@ -46,11 +46,9 @@
             <v-select transition=""
                       class="color-dropdown"
                       label="color"
-                      :filterable="false"
-                      :clearable="false"
                       @input="setSelected"
                       v-model="newEvent.color"
-                      :options="colors">
+                      :options="choices.colors">
               <template #selected-option="{ color }">
                 color: <span :style="{backgroundColor: color}" class="color-square">
                   {{ color }}
@@ -110,14 +108,14 @@ export default {
   },
   data() {
     return {
-      colors: [],
+      choices: {},
       newEvent: {},
       errors: [],
     }
   },
   methods: {
     getRandomColor() {
-      return this.colors[Math.floor(Math.random() * this.colors.length)]
+      return this.choices.colors[Math.floor(Math.random() * this.choices.colors.length)]
     },
     clearContent() {
       this.newEvent = store.getters.templateEvent;
@@ -179,7 +177,7 @@ export default {
     },
   },
   mounted() {
-    this.colors = store.getters.choices.colors;
+    this.choices = store.getters.choices;
     this.setupEvent(this.event)
   }
 }
