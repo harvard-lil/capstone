@@ -10,15 +10,6 @@
         </div>
         <div class="modal-body">
           <article class="info">
-            <p v-if="categories && categories.length">
-              <span class="label">Categories: </span>
-              <ul class="list-inline">
-                <li class="list-inline-item" v-for="category in categories" v-bind:key="category.id">
-                  <shape-component :width="24" :color="category.color" :shapetype="category.shape"></shape-component>
-                  <span class="category-name" v-text="category.name"></span>
-                </li>
-              </ul>
-            </p>
             <p v-if="event.url">
               <span class="label">Source: </span>
               <a :href="event.url" target="_blank">{{ domain }}</a>
@@ -63,9 +54,6 @@
 </template>
 
 <script>
-import ShapeComponent from './shape-component.vue';
-import store from './store.js'
-
 export default {
   name: "readonly-modal",
   props: [
@@ -73,42 +61,21 @@ export default {
     'event',
     'shown'
   ],
-  components: {
-    ShapeComponent
-  },
   data() {
     return {
-      domain: '',
-      categories: []
-    }
-  },
-  watch: {
-    event: {
-      handler(newval) {
-        this.event.categories = newval.categories;
-        this.hydrateCategories();
-      },
-      deep: true
+      domain: ''
     }
   },
   methods: {
     closeModal() {
       this.$parent.closeModal();
-    },
-    hydrateCategories() {
-      this.categories = [];
-      if (!this.event.categories) return;
-      for (let i = 0; i < this.event.categories.length; i++) {
-        this.categories.push(store.getters.categories.find(cat => cat.id === this.event.categories[i]))
-      }
-    },
+    }
   },
   mounted() {
     if (this.event.url) {
       let domain = (new URL(this.event.url));
       this.domain = domain.hostname;
     }
-    this.hydrateCategories();
   }
 }
 </script>

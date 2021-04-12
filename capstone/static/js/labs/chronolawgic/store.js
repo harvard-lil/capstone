@@ -23,9 +23,8 @@ importChoices.colors = [
     "#986d81",
     "#7e84ff",
     "#3656f6",
-    "#2f2f2f",
-    "#3e667a",
     "#00b7db",
+    "#3e667a",
 ]
 
 // jurisdictions
@@ -41,7 +40,7 @@ for (let i = 0; i < importChoices.courts.length; i++) {
     courts.push({
         slug: importChoices.courts[i][0],
         courtName: importChoices.courts[i][1]
-    })
+        })
 }
 importChoices.courts = courts;
 
@@ -70,7 +69,7 @@ const store = new Vuex.Store({
         description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
-        categories: [],
+        categories: {}, // Removed from MVP
         events: [],
         cases: [],
         templateEvent: {
@@ -90,27 +89,14 @@ const store = new Vuex.Store({
             jurisdiction: "",
             reporter: "",
             decision_date: "",
-            categories: [],
         },
-        templateCategory: {
-            name: "",
-            shape: "",
-            color: ""
-        },
+
     },
     mutations: {
-        expandMobileEvents(state) {
-            state.mobileEventsExpanded = true
-        },
-        setBreakPoint(state, newBreakPoint) {
-            state.breakPoint = newBreakPoint
-        },
-        unExpandMobileEvents(state) {
-            state.mobileEventsExpanded = false
-        },
-        toggleMinimized(state) {
-            state.minimized = !state.minimized
-        },
+        expandMobileEvents(state) { state.mobileEventsExpanded = true },
+        setBreakPoint(state, newBreakPoint) { state.breakPoint = newBreakPoint },
+        unExpandMobileEvents(state) { state.mobileEventsExpanded = false },
+        toggleMinimized(state) { state.minimized =!state.minimized },
         setAvailableTimelines(state, json) {
             state.availableTimelines = json
         },
@@ -130,9 +116,6 @@ const store = new Vuex.Store({
         setAuthor(state, isAuthor) {
             state.isAuthor = isAuthor;
         },
-        setCategories(state, categories) {
-            state.categories = categories;
-        },
         setRequestStatus(state, status) {
             state.requestStatus = status;
         },
@@ -151,13 +134,33 @@ const store = new Vuex.Store({
         },
         addEvent(state, event) {
             // assign id to event
-            event.id = this.generateUUID();
+            let index = -1
+            state.events.forEach((e) => {
+                if (e.id >= index) {
+                    index = e.id + 1
+                }
+            });
+            event.id = index;
+            if (index === -1) {
+                event.id = 0;
+            }
+
             state.events.push(event)
             this.dispatch('requestUpdateTimeline')
         },
         addCase(state, caselaw) {
             // assign id to caselaw
-            caselaw.id = this.generateUUID();
+            let index = -1
+            state.cases.forEach((c) => {
+                if (c.id >= index) {
+                    index = c.id + 1
+                }
+            });
+            caselaw.id = index;
+            if (index === -1) {
+                caselaw.id = 0;
+            }
+
             state.cases.push(caselaw)
             this.dispatch('requestUpdateTimeline')
         },
@@ -200,16 +203,7 @@ const store = new Vuex.Store({
             }
             state.cases.splice(caselaw_index, 1);
             this.dispatch('requestUpdateTimeline');
-        },
-        saveCategories(state, categories) {
-            state.categories = categories;
-            for (let i = 0; i < state.categories.length; i++) {
-                if (!(state.categories[i].id)) {
-                    state.categories[i].id = store.generateUUID()
-                }
-            }
-            this.dispatch('requestUpdateTimeline');
-        },
+        }
     },
     getters: {
         breakPoint: state => state.breakPoint,
@@ -226,7 +220,6 @@ const store = new Vuex.Store({
         notificationMessage: state => state.notificationMessage,
         templateEvent: state => state.templateEvent,
         templateCase: state => state.templateCase,
-        templateCategory: state => state.templateCategory,
         firstYear: (state) => {
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
@@ -278,13 +271,7 @@ const store = new Vuex.Store({
                 cases: state.cases,
                 categories: state.categories
             }
-        },
-        categories: (state) => {
-            return state.categories
-        },
-        category: (state) => (id) => {
-          return state.categories.find(cat => cat.id === id)
-        },
+        }
     },
     actions: {
         requestCreateTimeline: function ({commit}) {
@@ -416,16 +403,7 @@ const store = new Vuex.Store({
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', error)
                 })
-        },
+        }
     }
 });
-
-store.generateUUID = () => {
-            // https://stackoverflow.com/a/2117523/2247227
-            return 'xxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-
 export default store;
