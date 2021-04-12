@@ -10,6 +10,7 @@ from capapi.models import CapUser
 def get_short_uuid():
     return shortuuid.ShortUUID().random(length=10)
 
+
 class Timeline(models.Model):
     created_by = models.ForeignKey(CapUser, on_delete=models.DO_NOTHING, related_name="timeline")
     uuid = models.CharField(max_length=10, default=get_short_uuid, unique=True)
