@@ -321,6 +321,9 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 if len(resolved_by_source['cap']) == 1:
                     resolved_case = resolved_by_source['cap'][0]
                     case = CaseDocument.get(resolved_case['source_id'])
+                else:
+                    for resolved_case in resolved_by_source['cap']:
+                        resolved_case['case_obj'] = CaseMetadata.objects.get(pk=resolved_case['source_id'])
             else:
                 cap_candidates = {
                     c.id: c

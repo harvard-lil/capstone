@@ -1133,7 +1133,7 @@ class CaseMetadata(models.Model):
             Return cite.case.law cite for this case, like /series/volnum/pagenum/.
             If disambiguate is true, return /series/volnum/pagenum/id/.
         """
-        cite = cite or self.citations.first()
+        cite = cite or self.citations.sort_by_type().first()
 
         # try to match "(volnumber) (Series) (pagenumber)"
         m = re.match(r'^(\S+(?: Suppl\.| 1/2)?)\s+([A-Z].+?)\s+(\S+)$', cite.cite)
@@ -1158,6 +1158,9 @@ class CaseMetadata(models.Model):
 
     def get_full_frontend_url(self):
         return reverse('cite_home').rstrip('/') + self.frontend_url
+
+    def get_unambiguous_frontend_url(self):
+        return self.get_frontend_url(disambiguate=True)
 
     def get_pdf_name(self):
         return re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
@@ -1868,7 +1871,7 @@ class CaseXML(BaseXMLModel):
 class CitationQuerySet(TemporalQuerySet):
     def sort_by_type(self):
         """ Sort citations in order of importance. """
-        order = models.Case(*[models.When(id=id, then=pos) for pos, id in enumerate(Citation.citation_types)])
+        order = models.Case(*[models.When(type=cite_type, then=pos) for pos, cite_type in enumerate(Citation.citation_types)])
         return self.order_by(order)
 
 
@@ -1886,7 +1889,7 @@ class Citation(models.Model):
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
-    objects = TemporalQuerySet.as_manager()
+    objects = CitationQuerySet.as_manager()
 
     def __str__(self):
         return str(self.cite)

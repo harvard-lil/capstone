@@ -42,7 +42,7 @@
           <h4 class="case-name">Multiple cases match:</h4>
           <ul>
             {% for case in resolved.cap %}
-              <li><a href="{{ case.frontend_url }}">{{ case.full_cite }}</a></li>
+              <li><a href="{{ case.case_obj.get_unambiguous_frontend_url }}">{{ case.full_cite }}</a></li>
             {% endfor %}
           </ul>
         {% endif %}

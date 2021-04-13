@@ -93,24 +93,29 @@ def test_case_not_found(client, django_assert_num_queries, elasticsearch):
 @pytest.mark.django_db
 def test_cases_multiple(client, django_assert_num_queries, case_factory, elasticsearch):
     """ Test /series/volume/case/ with multiple matching cases """
-    three_cases = [case_factory(
+    cases = [case_factory(
         jurisdiction__whitelisted=True,
         citations__type='official',
         citations__cite='23 Ill. App. 19',
         citations__normalized_cite='23illapp19'
     ) for i in range(3)]
-    first_case = three_cases[0]
+    first_case = cases[0]
 
-    response = client.get(reverse('citation', args=['ill-app', '23', '19'], host='cite'), follow=True)
+    # disambiguation page should work even if cases wrongly end up with same frontend_url
+    assert set(c.frontend_url for c in cases) == {'/ill-app/23/19/'}
 
-    check_response(response, content_includes='Multiple cases match')
-    content = response.content.decode()
-    for case in three_cases:
-        assert case.name_abbreviation in content
+    # disambiguation page includes all case short names
+    check_response(
+        client.get(reverse('citation', args=['ill-app', '23', '19'], host='cite'), follow=True),
+        content_includes=['Multiple cases match']+[c.name_abbreviation for c in cases],
+        content_excludes=first_case.name,
+    )
 
-    # load one of the results
-    response = client.get(reverse('citation', args=['ill-app', '23', '19', first_case.id], host='cite'))
-    check_response(response)
+    # single case pages work with ID appended, even if not matching frontend_url
+    check_response(
+        client.get(reverse('citation', args=['ill-app', '23', '19', first_case.id], host='cite')),
+        content_includes=first_case.name,
+    )
 
 
 @pytest.mark.django_db
