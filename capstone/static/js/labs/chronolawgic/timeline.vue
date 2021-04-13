@@ -2,7 +2,7 @@
   <main id="main-app" ref="main-app-container" :class="{'mobile-event-expanded': $store.getters.mobileEventsExpanded }"
         @keyup.esc="handleEscape">
     <div class="row top-menu">
-      <header :class="{ 'header-section': true, 'expanded': headerExpanded}">
+      <header :class="{ 'header-section': true, 'title': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
         <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description"
              @click="toggleHeader()"></div>
@@ -12,7 +12,9 @@
           </router-link>
         </div>
       </header>
+      <div class="years"></div>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
+        <div class="empty-space"></div>
         <ul class="inline-list toggles">
           <li class="list-inline-item key"
               v-if="$store.state.isAuthor || ($store.state.categories && $store.state.categories.length)"
@@ -36,29 +38,30 @@
       </div>
     </div>
     <section id="timeline">
-      <div class="row timeline-section-titles">
-        <div class="caselaw-section" @click="$store.commit('unExpandMobileEvents')">
-          <button v-if="$store.state.isAuthor" type="button"
-                  @click="openModal(null, 'case')"
-                  class="btn btn-tertiary btn-add-event"
-                  data-toggle="modal"
-                  data-target="#add-case-modal">
-            <add-icon></add-icon>
-          </button>
-          <h6>CASELAW</h6>
+      <div class="year labels">
+        <div class="incidental" @click="$store.commit('unExpandMobileEvents')">
         </div>
-        <div class="other-events" @click="$store.commit('expandMobileEvents')">
-          <div class="other-events-section">
-            <h6>EVENTS</h6>
-            <button v-if="this.$store.state.isAuthor"
-                    @click="openModal(null, 'event')"
-                    type="button"
-                    class="btn btn-tertiary btn-add-event"
-                    data-toggle="modal"
-                    data-target="#add-event-modal">
-              <add-icon class="add-icon"></add-icon>
+        <div class="year_scale">
+          <div class="label_assembly">
+            <button v-if="$store.state.isAuthor" type="button" id="top-add-cases-button"
+              @click="openModal(null, 'case')"
+              class="btn btn-tertiary btn-add-event"
+              data-toggle="modal"
+              data-target="#add-case-modal">
+            <add-icon></add-icon>
+            </button>
+            <h6 id="caselaw-label" @click="$store.commit('unExpandMobileEvents')">CASELAW</h6>
+            <h6 id="events-label" @click="$store.commit('expandMobileEvents')">EVENTS</h6>
+            <button v-if="$store.state.isAuthor" type="button" id="top-add-events-button"
+              @click="openModal(null, 'event')"
+              class="btn btn-tertiary btn-add-event"
+              data-toggle="modal"
+              data-target="#add-case-modal">
+            <add-icon></add-icon>
             </button>
           </div>
+        </div>
+        <div class="spans row" @click="$store.commit('expandMobileEvents')">
         </div>
       </div>
       <year v-for="(year_data, idx) in years" v-bind:key="'year_' + idx"

@@ -214,8 +214,16 @@ main.admin {
 main#main-app {
   .top-menu {
     display: grid;
-    grid-template-areas: "caselaw other-events";
-    grid-template-columns:  70% 30%;
+    grid-template-areas: "caselaw years other-events";
+    grid-template-columns: 55% 30% 15%;
+    min-height: 2rem;
+
+    div.years {
+      grid-area: years;
+      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
+      background-position: center;
+      background-size: 1000px;
+    }
 
     .zoom-section {
       grid-area: other-events;
@@ -223,116 +231,116 @@ main#main-app {
       text-align: right;
       position: fixed;
       right: 0.5em;
-    }
+      z-index: 2000;
+      .toggles {
+        margin-bottom: 0;
+        svg {
+          color: $color-medium-gray;
+          display: block;
+          margin: auto;
+          top: 25%;
+          position: relative;
+        }
+        .key {
+          cursor: pointer;
+          width: 55px;
+          height: 55px;
+          background-color: $color-white;
 
+          svg {
+            color: $color-black;
+          }
 
-    .toggles {
-      z-index: 999;
-      margin-bottom: 0;
-      svg {
-        color: $color-medium-gray;
-        display: block;
-        margin: auto;
-        top: 25%;
-        position: relative;
+          &.selected, &:hover, &:active, &:focus {
+            svg {
+              transform: rotate(90deg);
+            }
+
+            background-color: $highlight;
+          }
+        }
+        .zoom-toggle {
+          width: 55px;
+          height: 55px;
+          background-color: #ccc;
+          margin-right: 0;
+
+          &.selectable {
+            background-color: $color-white;
+            cursor: pointer;
+
+            svg {
+              color: $color-violet;
+            }
+
+            &:hover, &:focus {
+              background-color: $highlight;
+            }
+          }
+        }
       }
     }
 
-    .key {
-      grid-area: other-events;
-      cursor: pointer;
-      width: 55px;
-      height: 55px;
+
+
+    .header-section {
+      height: 100px;
+      padding: 1em;
+      z-index: 1000;
+      grid-area: caselaw;
+    }
+
+
+    .header-section.title {
+      padding: 1em;
       background-color: $color-white;
 
-      svg {
-        color: $color-black;
+      h4 {
+        font-family: $font-serif;
+        font-weight: $font-weight-semibold;
+        font-size: 24px;
       }
 
-      &.selected, &:hover, &:active, &:focus {
-        svg {
-          transform: rotate(90deg);
-        }
-
-        background-color: $highlight;
+      #timeline-title {
+        margin-left: 10px;
+        font-size: 1.8em;
       }
-    }
 
-
-    .zoom-toggle {
-      width: 55px;
-      height: 55px;
-      background-color: #ccc;
-      margin-right: 0;
-
-      &.selectable {
+      #timeline-description {
         background-color: $color-white;
+        margin-left: 10px;
+        font-size: $font-size-sm;
+        line-height: $line-height-sm;
+        width: 80%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
         cursor: pointer;
+      }
+
+      .my-timelines-link {
+        font-size: $font-size-sm;
 
         svg {
-          color: $color-violet;
+          margin-bottom: 5px;
+          stroke-width: 1.5;
         }
+      }
+    }
 
-        &:hover, &:focus {
-          background-color: $highlight;
-        }
+    .header-section.expanded {
+      #timeline-description {
+        font-size: $font-size-sm;
+        line-height: $line-height-sm;
+        width: 80%;
+        overflow: scroll;
+        white-space: pre-wrap;
       }
     }
   }
 
 
-  .header-section {
-    height: 100px;
-    padding: 1em;
-    background-color: $color-white;
-    z-index: 1000;
 
-    &:first-child {
-      border-right: 1px solid $color-black;
-    }
-
-    h4 {
-      font-family: $font-serif;
-      font-weight: $font-weight-semibold;
-      font-size: 24px;
-    }
-
-    #timeline-title {
-      width: 370px;
-      margin-left: 10px;
-      font-size: 1.8em;
-    }
-
-    #timeline-description {
-      margin-left: 10px;
-      font-size: $font-size-sm;
-      line-height: $line-height-sm;
-      width: 80%;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-
-    .my-timelines-link {
-      font-size: $font-size-sm;
-
-      svg {
-        margin-bottom: 5px;
-        stroke-width: 1.5;
-      }
-    }
-  }
-
-  .header-section.expanded {
-    #timeline-description {
-      font-size: $font-size-sm;
-      line-height: $line-height-sm;
-      width: 80%;
-      overflow: scroll;
-      white-space: pre-wrap;
-    }
-  }
 
   #timeline {
     background-color: $color-gray;
@@ -498,10 +506,11 @@ main#main-app {
       grid-area: years;
       font-family: $font-family-monospace;
       z-index: 999;
-      background: linear-gradient(90deg, #FFF 49.6%, #2F2F2F 49.6%, #2F2F2F 50%, $color-gray 50%) center;
-      background-size: 250px;
+      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%) center;
+      background-size: 1000px;
       display: flex;
       justify-content: center;
+
 
       .year {
         text-align: center;
@@ -615,6 +624,66 @@ main#main-app {
     }
   }
 
+  div.year.labels {
+    display: grid;
+    grid-template-areas: "incidental years spans";
+    grid-template-columns: 55% 30% 15%;
+    min-height: 2rem;
+    background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
+    background-position: center;
+    background-size: 1000px;
+    div.year_scale {
+      padding-top: 15rem;
+      padding-bottom: 3rem;
+      div.label_assembly {
+        display: grid;
+        grid-template-areas: "case_add case_label event_label event_add .";
+        grid-template-columns: 50px 90px 80px 50px 10px;
+        background: transparent;
+
+        h6 {
+          font-family: $font-monospace;
+          font-weight: $font-weight-semibold;
+          padding: 0.3em 0.4em;
+          border-left: 0;
+          border-right: 0;
+          border-top: 1px solid $color-black;
+          border-bottom: 1px solid $color-black;
+          margin-bottom: 0;
+          height: 2em;
+        }
+
+        h6#caselaw-label {
+          text-align: right;
+          grid-area: case_label;
+          border-left: 1px solid $color-black;
+          width: 90px;
+        }
+
+        h6#events-label {
+          text-align: left;
+          grid-area: event_label;
+          border-right: 1px solid $color-black;
+          width: 80px;
+        }
+
+        #top-add-cases-button {
+          grid-area: case_add;
+          padding: 0 !important;
+          border: 0;
+          font-size: 0;
+        }
+
+        #top-add-events-button {
+          grid-area: event_add;
+          padding: 0 !important;
+          border: 0;
+          font-size: 0;
+        }
+      }
+    }
+  }
+
   div.year.placeholder {
     div.year_scale {
       cursor: pointer;
@@ -691,90 +760,60 @@ main#main-app {
   }
 
   main#main-app {
+
     .top-menu {
-      display: flex;
 
-      .zoom-section {
+      .header-section.zoom-section {
+        display: none;
+      }
+      .years {
         display: none;
       }
 
-    }
-
-    div.timeline-section-titles {
-      grid-template-columns: 25% 75%;
-
-      h6 {
+      .header-section.title {
+        height: 3.5rem;
+        padding: 0.125em;
         position: fixed;
-        z-index: 1000;
-      }
-
-      .caselaw-section {
-        h6 {
-          background-color: $highlight;
-        }
-      }
-
-      .other-events-section {
-        h6 {
-          background-color: $color-white;
-        }
-      }
-    }
-
-    .header-section {
-      height: 80px;
-      padding: 0.25em;
-      position: fixed;
-      width: 100%;
-      z-index: 1020;
-      box-shadow: 0 0 10px #DDD;
-      display: inline-table;
-
-      &:first-child {
-        border: none;
-      }
-
-      h4 {
-        font-size: 18px;
-        margin-bottom: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      #timeline-title {
-        width: 90%;
-      }
-
-      #timeline-description {
-        font-size: $font-size-sm;
-        line-height: $line-height-sm;
-        width: 90%;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-
-      .my-timelines-link {
-        display: none;
-      }
-
-      .header-section.expanded {
-        #timeline-title {
+        width: 100%;
+        z-index: 1020;
+        box-shadow: 0 0 10px #DDD;
+        h4#timeline-title {
+          margin-bottom: .25rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           width: 90%;
+          font-size: 1.3rem;
         }
-
         #timeline-description {
+          font-size: $font-size-sm;
+          line-height: $line-height-sm;
           width: 90%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+        .my-timelines-link {
+          display: none;
         }
       }
-    }
 
-    .header-section.expanded {
-      h4 {
-        overflow: visible;
-        white-space: normal;
+      .header-section.title.expanded {
+        height: 90vh;
+        h4#timeline-title {
+          overflow: visible;
+          white-space: normal;
+        }
+        #timeline-description {
+          font-size: $font-size-sm;
+          line-height: $line-height-sm;
+          width: 90%;
+          text-overflow: revert;
+          overflow: scroll;
+          white-space: revert;
+          cursor: pointer;
+        }
       }
     }
 
@@ -812,6 +851,30 @@ main#main-app {
             .event_label {
               display: none;
             }
+          }
+        }
+      }
+    }
+
+
+    div.year.labels {
+      div.year_scale {
+        padding-top: 12.5rem;
+        div.label_assembly {
+         grid-template-areas: ". case_label event_label .";
+         grid-template-columns: 50px 50px 45px 60px;
+         h6 {
+            font-size: 50%;
+         }
+         h6#caselaw-label {
+            width: 50px;
+            padding: 0.3em 0.7em;
+           background-color: $highlight;
+          }
+          h6#events-label {
+            width: 45px;
+            padding: 0.3em 0.8em;
+            background-color: $color-white;
           }
         }
       }
@@ -859,21 +922,8 @@ main#main-app {
       div.timeline-section-titles {
         grid-template-columns: 25% 75%;
         margin-top: 35px;
-
-        .caselaw-section {
-          h6 {
-            background-color: $color-white;
-          }
-        }
-
-        .other-events-section {
-          h6 {
-            background-color: $highlight;
-          }
-        }
       }
     }
-
     div.year {
       width: 100%;
       display: grid;
@@ -898,12 +948,10 @@ main#main-app {
           }
         }
       }
-
       div.event-preview {
         margin-left: auto;
         margin-right: auto;
       }
-
       div.case_placeholder {
         margin-left: auto;
         margin-right: auto;
@@ -912,15 +960,25 @@ main#main-app {
         height: 3rem;
         width: 3rem;
         text-align: center;
-
         .case_count {
           font-weight: $font-weight-black;
           font-size: 1.25rem;
         }
-
         .case_count:before {
           content: "\a";
           white-space: pre;
+        }
+      }
+    }
+    div.year.labels {
+      div.year_scale {
+        div.label_assembly {
+         h6#caselaw-label {
+           background-color: $color-white;
+          }
+          h6#events-label {
+            background-color: $highlight;
+          }
         }
       }
     }
