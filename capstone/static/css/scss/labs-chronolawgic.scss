@@ -227,54 +227,61 @@ main#main-app {
 
     .zoom-section {
       grid-area: other-events;
-      background-color: transparent;
-      text-align: right;
-      position: fixed;
-      right: 0.5em;
-      z-index: 2000;
-      .toggles {
-        margin-bottom: 0;
-        svg {
-          color: $color-medium-gray;
-          display: block;
-          margin: auto;
-          top: 25%;
-          position: relative;
-        }
-        .key {
-          cursor: pointer;
-          width: 55px;
-          height: 55px;
-          background-color: $color-white;
+      background-color: $color-gray;
+
+      #zoom-button-container {
+        text-align: right;
+        position: fixed;
+        right: 0.5em;
+        z-index: 2000;
+
+        .toggles {
+          margin-bottom: 0;
 
           svg {
-            color: $color-black;
+            color: $color-medium-gray;
+            display: block;
+            margin: auto;
+            top: 25%;
+            position: relative;
           }
 
-          &.selected, &:hover, &:active, &:focus {
-            svg {
-              transform: rotate(90deg);
-            }
-
-            background-color: $highlight;
-          }
-        }
-        .zoom-toggle {
-          width: 55px;
-          height: 55px;
-          background-color: #ccc;
-          margin-right: 0;
-
-          &.selectable {
-            background-color: $color-white;
+          .key {
             cursor: pointer;
+            width: 55px;
+            height: 55px;
+            background-color: $color-white;
 
             svg {
-              color: $color-violet;
+              color: $color-black;
             }
 
-            &:hover, &:focus {
+            &.selected, &:hover, &:active, &:focus {
+              svg {
+                transform: rotate(90deg);
+              }
+
               background-color: $highlight;
+            }
+          }
+
+          .zoom-toggle {
+            width: 55px;
+            height: 55px;
+            background-color: #ccc;
+            margin-right: 0;
+
+            &.selectable {
+              background-color: $color-white;
+              cursor: pointer;
+
+              svg {
+                color: $color-violet;
+              }
+
+              &:hover, &:focus {
+                background-color: $highlight;
+              }
             }
           }
         }
@@ -284,15 +291,14 @@ main#main-app {
 
 
     .header-section {
-      height: 100px;
+      min-height: 100px;
       padding: 1em;
       z-index: 1000;
-      grid-area: caselaw;
     }
 
 
     .header-section.title {
-      padding: 1em;
+      grid-area: caselaw;
       background-color: $color-white;
 
       h4 {
@@ -311,7 +317,7 @@ main#main-app {
         margin-left: 10px;
         font-size: $font-size-sm;
         line-height: $line-height-sm;
-        width: 80%;
+        width: 100%;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
@@ -339,75 +345,10 @@ main#main-app {
     }
   }
 
-
-
-
   #timeline {
     background-color: $color-gray;
     padding: 0;
     margin-top: -10em;
-
-    .timeline-section-titles {
-      display: grid;
-      grid-template-areas: "caselaw other-events";
-      grid-template-columns:  70% 30%;
-
-      h6 {
-        font-family: $font-monospace;
-        font-weight: $font-weight-semibold;
-        padding: 0.3em 0.4em;
-        border-top: 1px solid $color-black;
-        border-bottom: 1px solid $color-black;
-        margin-bottom: 0;
-      }
-
-      .caselaw-section {
-        text-align: right;
-        background-color: $color-white;
-        display: flex;
-        float: right;
-        justify-content: flex-end;
-        padding-bottom: 3em;
-        padding-top: 12em;
-        border-right: 1px solid $color-black;
-
-        h6 {
-          height: 2em;
-          width: 90px;
-          float: right;
-          border-left: 1px solid $color-black;
-        }
-
-        button {
-          padding-top: 0;
-        }
-      }
-
-      .other-events {
-        padding-top: 10em;
-      }
-
-      .other-events-section {
-        display: flex;
-        padding-top: 2em;
-
-        h6 {
-          height: 2em;
-          width: 80px;
-          border-right: 1px solid $color-black;
-        }
-
-        button {
-          float: left;
-          padding-top: 0;
-        }
-      }
-    }
-
-  }
-
-  .incidental {
-    background-color: white;
   }
 
   font-family: $font-monospace;
@@ -427,9 +368,11 @@ main#main-app {
     font-size: 18px;
 
     div.incidental {
+      background-color: $color-white;
       grid-area: incidental;
       justify-content: flex-end;
       display: flex;
+      flex-flow: row wrap;
     }
 
     .case-button {
@@ -684,6 +627,16 @@ main#main-app {
     }
   }
 
+  div.year.welcome {
+    min-height: 50vh;
+    div.incidental {
+      padding-left: 2rem;
+      justify-content: flex-start;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
   div.year.placeholder {
     div.year_scale {
       cursor: pointer;
@@ -771,7 +724,7 @@ main#main-app {
       }
 
       .header-section.title {
-        height: 3.5rem;
+        min-height: 3.5rem;
         padding: 0.125em;
         position: fixed;
         width: 100%;
@@ -918,12 +871,6 @@ main#main-app {
   }
 
   main#main-app.mobile-event-expanded {
-    #timeline {
-      div.timeline-section-titles {
-        grid-template-columns: 25% 75%;
-        margin-top: 35px;
-      }
-    }
     div.year {
       width: 100%;
       display: grid;

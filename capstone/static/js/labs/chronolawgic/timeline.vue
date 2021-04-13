@@ -12,29 +12,31 @@
           </router-link>
         </div>
       </header>
-      <div class="years"></div>
+      <div class="header-section years"></div>
       <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
-        <div class="empty-space"></div>
-        <ul class="inline-list toggles">
-          <li class="list-inline-item key"
-              v-if="$store.state.isAuthor || ($store.state.categories && $store.state.categories.length)"
-              @click="toggleKey"
-              data-target="#categories-modal"
-              :class="{'selected': keyShown}">
-            <key-icon></key-icon>
-          </li>
-          <li class="list-inline-item zoom-toggle zoom-in"
-              :class="{selectable: !$store.state.minimized}"
-              @click="$store.commit('toggleMinimized')">
-            <minimize-icon></minimize-icon>
-          </li>
-          <li class="list-inline-item zoom-toggle zoom-out"
-              :class="{selectable: $store.state.minimized}"
-              @click="$store.commit('toggleMinimized')">
-            <maximize-icon></maximize-icon>
-          </li>
-        </ul>
-        <categories v-if="keyShown"></categories>
+        <div id="zoom-button-container">
+          <ul class="inline-list toggles">
+            <li class="list-inline-item key"
+                v-if="$store.state.isAuthor || ($store.state.categories && $store.state.categories.length)"
+                @click="toggleKey"
+                data-target="#categories-modal"
+                :class="{'selected': keyShown}">
+              <key-icon></key-icon>
+            </li>
+            <li class="list-inline-item zoom-toggle zoom-in"
+                :class="{selectable: !$store.state.minimized}"
+                @click="$store.commit('toggleMinimized')">
+              <minimize-icon></minimize-icon>
+            </li>
+            <li class="list-inline-item zoom-toggle zoom-out"
+                :class="{selectable: $store.state.minimized}"
+                @click="$store.commit('toggleMinimized')">
+              <maximize-icon></maximize-icon>
+            </li>
+          </ul>
+          <categories v-if="keyShown"></categories>
+        </div>
+
       </div>
     </div>
     <section id="timeline">
@@ -67,6 +69,21 @@
       <year v-for="(year_data, idx) in years" v-bind:key="'year_' + idx"
             :year_data="year_data"
             :year_value="idx"></year>
+      <div v-if="$store.getters.empty === 'empty'"  class="year welcome">
+        <div v-if="$store.state.isAuthor && !this.$store.getters.isMobile" class="incidental">
+          Welcome to your brand new timeline. Start adding content by clicking on the plus sign next to Cases or Events.
+        </div>
+        <div v-else-if="$store.state.isAuthor && this.$store.getters.isMobile" class="incidental">
+          Welcome to your brand new timeline. We have not yet developed authorship mode for mobile devices. Please
+          let us know if you'd like us to prioritize it.
+        </div>
+        <div v-else class="incidental">The author of this timeline has not yet added any cases or events.</div>
+        <div class="year_scale">
+        </div>
+        <div class="spans">
+        </div>
+      </div>
+
     </section>
 
     <!-- ALL MODALS -->
@@ -195,7 +212,7 @@ export default {
       }
     },
     toggleHeader() {
-      if (this.$store.state.description)
+      if (this.$store.state.description || this.$store.state.title.length > 25)
         this.headerExpanded = !this.headerExpanded;
     },
     toggleKey() {

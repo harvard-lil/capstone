@@ -227,6 +227,12 @@ const store = new Vuex.Store({
         templateEvent: state => state.templateEvent,
         templateCase: state => state.templateCase,
         templateCategory: state => state.templateCategory,
+        empty: (state) => {
+            if (state.requestStatus == 'pending') {
+                return 'pending'
+            }
+            return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
+        },
         firstYear: (state) => {
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
