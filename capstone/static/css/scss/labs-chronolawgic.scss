@@ -815,17 +815,17 @@ main#main-app {
         padding-top: 12.5rem;
         div.label_assembly {
          grid-template-areas: ". case_label event_label .";
-         grid-template-columns: 50px 50px 45px 60px;
+         grid-template-columns: 50px 80px 75px 60px;
          h6 {
-            font-size: 50%;
+            font-size: .85rem;
          }
          h6#caselaw-label {
-            width: 50px;
+            width: 80px;
             padding: 0.3em 0.7em;
            background-color: $highlight;
           }
           h6#events-label {
-            width: 45px;
+            width: 75px;
             padding: 0.3em 0.8em;
             background-color: $color-white;
           }
@@ -902,14 +902,15 @@ main#main-app {
       div.case_placeholder {
         margin-left: auto;
         margin-right: auto;
-        background-color: $color-medium-gray;
+        margin-bottom: 1em;
         font-size: $font-size-sm;
         height: 3rem;
         width: 3rem;
-        text-align: center;
+        align-self: center;
         .case_count {
           font-weight: $font-weight-black;
           font-size: 1.25rem;
+          display: inline-block;
         }
         .case_count:before {
           content: "\a";
