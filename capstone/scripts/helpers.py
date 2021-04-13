@@ -1,4 +1,5 @@
 import hashlib
+import re
 from collections import defaultdict
 from pathlib import Path
 from lxml import etree
@@ -213,6 +214,13 @@ def serialize_xml(xml):
     return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml]) + b'\n'
 
 
+def serialize_html(html):
+    """
+        Write PyQuery object back to HTML.
+    """
+    return html.outer_html()
+
+
 _root_file_system_storage = FileSystemStorage('/')
 
 
@@ -402,3 +410,8 @@ def group_by(collection, key):
     for item in collection:
         out[key(item)].append(item)
     return out
+
+
+def normalize_cite(cite):
+    """Remove spaces and special characters from a citation"""
+    return re.sub(r'[^0-9a-z]', '', cite.lower())

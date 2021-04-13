@@ -513,13 +513,19 @@ def test_filter_case(client, case_factory, elasticsearch):
 def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, elasticsearch):
     search_url = api_reverse("cases-list")
     cases = [case_factory() for _ in range(4)]
-    case_cited = case_factory(citations__cite='1 Mass. 1')
+    cite_text = '1 Mass. 1'
+    case_cited = case_factory(citations__cite=cite_text)
     for c in cases[:-1]:
-        extracted_citation_factory(cited_by=c, cite='1 Mass. 1')
+        extracted_citation_factory(
+            cited_by=c,
+            cite=cite_text,
+            normalized_cite=normalize_cite(cite_text),
+            target_case=case_cited,
+            target_cases=[case_cited.id])
     update_elasticsearch_from_queue()
 
     # get cases by cites_to=citation
-    content = client.get(search_url, {"cites_to": '1 Mass. 1'}).json()
+    content = client.get(search_url, {"cites_to": cite_text}).json()
     assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
 
     # get cases by cites_to=id

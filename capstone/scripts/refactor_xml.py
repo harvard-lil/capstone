@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image
 from pyquery import PyQuery
 from celery import shared_task
-from diff_match_patch import diff_match_patch
+import diff_match_patch
 from lxml import etree
 
 from django.conf import settings
@@ -222,23 +222,20 @@ def diff_strings(text1, text2):
             ...     ('insert', 19, 19, 18, 19)]
             >>> assert diff_strings(blocks_text, case_text) == difflib.SequenceMatcher(None, blocks_text, case_text).get_opcodes()
     """
-    # get diff
-    diff = diff_match_patch().diff_main(text1, text2)
 
     # convert to difflib format
     opcodes = []
     i = 0
     j = 0
-    for opcode, text in diff:
-        text_length = len(text)
-        if opcode == diff_match_patch.DIFF_EQUAL:
+    for opcode, text_length in diff_match_patch.diff(text1, text2, timelimit=0, checklines=False, cleanup_semantic=False):
+        if opcode == "=":
             opcodes.append(('equal', i, i+text_length, j, j+text_length))
             i += text_length
             j += text_length
-        elif opcode == diff_match_patch.DIFF_DELETE:
+        elif opcode == "-":
             opcodes.append(('delete', i, i+text_length, j, j))
             i += text_length
-        elif opcode == diff_match_patch.DIFF_INSERT:
+        elif opcode == "+":
             if opcodes and opcodes[-1][0] == 'delete':
                 prev = opcodes.pop()
                 opcodes.append(('replace', prev[1], prev[2], j, j+text_length))

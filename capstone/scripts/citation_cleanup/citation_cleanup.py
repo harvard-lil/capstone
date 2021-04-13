@@ -5,8 +5,8 @@ from pathlib import Path
 import csv
 from datetime import datetime
 
-from capdb.models import Citation, CaseMetadata, normalize_cite, EditLog
-
+from capdb.models import Citation, CaseMetadata, EditLog
+from scripts.helpers import normalize_cite
 
 """ 
     How to run this script:

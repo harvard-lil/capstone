@@ -9,8 +9,8 @@ from django.conf import settings
 from django.db import connections
 from tqdm import tqdm
 
-from capdb.models import Citation, EditLog, Reporter, CaseMetadata, normalize_cite
-from scripts.helpers import group_by
+from capdb.models import Citation, EditLog, Reporter, CaseMetadata
+from scripts.helpers import group_by, normalize_cite
 
 """
     Usage: fab run_script:scripts.link_scdb

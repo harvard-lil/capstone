@@ -5,13 +5,11 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
     OrderingFilterBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
-from elasticsearch.exceptions import NotFoundError
 from rest_framework.exceptions import ValidationError
 
-from capapi.documents import CaseDocument
 from capdb import models
-from capdb.models import normalize_cite
-from scripts.extract_cites import extract_citations_from_text
+from scripts.helpers import normalize_cite
+from scripts.extract_cites import extract_citations_normalized
 from user_data.models import UserHistory
 
 
@@ -224,8 +222,7 @@ class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
         query_params = super().get_filter_query_params(request, view)
 
         if 'cite' in query_params:
-            query_params['cite']['values'] = [models.normalize_cite(cite) for cite in
-                                              lc_values(query_params['cite']['values'])]
+            query_params['cite']['values'] = [normalize_cite(cite) for cite in lc_values(query_params['cite']['values'])]
 
         if 'court' in query_params:
             query_params['court']['values'] = lc_values(query_params['court']['values'])
@@ -234,19 +231,7 @@ class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
             query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
 
         if 'cites_to' in query_params:
-            old_cites_to = query_params['cites_to']['values']
-            query_params['cites_to']['values'] = []
-            for cite in old_cites_to:
-                # check if case id is passed in
-                if cite.isdigit():
-                    try:
-                        case = CaseDocument.get(id=cite)
-                        # add all citations relating to case
-                        query_params['cites_to']['values'] += [c['normalized_cite'] for c in case.citations]
-                    except NotFoundError:
-                        pass
-                else:
-                    query_params['cites_to']['values'].append(normalize_cite(cite))
+            query_params['cites_to']['values'] = [normalize_cite(c) for c in query_params['cites_to']['values']]
         return query_params
 
 
@@ -332,9 +317,19 @@ class ResolveFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
         query_params = super().get_filter_query_params(request, view)
         if not query_params:
             raise ValidationError("Query parameter 'q' is required")
-        extracted_cites = {normalize_cite(i[1]): i[0] for v in query_params['q']['values'] for i in extract_citations_from_text(v)}
+
+        # extract cites from query string and build lookup of normalized cites -> matched text in query
+        extracted_cites = {}
+        for v in query_params['q']['values']:
+            for cite_text, normalized_cite, rdb_normalized_cite in extract_citations_normalized(v):
+                extracted_cites[normalized_cite] = cite_text
+                extracted_cites[rdb_normalized_cite] = cite_text
+
         if not extracted_cites:
             raise ValidationError("No citations found in query.")
         query_params['q']['values'] = set(extracted_cites)
+
+        # attach lookup to request so it can be used by ResolveDocumentListSerializer
         request.extracted_cites = extracted_cites
+
         return query_params

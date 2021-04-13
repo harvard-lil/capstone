@@ -48,15 +48,13 @@ def test_fetch_relations(case, court, django_assert_num_queries):
 ### Reporter ###
 
 @pytest.mark.django_db
-def test_set_reporter_short_name(case):
-    # set middle of official citation to reflect the generated reporter's short name
+def test_set_reporter_short_name(case_factory):
+    case = case_factory(citations__cite="123 U.S. 456", volume__reporter__short_name="U.S.")
     reporter = case.reporter
     cite = case.citations.get(type="official")
-    cite.cite = cite.cite.replace("U.S.", reporter.short_name)
-    cite.save()
 
     # update reporter short_name
-    new_name = "New Name"
+    new_name = "Mass."
     reporter.set_short_name(new_name)
 
     # everything gets updated
@@ -249,27 +247,19 @@ def test_set_duplicate(reset_sequences, case, elasticsearch):
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 0
 
 @pytest.mark.django_db
-def test_set_reporter(reset_sequences, case, elasticsearch, reporter):
+def test_set_reporter(reset_sequences, case_factory, elasticsearch, reporter_factory):
+    case = case_factory(citations__cite="123 U.S. 456", volume__reporter__short_name="U.S.")
     volume = case.volume
+    new_reporter = reporter_factory(short_name="Mass.")
 
-    old_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
-    # set middle of official citation to reflect the generated reporter's short name
-    for case in volume.case_metadatas.all():
-        cite = case.citations.get(type="official")
-        cite.cite = cite.cite.replace("U.S.", volume.reporter.short_name)
-        cite.save()
-
-    assert volume.reporter.id != reporter.id
     update_elasticsearch_from_queue()
-    assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 0
-    volume.set_reporter(reporter)
-    assert volume.reporter.id == reporter.id
+    assert CaseDocument.search().filter("term", reporter__id=new_reporter.id).count() == 0
+    volume.set_reporter(new_reporter)
+    assert volume.reporter.id == new_reporter.id
     update_elasticsearch_from_queue()
-    assert CaseDocument.search().filter("term", reporter__id=reporter.id).count() == 1
-    new_frontend_url_rep_shorts = set([case.frontend_url.split('/')[1] for case in volume.case_metadatas.all()])
-    assert len(new_frontend_url_rep_shorts) == 1
-    assert list(new_frontend_url_rep_shorts)[0] == slugify(reporter.short_name)
-    assert old_frontend_url_rep_shorts != new_frontend_url_rep_shorts
+    assert CaseDocument.search().filter("term", reporter__id=new_reporter.id).count() == 1
+    case.refresh_from_db()
+    assert case.frontend_url == '/mass/123/456/'
 
 @pytest.mark.django_db
 def test_set_volume_number(reset_sequences, case, elasticsearch):

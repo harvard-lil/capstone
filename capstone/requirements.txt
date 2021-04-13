@@ -165,6 +165,10 @@ coreschema==0.0.4 \
     # via
     #   coreapi
     #   drf-yasg
+courts-db==0.9.11 \
+    --hash=sha256:5c1b626893d644052c2307904f5b73f274932a5f101dd637a7a6d883d25d6aac \
+    --hash=sha256:b3ebfcae196dd332e725fa7ec7ba80dabd8e555968abae56cc874b9198674ee2
+    # via eyecite
 coverage==4.5.2 \
     --hash=sha256:09e47c529ff77bf042ecfe858fb55c3e3eb97aac2c87f0349ab5a7efd6b3939f \
     --hash=sha256:0a1f9b0eb3aa15c990c328535655847b3420231af299386cfe5efc98f9c250fe \
@@ -270,9 +274,11 @@ dictdiffer==0.8.1 \
     --hash=sha256:1adec0d67cdf6166bda96ae2934ddb5e54433998ceab63c984574d187cc563d2 \
     --hash=sha256:d79d9a39e459fe33497c858470ca0d2e93cb96621751de06d631856adfd9c390
     # via -r requirements.in
-diff-match-patch==20181111 \
-    --hash=sha256:a809a996d0f09b9bbd59e9bbd0b71eed8c807922512910e05cbd3f9480712ddb
-    # via -r requirements.in
+diff-match-patch-python==1.0.2 \
+    --hash=sha256:5a833417344def272ad7dee7c5d455cf3aaf4fb0ffb58029d73e29512dd3ed48
+    # via
+    #   -r requirements.in
+    #   eyecite
 django-bootstrap4==0.0.7 \
     --hash=sha256:32ffee49c4c8ca7df543aac8733a5d45ad304078f920a0167819525bd33a955a
     # via -r requirements.in
@@ -401,6 +407,10 @@ execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83
     # via pytest-xdist
+eyecite==2.0.2 \
+    --hash=sha256:b759bbf201063b2f3823da60430793ad60509e3ad74574f4bfd3bb39ad9eaf1b \
+    --hash=sha256:e3af3e1f02421c12547507087b467699f36042b66baa1641a70e3be229b600a6
+    # via -r requirements.in
 fabric3==1.14.post1 \
     --hash=sha256:647e485ec83f30b587862f92374d6affc217f3d79819d1d7f512e42e7ae51e81 \
     --hash=sha256:7c5a5f2eb3079eb6bd2a69931f1ca298844c730ce3fdc68111db16e8857a0408
@@ -434,6 +444,13 @@ future==0.17.1 \
 geoip2==3.0.0 \
     --hash=sha256:5869e987bc54c0d707264fec4710661332cc38d2dca5a7f9bb5362d0308e2ce0 \
     --hash=sha256:99ec12d2f1271a73a0a4a2b663fe6ce25fd02289c0a6bef05c0a1c3b30ee95a4
+    # via -r requirements.in
+hyperscan==0.2.0 \
+    --hash=sha256:10cb8939d7db85d522ed319031ff5ab86fd0133126b986290f01aa83dbfb9ff7 \
+    --hash=sha256:47ef10b4297f9976d257b7f260ae4ae8834e87e1abb7f46cf0707ba496fb6e49 \
+    --hash=sha256:78e97de71896b9fda4368c185e6609e53bb240c85302909ac46e738f14621f40 \
+    --hash=sha256:794eecc13fa9bcf061004340582aab342471fb22b710f92020e3ea508776ff53 \
+    --hash=sha256:fd0d0fe64484443b9e5ee1e8b156a30f2ba91494b1343fae5c943130ff847607
     # via -r requirements.in
 idna==2.8 \
     --hash=sha256:c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407 \
@@ -574,6 +591,7 @@ lxml==4.6.3 \
     --hash=sha256:f8380c03e45cf09f8557bdaa41e1fa7c81f3ae22828e1db470ab2a6c96d8bc23
     # via
     #   -r requirements.in
+    #   eyecite
     #   mincss
     #   pyquery
 mailchimp3==3.0.9 \
@@ -856,6 +874,9 @@ py==1.9.0 \
     # via
     #   pytest
     #   retry
+pyahocorasick==1.4.2 \
+    --hash=sha256:88f79307c74ae6a84f8d88c2522a082f1d21c425762aba7f7e4d14dd431d2fb7
+    # via eyecite
 pyasn1==0.4.5 \
     --hash=sha256:da2420fe13a9452d8ae97a0e478adde1dee153b11ba832a95b223a2ba01c10f7 \
     --hash=sha256:da6b43a8c9ae93bc80e2739efb38cc776ba74a886e3e9318d65fe81a8b8a2c6e
@@ -1105,9 +1126,10 @@ regex==2020.7.14 \
     --hash=sha256:d6cff2276e502b86a25fd10c2a96973fdb45c7a977dca2138d661417f3728341 \
     --hash=sha256:e46d13f38cfcbb79bfdb2964b0fe12561fe633caf964a77a5f8d4e45fe5d2ef7
     # via nltk
-reporters-db==2.0.4 \
-    --hash=sha256:22c1986f046266aa9f81f4322de69e32dbaf51eda8207cd6581892924f47a5b2
-    # via -r requirements.in
+reporters-db==3.0.0 \
+    --hash=sha256:a217611a799f2a8aded48dd63e06108ede0acaabe5c426dc814767a62ace7d4c \
+    --hash=sha256:bf7392857169d4464a4e8ff20b50e84b2b01c6a9aa17c4825d468a210c8eb8ad
+    # via eyecite
 reportlab==3.5.13 \
     --hash=sha256:069f684cd0aaa518a27dc9124aed29cee8998e21ddf19604e53214ec8462bdd7 \
     --hash=sha256:09b68ec01d86b4b120456b3f3202570ec96f57624e3a4fc36f3829323391daa4 \
@@ -1198,6 +1220,7 @@ six==1.15.0 \
     #   aws-sam-translator
     #   bcrypt
     #   cfn-lint
+    #   courts-db
     #   django-elasticsearch-dsl
     #   django-elasticsearch-dsl-drf
     #   django-extensions

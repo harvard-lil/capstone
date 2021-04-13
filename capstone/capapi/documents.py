@@ -19,8 +19,9 @@ def get_index(index_name):
     return index
 
 
-cases_index = get_index("cases_endpoint")
-resolve_index = get_index("resolve_endpoint")
+indexes = {}
+indexes['cases'] = cases_index = get_index("cases_endpoint")
+indexes['resolve'] = resolve_index = get_index("resolve_endpoint")
 
 
 def SuggestField(**kwargs):
@@ -98,11 +99,14 @@ class CaseDocument(Document):
         "type": fields.TextField(),
         "cite": SuggestField(),
         "normalized_cite": fields.KeywordField(),
+        "rdb_normalized_cite": fields.KeywordField(),
     })
 
-    extractedcitations = fields.ObjectField(properties={
+    extracted_citations = fields.ObjectField(properties={
         "cite": fields.KeywordField(),
         "normalized_cite": fields.KeywordField(),
+        "rdb_normalized_cite": fields.KeywordField(),
+        "target_cases": fields.KeywordField(multi=True)
     })
 
     jurisdiction = fields.ObjectField(properties={
@@ -186,7 +190,7 @@ class CaseDocument(Document):
         doc['jurisdiction'] = self.jurisdiction.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text'] = self.casebody_data.text.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
-        doc['cites_to'] = self.extractedcitations
+        doc['cites_to'] = self.extracted_citations
         return doc
 
     def full_cite(self):

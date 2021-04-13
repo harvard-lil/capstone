@@ -82,7 +82,12 @@ def update_postgres_env(db='capdb'):
             {
                 'model': ExtractedCitation,
                 'case_field': 'cited_by_id',
-                'fields': ['cite'],
+                'fields': [
+                    'cite',
+                    'normalized_cite',
+                    'target_cases',
+                    'rdb_normalized_cite',
+                ],
             },
             {
                 'model': CaseAnalysis,
@@ -113,7 +118,7 @@ def update_postgres_env(db='capdb'):
             },
         ]
         def get_change_query(fields):
-            return " or ".join('$1.%s != $2.%s' % (f, f) for f in fields)
+            return " or ".join('$1.%s IS DISTINCT FROM $2.%s' % (f, f) for f in fields)
         for model in last_update_models:
             cursor.execute("""
                     DROP TRIGGER IF EXISTS last_update_trigger ON {table};

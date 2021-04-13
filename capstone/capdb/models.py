@@ -26,16 +26,17 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.safestring import mark_safe
 from django.core.files.base import ContentFile
 
-from capapi.resources import cite_extracting_regex, apply_replacements
+from capapi.resources import apply_replacements
 from capdb.storages import bulk_export_storage, case_image_storage, download_files_storage, pdf_storage
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
+from scripts.extract_cites import extract_citations, extract_whole_cite, canonicalize_cite
 from scripts.extract_images import extract_images
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key, copy_file)
+                             short_id_from_s3_key, copy_file, normalize_cite)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 from elasticsearch.helpers import BulkIndexError
@@ -47,11 +48,6 @@ from scripts.simhash import get_simhash
 def choices(*args):
     """ Simple helper to create choices=(('Foo','Foo'),('Bar','Bar'))"""
     return zip(args, args)
-
-
-def normalize_cite(cite):
-    """Remove spaces and special characters from a citation"""
-    return re.sub(r'[^0-9a-z]', '', cite.lower())
 
 
 def fetch_relations(instance, select_relations=None, prefetch_relations=None):
@@ -515,8 +511,8 @@ class Reporter(models.Model):
     analyst_start_year = models.IntegerField(blank=True, null=True, help_text="Initial start year added by analyst.")
     analyst_end_year = models.IntegerField(blank=True, null=True, help_text="Initial end year added by analyst.")
     volume_count = models.IntegerField(blank=True, null=True)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     hollis = ArrayField(models.CharField(max_length=9), blank=True,
                         help_text="This is going to replace the Hollis model")
@@ -528,7 +524,7 @@ class Reporter(models.Model):
     objects = TemporalQuerySet.as_manager()
 
     def __str__(self):
-        return "%s: %s %s-%s" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '')
+        return "%s: %s (%s-%s) [%s]" % (self.short_name, self.full_name, self.start_year or '', self.end_year or '', self.pk)
 
     class Meta:
         ordering = ['full_name']
@@ -953,7 +949,7 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         """
             Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
         """
-        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extractedcitations', 'citations', 'analysis')
+        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extracted_citations', 'citations', 'analysis')
         if require_body_cache:
             out = out.exclude(body_cache=None)
         return out
@@ -1199,15 +1195,15 @@ class CaseMetadata(models.Model):
             try:
                 body_cache = self.body_cache
             except CaseBodyCache.DoesNotExist:
-                return False, []
+                return False, [], [], []
             json, text = self.get_json_from_html(body_cache.html)
             if body_cache.json != json or body_cache.text != text:
                 body_cache.json, body_cache.text = json, text
                 analyses = self.run_text_analysis(save=save)
                 if save:
                     body_cache.save(update_fields=['text', 'json'])
-                return True, analyses
-            return False, []
+                return True, analyses, [], []
+            return False, [], [], []
 
         structure = self.structure
         if not blocks_by_id or not labels_by_block_id:
@@ -1220,6 +1216,9 @@ class CaseMetadata(models.Model):
         html = renderer.render_html(self)
         xml = renderer.render_xml(self)
         json, text = self.get_json_from_html(html)
+
+        # extract citations and annotate html/xml
+        html, xml, cites_to_delete, cites_to_create = extract_citations(self, html, xml)
 
         ## save
         try:
@@ -1238,8 +1237,10 @@ class CaseMetadata(models.Model):
             analyses = self.run_text_analysis(blocks_by_id, save=save)
             if save:
                 body_cache.save()
-            return True, analyses
-        return False, []
+                ExtractedCitation.objects.filter(id__in=[c.id for c in cites_to_delete]).delete()
+                ExtractedCitation.objects.bulk_create(cites_to_create)
+            return True, analyses, cites_to_delete, cites_to_create
+        return False, [], [], []
 
     def run_text_analysis(self, blocks_by_id=None, save=True):
         """
@@ -1474,11 +1475,6 @@ class CaseMetadata(models.Model):
         elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
         replacements = sorted(self.no_index_elided.items(), reverse=True, key=lambda i: len(i[0]))
         return mark_safe(apply_replacements(text, [(k, elision_span % (k, v)) for k, v in replacements], "", ""))
-
-    def extract_citations(self):
-        # avoid this import until needed, to avoid loading reporters db
-        from scripts.extract_cites import extract_citations
-        return extract_citations(self)
 
 
 class CaseXML(BaseXMLModel):
@@ -1885,6 +1881,8 @@ class Citation(models.Model):
     cite = models.CharField(max_length=10000, db_index=True)
     duplicative = models.BooleanField(default=False)
     normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
+    rdb_cite = models.CharField(max_length=10000, null=True, help_text="Citation in standard reporters-db format")
+    rdb_normalized_cite = models.CharField(max_length=10000, null=True)
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
 
     tracker = FieldTracker()
@@ -1899,8 +1897,19 @@ class Citation(models.Model):
 
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('cite'):
-            self.normalized_cite = normalize_cite(self.cite)
+            self.cite_updated()
         super(Citation, self).save(*args, **kwargs)
+
+    def cite_updated(self):
+        """Update normalized_cite, rdb_cite, and rdb_normalized_cite to match cite."""
+        self.normalized_cite = normalize_cite(self.cite)
+        eyecite_cite = extract_whole_cite(self.cite)
+        if eyecite_cite:
+            self.rdb_cite = canonicalize_cite(eyecite_cite)[1]
+            self.rdb_normalized_cite = normalize_cite(self.rdb_cite)
+        else:
+            self.rdb_cite = None
+            self.rdb_normalized_cite = None
 
     def page_number(self):
         return self.cite.rsplit(' ', 1)[-1]
@@ -1915,10 +1924,10 @@ class Citation(models.Model):
             >>> assert Citation.parse_cite("123 Mass. App. Ct. 456") == ("123", "Mass. App. Ct.", "456")
             >>> assert Citation.parse_cite("123 Mass. App. Ct.") == (None, None, None)
         """
-        m = re.match(cite_extracting_regex, cite)
-        if not m:
-            return None, None, None
-        return m.groups()
+        eyecite_cite = extract_whole_cite(cite)
+        if eyecite_cite:
+            return eyecite_cite.volume, eyecite_cite.reporter_found, eyecite_cite.page
+        return None, None, None
 
     def parsed(self):
         return Citation.parse_cite(self.cite)
@@ -1932,25 +1941,27 @@ class Citation(models.Model):
 
             Given:
             >>> case_factory = getfixture('case_factory')
-            >>> cases = [case_factory(citations__cite=c) for c in ("1 Old 1", "2 Old 2", "3 Old Rep. 3")]
+            >>> cases = [case_factory(citations__cite=c) for c in ("1 Mass. 1", "2 Mass. 2", "3 Mass. App. Ct. 3")]
             >>> cites = list(Citation.objects.order_by('case_id'))
 
             Only the exact-matching cites are updated and returned:
-            >>> assert Citation.replace_reporter(cites, "Old", "New") == [
-            ...     (cites[0], "1 Old 1", "1 New 1"),
-            ...     (cites[1], "2 Old 2", "2 New 2"),
+            >>> assert Citation.replace_reporter(cites, "Mass.", "U.S.") == [
+            ...     (cites[0], "1 Mass. 1", "1 U.S. 1"),
+            ...     (cites[1], "2 Mass. 2", "2 U.S. 2"),
             ... ]
 
             All DB fields are updated:
-            >>> assert set(Citation.objects.values_list('cite', flat=True)) == {"1 New 1", "2 New 2", "3 Old Rep. 3"}
-            >>> assert set(Citation.objects.values_list('normalized_cite', flat=True)) == {"1new1", "2new2", "3oldrep3"}
-            >>> assert set(CaseMetadata.objects.values_list('frontend_url', flat=True)) == {"/new/1/1/", "/new/2/2/", "/old-rep/3/3/"}
+            >>> assert set(Citation.objects.values_list('cite', flat=True)) == {"1 U.S. 1", "2 U.S. 2", "3 Mass. App. Ct. 3"}
+            >>> assert set(Citation.objects.values_list('normalized_cite', flat=True)) == {"1us1", "2us2", "3massappct3"}
+            >>> assert set(CaseMetadata.objects.values_list('frontend_url', flat=True)) == {"/us/1/1/", "/us/2/2/", "/mass-app-ct/3/3/"}
         """
         to_update = []
         cites_updated = []
         actions = []
         for cite in cites:
             vol_num, reporter, page_num = cite.parsed()
+            if reporter is None:
+                raise ValueError(f"Cite {cite} failed to parse.")
             if reporter != old_reporter:
                 continue
             old_cite = cite.cite
@@ -2001,17 +2012,20 @@ class PageXML(BaseXMLModel):
 
 class ExtractedCitation(models.Model):
     cite = models.CharField(max_length=10000)
-    cited_by = models.ForeignKey(CaseMetadata, related_name='extractedcitations', on_delete=models.DO_NOTHING)
+    cited_by = models.ForeignKey(CaseMetadata, related_name='extracted_citations', on_delete=models.DO_NOTHING)
+    target_case = models.ForeignKey(CaseMetadata, related_name='cited_by', blank=True, null=True, on_delete=models.DO_NOTHING)
+    target_cases = ArrayField(models.IntegerField(), blank=True, null=True, help_text="If cite is ambiguous, list of possible IDs.")
     reporter_name_original = models.CharField(max_length=200)
     volume_number_original = models.CharField(max_length=64, blank=True, null=True)
     page_number_original = models.CharField(max_length=64, null=True, blank=True)
-    normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
+    normalized_cite = models.CharField(max_length=10000, null=True, db_index=True)
+    rdb_cite = models.CharField(max_length=10000, null=True, help_text="Citation in standard reporters-db format")
+    rdb_normalized_cite = models.CharField(max_length=10000, null=True)
 
     def __str__(self):
         return self.cite
 
     def save(self, *args, **kwargs):
-        self.normalized_cite = normalize_cite(self.cite)
         return super(ExtractedCitation, self).save(*args, **kwargs)
 
 

@@ -88,7 +88,7 @@ PyPDF2
 reportlab
 img2pdf
 Pillow
-diff-match-patch
+diff_match_patch_python
 Markdown
 PyMuPDF
 
@@ -102,5 +102,6 @@ django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
 
 # citation extraction
-reporters_db
+eyecite
+hyperscan
 networkx

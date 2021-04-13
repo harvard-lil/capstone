@@ -130,8 +130,13 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 'jurisdiction_url': placeholder_url("jurisdiction-detail"),
             }
 
+        def as_dict(obj):
+            if type(obj) == dict:
+                return obj
+            return obj._d_
+
         s = self.s_from_instance(instance)
-        extractedcitations = [{"cite": c["cite"]} for c in s["extractedcitations"]]
+        extracted_citations = [{"cite": c["cite"], "case_ids": as_dict(c).get("target_cases", [])} for c in s["extracted_citations"]]
         preview = []
         if "_source" in instance:
             preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
@@ -173,7 +178,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 "whitelisted": s["jurisdiction"]["whitelisted"],
                 "name": s["jurisdiction"]["name"],
             },
-            "cites_to": extractedcitations,
+            "cites_to": extracted_citations,
             "frontend_url": self._url_templates['frontend_url'] % s["frontend_url"],
             "frontend_pdf_url": self._url_templates['frontend_pdf_url'] % s.get("frontend_pdf_url", None),
             "preview": preview,

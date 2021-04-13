@@ -1,5 +1,7 @@
 from .settings_dev import *  # noqa
 
+TESTING = True
+
 MAINTAIN_ELASTICSEARCH_INDEX = False  # tests must opt in
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases_test',
@@ -17,4 +19,3 @@ SITE_LIMIT_REPORT = True
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
 ] + PASSWORD_HASHERS
-

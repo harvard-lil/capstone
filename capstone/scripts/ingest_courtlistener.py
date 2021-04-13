@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 
 from tqdm import tqdm
 
-from capdb.models import normalize_cite
+from scripts.helpers import normalize_cite
 from capapi.documents import ResolveDocument
 from scripts.simhash import get_simhash
 

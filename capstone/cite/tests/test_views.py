@@ -5,7 +5,6 @@ from datetime import timedelta
 from difflib import unified_diff
 from pathlib import Path
 
-import fabfile
 import mock
 import pytest
 from bs4 import BeautifulSoup
@@ -15,6 +14,7 @@ from django.utils import timezone
 from capapi.tests.helpers import check_response, is_cached
 from capdb.tasks import update_elasticsearch_from_queue, CaseAnalysis
 from capweb.helpers import reverse
+from test_data.test_fixtures.helpers import set_case_text
 
 
 def full_url(document):
@@ -384,13 +384,14 @@ def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_ca
 
 
 @pytest.mark.django_db
-def test_case_cited_by(client, case_factory, tmpdir, settings, elasticsearch):
-    settings.MISSED_CITATIONS_DIR = str(tmpdir)
+def test_case_cited_by(client, case_factory, elasticsearch):
     dest_case = case_factory()
     dest_cite = dest_case.citations.first()
-    source_cases = [case_factory(body_cache__text=dest_cite.cite) for _ in range(2)]
+    source_cases = [case_factory() for _ in range(2)]
+    for case in source_cases:
+        set_case_text(case, dest_cite.cite)
+        case.sync_case_body_cache()
     non_citing_case = case_factory()
-    fabfile.extract_all_citations()
     update_elasticsearch_from_queue()
 
     response = client.get(reverse('case_cited_by', args=[dest_case.pk], host='cite'))

@@ -178,7 +178,7 @@ def export_volume(volume_id, output_zip=None):
             Prefetch('page_structures', queryset=PageStructure.objects.select_related('ingest_source')),
             Prefetch('case_metadatas', queryset=(CaseMetadata.objects
                 .select_related('structure', 'initial_metadata', 'body_cache', 'court',)
-                .prefetch_related('citations', 'extractedcitations', 'analysis'))),
+                .prefetch_related('citations', 'extracted_citations', 'analysis'))),
         ).get()
     )
     to_serialize.add(volume)
@@ -196,7 +196,7 @@ def export_volume(volume_id, output_zip=None):
         to_serialize.add(case.body_cache)
         to_serialize.add(case.court)
         to_serialize.update(case.citations.all())
-        to_serialize.update(case.extractedcitations.all())
+        to_serialize.update(case.extracted_citations.all())
         to_serialize.update(case.analysis.all())
     serializer = serializers.get_serializer("json")()
     with zipfile.ZipFile(output_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zip:
@@ -301,20 +301,34 @@ def migrate():
 
 @task
 def populate_search_index(last_run_before=None):
+    print("Scheduling tasks to reindex volumes")
     tasks.run_task_for_volumes(
         tasks.update_elasticsearch_for_vol,
         VolumeMetadata.objects.exclude(out_of_scope=True),
         last_run_before=last_run_before)
 
+
 @task
-def rebuild_search_index(force=False):
-    if force:
-        management.call_command('search_index', '--delete', '-f')
-        management.call_command('search_index', '--create', '-f')
-    else:
-        management.call_command('search_index', '--delete')
-        management.call_command('search_index', '--create')
-    populate_search_index()
+def rebuild_search_index(force=False, indexes="cases", populate="true"):
+    """Use indexes=cases,resolve to rebuild both. By default only rebuilds cases."""
+    import capapi.documents
+
+    if not force:
+        if input(f"Really delete and recreate {indexes}? [y/N] ").lower() != "y":
+            return
+    index_names = indexes.split(",")
+    indexes = [capapi.documents.indexes[i] for i in index_names]
+    for index in indexes:
+        print(f"Deleting {index._name}")
+        index.delete(ignore=404)
+        print(f"Creating {index._name}")
+        index.create()
+    if populate == "true":
+        if "cases" in index_names:
+            populate_search_index()
+        if "resolve" in index_names:
+            ingest_courtlistener()
+
 
 @task
 def update_search_index_settings():
@@ -985,11 +999,14 @@ def load_token_streams(replace_existing=False):
 
 
 @task
-def refresh_case_body_cache(last_run_before=None, rerender=True):
+def refresh_case_body_cache(last_run_before=None, rerender=True, volume=None):
     """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
+    volumes = VolumeMetadata.objects.exclude(xml_metadata=None)
+    if volume:
+        volumes = volumes.filter(pk=volume)
     tasks.run_task_for_volumes(
         tasks.sync_case_body_cache_for_vol,
-        VolumeMetadata.objects.exclude(xml_metadata=None),
+        volumes,
         last_run_before=last_run_before,
         rerender=rerender != 'false',
     )
@@ -1273,12 +1290,6 @@ def populate_case_page_order():
 
 
 @task
-def extract_all_citations(last_run_before=None):
-    """ extract citations """
-    tasks.run_task_for_volumes(tasks.extract_citations_per_vol, last_run_before=last_run_before)
-
-
-@task
 def export_citation_graph(output_folder="graph"):
     """writes cited from and citing to to file"""
     from django.utils import timezone
@@ -1297,25 +1308,19 @@ def export_citation_graph(output_folder="graph"):
     query = """
         DECLARE cite_cursor CURSOR for
         select
-            from_id, array_agg(distinct to_id)
-        from (
-            select
-                cite_from.id as from_id, min(cite_to.id) as to_id
-            from capdb_casemetadata cite_from
+            cited_by.id, array_agg(distinct target_case.id)
+        from
+            capdb_extractedcitation ec
             inner join
-                capdb_extractedcitation ec on cite_from.id = ec.cited_by_id
+                capdb_casemetadata target_case on ec.target_case_id = target_case.id
             inner join
-                capdb_citation cite on cite.normalized_cite = ec.normalized_cite
-            inner join
-                capdb_casemetadata cite_to on cite.case_id = cite_to.id
-            where 
-                cite_from.in_scope is true
-                and cite_to.in_scope is true
-                and cite_from.decision_date_original >= cite_to.decision_date_original
-                and cite_to.id != cite_from.id
-            group by cite_from.id, ec.normalized_cite
-            having count(*) = 1
-        ) as c group by from_id;
+                capdb_casemetadata cited_by on ec.cited_by_id = cited_by.id
+        where 
+            cited_by.in_scope is true
+            and target_case.in_scope is true
+            and cited_by.decision_date_original >= target_case.decision_date_original
+            and cited_by.id != target_case.id
+        group by cited_by.id;
     """
     print("Running citations query")
     with transaction.atomic(using='capdb'), \
@@ -1338,9 +1343,9 @@ def export_citation_graph(output_folder="graph"):
 
     # write README.txt
     output_folder.joinpath('README.md').write_text(
-        "Citation graph exported %s:\n\n"
-        "* Nodes: %s\n"
-        "* Edges: %s\n" % (timezone.now(), len(nodes), edge_count)
+        f"Citation graph exported {timezone.now()}:\n\n"
+        f"* Nodes: {len(nodes)}\n"
+        f"* Edges: {edge_count}\n"
     )
 
     # write metadata.csv.gz
@@ -1417,9 +1422,9 @@ def export_citation_graph(output_folder="graph"):
         jur['graph_file'].close()
         jur['metadata_file'].close()
         jur['folder'].joinpath('README.md').write_text(
-            "Citation graph for %s exported %s:\n\n"
-            "* Nodes: %s\n"
-            "* Edges: %s\n" % (jur['name'], timezone.now(), len(jur['nodes']), jur['edge_count'])
+            f"Citation graph for {jur['name']} exported {timezone.now()}:\n\n"
+            f"* Nodes: {len(jur['nodes'])}\n"
+            f"* Edges: {jur['edge_count']}\n"
         )
 
     print("Calling count_cites_by_year")
@@ -1430,28 +1435,6 @@ def export_citation_graph(output_folder="graph"):
 
     print("Calling load_pagerank_scores")
     load_pagerank_scores(output_folder / "pagerank_scores.csv.gz")
-
-
-@task
-def report_missed_citations():
-    """ Summarize files written by extract_all_citations. Writes csv to stdout. """
-    import random
-    counts = {}
-    for f in Path(settings.MISSED_CITATIONS_DIR).glob('*.csv'):
-        for line in csv.reader(f.read_text().splitlines()):
-            reporters = json.loads(line[2])
-            for reporter, count in reporters.items():
-                if reporter not in counts:
-                    counts[reporter] = {'count': 0, 'cases': []}
-                counts[reporter]['count'] += count
-                counts[reporter]['cases'].append(line[0])
-
-    counts = dict((k, v) for k, v in counts.items() if v['count'] >= 10)
-    for v in counts.values():
-        random.shuffle(v['cases'])
-    counts = sorted(([v['count'], k] + v['cases'][:5] for k, v in counts.items()), reverse=True)
-    writer = csv.writer(sys.stdout)
-    writer.writerows(counts)
 
 
 @task
@@ -1592,6 +1575,7 @@ def load_pagerank_scores(pagerank_score_output):
 @task
 def ingest_courtlistener(download_dir='/tmp', start_from=None):
     """ Download CourtListener cases and add metadata to citation resolver endpoint. """
+    print("Ingesting CourtListener data")
     from scripts.ingest_courtlistener import ingest_courtlistener
     ingest_courtlistener(download_dir, start_from)
 
@@ -1649,6 +1633,17 @@ def block_domain(domain, notes=""):
             user.is_active = False
             user.save()
     print("Done.")
+
+
+@task
+def set_rdb_cites():
+    """Set rdb_cite for cites that are missing it."""
+    to_update = []
+    for cite in tqdm(Citation.objects.filter(rdb_cite=None)):
+        cite.cite_updated()
+        if cite.rdb_cite:
+            to_update.append(cite)
+    Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
 
 
 if __name__ == "__main__":

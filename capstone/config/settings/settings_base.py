@@ -686,8 +686,6 @@ MAILCHIMP = {
 MAILGUN_API_KEY = ''
 VALIDATE_EMAIL_SIGNUPS = False
 
-MISSED_CITATIONS_DIR = "/tmp/missed_citations"
-
 SITE_LIMIT_REPORT = False
 
 RESOLVE_API_PREFIX = 'http://api.case.test:8000/v1/cases/'
@@ -697,3 +695,9 @@ PYTHON_BINARY = sys.executable
 
 # a list of labs projects to hide
 LABS_HIDDEN = []
+
+# somewhere writable only by us
+HYPERSCAN_CACHE_DIR = os.path.join(BASE_DIR, '.hyperscan')
+
+# whether we are running tests
+TESTING = False

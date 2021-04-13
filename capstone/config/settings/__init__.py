@@ -1,5 +1,7 @@
 # This is the base module that will be imported by Django.
 
+import config.pre_django_setup  # noqa
+
 # Try to import the custom settings.py file, which will in turn import one of the deployment targets.
 # If it doesn't exist we assume this is a vanilla development environment and import .deployments.settings_dev.
 try:
