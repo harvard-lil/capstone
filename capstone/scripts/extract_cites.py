@@ -4,6 +4,7 @@ from collections import defaultdict
 from functools import lru_cache, partial
 
 from django.conf import settings
+from django.db.models import Q
 from django.utils.text import slugify
 from eyecite import annotate
 from eyecite.find_citations import get_citations
@@ -24,7 +25,7 @@ def extract_citations(case, html, xml):
         as well as a list of any existing ExtractedCitation objects to delete and any new ExtractedCitation
         objects to create.
     """
-    from capdb.models import ExtractedCitation  # avoid circular imports
+    from capdb.models import ExtractedCitation, Citation  # avoid circular imports
 
     found_cites = False
     cite_index = 0
@@ -32,6 +33,8 @@ def extract_citations(case, html, xml):
     cites_to_create = []
     self_cites = {c.normalized_cite for c in case.citations.all()}
     already_extracted = set()
+    extracted_els = []
+    cites_by_type = {'cite': [], 'normalized_cite': [], 'rdb_cite': [], 'rdb_normalized_cite': []}
 
     # Annotation is faster if we extract paragraph by paragraph. So first get an index of each paragraph in the
     # html and xml to insert annotations into, and parse a cleaned version of the source html to extract citations
@@ -43,35 +46,65 @@ def extract_citations(case, html, xml):
     clean_html_pq = PyQuery(clean_text(html))
     clean_html_pq('.page-label').remove()
 
+
     # Extract cites from each paragraph:
     for el in clean_html_pq('p[id], blockquote[id]').items():
         el_text = el.text()
-        html_annotations = []
-        xml_annotations = []
+        extracted_cites = []
         for eyecite_cite in extract_citations_from_text(el_text):
 
             # get normalized forms of cite
-            cite = eyecite_cite.matched_text()
-            normalized_cite = normalize_cite(cite)
-            reporter_corrected, rdb_cite = canonicalize_cite(eyecite_cite)
-            rdb_normalized_cite = normalize_cite(rdb_cite)
+            cite = {'cite': eyecite_cite.matched_text()}
+            cite['normalized_cite'] = normalize_cite(cite['cite'])
+            reporter_corrected, cite['rdb_cite'] = canonicalize_cite(eyecite_cite)
+            cite['rdb_normalized_cite'] = normalize_cite(cite['rdb_cite'])
 
             # skip citations to self, typically from parallel cites in header
-            if normalized_cite in self_cites or rdb_normalized_cite in self_cites:
+            if cite['normalized_cite'] in self_cites or cite['rdb_normalized_cite'] in self_cites:
                 continue
 
             # only save the first instance of a cite in the db, for now
-            if rdb_normalized_cite in already_extracted:
+            if cite['rdb_normalized_cite'] in already_extracted:
                 continue
-            already_extracted.add(rdb_normalized_cite)
+            already_extracted.add(cite['rdb_normalized_cite'])
+
+            extracted_cites.append((eyecite_cite, cite, reporter_corrected))
+            for k, v in cite.items():
+                cites_by_type[k].append(v)
+
+        if extracted_cites:
+            extracted_els.append((el.attr("id"), el_text, extracted_cites))
+
+    # Look up cases referred to by cites. cases_by_cite gets populated like:
+    #   cases_by_cite['cite']['1 U.S. 1'] = {(<case_id>, <decision_date_original>, <frontend_url>)}
+    cases_by_cite = {c: defaultdict(set) for c in cites_by_type}
+    target_cites = (Citation
+        .objects
+        .filter(case__in_scope=True)
+        .filter(
+            Q(cite__in=cites_by_type['cite']) |
+            Q(cite__in=cites_by_type['normalized_cite']) |
+            Q(cite__in=cites_by_type['rdb_cite']) |
+            Q(cite__in=cites_by_type['rdb_normalized_cite'])
+        )
+        .values('case_id', 'case__decision_date_original', 'case__frontend_url', 'cite', 'normalized_cite', 'rdb_cite', 'rdb_normalized_cite'))
+    for cite in target_cites:
+        for cite_type in cites_by_type:
+            if cite[cite_type]:
+                cases_by_cite[cite_type][cite[cite_type]].add((cite['case_id'], cite['case__decision_date_original'], cite['case__frontend_url']))
+
+    # Create each ExtractedCitation and annotate each paragraph:
+    for el_id, el_text, extracted_cites in extracted_els:
+        html_annotations = []
+        xml_annotations = []
+        for eyecite_cite, cite, reporter_corrected in extracted_cites:
 
             # get potential case or cases pointed to by cite
-            cases_by_cite = get_cases_by_cite()
             matches = list(
-                cases_by_cite['cite'].get(cite) or
-                cases_by_cite['normalized_cite'].get(normalized_cite) or
-                cases_by_cite['rdb_cite'].get(rdb_cite) or
-                cases_by_cite['rdb_normalized_cite'].get(rdb_normalized_cite, set())
+                cases_by_cite['cite'].get(cite['cite']) or
+                cases_by_cite['normalized_cite'].get(cite['normalized_cite']) or
+                cases_by_cite['rdb_cite'].get(cite['rdb_cite']) or
+                cases_by_cite['rdb_normalized_cite'].get(cite['rdb_normalized_cite'], set())
             )
 
             # filter matches by date
@@ -109,10 +142,10 @@ def extract_citations(case, html, xml):
             # create new cite
             # NOTE if adding any fields here, also add to cite_key()
             extracted_cite = ExtractedCitation(
-                cite=cite,
-                normalized_cite=normalized_cite,
-                rdb_cite=rdb_cite,
-                rdb_normalized_cite=rdb_normalized_cite,
+                cite=cite['cite'],
+                normalized_cite=cite['normalized_cite'],
+                rdb_cite=cite['rdb_cite'],
+                rdb_normalized_cite=cite['rdb_normalized_cite'],
                 cited_by=case,
                 target_case_id=target_case_id,
                 target_cases=[m[0] for m in matches],
@@ -131,7 +164,6 @@ def extract_citations(case, html, xml):
 
         # annotate paragraph in html and xml
         if html_annotations:
-            el_id = el.attr("id")
             for annot_el, annotations in ((xml_els[el_id], xml_annotations), (html_els[el_id], html_annotations)):
                 annot_el.html(annotate(el_text, annotations, annot_el.html(), annotator=annotator))
 
@@ -203,34 +235,6 @@ def get_cite_extractor():
     return partial(get_citations, tokenizer=tokenizer)
 
 
-def get_cases_by_cite():
-    """
-        Build a lookup table of citation -> (case_id, decision_date_original, frontend_url) for ALL cases, to
-        help with quickly matching citations to their target. Lookup keys include cite, normalized_cite,
-        rdb_cite, and rdb_normalized_cite so we can check for matches across any of those.
-
-        This is slow to generate so gets cached once per process, and is only used from sync_case_body_cache.
-    """
-    from capdb.models import Citation  # avoid circular import
-
-    cite_types = ['cite', 'normalized_cite', 'rdb_cite', 'rdb_normalized_cite']
-    cases_by_cite = {c: defaultdict(set) for c in cite_types}
-    cites = (Citation
-                 .objects
-                 .filter(case__in_scope=True)
-                 .values('case_id', 'case__decision_date_original', 'case__frontend_url', 'cite', 'normalized_cite', 'rdb_cite', 'rdb_normalized_cite'))
-    for cite in cites:
-        for cite_type in cite_types:
-            if cite[cite_type]:
-                cases_by_cite[cite_type][cite[cite_type]].add((cite['case_id'], cite['case__decision_date_original'], cite['case__frontend_url']))
-    return cases_by_cite
-
-
-# cache output of get_cases_by_cite unless we're calling it from a test
-if not settings.TESTING:
-    get_cases_by_cite = lru_cache(None)(get_cases_by_cite)
-
-
 def canonicalize_cite(cite):
     """
         Get the canonical form of a citation's reporter and text given an eyecite cite object. For example:
@@ -242,7 +246,8 @@ def canonicalize_cite(cite):
     else:
         reporter_guesses = set(e.short_name for e in cite.all_editions)
         if len(reporter_guesses) != 1:
-            return cite.matched_text()
+            # no single correct reporter identified, so return original cite found
+            return cite.reporter_found, cite.matched_text()
         reporter_corrected = reporter_guesses.pop()
     return reporter_corrected, cite.matched_text().replace(cite.reporter_found, reporter_corrected)
 
@@ -284,7 +289,7 @@ def cite_key(extracted_cite):
         extracted_cite.rdb_normalized_cite,
         extracted_cite.cited_by_id,
         extracted_cite.target_case_id,
-        tuple(extracted_cite.target_cases),
+        tuple(extracted_cite.target_cases) if extracted_cite.target_cases else None,
         extracted_cite.reporter_name_original,
         extracted_cite.volume_number_original,
         extracted_cite.page_number_original,

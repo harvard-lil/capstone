@@ -1878,9 +1878,9 @@ class Citation(models.Model):
     type = models.CharField(max_length=100, choices=list(zip(citation_types, citation_types)))
     category = models.CharField(max_length=100, blank=True,
                                 null=True)  # this field and "type" are reversed from the values in CaseXML -- possibly should be switched back?
-    cite = models.CharField(max_length=10000, db_index=True)
+    cite = models.CharField(max_length=10000)
     duplicative = models.BooleanField(default=False)
-    normalized_cite = models.SlugField(max_length=10000, null=True, db_index=True)
+    normalized_cite = models.CharField(max_length=10000, null=True)
     rdb_cite = models.CharField(max_length=10000, null=True, help_text="Citation in standard reporters-db format")
     rdb_normalized_cite = models.CharField(max_length=10000, null=True)
     case = models.ForeignKey('CaseMetadata', related_name='citations', null=True, on_delete=models.SET_NULL)
@@ -1894,6 +1894,13 @@ class Citation(models.Model):
 
     class Meta:
         ordering = ['type']  # so official will come back before parallel
+        # use indexes instead of dbindex=True for these to avoid creating a _like index for each one as well
+        indexes = [
+            models.Index(fields=['cite']),
+            models.Index(fields=['normalized_cite']),
+            models.Index(fields=['rdb_cite']),
+            models.Index(fields=['rdb_normalized_cite']),
+        ]
 
     def save(self, *args, **kwargs):
         if self.tracker.has_changed('cite'):
