@@ -47,7 +47,7 @@
           <div class="label_assembly">
             <button v-if="$store.state.isAuthor" type="button" id="top-add-cases-button"
               @click="openModal(null, 'case')"
-              class="btn btn-tertiary btn-add-event"
+              class="btn btn-tertiary btn-add-case"
               data-toggle="modal"
               data-target="#add-case-modal">
             <add-icon></add-icon>
@@ -58,7 +58,7 @@
               @click="openModal(null, 'event')"
               class="btn btn-tertiary btn-add-event"
               data-toggle="modal"
-              data-target="#add-case-modal">
+              data-target="#add-event-modal">
             <add-icon></add-icon>
             </button>
           </div>
