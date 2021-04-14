@@ -288,14 +288,15 @@ def init_dev_db():
         approver.groups.add(approvers_group)
 
 @task
-def migrate():
+def migrate(*args):
     """
-        Migrate all dbs at once
+        Migrate all dbs at once.
+        Backwards migration example: fab migrate:capdb,0112
     """
 
-    management.call_command('migrate', database="default")
-    management.call_command('migrate', database="capdb")
-    management.call_command('migrate', database="user_data")
+    management.call_command('migrate', database="default", *args)
+    management.call_command('migrate', database="capdb", *args)
+    management.call_command('migrate', database="user_data", *args)
 
     update_postgres_env()
 
@@ -1639,11 +1640,20 @@ def block_domain(domain, notes=""):
 def set_rdb_cites():
     """Set rdb_cite for cites that are missing it."""
     to_update = []
-    for cite in tqdm(Citation.objects.filter(rdb_cite=None)):
-        cite.cite_updated()
+    chunk_size = 2000
+    for cite in tqdm(Citation.objects.filter(rdb_cite=None).iterator(chunk_size=chunk_size)):
+        try:
+            cite.cite_updated()
+        except Exception as e:
+            print(cite.pk, cite.cite, e)
+            continue
         if cite.rdb_cite:
             to_update.append(cite)
-    Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
+            if len(to_update) >= chunk_size:
+                Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
+                to_update = []
+    if to_update:
+        Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
 
 
 if __name__ == "__main__":
