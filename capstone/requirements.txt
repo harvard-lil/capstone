@@ -407,9 +407,8 @@ execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83
     # via pytest-xdist
-eyecite==2.0.2 \
-    --hash=sha256:b759bbf201063b2f3823da60430793ad60509e3ad74574f4bfd3bb39ad9eaf1b \
-    --hash=sha256:e3af3e1f02421c12547507087b467699f36042b66baa1641a70e3be229b600a6
+https://github.com/jcushman/eyecite/archive/bb2b58e88ac54e12311112f87ac469e96ec2768a.zip#egg=eyecite \
+    --hash=sha256:dd59c044566583105856ae307a02004fff6675e292d9cc77d60ac8484f75e254
     # via -r requirements.in
 fabric3==1.14.post1 \
     --hash=sha256:647e485ec83f30b587862f92374d6affc217f3d79819d1d7f512e42e7ae51e81 \
