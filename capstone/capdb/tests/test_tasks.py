@@ -260,15 +260,16 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db
-def test_extract_citations(case_factory, settings, elasticsearch):
+def test_extract_citations(case_factory, elasticsearch):
     legitimate_cites = [
         "225 F. Supp. 552",                         # correct
-        ["1 F Supp 1", "1 F. Supp. 1"],     # normalized
-        ["2 F.-'Supp.- 2", "2 F. Supp. 2"], # extra cruft matched by get_cite_extractor
+        ["1 F Supp 1", "1 F. Supp. 1"],             # normalized
+        ["2 F.-'Supp.- 2", "2 F. Supp. 2"],         # extra cruft matched by get_cite_extractor
         ["125 Yt. 152", "125 Vt. 152"],             # custom reporters added by patch_reporters_db
         ["125 Burnett (Wis.) 152", "125 Bur. 152"], # normalized
         ["1 F. 2d 2", "1 F.2d 2"],                  # not matched as "1 F. 2"
         "2000 WL 12345",                            # vendor cite
+        ["3 F Supp, at 3", "3 F. Supp. 3"],         # short cite
     ]
     legitimate_cites_normalized = set(normalize_cite(c if type(c) is str else c[1]) for c in legitimate_cites)
     legitimate_cites = [c if type(c) is str else c[0] for c in legitimate_cites]
@@ -388,8 +389,9 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
     # case text to extract
     set_case_text(case_from, f"""
         Cite to self ignored during extraction: {cite_from}
-        Cite to another case included, but only once: {cite_to}, {cite_to_aka}
-        Cite to yet another case: {another_cite_to}
+        Parallel cite to another case included once: {cite_to}, {cite_to_aka}
+        Cite to another case: {another_cite_to}
+        Duplicate cite to another case: {another_cite_to}
         Ambiguous cites not included: {duplicate_cite}
         Unknown cites excluded: {cite_not_in_cap}
         Cites into the future excluded: {future_cite}
@@ -417,6 +419,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
         results = list(csv.reader(f))
     assert len(results) == 2
     assert results[0][0] == str(case_from.id)
+    assert len(results[0][1:]) == 2
     assert set(results[0][1:]) == {str(case_to.id), str(another_case_to.id)}
     assert results[1][0] == str(different_jur_case.id)
     assert set(results[1][1:]) == {str(case_to.id)}

@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils.text import slugify
 from eyecite import annotate
 from eyecite.find_citations import get_citations
-from eyecite.models import FullCaseCitation
+from eyecite.models import FullCaseCitation, CaseCitation
 from eyecite.tokenizers import HyperscanTokenizer, EXTRACTORS
 from eyecite.utils import is_balanced_html
 from pyquery import PyQuery
@@ -32,7 +32,6 @@ def extract_citations(case, html, xml):
     cites_to_delete = {cite_key(e): e for e in case.extracted_citations.all()}
     cites_to_create = []
     self_cites = {c.normalized_cite for c in case.citations.all()}
-    already_extracted = set()
     extracted_els = []
     cites_by_type = {'cite': [], 'normalized_cite': [], 'rdb_cite': [], 'rdb_normalized_cite': []}
 
@@ -62,11 +61,6 @@ def extract_citations(case, html, xml):
             # skip citations to self, typically from parallel cites in header
             if cite['normalized_cite'] in self_cites or cite['rdb_normalized_cite'] in self_cites:
                 continue
-
-            # only save the first instance of a cite in the db, for now
-            if cite['rdb_normalized_cite'] in already_extracted:
-                continue
-            already_extracted.add(cite['rdb_normalized_cite'])
 
             extracted_cites.append((eyecite_cite, cite, reporter_corrected))
             for k, v in cite.items():
@@ -204,7 +198,7 @@ def extract_citations_from_text(text):
     """Do the actual work of fetching each eyecite cite object."""
     cite_extractor = get_cite_extractor()
     for cite in cite_extractor(text):
-        if not isinstance(cite, FullCaseCitation):
+        if not isinstance(cite, CaseCitation):
             continue
         yield cite
 
@@ -238,8 +232,8 @@ def get_cite_extractor():
 def canonicalize_cite(cite):
     """
         Get the canonical form of a citation's reporter and text given an eyecite cite object. For example:
-        >>> canonicalize_cite(list(extract_citations_from_text("1 Mass,App 1"))[0])
-        ('Mass. App. Ct.', '1 Mass. App. Ct. 1')
+        >>> assert canonicalize_cite(list(extract_citations_from_text("1 Mass,App 1"))[0]) == ('Mass. App. Ct.', '1 Mass. App. Ct. 1')
+        >>> assert canonicalize_cite(list(extract_citations_from_text("1 Mass,App, at 1"))[0]) == ('Mass. App. Ct.', '1 Mass. App. Ct. 1')
     """
     if cite.edition_guess:
         reporter_corrected = cite.edition_guess.short_name
@@ -249,7 +243,13 @@ def canonicalize_cite(cite):
             # no single correct reporter identified, so return original cite found
             return cite.reporter_found, cite.matched_text()
         reporter_corrected = reporter_guesses.pop()
-    return reporter_corrected, cite.matched_text().replace(cite.reporter_found, reporter_corrected)
+    if isinstance(cite, FullCaseCitation):
+        # full cites might have non-standard formatting, so replace reporter to correct them
+        cite_corrected = cite.matched_text().replace(cite.reporter_found, reporter_corrected)
+    else:
+        # short cites are currently only found with standard formatting
+        cite_corrected = f"{cite.volume} {reporter_corrected} {cite.page}"
+    return reporter_corrected, cite_corrected
 
 
 _clean_text_table = str.maketrans("“”–—´‘’", "\"\"--'''")
