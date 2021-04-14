@@ -136,7 +136,13 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
             return obj._d_
 
         s = self.s_from_instance(instance)
-        extracted_citations = [{"cite": c["cite"], "case_ids": as_dict(c).get("target_cases", [])} for c in s["extracted_citations"]]
+
+        # get extracted_citations list, removing duplicate c["cite"] values
+        extracted_citations = list({
+            c["cite"]: {"cite": c["cite"], "case_ids": as_dict(c).get("target_cases", [])}
+            for c in s["extracted_citations"]
+        }.values())
+
         preview = []
         if "_source" in instance:
             preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []

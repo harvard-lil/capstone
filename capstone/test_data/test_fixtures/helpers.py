@@ -90,8 +90,8 @@ def check_timestamps_unchanged(case, timestamp):
     assert get_timestamp(case) == timestamp
 
 
-def set_case_text(case, text):
+def set_case_text(case, text, text2=""):
     page = case.structure.pages.first()
     page.blocks[1]["tokens"][3] = text
-    page.blocks[2]["tokens"][3] = ""
+    page.blocks[2]["tokens"][3] = text2
     page.save()
