@@ -1,69 +1,34 @@
 {% load static %}
+{% load pipeline %}
+{% load api_url %}
+
+{% load render_bundle from webpack_loader %}
+
 <a class="skip" href="#main">Skip to main content</a>
+<div id="nav-app"></div>
+<script>
+    const nav_urls = {
+        home: "{% url 'home' %}",
+        api_root: "{% api_url 'api-root' %}v1/",
+        docs: "{% url 'docs' parent.url %}",
+        search_docs: "{% url 'search-docs' %}",
+        bulk: "{% url 'download-files' '' %}",
+        search: "{% url 'search' %}",
+        gallery: "{% url 'gallery' %}",
+        labs: "{% url 'labs:labs' %}",
+        tools: "{% url 'tools' %}",
+        about: "{% url 'about' %}",
+        cite: "{% url 'cite_home' host 'cite' %}",
+        contact: "{% url 'contact' %}",
+        login: "{% url 'login' %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}",
+        user_details: "{% url 'user-details' %}"
+    };
 
-<nav id="main-nav" aria-label="main" {% if nav_class %}class="{{nav_class}}"{% endif %}>
-  <div class="branding">
-    <a class="nav-branding" href="{% url "home" %}" aria-label="Caselaw Access Project Home"></a>
-  </div>
+    const nav_user = {
+        id: "{{ user.id }}",
+        is_authenticated: "{{ request.user.is_authenticated }}"
+    }
 
-  <button id="burger-icon">
-    <div class="burger-item"></div>
-    <div class="burger-item"></div>
-    <div class="burger-item"></div>
-  </button>
-
-  <div class="nav-content">
-    <ul class="nav">
-      <li class="nav-item" id="nav-about">
-        <a class="nav-link" href="{% url "about" %}">ABOUT</a>
-      </li>
-      <li class="nav-item" id="nav-tools">
-        <a class="nav-link" href="{% url "tools" %}">
-          CASELAW
-        </a>
-      </li>
-      <!--<li class="nav-item dropdown" id="nav-tools">
-        <a class="nav-link dropdown-toggle"
-           href="#" id="navbar-dropdown-tools"
-           role="button"
-           aria-haspopup="true"
-           aria-expanded="false">
-          CASELAW
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-tools">
-          <a class="dropdown-item" href="{% url "tools" %}">Overview</a>
-          <a class="dropdown-item" href="{% url "api" %}">API</a>
-          <a class="dropdown-item" href="{% url "bulk-docs" %}">Bulk Data</a>
-          <a class="dropdown-item" href="{% url "search" %}">Search</a>
-        </div>
-      </li>-->
-      <li class="nav-item" id="nav-gallery">
-        <a class="nav-link"
-           href="{% url "gallery" %}">
-          GALLERY
-        </a>
-      </li>
-
-      <li class="nav-item" id="nav-account">
-        {% if request.user.is_authenticated %}
-          <a class="nav-link" href="{% url "user-details" %}">
-            ACCOUNT
-          </a>
-        {% else %}
-          <a class="nav-link "
-             href="{% url "login" %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">
-            LOG IN
-          </a>
-        {% endif %}
-      </li>
-      <li class="nav-item" id="nav-courts">
-        <a class="nav-link" href="{% url "action" %}">FOR COURTS</a>
-      </li>
-
-      <li class="nav-item" id="nav-contact">
-        <a class="nav-link" href="{% url "contact" %}">CONTACT</a>
-      </li>
-    </ul>
-  </div>
-</nav>
+</script>
+{% render_bundle 'nav' %}
 
