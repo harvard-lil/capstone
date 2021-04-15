@@ -103,7 +103,8 @@ def chronolawgic_api_create(request):
         timeline.timeline = {
             "title": "Untitled Timeline",
             "cases": [],
-            "events": []
+            "events": [],
+            "categories": []
         }
         timeline.save()
     except Exception as e:
