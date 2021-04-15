@@ -1,36 +1,55 @@
 footer {
-  z-index: 999;
-  background-color: $color-yellow;
   hyphens: none;
+  letter-spacing: 0;
+  background-color: $color-black;
+  color: $color-white;
+
   .lil-logo {
-    @extend %footer-lil-logo-black;
-  }
-}
-
-
-.footer-content > :nth-child(2) {
-  text-align: right;
-}
-
-.footer-content {
-  margin: 0 auto;
-  padding: 3rem 0;
-  .list-inline-item {
-    margin-right: 0;
-    margin-left: 0.5rem;
-  }
-  @include make-col(11);
-  nav[aria-label="footer"] {
-    text-align: right;
-  }
-  .social {
-    margin-top: 2rem;
-    span {
-      margin-left: 0.2rem;
+    margin-bottom: 0.2em;
+    @include media-breakpoint-down(md) {
+      width: 120px;
+      margin-bottom: 0;
     }
   }
+
+  a {
+    color: $color-yellow !important;
+
+    &:hover, &:active, &:focus {
+      color: $color-white !important;
+    }
+  }
+
+  .lil-logo {
+    @extend %footer-lil-logo-white;
+  }
+}
+
+
+.footer-content {
+  @include make-col(11);
+  display: grid;
+  grid-template-areas: "logo copyright terms"
+                       ".     .        links";
+  grid-template-columns: 20% 1fr 40%;
+
+  @include media-breakpoint-down(md) {
+    grid-template-areas: "logo . copyright"
+                         ". . terms"
+                         ". . links";
+    grid-template-columns: 20% 1fr 70%;
+  }
+
+  @include media-breakpoint-down(sm) {
+    grid-template-areas: "logo . copyright"
+                          "terms . links";
+    grid-template-columns: 20% 1fr 60%;
+    overflow: hidden;
+
+  }
+
   @include media-breakpoint-down(xs) {
-    padding: 0.2rem 0;
+    padding: 1rem 0;
     line-height: 1em;
     font-size: 0.7em;
     .col-sm p, .col-sm nav {
@@ -39,45 +58,165 @@ footer {
     .social {
       text-align: right;
     }
-    .social span {
-      float: right;
+  }
+
+  .social {
+    .github > a, .twitter > a {
+    }
+
+    .github > a {
+      background: url('../../img/logos/github-sprite.svg') no-repeat;
+      background-size: auto 29px;
+      background-position-x: -60px;
+
+      @include media-breakpoint-down(sm) {
+        background-size: auto 19px;
+        background-position-x: -19px !important;
+        height: 20px;
+        width: 20px;
+      }
+    }
+
+    .twitter > a {
+      background: url('../../img/logos/twitter-sprite.svg') no-repeat;
+      background-size: auto 30px;
+      background-position-x: -60px;
+
+      @include media-breakpoint-down(sm) {
+        background-size: auto 19px;
+        background-position-x: -18px !important;
+        height: 20px;
+        width: 20px;
+      }
     }
   }
+
+  margin: 0 auto;
+  padding: 1.5rem 0;
+
+  .logo-group {
+    grid-area: logo;
+  }
+
+  .term-links {
+    grid-area: terms;
+
+    li {
+      margin-left: -0.3em;
+    }
+  }
+
+  .site-links {
+    grid-area: links;
+    font-size: 15px;
+    margin-top: -3em;
+    @include media-breakpoint-only(md) {
+      margin-top: 0;
+    }
+    @include media-breakpoint-down(sm) {
+      font-size: 10px;
+      margin-top: -2em;
+    }
+
+    a {
+      color: $color-white !important;
+
+      &:hover, &:active {
+        color: $color-yellow !important;
+      }
+    }
+
+    th {
+      font-weight: $font-weight-semibold;
+      padding: 0 1em 1em 1em;
+      @include media-breakpoint-down(sm) {
+        padding: 1em;
+      }
+
+      &:first-child {
+        padding-left: 0;
+      }
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+
+    tr {
+      line-height: 0;
+    }
+
+    td {
+      line-height: 1.5em;
+      @include media-breakpoint-down(sm) {
+        line-height: 1em;
+      }
+
+      padding: 0 1em;
+
+      &:first-child {
+        padding-left: 0;
+      }
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+  }
+
+  .footer-copyright {
+    margin: 0 auto;
+    font-size: 15px;
+    grid-area: copyright;
+
+    p {
+      text-align: left;
+    }
+
+    span {
+      display: inline-block;
+      font-size: 80%;
+      font-weight: normal;
+      line-height: 1.3em;
+    }
+
+    @include media-breakpoint-down(md) {
+      margin-top: 0.6em;
+      font-size: 13px;
+    }
+  }
+
   a {
     color: $color-black;
     border-bottom: 0;
+
     &:hover, &:focus, &:active {
       color: $color-blue;
       border-bottom: 0;
     }
   }
+
   .links li {
     @extend .fix-list-item;
   }
+
   .return-to-top {
     @include make-col(12);
     font-weight: $font-weight-normal;
     text-align: center;
+
     a {
       font-weight: $font-weight-normal;
       border-bottom: 0;
+
       &:hover, &:active, &:focus {
         color: $color-yellow;
         text-decoration: none;
       }
     }
+
     .arrow {
       font-size: 2rem;
     }
-  }
-}
-
-.footer-copyright {
-  margin: 0 auto;
-  p {
-    text-align: left;
-  }
-  span {
-    display: inline-block;
   }
 }
