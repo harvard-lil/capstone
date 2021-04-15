@@ -1,77 +1,97 @@
 <template>
-  <main class="admin">
-    <div class="row top-menu">
-      <h3>Timelines
-        <a href=".." class="btn btn-tertiary info icon-link">?</a>
-      </h3>
-      <div v-if="this.$store.state.user.is_authenticated === 'True'" class="add-timeline">
-        <button type="button" class="btn btn-tertiary" @click="$store.dispatch('requestCreateTimeline')">
-          Add a timeline
-          <add-icon></add-icon>
-        </button>
-      </div>
-      <div v-else class="add-timeline">
-        You need to be logged in to your free case.law account to use Chronolawgic timelines. For more information on this tool,
-        <a href="../">click here</a>.
-      </div>
-    </div>
-    <section id="timeline">
-      <div class="timelines">
-        <div v-if="this.$store.getters.availableTimelines.length">
-          <div class="timeline" v-for="timeline in this.$store.getters.availableTimelines" v-bind:key="timeline.id">
-            <div v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)" class="title">
-              <router-link :to="timeline.id.toString()"
-                           v-text="timeline.title">
-              </router-link>
+    <main class="admin">
+        <div class="row top-menu">
+            <h3>Your Chronolawgic Timelines
+                <sup> <a href=".." class="btn btn-tertiary info icon-link">?</a> </sup>
+            </h3>
+            <div v-if="this.$store.state.user.is_authenticated !== 'True'" class="add-timeline">
+                You need to be logged in to your free case.law account to use Chronolawgic timelines. For more
+                information on this tool,
+                <a href="../">click here</a>.
             </div>
-            <input v-else type="text" class="title_edit title" v-model="editMode[timeline.id].title">
-            <div class="btn-group">
-              <div class="edit" title="edit">
-                <button v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)" class="btn btn-edit"
-                        @click="toggleEdit(timeline)">
-                  <cancel-icon></cancel-icon>
-                </button>
-                <button v-else class="btn btn-edit" @click="toggleEdit(timeline)">
-                  <edit-icon></edit-icon>
-                </button>
-              </div>
-              <div class="delete" title="delete timeline">
-                <delete-icon v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
-                             @click="$store.dispatch('requestDeleteTimeline', timeline.id)"></delete-icon>
-              </div>
-              <div class="save" title="save changes">
-                <button class="btn btn-edit" @click="saveEdit(timeline.id)">
-                  <save-icon v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"></save-icon>
-                </button>
-              </div>
-            </div>
-            <div class="description" v-if="timeline.description || editMode[timeline.id]">
-              <div class="description_label label">
-                Description
-              </div>
-              <div class="description_text">
-                <div v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)" class="description"
-                     v-text="timeline.description"></div>
-                <textarea v-else class="description_edit description"
-                          v-model="editMode[timeline.id].description"></textarea>
-              </div>
-            </div>
-
-            <div class="numbers">
-              <div class="case_count_label label">Cases</div>
-              <div class="case_count value" v-text="timeline.case_count"></div>
-              <div class="event_count_label label">Events</div>
-              <div class="event_count value" v-text="timeline.event_count">0</div>
-              <div class="id_label label">ID</div>
-              <div class="id value" v-text="timeline.id">0</div>
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
+        <section id="timeline">
+            <template v-if="!this.$store.getters.availableTimelines.length">
+                <p class="welcome">
+                    Welcome to Chronolawgic, the Caselaw Access Project tool for creating caselaw-focused timelines. To
+                    create your first timeline, click on the plus sign in the middle of the rectangle below, then click
+                    on the <span class="inline-icon"><edit-icon></edit-icon></span> symbol to set a title and description.
+                </p>
+            </template>
+            <div class="timeline-assembly add-timeline">
+                <div class="timeline-card">
+                    <button type="button" class="btn btn-tertiary" @click="$store.dispatch('requestCreateTimeline')">
+                        <add-icon></add-icon>
+                    </button>
+                </div>
+            </div>
+            <template v-if="this.$store.getters.availableTimelines.length">
+                <div class="timeline-assembly" v-for="timeline in this.$store.getters.availableTimelines"
+                     v-bind:key="timeline.id">
+                    <nav>
+                        <div class="editcancel" title="edit">
+                            <button v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
+                                    class="btn btn-edit"
+                                    @click="toggleEdit(timeline)">
+                                <cancel-icon></cancel-icon>
+                            </button>
+                            <button v-else class="btn btn-edit" @click="toggleEdit(timeline)">
+                                <edit-icon></edit-icon>
+                            </button>
+                        </div>
+                        <div class="delete" title="delete timeline">
+                            <button class="btn btn-edit"
+                                    v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
+                                    @click="$store.dispatch('requestDeleteTimeline', timeline.id)">
+                                <delete-icon></delete-icon>
+                            </button>
+                        </div>
+                        <div class="save" title="save changes">
+                            <button class="btn btn-edit" @click="saveEdit(timeline.id)">
+                                <save-icon
+                                        v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"></save-icon>
+                            </button>
+                        </div>
+                    </nav>
+                    <div class="timeline-card">
+                        <div class="content">
+                            <header class="title">
+                                <h3 v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)">
+                                    <router-link :to="timeline.id.toString()"
+                                                 v-text="timeline.title">
+                                    </router-link>
+                                </h3>
+                                <div class="title-edit" v-else>
+                                    <div class="label">Title</div>
+                                    <input type="text" class="title-input title" v-model="editMode[timeline.id].title">
+                                </div>
+                            </header>
 
-
-  </main>
+                            <div :class="{'description': true, 'editmode': Object.prototype.hasOwnProperty.call(editMode, timeline.id)}">
+                                <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
+                                   v-text="timeline.description"></p>
+                                <div class="description-edit" v-else>
+                                    <div class="label">Descriptions</div>
+                                    <textarea class="description-input"
+                                              v-model="editMode[timeline.id].description"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <aside>
+                            <div class="stat">
+                                <div class="label">Cases</div>
+                                <div class="case_count value" v-text="timeline.case_count"></div>
+                            </div>
+                            <div class="stat">
+                                <div class="label">Events</div>
+                                <div class="event_count value" v-text="timeline.event_count">0</div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </template>
+        </section>
+    </main>
 
 </template>
 
