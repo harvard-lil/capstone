@@ -40,17 +40,16 @@
     </div>
     <div class="d-none d-md-block d-lg-block d-xl-block pt-5">
       <div class="row top-section-row">
-        <div class="col-1 text-right p-3 d-none d-lg-block">
-          <img aria-hidden="true" :src='`${urls.static}img/white-arrow-right.svg`'>
-        </div>
-        <div class="col-4 offset-1 offset-lg-0">
-          <h2 class="section-title p-0">
+        <div class="pl-4 col-4 offset-1 offset-lg-0">
+          <h3 class="section-title p-0">
             Our data
-          </h2>
+          </h3>
+          <p class="section-subtitle">360 years of United States caselaw</p>
         </div>
+
       </div>
       <div class="row content-row">
-        <div class="col-3 offset-md-1 pr-3">
+        <div class="col-3 pl-3">
 
           <div class="boxcontainer text-white state-numbers-boxcontainer mt-2 mb-4">
             <div class="boxcontainer-body bg-black p-3 pt-2 pb-2">
@@ -99,8 +98,8 @@
           </div>
 
         </div>
-        <div class="col-7">
-          <div class="map bg-transparent pl-5">
+        <div class="ml-5 col-8">
+          <div class="map bg-transparent">
             <a href="#section-dive-in"
                class="skip">Skip map</a>
             <USMap @mouseover="mapMouseover" @mouseleave="mapMouseleave" @focusin="mapMouseover" tabindex="" />
@@ -123,7 +122,7 @@
       // get variables from Django template
       this.urls = urls;  // eslint-disable-line
       this.jurData = jurData;  // eslint-disable-line
-      
+
       // calculate totals based on jurData
       this.total_cases = 0;
       this.total_reporters = 0;
