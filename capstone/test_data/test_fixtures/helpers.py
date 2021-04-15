@@ -2,7 +2,7 @@ import difflib
 import hashlib
 from pathlib import Path
 
-from scripts.helpers import parse_xml
+from scripts.helpers import parse_xml, parse_html
 
 
 def file_hash(path):
@@ -68,9 +68,16 @@ def elements_equal(e1, e2, ignore={}, ignore_trailing_whitespace=False, tidy_sty
     # If you've gotten this far without an exception, the elements are equal
     return True
 
+
 def xml_equal(s1, s2, **kwargs):
     e1 = parse_xml(s1)[0]
     e2 = parse_xml(s2)[0]
+    return elements_equal(e1, e2, **kwargs)
+
+
+def html_equal(s1, s2, **kwargs):
+    e1 = parse_html(s1)[0]
+    e2 = parse_html(s2)[0]
     return elements_equal(e1, e2, **kwargs)
 
 

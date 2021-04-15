@@ -11,10 +11,9 @@ from eyecite.find_citations import get_citations
 from eyecite.models import FullCaseCitation, CaseCitation
 from eyecite.tokenizers import HyperscanTokenizer, EXTRACTORS
 from eyecite.utils import is_balanced_html
-from pyquery import PyQuery
 
 from capweb.helpers import reverse
-from scripts.helpers import serialize_xml, parse_xml, serialize_html, normalize_cite
+from scripts.helpers import serialize_xml, parse_xml, serialize_html, normalize_cite, parse_html
 
 
 ### ENTRY POINTS ###
@@ -38,11 +37,11 @@ def extract_citations(case, html, xml):
     # Annotation is faster if we extract paragraph by paragraph. So first get an index of each paragraph in the
     # html and xml to insert annotations into, and parse a cleaned version of the source html to extract citations
     # from:
-    html_pq = PyQuery(html)
+    html_pq = parse_html(html)
     html_els = {el.attr('id'): el for el in html_pq('[id]').items()}
     xml_pq = parse_xml(xml)
     xml_els = {el.attr('id'): el for el in xml_pq('[id]').items()}
-    clean_html_pq = PyQuery(clean_text(html))
+    clean_html_pq = parse_html(clean_text(html))
     clean_html_pq('.page-label').remove()
 
 

@@ -12,7 +12,6 @@ from model_utils import FieldTracker
 import nacl
 import nacl.encoding
 import nacl.secret
-from pyquery import PyQuery
 from bs4 import BeautifulSoup
 
 from django.conf import settings
@@ -36,7 +35,7 @@ from scripts.extract_images import extract_images
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key, copy_file, normalize_cite)
+                             short_id_from_s3_key, copy_file, normalize_cite, parse_html)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 from elasticsearch.helpers import BulkIndexError
@@ -1278,7 +1277,7 @@ class CaseMetadata(models.Model):
         return analyses
 
     def get_json_from_html(self, html):
-        casebody_pq = PyQuery(html)
+        casebody_pq = parse_html(html)
         casebody_pq.remove(
             '.page-label,.footnotemark,.bracketnum,.footnote > a')  # remove page numbers and footnote numbers from text/json
 
