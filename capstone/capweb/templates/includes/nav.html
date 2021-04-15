@@ -30,5 +30,43 @@
     }
 
 </script>
+<noscript>
+  <nav id="main-nav" aria-label="main">
+    <div class="branding">
+      <a class="nav-branding" :href="urls.home" aria-label="Caselaw Access Project Home"></a>
+    </div>
+    <div class="nav-content">
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'tools' %}">Caselaw</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'docs' parent.url %}">Support/docs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'gallery' %}">Gallery</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'about' %}">About</a>
+        </li>
+        {% if request.user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'user-details' %}">Account</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'login' %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">Log in</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+</noscript>
 {% render_bundle 'nav' %}
 
