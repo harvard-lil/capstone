@@ -54,6 +54,9 @@ def test_create_timeline(client, auth_client):
     response = auth_client.post(create_url, timeline)
     check_response(response, content_type="application/json")
     assert Timeline.objects.count() == 1
+    # assert categories exist
+    assert Timeline.objects.first().timeline['categories'] == []
+
 
 @pytest.mark.django_db
 def test_clobber_stopper(auth_client):
