@@ -1,3 +1,5 @@
+from textwrap import dedent
+
 import pytest
 import re
 
@@ -5,7 +7,7 @@ from django.utils.text import slugify
 
 from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache, VolumeMetadata
 from capdb.tasks import retrieve_images_from_cases, update_elasticsearch_from_queue
-from test_data.test_fixtures.helpers import xml_equal, set_case_text
+from test_data.test_fixtures.helpers import xml_equal, set_case_text, html_equal
 from capapi.documents import CaseDocument
 
 
@@ -151,22 +153,22 @@ def test_volume_unredact(reset_sequences, case_factory):
     case.body_cache.refresh_from_db()
     assert volume.redacted is False
     assert case.body_cache.text == 'Text 1\nText 2Text 3\nText 4\n'
-    assert xml_equal(case.body_cache.html,
-        '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
-        '  <section class="head-matter">\n'
-        '    <h4 class="parties" id="b1-1">Text 1</h4>\n'
-        '  </section>\n'
-        '  <article class="opinion" data-type="majority">\n'
-        '    <p id="b1-2">Text 2Text 3</p>\n'
-        '    <p class="image" id="b1-3">\n'
-        '      <img class="image" height="100" src="data:image data" width="100"/>\n'
-        '    </p>\n'
-        '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
-        '      <a href="#ref_footnote_1_1">1</a>\n'
-        '      <p id="b1-4">Text 4</p>\n'
-        '    </aside>\n'
-        '  </article>\n'
-        '</section>')
+    assert html_equal(case.body_cache.html, dedent("""\
+        <section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">
+          <section class="head-matter">
+            <h4 class="parties" id="b1-1">Text 1</h4>
+          </section>
+          <article class="opinion" data-type="majority">
+            <p id="b1-2">Text 2Text 3</p>
+            <p class="image" id="b1-3">
+              <img src="data:image%20data" class="image" width="100" height="100">
+            </p>
+            <aside data-label="1" class="footnote" id="footnote_1_1">
+              <a href="#ref_footnote_1_1">1</a>
+              <p id="b1-4">Text 4</p>
+            </aside>
+          </article>
+        </section>\n"""))
 
 
 ### BaseXMLModel ###

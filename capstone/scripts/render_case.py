@@ -269,7 +269,7 @@ class VolumeRenderer:
             Render <casebody> as HTML
         """
         self.format = 'html'
-        return self.render_markup(case).replace('\xad', '')
+        return self.render_markup(case, method='html').replace('\xad', '')
 
     def render_xml(self, case):
         """
@@ -297,7 +297,7 @@ class VolumeRenderer:
             par['blocks'] = [blocks_by_id[id] for id in par['block_ids']]
         return opinions
 
-    def render_markup(self, case):
+    def render_markup(self, case, method='xml'):
         """
             Core renderer.
         """
@@ -342,7 +342,8 @@ class VolumeRenderer:
                 else:
                     case_el.append(opinion_el)
 
-        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print)
+        etree.indent(case_el)
+        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print, method=method)
 
     def make_case_el(self, case):
         """ Make <section class='case'>, or <casebody> """

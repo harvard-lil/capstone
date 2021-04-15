@@ -196,28 +196,30 @@ def read_file(path):
 
 
 def parse_xml(xml):
-    """
-        Parse XML with PyQuery.
-    """
+    """Parse trusted XML with PyQuery."""
 
     # lxml requires byte string
     if type(xml) == str:
         xml = xml.encode('utf8')
 
-    return PyQuery(xml, parser='xml', namespaces=nsmap)
+    # use custom parser with huge_tree=True to disable xml bomb protection for very large cases
+    tree = etree.fromstring(xml, parser=etree.XMLParser(huge_tree=True))
+    return PyQuery(tree, parser='xml', namespaces=nsmap)
+
+
+def parse_html(html):
+    """Parse html with PyQuery."""
+    # no custom parser like parse_xml because xml bomb protection doesn't apply to html
+    return PyQuery(html)
 
 
 def serialize_xml(xml):
-    """
-        Write PyQuery object back to utf-8 bytestring.
-    """
+    """Write PyQuery object back to utf-8 bytestring."""
     return b''.join([etree.tostring(e, encoding='utf-8', xml_declaration=True) for e in xml]) + b'\n'
 
 
 def serialize_html(html):
-    """
-        Write PyQuery object back to HTML.
-    """
+    """Write PyQuery object back to HTML."""
     return html.outer_html()
 
 
