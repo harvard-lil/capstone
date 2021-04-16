@@ -1869,6 +1869,11 @@ class CitationQuerySet(TemporalQuerySet):
         order = models.Case(*[models.When(type=cite_type, then=pos) for pos, cite_type in enumerate(Citation.citation_types)])
         return self.order_by(order)
 
+    def bulk_update(self, objs, fields, *args, **kwargs):
+        if 'cite' in fields and any(f not in fields for f in ('normalized_cite', 'rdb_cite', 'rdb_normalized_cite')):
+            raise ValueError("Cannot bulk update 'cite' field without updating normalized_cite, rdb_cite, rdb_normalized_cite.")
+        return super().bulk_update(objs, fields, *args, **kwargs)
+
 
 class Citation(models.Model):
     citation_types = ("official", "nominative", "parallel", "vendor")  # citation types in sort order
@@ -1972,12 +1977,12 @@ class Citation(models.Model):
                 continue
             old_cite = cite.cite
             cite.cite = cite.cite.replace(old_reporter, new_reporter, 1)
+            cite.cite_updated()
             cites_updated.extend((old_cite, cite.cite))
-            cite.normalized_cite = normalize_cite(cite.cite)
             to_update.append(cite)
             actions.append((cite, old_cite, cite.cite))
         if to_update and not dry_run:
-            Citation.objects.bulk_update(to_update, ['normalized_cite', 'cite'])
+            Citation.objects.bulk_update(to_update, ['cite', 'normalized_cite', 'rdb_cite', 'rdb_normalized_cite'])
             CaseMetadata.update_frontend_urls(cites_updated)
         return actions
 
