@@ -261,14 +261,13 @@ li.nav-item.dropdown {
     }
   }
 
-  .btn.search-icon {
+  .search-icon {
     padding: 0;
-    margin-top: -6px;
     margin-left: -20px;
     background: url("../../img/icons/search.svg") no-repeat center;
     height: 14px;
     width: 18px;
-    margin-bottom: 2px;
+    display: inline-block;
   }
 }
 

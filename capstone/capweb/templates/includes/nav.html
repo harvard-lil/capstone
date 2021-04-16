@@ -18,8 +18,12 @@
   <div class="nav-content">
     <ul class="nav">
       <li class="nav-item nav-search-item">
-        <input placeholder="Search caselaw" v-model="query" @keyup.enter="searchCAP">
-        <button type="submit" @click="searchCAP" class="btn search-icon"></button>
+        <form onsubmit="searchCAP();">
+          <input id="cap-query" placeholder="Search caselaw">
+          <input type="submit" class="submit" hidden/>
+          <span class="search-icon"></span>
+        </form>
+
       </li>
       <li class="nav-item dropdown" id="nav-tools">
         <noscript>
@@ -120,7 +124,14 @@
 </nav>
 
 <script>
-    // showing dropdowns for JS enabled browsers
+    let search_url = "{% url 'search' %}";
+    let query = '';
+    function searchCAP() {
+        query = document.getElementById("cap-query").value
+        window.location.href = search_url + '#/cases?search=' + query + '&page=1&ordering=relevance';
+    }
+
+    // showing dropdowns and search bar for JS enabled browsers
     let dropdowns = document.getElementsByClassName('dropdown-toggle')
     for (let i = 0; i < dropdowns.length; i++) {
         dropdowns[i].style.display = 'block';

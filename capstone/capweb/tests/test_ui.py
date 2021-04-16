@@ -22,7 +22,12 @@ def test_nav(client, case, reporter):
     dropdown_item = soup.find_all('a', {'class': 'dropdown-item'})
     for a in dropdown_item:
         res = client.get(a.get('href'))
-        check_response(res)
+        if 'download' in a.get('href'):
+            # ideally would be caught by is_browser_request,
+            # but for pytests we can explicitly add content_type assumption
+            check_response(res, content_type='application/json')
+        else:
+            check_response(res)
 
     nav_links = soup.find_all('a', {'class': 'nav-link'})
     for a in nav_links:
@@ -48,12 +53,16 @@ def test_footer(client):
         if settings.PARENT_HOST in url:
             res = client.get(url)
             try:
-                check_response(res)
+                if 'download' in a.get('href'):
+                    # ideally would be caught by is_browser_request,
+                    # but for pytests we can explicitly add content_type assumption
+                    check_response(res, content_type='application/json')
+                else:
+                    check_response(res)
             except AssertionError:
                 check_response(res, status_code=302)
                 assert "/docs/" in res.url
                 assert "/docs/" not in a.get('href')
-
 
 @pytest.mark.django_db
 def test_contact(client, auth_client, mailoutbox):
