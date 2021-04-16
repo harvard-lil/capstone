@@ -54,10 +54,12 @@ input[type="number"] {
 
 .inline-list {
   display: inline;
+
   li {
     display: inline;
   }
 }
+
 .example-link {
   display: inline-block;
 }
@@ -100,29 +102,35 @@ form {
   @extend small;
 }
 
-.dropdown-menu {
-  padding: 0;
-  border-radius: 0;
-  border: 1px solid $color-violet-gray;
-  width: 100%;
-  max-height: 15em;
-  overflow-y: scroll;
-  z-index: 999;
-  .dropdown-item {
-    color: $color-black;
-    background-color: $color-white;
-    border-bottom: 1px solid $color-gray;
-    text-transform: capitalize;
-    font-size: inherit;
-    font-weight: inherit;
-    &:hover, &:active, &:focus {
-      background-color: $color-yellow;
-    }
-    &.active {
-      background-color: $color-yellow-light;
+.main-content {
+  .dropdown-menu {
+    padding: 0;
+    border-radius: 0;
+    border: 1px solid $color-violet-gray;
+    width: 100%;
+    max-height: 15em;
+    overflow-y: scroll;
+    z-index: 999;
+
+    .dropdown-item {
+      color: $color-black;
+      background-color: $color-white;
+      border-bottom: 1px solid $color-gray;
+      text-transform: capitalize;
+      font-size: inherit;
+      font-weight: inherit;
+
+      &:hover, &:active, &:focus {
+        background-color: $color-yellow;
+      }
+
+      &.active {
+        background-color: $color-yellow-light;
+      }
     }
   }
 }
+
 
 .selected-jur {
   background-color: $color-violet-gray;
@@ -132,6 +140,7 @@ form {
   font-size: 0.5em;
   padding: 0.5em;
   cursor: pointer;
+
   &:hover, &:focus, &:active {
     background-color: $color-yellow;
     color: $color-black;
@@ -139,16 +148,19 @@ form {
 
 }
 
-.panelset-panel{
+.panelset-panel {
   @extend .text-muted;
   @extend small;
+
   p {
     margin: 0;
     margin-bottom: .3em;
   }
+
   h5 {
     margin-top: 1em;
   }
+
   .close {
     position: absolute;
     top: 1em;
@@ -163,9 +175,11 @@ form {
 
 .cite-formats {
   font-size: .75em;
+
   p {
     margin-bottom: 1.5em;
   }
+
   dd {
     line-height: 1.4em;
   }
@@ -188,16 +202,20 @@ form {
     border: 1px rgba(0, 0, 0, 0.125) solid !important;
     margin-right: 1em !important;
     position: relative;
+
     img {
       height: 1.5em;
       opacity: 0.7;
+
       &:hover {
         opacity: 1;
       }
     }
+
     span {
       display: none;
     }
+
     &:hover span, &:focus span {
       display: inline;
       position: absolute;
