@@ -395,19 +395,3 @@ Under `cal`, there is an array of objects, each containing the counts for a spec
 results from 1984, that's the only year listed. Under `count`, there's `40, 4589927`, meaning *4,589,927* terms were 
 indexed for California in 1984, and 40 of those are *raisins*. Under `doc_count` there's `1, 1237`, meaning *1,237* 
 cases were indexed for California in 1984, and *raisins* shows up in *1* of those cases.
-    
-{# ==============> Citations <============== #}
-## Citations {: id="endpoint-citations" }
-
-[{% api_url "extractedcitation-list" %}]({% api_url "extractedcitation-list" %})
-{: class="endpoint-link" }
-
-Return a list of citations that cases have cited to.
-      
-### Endpoint Parameters
-
-* `cursor` 
-{: add_list_class="parameter-list" }
-    * __data type:__    string
-    * __description:__  A value provided by a previous search result to go to the next page of results
-

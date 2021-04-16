@@ -24,14 +24,3 @@ def test_CaseDocumentSerializerWithCasebody(api_request_factory, case_factory, e
     assert len(serialized.data) == 3
     for case in serialized.data:
         assert 'casebody' in case
-
-
-@pytest.mark.django_db
-def test_ExtractedCitationSerializer(api_request_factory, extracted_citation_factory):
-    extractedcitation = extracted_citation_factory()
-    request = api_request_factory.get(api_reverse("extractedcitation-list"))
-    serializer_context = {'request': Request(request)}
-
-    serialized = serializers.ExtractedCitationSerializer(extractedcitation, context=serializer_context)
-    assert 'cite' in serialized.data
-    assert serialized.data.get('cite') == extractedcitation.cite
