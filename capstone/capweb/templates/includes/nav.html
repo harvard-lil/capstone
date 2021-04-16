@@ -126,9 +126,13 @@
 <script>
     let search_url = "{% url 'search' %}";
     let query = '';
+
     function searchCAP() {
         query = document.getElementById("cap-query").value
-        window.location.href = search_url + '#/cases?search=' + query + '&page=1&ordering=relevance';
+        setTimeout(function () {
+            // need fake timeout for Chrome
+            window.location.href = search_url + '#/cases?search=' + query + '&page=1&ordering=relevance';
+        }, 0);
     }
 
     // showing dropdowns and search bar for JS enabled browsers
