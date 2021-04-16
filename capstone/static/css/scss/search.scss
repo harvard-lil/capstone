@@ -17,6 +17,12 @@ $color-search-gray-light: #ced4da;
   margin: 10px 0;
 }
 
+.nav-content {
+  .nav-search-item {
+    visibility: hidden;
+  }
+}
+
 /* end safari rounding bug hack */
 .main-content {
   margin: 0 !important;
@@ -294,6 +300,7 @@ label {
 
 .close-icon {
   fill: $color-medium-blue;
+
   &:hover, &:active, &:focus {
     fill: $color-dark-blue;
   }
@@ -475,6 +482,7 @@ label {
 
 .query-explainer {
   font-family: $font-monospace;
+
   a {
     text-decoration: underline;
     font-size: $font-size-sm;
