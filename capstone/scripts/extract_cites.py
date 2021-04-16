@@ -107,7 +107,7 @@ def extract_citations(case, html, xml):
             # get URL attributes for link annotation
             if len(matches) == 1:
                 target_case_id = matches[0][0]
-                target_url = matches[0][2]
+                target_url = reverse('cite_home').rstrip('/') + matches[0][2]
             else:
                 target_case_id = None
                 target_url = reverse(
