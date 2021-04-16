@@ -163,6 +163,11 @@ footer {
         padding-right: 0;
       }
     }
+    @include media-breakpoint-down(xs) {
+      th.hidden-xs, td.hidden-xs {
+        display: none;
+      }
+    }
   }
 
   .footer-copyright {
