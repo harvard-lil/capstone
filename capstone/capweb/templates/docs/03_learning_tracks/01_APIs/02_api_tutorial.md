@@ -26,8 +26,7 @@ In a separate tab, navigate to <{% api_url "api-root" %}>
         "volumes": "{% api_url "volumemetadata-list" %}",
         "reporters": "{% api_url "reporter-list" %}",
         "ngrams": "{% api_url "ngrams-list" %}",
-        "user_history": "{% api_url "api-root" %}user_history/",
-        "citations": "{% api_url "extractedcitation-list" %}"
+        "user_history": "{% api_url "api-root" %}user_history/"
     }
 
 Congratulations! You just executed your first query to the CAP API! While the results might not be incredibly exciting, 
@@ -235,7 +234,7 @@ save it to a file. Help to install curl on your system is a quick google search 
 macOS, have curl preinstalled.
 
     $ curl {% api_url "api-root" %}
-    {"cases":"{% api_url "api-root" %}","jurisdictions":"{% api_url "jurisdiction-list" %}","courts":"{% api_url "court-list" %}","volumes":"{% api_url "volumemetadata-list" %}","reporters":"{% api_url "reporter-list" %}","ngrams":"{% api_url "ngrams-list" %}","user_history":"{% api_url "api-root" %}user_history/","citations":"{% api_url "extractedcitation-list" %}"}
+    {"cases":"{% api_url "api-root" %}","jurisdictions":"{% api_url "jurisdiction-list" %}","courts":"{% api_url "court-list" %}","volumes":"{% api_url "volumemetadata-list" %}","reporters":"{% api_url "reporter-list" %}","ngrams":"{% api_url "ngrams-list" %}","user_history":"{% api_url "api-root" %}user_history/"}
 
 <small>[Browsable API Link]({% api_url "api-root" %})</small>
 
@@ -248,7 +247,6 @@ Hmm... that's not very readable. On macOS and Linux, we can format the output us
        "jurisdictions" : "{% api_url "jurisdiction-list" %}",
        "ngrams" : "{% api_url "ngrams-list" %}",
        "user_history" : "{% api_url "api-root" %}user_history/",
-       "citations" : "{% api_url "extractedcitation-list" %}",
        "volumes" : "{% api_url "volumemetadata-list" %}",
        "cases" : "{% api_url "cases-list" %}"
     }
@@ -275,8 +273,7 @@ Let's take a look at the output of our example command:
         "volumes": "{% api_url "volumemetadata-list" %}",
         "reporters": "{% api_url "reporter-list" %}",
         "ngrams": "{% api_url "ngrams-list" %}",
-        "user_history": "{% api_url "api-root" %}user_history/",
-        "citations": "{% api_url "extractedcitation-list" %}"
+        "user_history": "{% api_url "api-root" %}user_history/"
     }
 <small>[Browsable API Link]({% api_url "api-root" %})</small>
 

@@ -16,7 +16,6 @@ router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
 router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
 router.register('user_history', api_views.UserHistoryViewSet)
-router.register('citations', api_views.ExtractedCitationViewSet)
 
 unstable_router = routers.DefaultRouter()
 unstable_router.register('resolve', api_views.ResolveDocumentViewSet, basename="resolve")

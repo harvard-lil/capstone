@@ -36,7 +36,6 @@ def test_flow(client, unrestricted_case, elasticsearch):
     ("reporter", "pk", "full_name"),
     ("volume_metadata", "pk", "title"),
     ("case_export", "pk", "file_name"),
-    ("extracted_citation", "pk", "cite"),
 ])
 def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_attr):
     """ Generic test to kick the tires on -list and -detail for model endpoints. """
