@@ -37,7 +37,6 @@ let vueConfig = {
 
   pages: {
     base: 'static/js/base.js',
-    nav: 'static/js/nav/main.js',
     map: 'static/js/homepage-map/main.js',
     limericks: 'static/js/generate_limericks.js',
     witchcraft: 'static/js/witchcraft/main.js',

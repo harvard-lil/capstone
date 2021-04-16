@@ -43,6 +43,7 @@
   font-size: 1.1rem;
   transition: .2s;
   justify-content: space-between;
+
   a {
     border-bottom: 0;
   }
@@ -55,9 +56,20 @@
     margin-bottom: 0;
   }
 
+  // hiding toggle items unless JS exists on the page (in most cases)
+  .dropdown-toggle, .nav-search-item {
+    display: none;
+  }
+
   .nav-link, .dropdown-item {
     font-size: 15px;
     letter-spacing: 0.05em;
+  }
+
+  .user-account-img {
+    background: url("../../img/icons/user-white.svg") no-repeat center;
+    width: 31px;
+    height: 24px;
   }
 
   @include media-breakpoint-down(lg) {
@@ -73,14 +85,16 @@
       padding-top: 0;
       position: relative;
     }
+
     #nav-account {
-      svg {
-        margin-top: 0.8em;
+      .user-account-img {
+        margin-top: 10px;
       }
       .x-small {
         display: none;
       }
     }
+
     .nav-branding {
       background: url("../../img/logos/cap-logo-long-white-harvard.svg") no-repeat;
       background-size: contain;
@@ -251,13 +265,10 @@ li.nav-item.dropdown {
     padding: 0;
     margin-top: -6px;
     margin-left: -20px;
-
-    svg {
-      height: 14px;
-      width: 18px;
-      margin-bottom: 2px;
-      stroke: $color-gray;
-    }
+    background: url("../../img/icons/search.svg") no-repeat center;
+    height: 14px;
+    width: 18px;
+    margin-bottom: 2px;
   }
 }
 

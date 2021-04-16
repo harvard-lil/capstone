@@ -5,68 +5,128 @@
 {% load render_bundle from webpack_loader %}
 
 <a class="skip" href="#main">Skip to main content</a>
-<div id="nav-app"></div>
-<script>
-    const nav_urls = {
-        home: "{% url 'home' %}",
-        api_root: "{% api_url 'api-root' %}v1/",
-        docs: "{% url 'docs' '' %}",
-        search_docs: "{% url 'search-docs' %}",
-        bulk: "{% url 'download-files' '' %}",
-        search: "{% url 'search' %}",
-        gallery: "{% url 'gallery' %}",
-        labs: "{% url 'labs:labs' %}",
-        tools: "{% url 'tools' %}",
-        about: "{% url 'about' %}",
-        cite: "{% url 'cite_home' host 'cite' %}",
-        contact: "{% url 'contact' %}",
-        login: "{% url 'login' %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}",
-        user_details: "{% url 'user-details' %}"
-    };
+<nav id="main-nav" aria-label="main">
+  <div class="branding">
+    <a class="nav-branding" href="{% url 'home' %}" aria-label="Caselaw Access Project Home"></a>
+  </div>
+  <button id="burger-icon">
+    <div class="burger-item"></div>
+    <div class="burger-item"></div>
+    <div class="burger-item"></div>
+  </button>
 
-    const nav_user = {
-        id: "{{ user.id }}",
-        is_authenticated: "{{ request.user.is_authenticated }}"
-    }
+  <div class="nav-content">
+    <ul class="nav">
+      <li class="nav-item nav-search-item">
+        <input placeholder="Search caselaw" v-model="query" @keyup.enter="searchCAP">
+        <button type="submit" @click="searchCAP" class="btn search-icon"></button>
+      </li>
+      <li class="nav-item dropdown" id="nav-tools">
+        <noscript>
+          <a class="nav-link" href="{% url 'tools' %}">Caselaw</a>
+        </noscript>
+        <a class="nav-link dropdown-toggle"
+           href="#" id="navbar-dropdown-tools"
+           role="button"
+           aria-haspopup="true"
+           aria-expanded="false"
+           data-toggle="dropdown">
+          Caselaw
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-tools">
+          <a class="dropdown-item" href="{% url 'tools' %}">Tools overview</a>
+          <a class="dropdown-item" href="{% api_url 'api-root' %}v1/">API</a>
+          <a class="dropdown-item" href="{% url 'cite_home' host 'cite' %}">Read Caselaw</a>
+          <a class="dropdown-item" href="{% url 'download-files' '' %}">Bulk Data</a>
+          <a class="dropdown-item" href="{% url 'search' %}">Search</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="nav-contact">
+        <noscript>
+          <a class="nav-link" href="{% url 'docs' '' %}">Support/docs</a>
+        </noscript>
 
-</script>
-<noscript>
-  <nav id="main-nav" aria-label="main">
-    <div class="branding">
-      <a class="nav-branding" :href="urls.home" aria-label="Caselaw Access Project Home"></a>
-    </div>
-    <div class="nav-content">
-      <ul class="nav">
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'tools' %}">Caselaw</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'docs' '' %}">Support/docs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'gallery' %}">Gallery</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'about' %}">About</a>
-        </li>
-        {% if request.user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'user-details' %}">Account</a>
-        </li>
+        <a class="nav-link dropdown-toggle"
+           href="#" id="navbar-dropdown-docs"
+           role="button"
+           aria-haspopup="true"
+           aria-expanded="false"
+           data-toggle="dropdown">Support/docs </a>
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-docs">
+          <a class="dropdown-item" href="{% url 'docs' '' %}">Docs Overview </a>
+          <a class="dropdown-item" href="{% url 'docs' '' %}site_features/api">API</a>
+          <a class="dropdown-item" href="{% url 'docs' '' %}site_features/bulk">Bulk Data</a>
+          <a class="dropdown-item" href="{% url 'docs' '' %}site_features/search">Search</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="nav-gallery">
+        <noscript>
+          <a class="nav-link" href="{% url 'gallery' %}">Gallery</a>
+        </noscript>
+        <a class="nav-link dropdown-toggle"
+           href="#" id="navbar-dropdown-gallery"
+           role="button"
+           aria-haspopup="true"
+           aria-expanded="false"
+           data-toggle="dropdown">
+          Gallery
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-gallery">
+          <a class="dropdown-item" href="{% url 'gallery' %}">Gallery home</a>
+          <a class="dropdown-item" href="{% url 'labs:labs' %}">CAP Labs</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#research-results">Research Results</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#coursework">Coursework</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#fun-stuff">Fun Stuff</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#applications">Applications</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#applications-third-party">Applications Third Party</a>
+          <a class="dropdown-item" href="{% url 'gallery' %}#tutorials">Tutorials</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" id="nav-about">
+        <noscript>
+          <a class="nav-link" href="{% url 'about' %}">About</a>
+        </noscript>
+        <a class="nav-link dropdown-toggle"
+           href="#" id="navbar-dropdown-about"
+           role="button"
+           aria-haspopup="true"
+           aria-expanded="false"
+           data-toggle="dropdown">
+          About
+        </a>
+
+        <div class="dropdown-menu" aria-labelledby="navbar-dropdown-about">
+          <a class="dropdown-item" href="{% url 'about' %}">About CAP</a>
+          <a class="dropdown-item" href="{% url 'contact' %}">Contact</a>
+        </div>
+      </li>
+      <li class="nav-item" id="nav-account">
+        {% if user.is_authenticated %}
+        <a href="{% url 'user-details' %}" class="nav-link nav-link-icon">
+          <div class="user-account-img"></div>
+          <div class="x-small">Account</div>
+        </a>
         {% else %}
-        <li class="nav-item">
-          <a class="nav-link"
-             href="{% url 'login' %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}">Log in</a>
-        </li>
+        <a href="{% url 'login' %}{% if request %}?next={{ request.build_absolute_uri }}{% endif %}"
+           class="nav-link nav-link-icon">
+          <div class="user-account-img"></div>
+          <div class="x-small">Log in</div>
+        </a>
         {% endif %}
-      </ul>
-    </div>
-  </nav>
-</noscript>
-{% render_bundle 'nav' %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<script>
+    // showing dropdowns for JS enabled browsers
+    let dropdowns = document.getElementsByClassName('dropdown-toggle')
+    for (let i = 0; i < dropdowns.length; i++) {
+        dropdowns[i].style.display = 'block';
+    }
+    let searchBar = document.getElementsByClassName('nav-search-item')[0]
+    searchBar.style.display = 'block';
+</script>
+
 
