@@ -21,192 +21,173 @@ main.admin {
   .top-menu {
     right: 0.5em;
     padding: 2em;
-    display: grid;
-    grid-template-areas: ". title ."
-                         ". add .";
-    grid-template-columns: 20% 30% 40%;
-    @include media-breakpoint-down(md) {
-      grid-template-areas: ". title"
-                             ". add";
-      grid-template-columns: 20% 1fr;
+    h3 {
+      font-size: 2rem;
     }
-  }
-
-  .add-timeline {
-    grid-area: add;
-    text-transform: none;
-
-    button {
+    .info {
+      display: inline-block;
+      margin-left: -1.15em;
+      font-weight: $font-weight-semibold;
+      color: $color-blue;
       text-decoration: none;
-      padding-left: 0;
-      text-transform: none;
+      padding: 0;
     }
-
-    svg {
-      margin-top: -0.3em;
-    }
-  }
-
-
-  .info {
-    grid-area: info;
-    display: inline-block;
-    margin-top: -1.5em;
-    margin-left: -0.5em;
-    font-size: 15px;
-    font-weight: $font-weight-semibold;
-    color: $color-blue;
-    text-decoration: none;
-    padding: 0;
-  }
-
-  h3 {
-    grid-area: title;
-    font-family: $font-serif;
   }
 
   #timeline {
+    padding: 2rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     background-color: $color-white;
-  }
-
-  .timeline {
-    max-width: 6fr;
-    width: 100%;
-    display: grid;
-    grid-template-areas: ". title buttons"
-                         ". description numbers"
-                         ". description .";
-    grid-template-columns: 20% 20% 50%;
-    min-height: 4rem;
-    margin-top: 2rem;
-    grid-gap: 1rem;
-    border-bottom: 1px solid $color-gray;
-    padding-bottom: 2em;
-  }
-
-  .btn-group {
-    grid-area: buttons;
-    display: grid;
-    grid-template-areas: "delete save edit .";
-    grid-template-columns: 5% 5% 5% 85%;
-  }
-
-  .numbers {
-    grid-area: numbers;
-    display: grid;
-    grid-template-areas: "case_count_label event_count_label id_label"
-                         "case_count event_count id";
-    grid-template-columns: 1fr 1fr 1fr;
-
-    .id_label {
-      grid-area: id_label;
-    }
-
-    .case_count {
-      grid-area: case_count;
-    }
-
-    .event_count {
-      grid-area: event_count;
-    }
-
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-  }
-
-  .label {
-    font-weight: $font-weight-black;
-    text-transform: uppercase;
-    color: $color-violet-gray-dark;
-  }
-
-  .edit, .delete, .save {
-    cursor: pointer;
-  }
-
-  .edit {
-    grid-area: edit;
-
-    &:hover, &:active, &:focus {
-      svg {
-        color: $color-blue;
-      }
-    }
-
-  }
-
-  .delete {
-    grid-area: delete;
-
-    &:hover, &:active, &:focus {
-      svg {
-        color: $color-red;
-      }
-    }
-  }
-
-  .save {
-    grid-area: save;
-
-    &:hover, &:active, &:focus {
-      svg {
-        color: $color-violet;
-      }
-    }
-
-  }
-
-  .title {
-    grid-area: title;
-    font-weight: $font-weight-semibold;
-    min-height: 2em;
-  }
-
-  .title_edit {
-    height: 2em;
-  }
-
-  .description {
-    grid-area: description;
-    font-family: $font-sans-serif;
-    font-size: $font-size-sm;
-    display: grid;
-    grid-template-areas: "description_label"
-                         "description_text";
-
-    .description_text {
-      grid-area: description_text;
+    .welcome {
       width: 100%;
-      line-height: 1.7em;
+      padding-right: 30%;
+    }
+    .inline-icon {
+      svg {
+        transform: scale(.75);
+        margin-top: -.40rem;
+      }
+    }
+    .timeline-assembly {
+      display: grid;
+      grid-template-areas: "nav"
+                           "card";
+      width: 20rem;
+      height: 28rem;
+      margin: 1rem;
+      padding: 0;
+      word-break: break-all;
+      nav {
+        display: grid;
+        grid-area: nav;
+        grid-template-areas: ". delete save editcancel"
+                            "card card card card";
+        grid-template-columns: 4fr 1fr 1fr 1fr;
+        .editcancel, .delete, .save {
+          button {
+            padding: 0;
+          }
+          cursor: pointer;
+          display: flex;
+          justify-content: flex-end;
+        }
+        .editcancel {
+          grid-area: editcancel;
+        }
+        .delete {
+          grid-area: delete;
+        }
+        .save {
+          grid-area: save;
+        }
+
+      }
+
+      .timeline-card {
+
+        height: 25rem;
+        grid-area: card;
+        display: grid;
+        grid-template-areas: "content"
+                             "details";
+        grid-template-rows: 21rem 2rem;
+        padding: 1rem;
+        border-radius: 2px;
+        background-color: #EEEEEE;
+        .content {
+          display: grid;
+          grid-area: content;
+          grid-template-areas: "header"
+                               "desc";
+          grid-template-rows: auto 1fr;
+          header {
+            grid-area: header;
+            h3 {
+              font-size: 1rem;
+              font-weight: $font-weight-semibold;
+              font-family: $font-monospace;
+
+            }
+            .title-edit{
+              padding-left: .5rem;
+              padding-right: .5rem;
+              .title-input {
+                width: 100%;
+              }
+            }
+          }
+          .description {
+            grid-area: desc;
+            background-color: $color-white;
+            padding: .5rem;
+            font-family: $font-sans-serif;
+            font-size: $font-size-sm;
+            line-height: $line-height-sm;
+            overflow: scroll;
+            p {
+              margin: 0;
+            }
+
+          }
+          .description.editmode {
+            background-color: #EEEEEE;
+            .description-edit {
+              height: 94%;
+              width: 100%;
+              .description-input {
+                width: 100%;
+                height: 100%;
+              }
+
+            }
+          }
+
+        }
+
+        aside {
+          grid-area: details;
+          font-size: .75rem;
+          padding-left: 0rem;
+          display: flex;
+          padding-top: .5rem;
+          .stat {
+            width: 35%;
+            padding-left: 0;
+            display: flex;
+            flex-direction: row;
+            .label {
+              margin-right: 1rem;
+              font-size: .75rem;
+              font-weight: $font-weight-black;
+              text-transform: uppercase;
+              color: $color-violet-gray-dark;
+            }
+          }
+        }
+      }
     }
 
-    .description_label {
-      grid-area: description_label;
+    .timeline-assembly.add-timeline {
+      padding-top: 2rem;
+      .timeline-card {
+        background-color: $color-light-gray;
+        border: 5px dashed $color-medium-gray;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        button {
+          padding: 0;
+
+          svg {
+            transform: scale(2);
+            color: $color-violet-gray-dark;
+          }
+        }
+      }
     }
 
-    .description_edit {
-      width: 100%;
-    }
-  }
-
-  .btn-edit {
-    grid-area: button-one;
-  }
-
-  .btn-delete {
-    grid-area: button-two;
-
-    .disabled {
-      color: $color-medium-gray;
-    }
-  }
-
-  .btn-hidden {
-    grid-area: button-one;
-  }
-
-  .btn-create {
-    grid-area: button-two;
   }
 }
 
