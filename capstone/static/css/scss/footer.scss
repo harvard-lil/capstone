@@ -8,6 +8,7 @@ footer {
     margin-bottom: 0.2em;
     @include media-breakpoint-down(md) {
       width: 120px;
+      height: 70px;
       margin-bottom: 0;
     }
   }
@@ -44,8 +45,6 @@ footer {
     grid-template-areas: "logo . copyright"
                           "terms . links";
     grid-template-columns: 20% 1fr 60%;
-    overflow: hidden;
-
   }
 
   @include media-breakpoint-down(xs) {
@@ -61,7 +60,9 @@ footer {
   }
 
   .social {
-    .github > a, .twitter > a {
+    margin-top: 0.5em;
+    @include media-breakpoint-down(sm) {
+      margin-top: 0;
     }
 
     .github > a {
@@ -115,7 +116,7 @@ footer {
     }
     @include media-breakpoint-down(sm) {
       font-size: 10px;
-      margin-top: -2em;
+      margin-top: 0;
     }
 
     a {

@@ -10,7 +10,7 @@
     const nav_urls = {
         home: "{% url 'home' %}",
         api_root: "{% api_url 'api-root' %}v1/",
-        docs: "{% url 'docs' parent.url %}",
+        docs: "{% url 'docs' '' %}",
         search_docs: "{% url 'search-docs' %}",
         bulk: "{% url 'download-files' '' %}",
         search: "{% url 'search' %}",
@@ -43,7 +43,7 @@
         </li>
         <li class="nav-item">
           <a class="nav-link"
-             href="{% url 'docs' parent.url %}">Support/docs</a>
+             href="{% url 'docs' '' %}">Support/docs</a>
         </li>
         <li class="nav-item">
           <a class="nav-link"

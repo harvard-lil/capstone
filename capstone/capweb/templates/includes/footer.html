@@ -49,51 +49,49 @@
     </div>
     <div class="site-links">
       <table>
-
         <tr>
           <th><a href="{% url 'tools' %}">Caselaw</a></th>
-          <th><a href="{% url 'docs' parent.url %}">Documentation</a></th>
-          <th><a href="{% url 'gallery' %}">Gallery</a></th>
+          <th><a href="{% url 'docs' '' %}">Documentation</a></th>
+          <th class="d-none d-sm-block"><a href="{% url 'gallery' %}">Gallery</a></th>
           <th><a href="{% url 'about' %}">About</a></th>
         </tr>
         <tr>
           <td><a href="{% api_url 'api-root' %}v1/">API</a></td>
-          <td><a href="{% url 'docs' parent.url %}">Docs Overview </a></td>
-          <td><a href="{% url 'labs:labs' %}">CAP Labs</a></td>
+          <td><a href="{% url 'docs' '' %}">Docs Overview </a></td>
+          <td class="d-none d-sm-block"><a href="{% url 'labs:labs' %}">CAP Labs</a></td>
           <td><a href="{% url 'contact' %}">Contact</a></td>
         </tr>
         <tr>
           <td><a href="{% url 'cite_home' host 'cite' %}">Read Caselaw</a></td>
-          <td><a href="{% url 'docs' parent.url %}site_features/api">API docs</a></td>
-          <td><a href="{% url 'gallery' %}#research-results">Research</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/api">API docs</a></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#research-results">Research</a></td>
         </tr>
         <tr>
           <td><a href="{% url 'download-files' '' %}">Bulk Data</a></td>
-          <td><a href="{% url 'docs' parent.url %}site_features/bulk">Bulk data docs</a></td>
-          <td><a href="{% url 'gallery' %}#coursework">Coursework</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/bulk">Bulk data docs</a></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#coursework">Coursework</a></td>
         </tr>
         <tr>
           <td><a href="{% url 'search' %}">Search</a></td>
-          <td><a href="{% url 'docs' parent.url %}site_features/search">Search docs</a></td>
-          <td><a href="{% url 'gallery' %}#fun-stuff">Fun Stuff</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/search">Search docs</a></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#fun-stuff">Fun Stuff</a></td>
         </tr>
         <tr>
           <td></td>
           <td></td>
-          <td><a href="{% url 'gallery' %}#applications">Apps</a></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#applications">Apps</a></td>
         </tr>
         <tr>
-          <td></td>
-          <td></td>
-          <td><a href="{% url 'gallery' %}#applications-third-party">Apps 3rd Party</a></td>
+          <td class="d-none d-sm-block"></td>
+          <td class="d-none d-sm-block"></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#applications-third-party">Apps 3rd Party</a></td>
         </tr>
         <tr>
-          <td></td>
-          <td></td>
-          <td><a href="{% url 'gallery' %}#tutorials">Tutorials</a></td>
+          <td class="d-none d-sm-block"></td>
+          <td class="d-none d-sm-block"></td>
+          <td class="d-none d-sm-block"><a href="{% url 'gallery' %}#tutorials">Tutorials</a></td>
         </tr>
       </table>
-
     </div>
   </div>
 </footer>
