@@ -1656,6 +1656,31 @@ def set_rdb_cites():
         Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
 
 
+@task
+def celery_jobs_pending():
+    """List all celery jobs not claimed by a worker."""
+    import scripts.celery_queues
+    scripts.celery_queues.jobs_pending()
+
+
+@task
+def celery_job_info(index=0, queue='celery'):
+    """Dump info for a particular pending job."""
+    import scripts.celery_queues
+    index = int(index)
+    scripts.celery_queues.job_info(index, queue)
+
+
+@task
+def celery_remove_jobs(task_name, queue='celery'):
+    """
+       Remove all jobs from a given queue matching a given task name.
+       Example: fab celery_remove_jobs:capdb.tasks.update_elasticsearch_from_queue
+    """
+    import scripts.celery_queues
+    scripts.celery_queues.remove_jobs(task_name, queue)
+
+
 if __name__ == "__main__":
     # allow tasks to be run as "python fabfile.py task"
     # this is convenient for profiling, e.g. "kernprof -l fabfile.py refresh_case_body_cache"
