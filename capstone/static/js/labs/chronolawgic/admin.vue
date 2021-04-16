@@ -32,7 +32,8 @@
                         <div class="editcancel" title="edit">
                             <button v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
                                     class="btn btn-edit"
-                                    @click="toggleEdit(timeline)">
+                                    @click="toggleEdit(timeline)"
+                                    @keyup.esc="toggleEdit(timeline)">
                                 <cancel-icon></cancel-icon>
                             </button>
                             <button v-else class="btn btn-edit" @click="toggleEdit(timeline)">
@@ -63,7 +64,7 @@
                                 </h3>
                                 <div class="title-edit" v-else>
                                     <div class="label">Title</div>
-                                    <input type="text" class="title-input title" v-model="editMode[timeline.id].title">
+                                    <input type="text" @keyup.esc="toggleEdit(timeline)" @keyup.enter="saveEdit(timeline.id)" class="title-input title" v-model="editMode[timeline.id].title">
                                 </div>
                             </header>
 
@@ -71,8 +72,8 @@
                                 <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
                                    v-text="timeline.description"></p>
                                 <div class="description-edit" v-else>
-                                    <div class="label">Descriptions</div>
-                                    <textarea class="description-input"
+                                    <div class="label">Description</div>
+                                    <textarea class="description-input" @keyup.esc="toggleEdit(timeline)"
                                               v-model="editMode[timeline.id].description"></textarea>
                                 </div>
                             </div>
