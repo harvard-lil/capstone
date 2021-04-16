@@ -65,6 +65,7 @@
   .decorative-arrow {
     width: 30px;
     margin-top: -20px;
+    display: inline;
   }
 }
 
@@ -100,7 +101,7 @@
 .top-section {
   @extend .row;
   padding-bottom: 4.5rem;
-  padding-top: 6.75rem;
+  padding-top: 2rem;
   border-bottom: 1px solid #E7E7ED;
   &.compressed {
     border-bottom: 0;

@@ -8,14 +8,16 @@
   line-height: inherit;
   white-space: nowrap;
   transition: .2s;
+
   .nav-branding {
     background: url("../../img/logos/cap-logo-harvard-white.svg") no-repeat;
     background-size: contain;
-    width: 187px;
-    height: 72px;
+    width: 146px;
+    height: 63px;
     transition: .2s;
     display: block;
     background-position-x: 0;
+
     &:hover, &:focus, &:active {
       background: url("../../img/logos/cap-logo-harvard-hover.svg") no-repeat;
       background-size: contain;
@@ -28,7 +30,6 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: space-between;
   width: 100%;
   padding: 0.5rem;
   margin: 0;
@@ -39,15 +40,38 @@
   letter-spacing: 0.07em;
   z-index: 999;
   user-select: none;
-  border-bottom: 1px solid $color-white;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   transition: .2s;
+  justify-content: space-between;
+
   a {
     border-bottom: 0;
   }
+
   ul {
     margin-bottom: 0;
   }
+
+  form {
+    margin-bottom: 0;
+  }
+
+  // hiding toggle items unless JS exists on the page (in most cases)
+  .dropdown-toggle, .nav-search-item {
+    display: none;
+  }
+
+  .nav-link, .dropdown-item {
+    font-size: 15px;
+    letter-spacing: 0.05em;
+  }
+
+  .user-account-img {
+    background: url("../../img/icons/user-white.svg") no-repeat center;
+    width: 31px;
+    height: 24px;
+  }
+
   @include media-breakpoint-down(lg) {
     font-size: 1.2rem;
   }
@@ -62,6 +86,15 @@
       position: relative;
     }
 
+    #nav-account {
+      .user-account-img {
+        margin-top: 10px;
+      }
+      .x-small {
+        display: none;
+      }
+    }
+
     .nav-branding {
       background: url("../../img/logos/cap-logo-long-white-harvard.svg") no-repeat;
       background-size: contain;
@@ -73,16 +106,18 @@
         background: url("../../img/logos/cap-logo-long-yellow-harvard.svg") no-repeat;
         background-size: contain;
       }
-
     }
 
     .dropdown-menu {
-      margin-top: 10px;
+      margin-top: 0;
+      min-width: 160px;
+      z-index: 1;
+      margin-left: -30px;
     }
 
     > #burger-icon {
       @include media-breakpoint-down(md) {
-        padding-top: 10px;
+        float: right;
       }
     }
   }
@@ -91,6 +126,7 @@
 .nav-content {
   display: inline-table;
   z-index: 1;
+
   > .nav {
     width: 100%;
   }
@@ -106,35 +142,51 @@
     width: 100%;
     background-color: $color-black;
     border-bottom: 1px $color-white solid;
+
+    .nav-search-item {
+      display: none !important;
+    }
+  }
+
+  .nav-search-item {
+    width: 300px;
+
+    input {
+      width: 90%;
+    }
   }
 
   .dropdown-menu {
     background-color: $color-black;
+
     a {
       font-weight: $font-weight-normal;
       color: $color-white;
       border-bottom: $border-width solid $color-white;
-      padding-bottom: 15px;
+      padding: 0.2em 0.6em;
     }
+
     a:hover, a:focus, a:active {
       background-color: $color-yellow;
       color: $color-black !important;
     }
+
     a:last-child {
       border-bottom: 0;
     }
+
     @include media-breakpoint-up(lg) {
-      margin-top: 24px;
-      border: $border-width solid $color-white;
+      margin-top: 0.8em;
       border-top: none;
+      position: fixed;
     }
     @include media-breakpoint-down(md) {
       a {
         border: none;
       }
       a:before {
-        color: $color-violet;
-        content: "\0226B  ";
+        color: white;
+        content: "- ";
       }
     }
   }
@@ -145,11 +197,12 @@ li.nav-item.dropdown {
   > a.nav-link:after {
     content: url('../../img/arrow-expand.svg');
     display: inline-block;
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
+
   &.show {
     > a:after {
-      transform: rotate(180deg) translateY(-5px);
+      transform: rotate(180deg) translateY(-3px);
     }
   }
 }
@@ -158,12 +211,63 @@ li.nav-item.dropdown {
   height: 100%;
   @include media-breakpoint-up(lg) {
     float: left;
-    padding: 1rem 0.7rem;
+    padding: 0.5rem 0.7rem;
+    .nav-link-icon {
+      text-align: center;
+    }
   }
   @include make-col(4);
   @include media-breakpoint-down(md) {
     float: none;
     min-width: 100%;
+    .nav-link-icon {
+      text-align: left;
+    }
+  }
+
+  .x-small {
+    font-size: 0.7rem;
+    line-height: 1.2em;
+  }
+
+  #nav-account {
+    text-align: center;
+  }
+
+  .nav-link-icon {
+    margin-top: -10px;
+  }
+
+}
+
+.nav-item {
+  input {
+    background: transparent;
+    outline: none;
+    border: 0;
+    border-bottom: 1px solid $color-gray;
+    margin-top: 10px;
+    padding: 0;
+    color: $color-white;
+    height: 1.6em;
+    font-size: 0.8em;
+
+    &::placeholder {
+      color: $color-white;
+    }
+
+    &:hover {
+      border-color: $color-yellow-bright;
+    }
+  }
+
+  .search-icon {
+    padding: 0;
+    margin-left: -20px;
+    background: url("../../img/icons/search.svg") no-repeat center;
+    height: 14px;
+    width: 18px;
+    display: inline-block;
   }
 }
 
@@ -172,9 +276,11 @@ li.nav-item.dropdown {
   display: block;
   color: $color-white;
   padding: 0.5rem;
+
   &:hover, &:active, &:focus {
     color: $color-yellow-bright !important;
   }
+
   &.selected {
     color: $color-yellow !important;
   }
@@ -195,9 +301,11 @@ li.nav-item.dropdown {
   padding-left: 4px;
   float: right;
   padding-top: 0;
+
   &:focus, &:active {
     outline: 1px solid $color-yellow;
   }
+
   @include media-breakpoint-up(lg) {
     display: none;
   }
@@ -218,13 +326,16 @@ body.hamburger-menu-open {
       -webkit-transform: rotate(-45deg) translate(-3.5px, 6px);
       transform: rotate(-45deg) translate(-3.5px, 6px);
     }
+
     :nth-child(2) {
       opacity: 0;
     }
+
     :nth-child(3) {
       -webkit-transform: rotate(45deg) translate(-5px, -8px);
       transform: rotate(45deg) translate(-5px, -8px);
     }
+
     > .burger-item {
       background-color: $color-yellow;
     }
@@ -234,6 +345,7 @@ body.hamburger-menu-open {
 @include media-breakpoint-down(md) {
   body.hamburger-menu-closed {
     overflow-y: scroll;
+
     .nav-content {
       z-index: -1;
       transition: visibility .2s ease-in-out;
@@ -241,6 +353,7 @@ body.hamburger-menu-open {
       height: 0;
       overflow: hidden;
       display: none;
+
       a {
         pointer-events: none;
         cursor: default;
@@ -257,11 +370,13 @@ body.hamburger-menu-open {
       opacity: 1;
       height: auto;
     }
+
     .nav-link {
       margin-left: 2rem;
     }
+
     .dropdown-item {
-      padding-left: 3rem;
+      padding-left: 5rem;
     }
   }
 }

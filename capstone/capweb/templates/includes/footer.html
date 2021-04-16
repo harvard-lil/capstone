@@ -1,34 +1,29 @@
 {% load static %}
+{% load api_url %}
+
 <footer class="footer">
-  <div class="row footer-content">
-    <div class="col-sm">
-      <div class="row">
-        <div class="col-md-12 col-6">
-          <a href="https://lil.law.harvard.edu"
-             class="lil-logo"
-             aria-label="Library Innovation Lab"
-             target="_blank">
-          </a>
-        </div>
-        <div class="col-md-12 col-6">
-          <div class="social">
+  <div class="footer-content">
+    <div class="logo-group">
+      <a href="https://lil.law.harvard.edu"
+         class="lil-logo"
+         aria-label="Library Innovation Lab"
+         target="_blank">
+      </a>
+      <div class="social">
         <span class="github">
           <a href="https://github.com/harvard-lil/capstone" target="_blank"
              title="Caselaw Access Project Github"
              aria-label="Caselaw Access Project Github"></a>
         </span>
 
-            <span class="twitter">
+        <span class="twitter">
             <a href="https://twitter.com/caselawaccess" target="_blank"
                title="Caselaw Access Project Twitter"
                aria-label="Caselaw Access Project Twitter"></a>
             </span>
-          </div>
-        </div>
       </div>
-
     </div>
-    <div class="col-sm footer-copyright small">
+    <div class="footer-copyright">
       <p>
         {# spans stop text from breaking within sentences if avoidable #}
         <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
@@ -37,23 +32,66 @@
         <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
       </p>
     </div>
-    <div class="col-sm">
+    <div class="term-links">
       <nav aria-label="footer">
         <ul class="list-inline links">
           <li class="list-inline-item">
-            <a href="{% url 'terms' %}">TERMS</a>
+            <a href="{% url 'terms' %}">Terms</a>
           </li>
           <li class="list-inline-item">
-            <a href="{% url 'privacy' %}">PRIVACY</a>
+            <a href="{% url 'privacy' %}">Privacy</a>
           </li>
           <li class="list-inline-item">
-            <a href="https://accessibility.huit.harvard.edu/digital-accessibility-policy">ACCESSIBILITY</a>
+            <a href="https://accessibility.huit.harvard.edu/digital-accessibility-policy">Accessibility</a>
           </li>
         </ul>
       </nav>
     </div>
-  </div>
-  <div class="row footer-copyright small">
-
+    <div class="site-links">
+      <table>
+        <tr>
+          <th><a href="{% url 'tools' %}">Caselaw</a></th>
+          <th><a href="{% url 'docs' '' %}">Documentation</a></th>
+          <th class="hidden-xs"><a href="{% url 'gallery' %}">Gallery</a></th>
+          <th><a href="{% url 'about' %}">About</a></th>
+        </tr>
+        <tr>
+          <td><a href="{% api_url 'api-root' %}v1/">API</a></td>
+          <td><a href="{% url 'docs' '' %}">Docs Overview </a></td>
+          <td class="hidden-xs"><a href="{% url 'labs:labs' %}">CAP Labs</a></td>
+          <td><a href="{% url 'contact' %}">Contact</a></td>
+        </tr>
+        <tr>
+          <td><a href="{% url 'cite_home' host 'cite' %}">Read Caselaw</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/api">API docs</a></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#research-results">Research</a></td>
+        </tr>
+        <tr>
+          <td><a href="{% url 'download-files' '' %}">Bulk Data</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/bulk">Bulk data docs</a></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#coursework">Coursework</a></td>
+        </tr>
+        <tr>
+          <td><a href="{% url 'search' %}">Search</a></td>
+          <td><a href="{% url 'docs' '' %}site_features/search">Search docs</a></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#fun-stuff">Fun Stuff</a></td>
+        </tr>
+        <tr>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#applications">Apps</a></td>
+        </tr>
+        <tr>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#applications-third-party">Apps 3rd Party</a></td>
+        </tr>
+        <tr>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"></td>
+          <td class="hidden-xs"><a href="{% url 'gallery' %}#tutorials">Tutorials</a></td>
+        </tr>
+      </table>
+    </div>
   </div>
 </footer>

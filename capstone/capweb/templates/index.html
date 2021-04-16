@@ -25,39 +25,12 @@
 
   <div class="main-content bg-black">
 
-    <!-- START SPLASH QUOTE -->
-    <div class="splash-quote-section p-lg-5 bg-black">
-      <h1>Caselaw Access Project</h1>
-      <div class="row text-center p-5" id="section-quote">
-        <div class="col-1 col-sm-2 col-lg-3 splash-arrow-container text-right pt-2 pt-xl-3">
-          <img class="decorative-arrow-img pull-right d-none d-md-inline"
-               alt=""
-               aria-hidden="true"
-               src='{% static "img/violet-arrow-right.svg" %}'/>
-        </div>
-        <div class="col d-none d-md-block" id="splash-quote">
-          Three hundred and sixty years of United States caselaw
-        </div>
-        <div class="col d-block d-md-none" id="splash-quote">
-          A complete collection of published United States caselaw from 1640 to 2017
-        </div>
-
-        <div class="col-1 col-sm-2 col-lg-3 splash-arrow-container pt-2 pt-xl-3 text-left">
-          <img class="decorative-arrow-img text-left d-none d-md-inline"
-               alt=""
-               aria-hidden="true"
-               src='{% static "img/violet-arrow-left.svg" %}'/>
-        </div>
-      </div>
-    </div>
-
-    <!-- END SPLASH QUOTE -->
     <!-- START MAP -->
     <div id="app"></div>
     <!-- END MAP -->
     <!-- START DIVE-IN -->
 
-    <div class="dive-in-section m-0 p-0 bg-black">
+    <div class="dive-in-section m-0 p-0">
       <div class="row pt-4">
         <div class="col-1 text-right pr-3 pt-4 mt-1 d-none d-lg-block">
           <img alt="" aria-hidden="true" src='{% static "img/magenta-arrow-right.svg" %}'>
@@ -88,7 +61,7 @@
               <div class="row">
                 <div class="col-12 col-sm-6">
                   <div class="boxcontainer text-white bg-transparent pr-3 mb-4">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title"><a href="{% url "search" %}">
                         Search</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Search</span> cases with an intuitive,
@@ -105,7 +78,7 @@
                 </div>
                 <div class="col-12 d-none d-sm-block d-md-none col-sm-6">
                   <div class="boxcontainer text-white bg-transparent pr-3 mb-4">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
                         <a href="{% url "tools" %}">Tools</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Our Tools Page</span> shows the rest of the
@@ -122,7 +95,7 @@
                 </div>
                 <div class="col-12 d-block d-sm-none d-md-block col-sm-6">
                   <div class="boxcontainer text-white bg-transparent pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title"><a href="{% api_url "api-root" %}">API</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">The API</span> allows users to browse and
                         download cases using a few short commands.</p>
@@ -141,7 +114,7 @@
               <div class="row">
                 <div class="col-6 d-none d-md-block">
                   <div class="boxcontainer text-white bg-transparent d-none d-sm-block mb-4 pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <p>
                         <span class="highlighted">Download</span> zip files of our open jurisdictions
                         and other bulk exports.
@@ -159,7 +132,7 @@
                 TEMPORARILY REPLACED PENDING DESIGN DISCUSSION
                 <div class="col-6 d-none d-md-block">
                   <div class="boxcontainer text-white bg-transparent d-none d-sm-block pr-3 mb-4">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
                         <a href="{% url "cite_home" host "cite" %}">Browse</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Browse</span> a list of all cases in our
@@ -175,7 +148,7 @@
                 -->
                 <div class="col-6 d-none d-md-block">
                   <div class="boxcontainer text-white bg-transparent d-none d-sm-block pr-3 mb-4">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title d-block d-sm-none small-screen-boxcontainer-title">
                         <a href="{% url "trends" %}">Historical Trends</a></div>
                       <p class="d-none d-sm-block"><span class="highlighted">Historical Trends</span> lets you visualize
@@ -252,7 +225,7 @@
               <div class="row">
                 <div class="col-sm-6">
                   <div class="boxcontainer text-white bg-transparent pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title font-weight-bold d-none d-md-block">Limericks</div>
                       <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "limericks" %}">Limericks</a></div>
                       <p>Generate rhymes using caselaw!</p>
@@ -267,7 +240,7 @@
                 <div class="col-sm-6">
 
                   <div class="boxcontainer text-white bg-transparent pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title font-weight-bold d-none d-md-block">Wordclouds</div>
                       <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "wordclouds" %}">Wordclouds</a></div>
                       <p>Graphics showcasing the most-used words in California caselaw each year between 1852 and
@@ -285,7 +258,7 @@
               <div class="row">
                 <div class="col-sm-6 d-none d-sm-block">
                   <div class="boxcontainer text-white bg-transparent pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title font-weight-bold d-none d-md-block">Gavelfury</div>
                       <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="http://www.gavelfury.com/">Gavelfury</a></div>
                       <p>See all instances of "!"</p>
@@ -299,7 +272,7 @@
                 </div>
                 <div class="col-sm-6 d-none d-sm-block">
                   <div class="boxcontainer text-white bg-transparent pr-3">
-                    <div class="boxcontainer-body bg-black">
+                    <div class="boxcontainer-body">
                       <div class="boxcontainer-title font-weight-bold d-none d-md-block">Witchcraft</div>
                       <div class="boxcontainer-title small-screen-boxcontainer-title d-block d-md-none"><a href="{% url "witchcraft" %}">Witchcraft</a></div>
                       <p>See all instances of "witchcraft" charted out on the U.S. map.</p>
@@ -435,7 +408,7 @@
         </div>
         <div class="col-8 col-sm-10 col-md-2 offset-1 offset-lg-0 ">
           <h2 class="section-title long-title pt-4 pt-md-3 pt-xl-0 mb-0 mb-md-2">
-            CAP for Courts
+            For Courts
           </h2>
           <div class="section-subtitle d-none d-md-block">
             More information:<br>
@@ -471,7 +444,7 @@
             Contact
           </h2>
           Follow our progress, contribute code, or just say hi!
-          <div class="social-top d-block d-md-flex">
+          <div class="social-top d-block d-md-flex mt-2">
             <span class="twitter">
               <a href="https://twitter.com/caselawaccess" target="_blank"
                  title="Caselaw Access Project Twitter"

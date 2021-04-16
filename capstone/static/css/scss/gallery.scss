@@ -1,14 +1,5 @@
 @import 'variables';
-@import 'footer/magenta';
 @import 'base.scss';
-
-@include media-breakpoint-down(md) {
-  .dropdown-item {
-    background-color: $color-white;
-    color: $color-black !important;
-    border-bottom: $border-width solid $color-black;
-  }
-}
 
 .main-content {
   padding-top: 1.25rem !important;

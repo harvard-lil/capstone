@@ -17,7 +17,7 @@ $color-violet: #4830FD;
 
 /* use as background (with black text)
   for decorative purposes, or highlighting */
-$color-yellow: #FFD21B;
+$color-yellow: #fcd84d;
 
 /* links & buttons on black*/
 $color-magenta: #E878FF;
@@ -148,6 +148,12 @@ $header-margin-size: 4rem;
 %footer-lil-logo-black {
   background: url("../../img/logos/lil-black.svg") no-repeat;
   background-size: contain !important;
+}
+
+%footer-lil-logo-black-small {
+  background: url("../../img/logos/lil-black-icon.svg") no-repeat;
+  background-size: contain !important;
+
 }
 
 $top-section-padding: 4.5rem;
