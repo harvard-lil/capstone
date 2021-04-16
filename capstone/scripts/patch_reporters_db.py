@@ -33,11 +33,4 @@ for reporter_key, reporter_cluster in REPORTERS.items():
 
 # temporarily patch eyecite with simpler page number regex
 import eyecite.utils
-eyecite.utils.PAGE_NUMBER_REGEX = r"(?:%s)" % "|".join(
-    [
-        r"\d+",  # simple digit
-        eyecite.utils.ROMAN_NUMERAL_REGEX,
-        eyecite.utils.ROMAN_NUMERAL_REGEX.lower(),
-        r"[*¶]*[\d:\-]+",  # ¶, star, colon
-    ]
-)
+eyecite.utils.PAGE_NUMBER_REGEX = r"\d+"
