@@ -199,6 +199,8 @@ def extract_citations_from_text(text):
     for cite in cite_extractor(text):
         if not isinstance(cite, CaseCitation):
             continue
+        if cite.matched_text() == "1 FLP 1":
+            continue
         yield cite
 
 
