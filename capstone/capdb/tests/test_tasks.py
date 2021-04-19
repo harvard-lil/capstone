@@ -278,6 +278,7 @@ def test_extract_citations(case_factory, elasticsearch):
         "3 Dogs 4",             # duplicate unrecognized reporter
         "1 or 2",               # not matched as 1 Or. 2
         "125 f. supp.-' 152",   # limit on how much cruft matched by get_cite_extractor -- only 2 at end
+        "1 A. M",               # patching-out of roman numeral page numbers works
     ]
     case = case_factory(decision_date=datetime(2000, 1, 1))
     case_text = ", some text, ".join(legitimate_cites+illegitimate_cites)

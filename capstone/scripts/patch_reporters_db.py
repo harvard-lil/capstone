@@ -1,5 +1,4 @@
 # monkeypatch reporters-db with some variations specific to our OCR
-
 from reporters_db import REPORTERS
 
 EXTRA_VARIATIONS = {
@@ -32,5 +31,10 @@ for reporter_key, reporter_cluster in REPORTERS.items():
 
 
 # temporarily patch eyecite with simpler page number regex
-import eyecite.utils
-eyecite.utils.PAGE_NUMBER_REGEX = r"\d+"
+from collections import defaultdict
+import eyecite.tokenizers
+
+eyecite.tokenizers.PAGE_NUMBER_REGEX = r"\d+"
+eyecite.tokenizers.EXTRACTORS = []
+eyecite.tokenizers.EDITIONS_LOOKUP = defaultdict(list)
+eyecite.tokenizers._populate_reporter_extractors()
