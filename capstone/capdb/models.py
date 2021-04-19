@@ -1224,7 +1224,7 @@ class CaseMetadata(models.Model):
             body_cache = self.body_cache
         except CaseBodyCache.DoesNotExist:
             body_cache = self.body_cache = CaseBodyCache(metadata=self)
-        changed = False
+        changed = bool(cites_to_delete or cites_to_create)
         for k in ['text', 'html', 'xml', 'json']:
             new_val = locals()[k]
             new_val = self.redact_obj(new_val)
