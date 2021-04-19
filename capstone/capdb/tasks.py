@@ -41,7 +41,8 @@ def record_task_status_for_volume(task, volume_id):
         Context manager to record in volume.task_statuses whether the given task succeeds or fails.
     """
     try:
-        yield
+        with transaction.atomic(using='capdb'):
+            yield
     except Exception as e:
         volume = VolumeMetadata.objects.get(pk=volume_id)
         volume.task_statuses[task.name] = {
@@ -407,7 +408,6 @@ def retrieve_images_from_all_cases(update_existing=False):
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
-@transaction.atomic(using='capdb')
 def retrieve_images_from_cases(self, volume_id, update_existing=True):
     """
         Create or update case images for each volume
