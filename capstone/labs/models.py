@@ -1,6 +1,5 @@
 import shortuuid
 from django.db import models, transaction
-from django.contrib.postgres.fields import JSONField
 from capapi.models import CapUser
 
 
@@ -14,7 +13,7 @@ def get_short_uuid():
 class Timeline(models.Model):
     created_by = models.ForeignKey(CapUser, on_delete=models.DO_NOTHING, related_name="timeline")
     uuid = models.CharField(max_length=10, default=get_short_uuid, unique=True)
-    timeline = JSONField(default=dict)
+    timeline = models.JSONField(default=dict)
 
     def save(self, bypass_uuid_check=False, *args, **kwargs):
         if self._state.adding or bypass_uuid_check:

@@ -15,7 +15,7 @@ import nacl.secret
 from bs4 import BeautifulSoup
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction, connections
 from django.db.models import Q
@@ -594,7 +594,7 @@ class VolumeMetadata(models.Model):
     needs_repair = models.CharField(max_length=9, blank=True, null=True, choices=choices('No', 'Complete', 'Yes'))
     missing_text_pages = models.TextField(blank=True, null=True, help_text="Pages damaged enough to have lost text.")
     created_by = models.ForeignKey(TrackingToolUser, blank=True, null=True, on_delete=models.DO_NOTHING)
-    bibliographic_review = models.CharField(max_length=7, blank=True, null=True,
+    bibliographic_review = models.CharField(max_length=8, blank=True, null=True,
                                             choices=choices('No', 'Complete', 'Yes'))
     analyst_page_count = models.IntegerField(blank=True, null=True,
                                              help_text="The page number of the last numbered page in the book")
@@ -634,7 +634,7 @@ class VolumeMetadata(models.Model):
 
     ingest_status = models.CharField(max_length=10, default="to_ingest",
                                      choices=choices('to_ingest', 'ingested', 'error', 'skip'))
-    ingest_errors = JSONField(blank=True, null=True)
+    ingest_errors = models.JSONField(blank=True, null=True)
     xml_checksums_need_update = models.BooleanField(default=False,
                                                     help_text="Whether checksums in volume_xml match current values in "
                                                               "related case_xml and page_xml data.")
@@ -650,9 +650,9 @@ class VolumeMetadata(models.Model):
     # just extract this and keep it here for now -- we can use it to check the reporter= field later:
     xml_reporter_short_name = models.CharField(max_length=255, blank=True, null=True)
     xml_reporter_full_name = models.CharField(max_length=255, blank=True, null=True)
-    xml_metadata = JSONField(blank=True, null=True)
+    xml_metadata = models.JSONField(blank=True, null=True)
 
-    task_statuses = JSONField(default=dict, help_text="Date and results of tasks run for this volume")
+    task_statuses = models.JSONField(default=dict, help_text="Date and results of tasks run for this volume")
 
     tracker = FieldTracker()
     history = TemporalHistoricalRecords()
@@ -964,13 +964,13 @@ class CaseMetadata(models.Model):
     publication_status = models.CharField(max_length=255, null=True, blank=True)
     jurisdiction = models.ForeignKey('Jurisdiction', null=True, related_name='case_metadatas',
                                      on_delete=models.SET_NULL)
-    judges = JSONField(null=True, blank=True)
-    parties = JSONField(null=True, blank=True)
-    opinions = JSONField(null=True, blank=True)
-    attorneys = JSONField(null=True, blank=True)
+    judges = models.JSONField(null=True, blank=True)
+    parties = models.JSONField(null=True, blank=True)
+    opinions = models.JSONField(null=True, blank=True)
+    attorneys = models.JSONField(null=True, blank=True)
 
     docket_number = models.CharField(max_length=20000, blank=True)
-    docket_numbers = JSONField(null=True, blank=True)
+    docket_numbers = models.JSONField(null=True, blank=True)
     decision_date = models.DateField(null=True, blank=True)
     decision_date_original = models.CharField(max_length=100, blank=True)
     argument_date_original = models.CharField(max_length=100, blank=True, null=True)
@@ -997,9 +997,9 @@ class CaseMetadata(models.Model):
     no_index = models.BooleanField(default=False, help_text="True if case should not be included in google index")
     no_index_notes = models.TextField(blank=True, null=True, help_text="Reason no_index is true")
 
-    no_index_elided = JSONField(blank=True, null=True,
+    no_index_elided = models.JSONField(blank=True, null=True,
                                 help_text="Elided text will be shown on click. Example: {\"Text to elide (must be exact match)\": \"Extra text that's currently not used. Can be left as empty string.\"}")
-    no_index_redacted = JSONField(blank=True, null=True,
+    no_index_redacted = models.JSONField(blank=True, null=True,
                                   help_text="Redacted text will be hidden from view and replaced with key's value specified above. Example: {\"Text to redact (must be exact match)\": \"Text to replace redacted text.\"}")
 
     in_scope = models.BooleanField(default=True, help_text="True if case should be included in public data")
@@ -2050,12 +2050,12 @@ class DataMigration(models.Model):
     traceback = models.TextField(blank=True, null=True)
     author = models.CharField(max_length=255)
     initiator = models.CharField(max_length=255)
-    alto_xml_changed = JSONField()
-    volume_xml_changed = JSONField()
-    case_xml_changed = JSONField()
-    alto_xml_rollback = JSONField()
-    volume_xml_rollback = JSONField()
-    case_xml_rollback = JSONField()
+    alto_xml_changed = models.JSONField()
+    volume_xml_changed = models.JSONField()
+    case_xml_changed = models.JSONField()
+    alto_xml_rollback = models.JSONField()
+    volume_xml_rollback = models.JSONField()
+    case_xml_rollback = models.JSONField()
 
 
 class SlowQuery(models.Model):
@@ -2181,13 +2181,13 @@ class PageStructure(models.Model):
     order = models.SmallIntegerField()
     label = models.CharField(max_length=100, blank=True)
 
-    blocks = JSONField()
-    spaces = JSONField(blank=True,
+    blocks = models.JSONField()
+    spaces = models.JSONField(blank=True,
                        null=True)  # probably unnecessary -- in case pages ever have more than one PrintSpace
-    font_names = JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
+    font_names = models.JSONField(blank=True, null=True)  # for mapping font IDs back to style names in alto
     encrypted_strings = models.TextField(blank=True, null=True)
-    duplicates = JSONField(blank=True, null=True)  # list of duplicate IDs detected during conversion
-    extra_redacted_ids = JSONField(blank=True, null=True)  # list of IDs redacted during conversion
+    duplicates = models.JSONField(blank=True, null=True)  # list of duplicate IDs detected during conversion
+    extra_redacted_ids = models.JSONField(blank=True, null=True)  # list of IDs redacted during conversion
 
     image_file_name = models.CharField(max_length=100)
     width = models.SmallIntegerField()
@@ -2338,7 +2338,7 @@ class CaseStructure(models.Model):
     """
     metadata = models.OneToOneField(CaseMetadata, on_delete=models.DO_NOTHING, related_name='structure')
     pages = models.ManyToManyField(PageStructure, related_name='cases')
-    opinions = JSONField()
+    opinions = models.JSONField()
 
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
@@ -2383,7 +2383,7 @@ class CaseInitialMetadata(models.Model):
         Initial metadata for case, provided by Innodata.
     """
     case = models.OneToOneField(CaseMetadata, on_delete=models.DO_NOTHING, related_name='initial_metadata')
-    metadata = JSONField()
+    metadata = models.JSONField()
 
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
@@ -2397,7 +2397,7 @@ class CaseBodyCache(models.Model):
     text = models.TextField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
     xml = models.TextField(blank=True, null=True)
-    json = JSONField(blank=True, null=True)
+    json = models.JSONField(blank=True, null=True)
 
 
 class EditLog(models.Model):
@@ -2510,7 +2510,7 @@ class CaseAnalysis(models.Model):
     case = models.ForeignKey(CaseMetadata, related_name='analysis', on_delete=models.DO_NOTHING)
     timestamp = models.DateTimeField(auto_now=True)
     key = models.CharField(max_length=255, db_index=True)
-    value = JSONField()
+    value = models.JSONField()
 
     class Meta:
         unique_together = [['case', 'key']]

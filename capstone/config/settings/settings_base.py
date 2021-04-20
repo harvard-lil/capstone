@@ -13,6 +13,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 ADMINS = [('Caselaw Access Project', 'info@case.law')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'  # stick to pre-Django 3.2 default for now; 3.2 moved to BigAutoField default
 LOGIN_REDIRECT_URL = '/'
 
 # Application definition
@@ -244,138 +245,22 @@ PIPELINE = {
         'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
-        'base': {
+        k: {
             'source_filenames': (
-                'css/scss/base.scss',
+                f'css/scss/{k}.scss',
             ),
-            'output_filename': 'base.css'
-        },
-        'index': {
-            'source_filenames': (
-                'css/scss/index.scss',
-            ),
-            'output_filename': 'index.css'
-        },
-        'about': {
-            'source_filenames': (
-                'css/scss/about.scss',
-            ),
-            'output_filename': 'about.css'
-        },
-        'bulk': {
-            'source_filenames': (
-                'css/scss/bulk.scss',
-            ),
-            'output_filename': 'bulk.css'
-        },
-        'gallery': {
-            'source_filenames': (
-                'css/scss/gallery.scss',
-            ),
-            'output_filename': 'gallery.css'
-        },
-        'contact': {
-            'source_filenames': (
-                'css/scss/contact.scss',
-            ),
-            'output_filename': 'contact.css'
-        },
-        'docs': {
-            'source_filenames': (
-                'css/scss/docs.scss',
-            ),
-            'output_filename': 'docs.css'
-        },
-        'registration': {
-            'source_filenames': (
-                'css/scss/registration.scss',
-            ),
-            'output_filename': 'registration.css'
-        },
-        'api': {
-            'source_filenames': (
-                'css/scss/api.scss',
-            ),
-            'output_filename': 'api.css'
-        },
-        'case_editor': {
-            'source_filenames': {
-                'css/scss/case_editor.scss',
+            'output_filename': f'{k}.css',
+            # avoid missing-template-variable test failure from pytest-django:
+            'extra_context': {
+                'media': 'all',
             },
-            'output_filename': 'case_editor.css'
-        },
-        'case': {
-            'source_filenames': {
-                'css/scss/case.scss',
-            },
-            'output_filename': 'case.css'
-        },
-        'case_cited_by': {
-            'source_filenames': {
-                'css/scss/case_cited_by.scss',
-            },
-            'output_filename': 'case_cited_by.css'
-        },
-        'search': {
-            'source_filenames': {
-                'css/scss/search.scss',
-            },
-            'output_filename': 'search.css'
-        },
-        'view_metadata': {
-            'source_filenames': {
-                'css/scss/view_metadata.scss',
-            },
-            'output_filename': 'view_metadata.css'
-        },
-        'trends': {
-            'source_filenames': {
-                'css/scss/trends.scss',
-            },
-            'output_filename': 'trends.css'
-        },
-        'cite': {
-            'source_filenames': {
-                'css/scss/cite.scss',
-            },
-            'output_filename': 'cite.css'
-        },
-        'file_download': {
-            'source_filenames': {
-                'css/scss/file_download.scss',
-            },
-            'output_filename': 'file_download.css'
-        },
-        'cite-grid': {
-            'source_filenames': {
-                'css/scss/cite-grid.scss',
-            },
-            'output_filename': 'cite-grid.css'
-        },
-        'unified_docs': {
-            'source_filenames': (
-                'css/scss/unified_docs.scss',
-            ),
-            'output_filename': 'unified_docs.css'
-        },
-        'fetch': {
-            'source_filenames': {
-                'css/scss/fetch.scss',
-            },
-            'output_filename': 'fetch.css'
-        },
-        'labs': {
-            'source_filenames': {
-                'css/scss/labs.scss',
-            },
-            'output_filename': 'labs.css'
-        },
-        'chronolawgic': {
-            'source_filenames': {
-                'css/scss/labs-chronolawgic.scss',
-            },
-            'output_filename': 'labs-chronolawgic.css'
-        },
+        } for k in [
+            # Example: adding 'base' here means there is a file named static/css/scss/base.scss that can be
+            # embedded with {% stylesheet "base" %}:
+            'base', 'index', 'about', 'bulk', 'gallery', 'contact', 'docs', 'registration', 'api', 'case_editor',
+            'case', 'case_cited_by', 'search', 'view_metadata', 'trends', 'cite', 'file_download', 'cite-grid',
+            'unified_docs', 'fetch', 'labs', 'labs-chronolawgic'
+        ]
     },
 
     # avoid compressing assets for now
