@@ -1354,7 +1354,7 @@ def export_citation_graph(output_folder="graph"):
         'id', 'frontend_url', 'jurisdiction__name', 'jurisdiction_id', 'court__name_abbreviation', 'court_id',
         'reporter__short_name', 'reporter_id', 'name_abbreviation', 'decision_date_original', 'cites'
     ]
-    nodes = list(nodes)
+    nodes = sorted(nodes)
     print("Writing metadata")
     metadata = {}
     with gzip.open(str(output_folder / 'metadata.csv.gz'), "wt") as f:
@@ -1570,7 +1570,7 @@ def load_pagerank_scores(pagerank_score_output):
     with transaction.atomic(using='capdb'):
         CaseAnalysis.objects.filter(id__in=existing_scores.keys()).delete()
         CaseAnalysis.objects.bulk_create(to_insert)
-        CaseAnalysis.objects.bulk_update(to_update, ['value'])
+        CaseAnalysis.objects.bulk_update(to_update, ['value'], batch_size=1000)
 
 
 @task
