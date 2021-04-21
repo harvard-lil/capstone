@@ -26,6 +26,7 @@ importChoices.colors = [
     "#2f2f2f",
     "#3e667a",
     "#00b7db",
+    "#c4c4c4",
 ]
 
 // jurisdictions
@@ -80,6 +81,7 @@ const store = new Vuex.Store({
             start_date: "",
             end_date: "",
             url: "",
+            color: "",
         },
         templateCase: {
             url: "",
@@ -91,6 +93,7 @@ const store = new Vuex.Store({
             reporter: "",
             decision_date: "",
             categories: [],
+            color: "",
         },
         templateCategory: {
             name: "",
@@ -290,6 +293,9 @@ const store = new Vuex.Store({
         },
         category: (state) => (id) => {
           return state.categories.find(cat => cat.id === id)
+        },
+        randomColor: (state) => {
+            return state.colors[Math.floor(Math.random() * state.colors.length)]
         },
     },
     actions: {

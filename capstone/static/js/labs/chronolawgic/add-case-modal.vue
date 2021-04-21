@@ -84,6 +84,26 @@
                       :options="choices.courts"
                       v-model="newCase.court">
             </v-select>
+            <v-select transition=""
+                      class="color-dropdown"
+                      label="color"
+                      placeholder="Border color"
+                      :filterable="false"
+                      :clearable="false"
+                      @input="setSelected"
+                      v-model="newCase.color"
+                      :options="colors">
+              <template #selected-option="{ color }">
+                <span :style="{backgroundColor: color}" class="color-square">
+                  {{ color }}
+                </span>
+              </template>
+              <template #option="{ color }">
+                <span :style="{backgroundColor: color}" class="color-square">
+                  {{ color }}
+                </span>
+              </template>
+            </v-select>
             <v-select multiple
                       id="field-group-categories"
                       :filterable="false"
@@ -165,6 +185,7 @@ export default {
       chosenCase: {},
       newCase: {},
       errors: [],
+      colors: [],
       extraFields: { // need more info to interact with dropdown fields
         cap: {
           name: 'search by',
@@ -224,6 +245,10 @@ export default {
       // choosing case from CAP search
       this.chosenCase = result;
     },
+    setSelected(color) {
+      this.newCase.color = color
+    },
+
     formatDate(date) {
       // autofill missing month and day. Not ideal, but this is a timeline, after all.
       let date_parts = date.split("-");
@@ -306,6 +331,7 @@ export default {
     }
   },
   beforeMount() {
+    this.colors = store.getters.choices.colors;
     this.choices = store.getters.choices;
     this.categories = store.getters.categories;
     this.setupCase(this.case)

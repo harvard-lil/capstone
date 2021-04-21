@@ -31,6 +31,7 @@ def validate_timeline(timeline):
         {'name': 'url', 'type': str, 'required': False},
         {'name': 'citation', 'type': str, 'required': False},
         {'name': 'categories', 'type': list, 'required': False},
+        {'name': 'color', 'type': str, 'required': False},
     ]
 
     category_fields = [
