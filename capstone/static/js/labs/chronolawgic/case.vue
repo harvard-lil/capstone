@@ -7,35 +7,37 @@
           :data-target="dataTarget"
           tabindex="0">
     <article class="case">
+      <div :style="{backgroundColor: case_data.color}"
+           class="border">
+      </div>
       <header>
-          <span class="categories"
-                v-if="categories && categories.length">
-            <ul class="list-inline">
-              <li class="list-inline-item"
-                  v-for="category in categories"
-                  title="category.name"
-                  v-bind:key="category.id">
-                <shape-component :width="20"
-                                 :title="category.name"
-                                 :color="category.color"
-                                 :shapetype="category.shape">
-                </shape-component>
-              </li>
-            </ul>
-          </span>
         <!--this is just for name placement if we don't have categories-->
-        <span v-else class="case-name">{{ case_data.name }}</span>
+        <span class="case-name">
+            {{ case_data.name }}
+        </span>
         <a class="case-link" v-if="case_data.url"
            :href="case_data.url" target="_blank" @click.stop>
           <link-case/>
         </a>
-        <!--this is just for name placement if we have categories-->
-        <span v-if="categories && categories.length" class="case-name">{{ case_data.name }}</span>
-
       </header>
       <section class="desc">
         {{ case_data.short_description }}
       </section>
+      <div class="categories"
+           v-if="categories && categories.length">
+        <ul class="list-inline">
+          <li class="list-inline-item"
+              v-for="category in categories"
+              title="category.name"
+              v-bind:key="category.id">
+            <shape-component :width="20"
+                             :title="category.name"
+                             :color="category.color"
+                             :shapetype="category.shape">
+            </shape-component>
+          </li>
+        </ul>
+      </div>
     </article>
   </button>
 </template>

@@ -20,9 +20,11 @@ main.admin {
   .top-menu {
     right: 0.5em;
     padding: 2em;
+
     h3 {
       font-size: 2rem;
     }
+
     .info {
       display: inline-block;
       margin-left: -1.15em;
@@ -31,7 +33,8 @@ main.admin {
       text-decoration: none;
       padding: 0;
     }
-    sup{
+
+    sup {
       display: inline-block;
     }
   }
@@ -42,16 +45,19 @@ main.admin {
     flex-direction: row;
     flex-wrap: wrap;
     background-color: $color-white;
+
     .welcome {
       width: 100%;
       padding-right: 30%;
     }
+
     .inline-icon {
       svg {
         transform: scale(.75);
         margin-top: -.40rem;
       }
     }
+
     .timeline-assembly {
       display: grid;
       grid-template-areas: "nav"
@@ -61,26 +67,32 @@ main.admin {
       margin: 1rem;
       padding: 0;
       word-break: break-word;
+
       nav {
         display: grid;
         grid-area: nav;
         grid-template-areas: ". delete save editcancel"
                             "card card card card";
         grid-template-columns: 4fr 1fr 1fr 1fr;
+
         .editcancel, .delete, .save {
           button {
             padding: 0;
           }
+
           cursor: pointer;
           display: flex;
           justify-content: flex-end;
         }
+
         .editcancel {
           grid-area: editcancel;
         }
+
         .delete {
           grid-area: delete;
         }
+
         .save {
           grid-area: save;
         }
@@ -99,26 +111,32 @@ main.admin {
         border-radius: 2px;
         border: 1px solid $color-black;
         background-color: $color-white;
+
         .content {
           display: grid;
           grid-area: content;
           grid-template-areas: "header"
                                "desc";
           grid-template-rows: minmax(3rem, auto) 1fr;
+
           header {
             grid-area: header;
+
             h3 {
               font-size: 1.35rem;
               font-weight: $font-weight-semibold;
               font-family: $font-monospace;
 
             }
-            .title-edit{
+
+            .title-edit {
               padding-left: .5rem;
               padding-right: .5rem;
+
               .label {
                 font-size: $font-size-sm;
               }
+
               .title-input {
                 font-size: 1.35rem;
                 font-weight: $font-weight-semibold;
@@ -128,6 +146,7 @@ main.admin {
               }
             }
           }
+
           .description {
             grid-area: desc;
             padding: .5rem;
@@ -136,19 +155,24 @@ main.admin {
             line-height: $line-height-sm;
             overflow: scroll;
             border: 1px solid $color-black;
+
             p {
               margin: 0;
             }
 
           }
+
           .description.editmode {
             border: none;
+
             .description-edit {
               .label {
                 font-size: $font-size-sm;
               }
+
               height: 94%;
               width: 100%;
+
               .description-input {
                 border: 1px dashed $color-medium-dark-blue;
                 width: 100%;
@@ -166,11 +190,13 @@ main.admin {
           padding-left: 0rem;
           display: flex;
           padding-top: .5rem;
+
           .stat {
             width: 35%;
             padding-left: 0;
             display: flex;
             flex-direction: row;
+
             .label {
               margin-right: 1rem;
               font-size: .75rem;
@@ -185,6 +211,7 @@ main.admin {
 
     .timeline-assembly.add-timeline {
       padding-top: 2rem;
+
       .timeline-card {
         border-radius: 0;
         background-color: $color-light-gray;
@@ -192,6 +219,7 @@ main.admin {
         display: flex;
         align-items: center;
         justify-content: center;
+
         button {
           padding: 0;
 
@@ -283,7 +311,6 @@ main#main-app {
         }
       }
     }
-
 
 
     .header-section {
@@ -389,13 +416,26 @@ main#main-app {
       border: 1px solid $color-black;
       width: 20rem;
       height: 130px;
-      padding: 0.5rem 0.75rem;
-      align-self: end;
+      //padding: 0.5rem 0.75rem;
       text-transform: none;
+      display: grid;
+      grid-template-areas: "border casename"
+                           "border description"
+                           "border categories";
+      grid-template-columns: 25px 1fr;
 
       &:hover, &:focus, &:active {
-        background-color: $highlight;
+        //border: 2px solid $color-blue;
       }
+    }
+
+    .border {
+      grid-area: border;
+      width: 15px;
+      height: 100%;
+      background-color: $color-gray-medium;
+      opacity: 0.8;
+      border-right: 1px solid $color-black;
     }
 
     header {
@@ -404,16 +444,22 @@ main#main-app {
       grid-template-columns: 90% 10%;
       font-size: 1.3em;
       line-height: 1.2em;
-      padding: 0;
+      padding-top: 0.25em;
     }
 
     .categories {
+      grid-area: categories;
+      align-self: end;
+      padding-bottom: 0.5em;
+      text-align: right;
+      padding-right: 0.25em;
       ul, li {
         margin: 0;
       }
     }
 
     .case-link {
+      margin-top: -3px;
       svg {
         fill: $color-violet;
       }
@@ -439,6 +485,8 @@ main#main-app {
       line-height: 1.3em;
       text-transform: none;
       max-height: 5em;
+      padding-right: 0.25em;
+      grid-area: description;
     }
 
     div.year_scale {
@@ -571,9 +619,11 @@ main#main-app {
     background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
     background-position: center;
     background-size: 1000px;
+
     div.year_scale {
       padding-top: 15rem;
       padding-bottom: 3rem;
+
       div.label_assembly {
         display: grid;
         grid-template-areas: "case_add case_label event_label event_add .";
@@ -611,6 +661,11 @@ main#main-app {
           padding: 0 !important;
           border: 0;
           font-size: 0;
+          // patch because this keeps showing up
+          // todo: figure out why this is necessary
+          @include media-breakpoint-down(sm) {
+            display: none;
+          }
         }
 
         #top-add-events-button {
@@ -625,6 +680,7 @@ main#main-app {
 
   div.year.welcome {
     min-height: 50vh;
+
     div.incidental {
       padding-left: 2rem;
       justify-content: flex-start;
@@ -715,6 +771,7 @@ main#main-app {
       .header-section.zoom-section {
         display: none;
       }
+
       .years {
         display: none;
       }
@@ -726,6 +783,7 @@ main#main-app {
         width: 100%;
         z-index: 1020;
         box-shadow: 0 0 10px #DDD;
+
         h4#timeline-title {
           margin-bottom: .25rem;
           white-space: nowrap;
@@ -734,6 +792,7 @@ main#main-app {
           width: 90%;
           font-size: 1.3rem;
         }
+
         #timeline-description {
           font-size: $font-size-sm;
           line-height: $line-height-sm;
@@ -743,6 +802,7 @@ main#main-app {
           white-space: nowrap;
           cursor: pointer;
         }
+
         .my-timelines-link {
           display: none;
         }
@@ -750,10 +810,12 @@ main#main-app {
 
       .header-section.title.expanded {
         height: 90vh;
+
         h4#timeline-title {
           overflow: visible;
           white-space: normal;
         }
+
         #timeline-description {
           font-size: $font-size-sm;
           line-height: $line-height-sm;
@@ -809,17 +871,21 @@ main#main-app {
     div.year.labels {
       div.year_scale {
         padding-top: 12.5rem;
+
         div.label_assembly {
-         grid-template-areas: ". case_label event_label .";
-         grid-template-columns: 50px 80px 75px 60px;
-         h6 {
+          grid-template-areas: ". case_label event_label .";
+          grid-template-columns: 50px 80px 75px 60px;
+
+          h6 {
             font-size: .85rem;
-         }
-         h6#caselaw-label {
+          }
+
+          h6#caselaw-label {
             width: 80px;
             padding: 0.3em 0.7em;
-           background-color: $highlight;
+            background-color: $highlight;
           }
+
           h6#events-label {
             width: 75px;
             padding: 0.3em 0.8em;
@@ -853,7 +919,9 @@ main#main-app {
           overflow: scroll;
           padding: 0.5rem 0.75rem;
           align-self: end;
-
+          @include media-breakpoint-down(md) {
+            padding: 0 0.5rem 0 0;
+          }
           &:hover, &:focus, &:active {
             background-color: $highlight;
           }
@@ -891,10 +959,12 @@ main#main-app {
           }
         }
       }
+
       div.event-preview {
         margin-left: auto;
         margin-right: auto;
       }
+
       div.case_placeholder {
         margin-left: auto;
         margin-right: auto;
@@ -903,23 +973,27 @@ main#main-app {
         height: 3rem;
         width: 3rem;
         align-self: center;
+
         .case_count {
           font-weight: $font-weight-black;
           font-size: 1.25rem;
           display: inline-block;
         }
+
         .case_count:before {
           content: "\a";
           white-space: pre;
         }
       }
     }
+
     div.year.labels {
       div.year_scale {
         div.label_assembly {
-         h6#caselaw-label {
-           background-color: $color-white;
+          h6#caselaw-label {
+            background-color: $color-white;
           }
+
           h6#events-label {
             background-color: $highlight;
           }
