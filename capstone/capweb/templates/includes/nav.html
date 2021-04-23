@@ -18,10 +18,10 @@
   <div class="nav-content">
     <ul class="nav">
       <li class="nav-item nav-search-item">
-        <form onsubmit="searchCAP();">
-          <input id="cap-query" placeholder="Search caselaw">
+        <form action="{% url 'search' %}" id="capsearch"> <!-- action in here so ppl w/o JS can use this -->
+          <input name="search" id="cap-query" placeholder="Search caselaw">
           <input type="submit" class="submit" hidden/>
-          <span class="search-icon"></span>
+          <span id="capsearchclick" class="search-icon"></span>
         </form>
 
       </li>
@@ -128,13 +128,19 @@
     let search_url = "{% url 'search' %}";
     let query = '';
 
-    function searchCAP() {
+    function searchCAP(e) {
+        e.preventDefault();
         query = document.getElementById("cap-query").value;
         setTimeout(function () {
             // need fake timeout for Chrome
             window.location.href = search_url + '#/cases?search=' + query + '&page=1&ordering=relevance';
-        }, 500);
+        }, 0);
+        return false
     }
+    const form = document.getElementById('capsearch');
+    const icon = document.getElementById('capsearchclick');
+    form.addEventListener('submit', searchCAP);
+    icon.addEventListener('click', searchCAP);
 
     // showing dropdowns and search bar for JS enabled browsers
     let dropdowns = document.getElementsByClassName('dropdown-toggle')
