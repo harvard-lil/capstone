@@ -1,228 +1,288 @@
+@import 'social.scss';
+/*
+                    _
+ _ __ ___  __ _  __| |  _ __ ___   ___
+| '__/ _ \/ _` |/ _` | | '_ ` _ \ / _ \
+| | |  __/ (_| | (_| | | | | | | |  __/
+|_|  \___|\__,_|\__,_| |_| |_| |_|\___|
+ _           __                           _ _ _   _
+| |__   ___ / _| ___  _ __ ___    ___  __| (_) |_(_)_ __   __ _
+| '_ \ / _ \ |_ / _ \| '__/ _ \  / _ \/ _` | | __| | '_ \ / _` |
+| |_) |  __/  _| (_) | | |  __/ |  __/ (_| | | |_| | | | | (_| |
+|_.__/ \___|_|  \___/|_|  \___|  \___|\__,_|_|\__|_|_| |_|\__, |
+                                                          |___/
+
+I'm trying out a new format for CSS here. It involves defining and setting up a grid layout
+first, and then having styling/padding/spacing/etc below it in a separate section.
+
+I think this separation of concerns will make it easier to understand how our layouts work
+at a glance, promote defining a proper layout that accomplishes your broad stroke goals
+before diving into details and find adjustments, and makes it easier to see the implications
+of overly broad fine adjustments... Is it breaking the actualy layout, or do things just
+need to be shifted around a little? I also think it promotes more modular components rather
+than having each element be entirely in an island unto itself. I do think it will make
+hacks a little more difficult, but hopefully, it'll make them a lot less necessary.
+
+And I'm probably hoping to get way too much out of this, but I'd be love to hear feedback.
+
+-Andy
+ */
+
+
+
+/*| __ _ _   _  ___  _   _| |_
+| |/ _` | | | |/ _ \| | | | __|
+| | (_| | |_| | (_) | |_| | |_
+|_|\__,_|\__, |\___/ \__,_|\__|
+         |___/
+grid layout only-- styles below */
+
 footer {
+  display: grid;
+  height: 22rem;
+
+  @include media-breakpoint-up(lg) {
+    height: 30rem;
+  }
+
+  //phone
+  grid-template-areas: "logo      sitemap"
+                       "links     sitemap"
+                       "copyright sitemap";
+  grid-template-rows: 8rem 7rem 5rem;
+  grid-template-columns: 1fr 1fr;
+
+  //tablet or landscape phone
+  @include media-breakpoint-up(sm) {
+    grid-template-areas: "logo      .         sitemap"
+                         "links     .         sitemap"
+                         ".         .         ."
+                         "copyright copyright copyright";
+    grid-template-rows: 9rem 9rem 2rem 2rem;
+    grid-template-columns: minmax(155px, 1fr) 1fr 20rem;
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-areas: "links     logo sitemap"
+                         ".         .         ."
+                         "copyright copyright copyright";
+    grid-template-rows: 17rem 2rem 2rem;
+    grid-template-columns: minmax(155px, 1fr) 2fr 20rem;
+    grid-column-gap: 5rem;
+  }
+
+  //desktop or landscape tablet
+  @include media-breakpoint-up(lg) {
+    grid-template-areas: "links     logo      sitemap"
+                         ".         .         .      "
+                         "copyright copyright copyright";
+    grid-template-rows: 27rem 1rem 2rem;
+    grid-template-columns: minmax(155px, 1fr) minmax(120px, 2fr) 35rem;
+    grid-column-gap: 5rem;
+  }
+
+  @include media-breakpoint-up(xl) {
+    grid-template-areas: "links     logo sitemap"
+                         "copyright copyright copyright";
+    grid-template-rows: 27rem 3rem;
+    grid-template-columns: minmax(155px, 2fr) minmax(235px, 4fr) 40rem;
+    grid-column-gap: 5rem;
+  }
+
+  @include media-breakpoint-up(xxl) {
+    grid-template-areas: "links     logo sitemap"
+                         "copyright copyright copyright";
+    grid-template-rows: 27rem 3rem;
+    grid-template-columns: minmax(155px, 2fr) minmax(235px, 4fr) 40rem;
+    grid-column-gap: 5rem;
+  }
+
+
+  .links {
+    grid-area: links;
+    display: grid;
+    grid-template-areas: "social" "policy";
+    grid-template-rows: 2rem 4rem;
+    .social {
+      grid-area: social;
+    }
+    .policy {
+      grid-area: policy;
+    }
+  }
+  .logo {
+    grid-area: logo;
+  }
+  .sitemap {
+    grid-area: sitemap;
+    nav {
+      display: grid;
+      /* sitemap links grid layout */
+      .gallery {
+        grid-area: gallery;
+      }
+      .docs {
+        grid-area: docs;
+      }
+      .caselaw {
+        grid-area: caselaw;
+      }
+      //xs phone
+      grid-template-areas: "docs gallery" "caselaw gallery";
+      grid-template-rows: 4fr 5fr;
+      grid-template-columns: 1fr 1fr;
+
+      // tablet/desktop
+      @include media-breakpoint-up(sm) {
+        grid-template-areas: "caselaw gallery docs";
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr;
+      }
+    }
+  }
+  .copyright {
+    grid-area: copyright;
+  }
+}
+
+/*   _         _ _
+ ___| |_ _   _| (_)_ __   __ _
+/ __| __| | | | | | '_ \ / _` |
+\__ \ |_| |_| | | | | | | (_| |
+|___/\__|\__, |_|_|_| |_|\__, |
+         |___/           |___/
+
+style & fine spacing adjustments only-- grid layout above */
+
+footer {
+    /* resets */
+  section {
+    padding: 0;
+  }
+  .social {
+    display: unset;
+  }
+
+  padding-left: .5rem;
   hyphens: none;
   letter-spacing: 0;
   background-color: $color-black;
   color: $color-white;
 
-  .lil-logo {
-    margin-bottom: 0.2em;
-    @include media-breakpoint-down(md) {
-      width: 120px;
-      height: 70px;
-      margin-bottom: 0;
+  .logo {
+    padding-top: .75rem;
+    a {
+      @extend %footer-lil-logo-white;
+      background-size: 10rem !important;
+      padding-top: .5rem;
+      @include media-breakpoint-up(xl) {
+        background-size: 15rem !important;
+        width: unset;
+        height: 135px;
+      }
+      @media (min-width: 1600px) {
+        background-size: 25rem !important;
+        width: unset;
+        height: 200px;
+      }
     }
   }
 
-  a {
-    color: $color-yellow !important;
-
-    &:hover, &:active, &:focus {
-      color: $color-white !important;
-    }
-  }
-
-  .lil-logo {
-    @extend %footer-lil-logo-white;
-  }
-}
-
-
-.footer-content {
-  @include make-col(11);
-  display: grid;
-  grid-template-areas: "logo copyright terms"
-                       ".     .        links";
-  grid-template-columns: 20% 1fr 40%;
-
-  @include media-breakpoint-down(md) {
-    grid-template-areas: "logo . copyright"
-                         ". . terms"
-                         ". . links";
-    grid-template-columns: 20% 1fr 70%;
-  }
-
-  @include media-breakpoint-down(sm) {
-    grid-template-areas: "logo . copyright"
-                          "terms . links";
-    grid-template-columns: 20% 1fr 60%;
-  }
-
-  @include media-breakpoint-down(xs) {
-    padding: 1rem 0;
-    line-height: 1em;
-    font-size: 0.7em;
-    .col-sm p, .col-sm nav {
-      text-align: center;
-    }
+  .links {
     .social {
-      text-align: right;
+      a {
+        background-position: -30px;
+        @include media-breakpoint-up(md) {
+          background-position: -60px;
+        }
+      }
+    }
+    .policy {
+      .policylink {
+        a {
+          font-size: $font-size-sm;
+          color: $color-yellow;
+            @include media-breakpoint-up(md) {
+              font-size: 14pt;
+            }
+            @include media-breakpoint-up(lg) {
+            }
+            @include media-breakpoint-up(xl) {
+            }
+        }
+        @include media-breakpoint-up(md) {
+          margin-bottom: .5rem;
+        }
+      }
+      .policylink:first-of-type {
+        padding-top: .25em;
+      }
+    }
+    @include media-breakpoint-up(md) {
+      padding-top: 2rem;
+      padding-left: 1rem;
+    }
+    @include media-breakpoint-up(lg) {
+      padding-top: 2rem;
+      padding-left: 2rem;
+    }
+    @include media-breakpoint-up(xl) {
+      padding-top: 3rem;
+      padding-left: 2rem;
     }
   }
 
-  .social {
-    margin-top: 0.5em;
-    @include media-breakpoint-down(sm) {
-      margin-top: 0;
-    }
-
-    .github > a {
-      background: url('../../img/logos/github-sprite.svg') no-repeat;
-      background-size: auto 29px;
-      background-position-x: -60px;
-
-      @include media-breakpoint-down(sm) {
-        background-size: auto 19px;
-        background-position-x: -19px !important;
-        height: 20px;
-        width: 20px;
-      }
-    }
-
-    .twitter > a {
-      background: url('../../img/logos/twitter-sprite.svg') no-repeat;
-      background-size: auto 30px;
-      background-position-x: -60px;
-
-      @include media-breakpoint-down(sm) {
-        background-size: auto 19px;
-        background-position-x: -18px !important;
-        height: 20px;
-        width: 20px;
-      }
-    }
-  }
-
-  margin: 0 auto;
-  padding: 1.5rem 0;
-
-  .logo-group {
-    grid-area: logo;
-  }
-
-  .term-links {
-    grid-area: terms;
-
-    li {
-      margin-left: -0.3em;
-    }
-  }
-
-  .site-links {
-    grid-area: links;
-    font-size: 15px;
-    margin-top: -3em;
-    @include media-breakpoint-only(md) {
-      margin-top: 0;
-    }
-    @include media-breakpoint-down(sm) {
-      font-size: 10px;
-      margin-top: 0;
-    }
-
-    a {
-      color: $color-white !important;
-
-      &:hover, &:active {
-        color: $color-yellow !important;
-      }
-    }
-
-    th {
-      font-weight: $font-weight-semibold;
-      padding: 0 1em 1em 1em;
-      @include media-breakpoint-down(sm) {
-        padding: 1em;
-      }
-
-      &:first-child {
-        padding-left: 0;
-      }
-
-      &:last-child {
-        padding-right: 0;
-      }
-    }
-
-    tr {
-      line-height: 0;
-    }
-
-    td {
-      line-height: 1.5em;
-      @include media-breakpoint-down(sm) {
-        line-height: 1em;
-      }
-
-      padding: 0 1em;
-
-      &:first-child {
-        padding-left: 0;
-      }
-
-      &:last-child {
-        padding-right: 0;
-      }
-    }
-    @include media-breakpoint-down(xs) {
-      th.hidden-xs, td.hidden-xs {
-        display: none;
-      }
-    }
-  }
-
-  .footer-copyright {
-    margin: 0 auto;
-    font-size: 15px;
-    grid-area: copyright;
-
-    p {
-      text-align: left;
-    }
-
-    span {
-      display: inline-block;
-      font-size: 80%;
-      font-weight: normal;
-      line-height: 1.3em;
-    }
-
-    @include media-breakpoint-down(md) {
-      margin-top: 0.6em;
-      font-size: 13px;
-    }
-  }
-
-  a {
-    color: $color-black;
-    border-bottom: 0;
-
-    &:hover, &:focus, &:active {
-      color: $color-blue;
-      border-bottom: 0;
-    }
-  }
-
-  .links li {
-    @extend .fix-list-item;
-  }
-
-  .return-to-top {
-    @include make-col(12);
-    font-weight: $font-weight-normal;
-    text-align: center;
-
-    a {
-      font-weight: $font-weight-normal;
-      border-bottom: 0;
-
-      &:hover, &:active, &:focus {
+  .sitemap {
+    padding-top: 2rem;
+    nav{
+      /* sitemap links styling */
+      h6{
+        font-weight: bold;
         color: $color-yellow;
-        text-decoration: none;
+        margin: 0;
+        @include media-breakpoint-up(lg) {
+          font-size: 2rem;
+          line-height: 1rem;
+          margin-bottom: 1rem;
+        }
+      }
+      ul {
+        margin-bottom: 0;
+        li{
+          padding-top: .25rem;
+          a {
+            font-size: $font-size-sm;
+            color: $color-white;
+            @include media-breakpoint-up(lg) {
+              font-size: $font-size-lg;
+            }
+          }
+          a:hover {
+            color: $color-violet-light;
+          }
+
+
+        }
+        li:first-of-type{
+          padding-top: 0;
+        }
       }
     }
+    @include media-breakpoint-up(xl) {
+      padding-top: 3rem;
+    }
+  }
 
-    .arrow {
-      font-size: 2rem;
+  .copyright {
+    font-size: 10pt;
+    line-height: 9pt;
+    align-self: flex-end;
+    word-break: break-word;
+    text-align: center;
+    span {
+      display: inline;
     }
   }
 }
+
+
