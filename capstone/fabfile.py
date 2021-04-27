@@ -66,7 +66,8 @@ def run_django(port="127.0.0.1:8000"):
     with open_subprocess("watchmedo auto-restart -d ./ -p '*.py' -R -- celery worker -A config.celery.app -c 1 -B"):
         # This was `management.call_command('runserver', port)`, but then the Django autoreloader
         # itself calls fab run and we get two copies of everything!
-        local("python manage.py runserver %s" % port)
+        # --nostatic so whitenoise is used in dev
+        local(f"python manage.py runserver {port} --nostatic")
 
 
 @task

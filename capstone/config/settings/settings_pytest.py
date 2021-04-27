@@ -19,3 +19,6 @@ SITE_LIMIT_REPORT = True
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
 ] + PASSWORD_HASHERS
+
+# avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'

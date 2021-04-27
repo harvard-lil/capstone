@@ -51,9 +51,6 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # to use slow queries db, add this to settings.py:
 # DATABASES['default']['NAME'] = TEST_SLOW_QUERIES_DB_NAME
 
-# avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
-STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
-
 # don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
 MAINTAIN_ELASTICSEARCH_INDEX = True
 
