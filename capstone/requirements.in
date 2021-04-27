@@ -39,7 +39,7 @@ msgpack             # for storing data in KV store
 # Django stuff
 django
 django-storages
-whitenoise             # serve static assets
+whitenoise[brotli]     # serve static assets
 django-model-utils
 django-simple-history  # model versioning
 django-redis           # use redis as Django cache backend

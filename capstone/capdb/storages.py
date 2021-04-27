@@ -19,8 +19,10 @@ from django.core.files import File
 from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import SimpleLazyObject
+from pipeline.storage import PipelineMixin
 from rocksdb.interfaces import MergeOperator
 from storages.backends.s3boto3 import S3Boto3Storage
+from whitenoise.storage import CompressedManifestStaticFilesStorage
 
 
 class CapStorageMixin(object):
@@ -563,3 +565,11 @@ class NgramRocksDB(KVDB):
 # using SimpleLazyObject lets our tests mock the wrapped object after import
 ngram_kv_store = SimpleLazyObject(lambda: NgramRocksDB())
 ngram_kv_store_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))
+
+
+### static asset storages ###
+
+class WhitenoisePipelineStorage(PipelineMixin, CompressedManifestStaticFilesStorage):
+    """Combined storage for whitenoise and django-pipeline."""
+    # avoid ValueError("Missing staticfiles manifest entry ...") when django can't find un-hashed files in staticfiles.json
+    manifest_strict = False
