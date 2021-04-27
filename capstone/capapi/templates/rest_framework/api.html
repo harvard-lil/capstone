@@ -258,7 +258,9 @@
   <script>
     window.drf = {
       csrfHeaderName: "{{ csrf_header_name|default:'X-CSRFToken' }}",
-      csrfToken: "{% if request %}{{ csrf_token }}{% endif %}"
+      {# Don't load csrftoken here to avoid unnecessarily breaking caching; we don't do any POST through DRF #}
+      {# csrfToken: "{% if request %}{{ csrf_token }}{% endif %}" #}
+      csrfToken: null
     };
   </script>
   <script src="{% static "rest_framework/js/jquery-3.5.1.min.js" %}"></script>
