@@ -258,10 +258,10 @@
   <script>
     window.drf = {
       csrfHeaderName: "{{ csrf_header_name|default:'X-CSRFToken' }}",
-      csrfCookieName: "{{ csrf_cookie_name|default:'csrftoken' }}"
+      csrfToken: "{% if request %}{{ csrf_token }}{% endif %}"
     };
   </script>
-  <script src="{% static "rest_framework/js/jquery-3.3.1.min.js" %}"></script>
+  <script src="{% static "rest_framework/js/jquery-3.5.1.min.js" %}"></script>
   <script src="{% static "rest_framework/js/ajax-form.js" %}"></script>
   <script src="{% static "rest_framework/js/csrf.js" %}"></script>
   <script src="{% static "rest_framework/js/bootstrap.min.js" %}"></script>
