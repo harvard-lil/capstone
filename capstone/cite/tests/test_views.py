@@ -218,7 +218,7 @@ def get_schema(response):
     scripts = soup.find_all('script', {'type': 'application/ld+json'})
     assert len(scripts) == 1
     script = scripts[0]
-    return json.loads(script.text)
+    return json.loads(script.string)
 
 @pytest.mark.django_db
 def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearch):

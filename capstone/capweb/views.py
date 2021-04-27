@@ -22,7 +22,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect
 from django.template import Template, RequestContext
 from django.template.loader import render_to_string
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.utils.safestring import mark_safe
 from django.db.models import Prefetch
@@ -211,7 +211,7 @@ def screenshot(request):
         return HttpResponseBadRequest("URL parameter required.")
     if not url.startswith('https://' if settings.MAKE_HTTPS_URLS else 'http://'):
         return HttpResponseBadRequest("Invalid URL protocol.")
-    if not is_safe_url(url, safe_domains):
+    if not url_has_allowed_host_and_scheme(url, safe_domains):
         return HttpResponseBadRequest("URL should match one of these domains: %s" % safe_domains)
 
     # apply target= and wait= query params

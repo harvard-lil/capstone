@@ -21,7 +21,7 @@ from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.encoding import iri_to_uri
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
@@ -47,7 +47,7 @@ from scripts.helpers import group_by
 def safe_redirect(request):
     """ Redirect to request.GET['next'] if it exists and is safe, or else to '/' """
     next = request.POST.get('next') or request.GET.get('next') or '/'
-    return HttpResponseRedirect(next if is_safe_url(next, allowed_hosts={request.get_host()}) else '/')
+    return HttpResponseRedirect(next if url_has_allowed_host_and_scheme(next, allowed_hosts={request.get_host()}) else '/')
 
 @contextmanager
 def locked_session(request, using='default'):
