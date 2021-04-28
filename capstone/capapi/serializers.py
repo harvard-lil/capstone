@@ -299,7 +299,6 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         elif request.user.is_anonymous:
             status = "error_auth_required"
         elif request.user.has_tracked_history and case['id'] in self.context['allowed_case_ids']:
-            print("allowing %s because of track_history" % case['id'])
             status = "ok"
         elif request.site_limits.daily_downloads >= request.site_limits.daily_download_limit:
             status = "error_sitewide_limit_exceeded"
