@@ -555,10 +555,11 @@ class Reporter(models.Model):
         self.short_name_slug = None  # regenerate
         self.save()
         if update_citations:
-            Citation.replace_reporter(
-                Citation.objects.filter(case__reporter=self, type="official"),
-                old_short_name,
-                new_short_name)
+            if self.is_nominative:
+                cites = Citation.objects.filter(case__volume__nominative_reporter=self, type="nominative")
+            else:
+                cites = Citation.objects.filter(case__reporter=self, type="official")
+            Citation.replace_reporter(cites, old_short_name, new_short_name)
 
 
 class VolumeMetadata(models.Model):
