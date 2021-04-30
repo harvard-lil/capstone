@@ -1944,8 +1944,8 @@ class Citation(models.Model):
     def parsed(self):
         return Citation.parse_cite(self.cite)
 
-    @classmethod
-    def replace_reporter(cls, cites, old_reporter, new_reporter, dry_run=False):
+    @staticmethod
+    def replace_reporter(cites, old_reporter, new_reporter, dry_run=False):
         """
             Given a list or queryset of cites, replace reporter string old_reporter with new_reporter.
             Skip cites that don't have the reporter old_reporter.
@@ -1973,7 +1973,12 @@ class Citation(models.Model):
         for cite in cites:
             vol_num, reporter, page_num = cite.parsed()
             if reporter is None:
-                raise ValueError(f"Cite {cite} failed to parse.")
+                # try fallback for existing cites that don't match eyecite
+                m = re.match(r'(\d+) (.*?) (\d+)$', cite.cite)
+                if m:
+                    vol_num, reporter, page_num = m.groups()
+                else:
+                    raise ValueError(f"Cite {cite} failed to parse.")
             if reporter != old_reporter:
                 continue
             old_cite = cite.cite
