@@ -67,7 +67,7 @@
           decision_date_max: `${endYear}-12-31`,
           page_size: 5,
         };
-        if (params.jurisdiction)
+        if (params.jurisdiction && params.jurisdiction !== "total")
           searchParams.jurisdiction = params.jurisdiction;
         this.showLoading = true;
         Vue.nextTick().then(() => { this.$refs.loadingMessage.focus() });

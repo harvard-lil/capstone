@@ -898,9 +898,10 @@
                   maxYear = year;
                 years[year] = yearData;
               }
+              const params = {...result.params, jurisdiction: jurName, q: gram};
               results[(jurName === "total" ? "" : this.jurisdictionLookup[jurName] + ": ") + gram] = {
                 data: years,
-                params: result.params,
+                params: params,
               };
             }
           }
