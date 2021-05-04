@@ -31,10 +31,10 @@ class ReadonlyInlineMixin(object):
     """ Mixin for inlines to not allow editing. """
     can_delete = False
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, *args, **kwargs):
         result = list(set(
                 [field.name for field in self.opts.local_fields] +
                 [field.name for field in self.opts.local_many_to_many]
