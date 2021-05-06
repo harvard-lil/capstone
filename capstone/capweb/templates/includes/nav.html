@@ -39,11 +39,12 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbar-dropdown-tools">
           <a class="dropdown-item" href="{% url 'tools' %}">Tools overview</a>
+          <a class="dropdown-item" href="{% url 'search' %}">Search</a>
           <a class="dropdown-item" href="{% url 'trends' %}">Trends</a>
           <a class="dropdown-item" href="{% api_url 'api-root' %}v1/">API</a>
-          <a class="dropdown-item" href="{% url 'cite_home' host 'cite' %}">Read Caselaw</a>
+          <a class="dropdown-item" href="{% url 'cite_home' host 'cite' %}">Cases by Jurisdiction</a>
           <a class="dropdown-item" href="{% url 'download-files' '' %}">Bulk Data</a>
-          <a class="dropdown-item" href="{% url 'search' %}">Search</a>
+          <a class="dropdown-item" href="{% url 'search' %}">Fetch PDFs From Text</a>
         </div>
       </li>
       <li class="nav-item dropdown" id="nav-contact">
