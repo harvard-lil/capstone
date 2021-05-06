@@ -41,3 +41,9 @@ Explore the data by looking at how usage of text changes over time.
 [HISTORICAL TRENDS]({% url "trends" %}){: class="btn-primary" }
 [DOCS]({% url "trends-docs" %}){: class="btn-secondary" }
 {: class="btn-group" }
+
+# Fetch PDFs {: class="subtitle" }
+Extract case citations from text and download original book PDFs for each case.
+    
+[FETCH PDFs]({% url "fetch" %}){: class="btn-primary" }
+{: class="btn-group" }
