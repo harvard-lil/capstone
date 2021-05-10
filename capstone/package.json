@@ -78,6 +78,9 @@
   "resolutions": {
     "vue-svg-loader/svg-to-vue": "0.6.0",
     "**/is-svg": "^4.2.2",
-    "**/ssri": "^8.0.1"
+    "**/ssri": "^8.0.1",
+    "**/url-parse": "^1.5.0",
+    "**/lodash": "^4.17.21",
+    "**/hosted-git-info": "^2.8.9"
   }
 }
