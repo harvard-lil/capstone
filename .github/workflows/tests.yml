@@ -1,0 +1,135 @@
+name: Tests
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    working-directory: capstone
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      ### build docker image ###
+
+      - name: Get current image and tag name
+        id: get-tag
+        run: |
+          rebuild_if_changed = ['Dockerfile']
+          image = "harvardlil/capstone"
+
+          import re, hashlib, pathlib
+
+          # get hash of Dockerfile input files
+          hasher = hashlib.sha256()
+          for path in rebuild_if_changed:
+              hasher.update(pathlib.Path(path).read_bytes())
+          hash = hasher.hexdigest()[:32]
+
+          # see if hash appears in docker-compose.yml
+          docker_compose_path = pathlib.Path('docker-compose.yml')
+          docker_compose = docker_compose_path.read_text()
+          current_version = re.findall(rf'image: {re.escape(image)}:(.*)', docker_compose)[0]
+          if hash not in docker_compose:
+
+              # if hash not found, increment image version number, append new hash, and insert
+              digits = current_version.split('-')[0].split('.')
+              digits[-1] = str(int(digits[-1])+1)
+              new_version = "%s-%s" % (".".join(digits), hash)
+              docker_compose = docker_compose.replace(current_version, new_version)
+              docker_compose_path.write_text(docker_compose)
+              print("%s updated to version %s" % (docker_compose_path, new_version))
+              current_version = new_version
+
+          else:
+              print("%s is already up to date" % docker_compose_path)
+
+          print(f"::set-output name=tag::{image}:{current_version}")
+        shell: python
+
+      - name: Update image tag in git
+        if: github.event_name == 'push'
+        run: |
+          git config user.email "lil@law.harvard.edu"
+          git config user.name "Github Actions"
+          if [[ `git status docker-compose.yml --porcelain` ]] ; then
+            git add docker-compose.yml
+            git commit -m "Bump image version"
+            git push origin develop || exit 1
+          fi
+
+      - name: Check if we need to rebuild
+        id: check-need-build
+        run: |
+          RETURN_CODE=`docker manifest inspect ${{ steps.get-tag.outputs.tag }} > /dev/null && echo $? || echo $?`
+          echo "::set-output name=need-build::$RETURN_CODE"
+
+      - name: Set up Docker Buildx
+        if: steps.check-need-build.outputs.need-build == '1'
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Login to Container Registry
+        if: github.event_name == 'push' && steps.check-need-build.outputs.need-build == '1'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.REPOSITORY_USER }}
+          password: ${{ secrets.REPOSITORY_TOKEN }}
+
+      - name: Build docker image and push
+        if: github.event_name == 'push' && steps.check-need-build.outputs.need-build == '1'
+        uses: docker/build-push-action@v2
+        with:
+          context: capstone/
+          push: true
+          tags: ${{ steps.get-tag.outputs.tag }}
+
+      - name: Build docker image locally for pull request
+        if: github.event_name == 'pull_request' && steps.check-need-build.outputs.need-build == '1'
+        uses: docker/build-push-action@v2
+        with:
+          context: capstone/
+          load: true
+          tags: ${{ steps.get-tag.outputs.tag }}
+
+      ### run tests ###
+
+      - name: Build the docker-compose stack
+        run: |
+          sudo sysctl -w vm.max_map_count=262144           # for elasticsearch's bootstrap check
+          docker-compose up -d
+          docker ps -a                                      # show running containers
+          docker-compose logs                               # show logs
+          docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
+          mkdir -p junit/pytest                            # storage for circleci test info
+          docker-compose exec -T web pytest \
+            --junitxml=junit/pytest/test-results.xml       `# write test results so they can be displayed somewhere later?` \
+            --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
+            -v
+
+      ### codecov ###
+      # https://github.com/codecov/codecov-action
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          verbose: true
+          directory: capstone/
+
+      # Commit built assets if necessary, then deploy via Salt reactor
+      - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: |
+          git config user.email "lil@law.harvard.edu"
+          git config user.name "Github Actions"
+          docker-compose exec web yarn build
+          if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
+              git add static/dist/ webpack-stats.json
+              git commit -m "Add built JS"
+              git push origin develop || exit 1
+          fi
+          export DEPLOY_CONTENT='{"CIRCLE_BUILD_NUM":"'$CIRCLE_BUILD_NUM'","CIRCLE_SHA1":"'$CIRCLE_SHA1'","CIRCLE_BRANCH":"'$CIRCLE_BRANCH'","CIRCLE_PROJECT_REPONAME":"'$CIRCLE_PROJECT_REPONAME'","CIRCLE_PROJECT_USERNAME":"'$CIRCLE_PROJECT_USERNAME'"}' ;
+          export DEPLOY_SIG="sha1=`echo -n "$DEPLOY_CONTENT" | openssl sha1 -hmac $DEPLOY_KEY | sed 's/^.* //'`" ;
+          curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "X-Circle-Signature: $DEPLOY_SIG"
