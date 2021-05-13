@@ -9,6 +9,8 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    # don't run on pushes to forks
+    if: github.event_name == 'pull_request' || github.repository == 'harvard-lil/capstone'
 
     steps:
       - uses: actions/checkout@v2
@@ -113,13 +115,13 @@ jobs:
             --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
             -v
+          echo "done"                                       # sometimes this step hangs after completing pytest, so let's see what this does
 
       ### codecov ###
       # https://github.com/codecov/codecov-action
       - name: Codecov
         uses: codecov/codecov-action@v1
         with:
-          verbose: true
           directory: capstone/
 
       # Commit built assets if necessary, then deploy via Salt reactor
