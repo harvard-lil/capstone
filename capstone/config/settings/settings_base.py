@@ -238,7 +238,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-STATICFILES_STORAGE = 'capdb.storages.WhitenoisePipelineStorage'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 PIPELINE = {
     'COMPILERS': (

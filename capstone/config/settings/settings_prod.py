@@ -109,3 +109,7 @@ VALIDATE_EMAIL_SIGNUPS = True
 
 RESOLVE_API_PREFIX = 'https://api.case.law/v1/cases/'
 RESOLVE_FRONTEND_PREFIX = 'https://cite.case.law'
+
+# for production, compress static files and add hashes to file names for permanent caching.
+# this takes about 8x as long as plain pipeline.storage.PipelineStorage
+STATICFILES_STORAGE = 'capdb.storages.WhitenoisePipelineStorage'
