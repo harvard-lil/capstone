@@ -106,12 +106,15 @@ jobs:
           docker ps -a                                      # show running containers
           docker-compose logs                               # show logs
 
-      - run: docker-compose exec -T web ./manage.py collectstatic --noinput   # collect static files
+      - name: Collect static files
+        shell: 'script -q -e -c "bash {0}"'
+        run: docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
 
       - name: Run tests
+        shell: 'script -q -e -c "bash {0}"'
         run: |
           mkdir -p junit/pytest                             # storage for junit test info
-          docker-compose exec -T web pytest \
+          docker-compose exec web pytest \
             --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
             -v
@@ -127,10 +130,11 @@ jobs:
       # Commit built assets if necessary, then deploy via Salt reactor
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        shell: 'script -q -e -c "bash {0}"'
         run: |
           git config user.email "lil@law.harvard.edu"
           git config user.name "Github Actions"
-          docker-compose exec -T web yarn build
+          docker-compose exec web yarn build
           if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
               git add static/dist/ webpack-stats.json
               git commit -m "Add built JS"
