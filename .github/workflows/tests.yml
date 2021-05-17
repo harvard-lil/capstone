@@ -15,87 +15,26 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      ### build docker image ###
+      ### build docker images ###
 
-      - name: Get current image and tag name
-        id: get-tag
-        run: |
-          rebuild_if_changed = ['Dockerfile']
-          image = "harvardlil/capstone"
-
-          import re, hashlib, pathlib
-
-          # get hash of Dockerfile input files
-          hasher = hashlib.sha256()
-          for path in rebuild_if_changed:
-              hasher.update(pathlib.Path(path).read_bytes())
-          hash = hasher.hexdigest()[:32]
-
-          # see if hash appears in docker-compose.yml
-          docker_compose_path = pathlib.Path('docker-compose.yml')
-          docker_compose = docker_compose_path.read_text()
-          current_version = re.findall(rf'image: {re.escape(image)}:(.*)', docker_compose)[0]
-          if hash not in docker_compose:
-
-              # if hash not found, increment image version number, append new hash, and insert
-              digits = current_version.split('-')[0].split('.')
-              digits[-1] = str(int(digits[-1])+1)
-              new_version = "%s-%s" % (".".join(digits), hash)
-              docker_compose = docker_compose.replace(current_version, new_version)
-              docker_compose_path.write_text(docker_compose)
-              print("%s updated to version %s" % (docker_compose_path, new_version))
-              current_version = new_version
-
-          else:
-              print("%s is already up to date" % docker_compose_path)
-
-          print(f"::set-output name=tag::{image}:{current_version}")
-        shell: python
-
-      - name: Update image tag in git
-        if: github.event_name == 'push'
-        run: |
-          git config user.email "lil@law.harvard.edu"
-          git config user.name "Github Actions"
-          if [[ `git status docker-compose.yml --porcelain` ]] ; then
-            git add docker-compose.yml
-            git commit -m "Bump image version"
-            git push origin develop || exit 1
-          fi
-
-      - name: Check if we need to rebuild
-        id: check-need-build
-        run: |
-          RETURN_CODE=`docker manifest inspect ${{ steps.get-tag.outputs.tag }} > /dev/null && echo $? || echo $?`
-          echo "::set-output name=need-build::$RETURN_CODE"
-
-      - name: Set up Docker Buildx
-        if: steps.check-need-build.outputs.need-build == '1'
-        id: buildx
-        uses: docker/setup-buildx-action@master
-
-      - name: Login to Container Registry
-        if: github.event_name == 'push' && steps.check-need-build.outputs.need-build == '1'
-        uses: docker/login-action@v1
+      - name: Rebuild harvardlil/capstone-postgres if necessary
+        uses: harvard-lil/docker-compose-update-action@main
         with:
-          username: ${{ secrets.REPOSITORY_USER }}
-          password: ${{ secrets.REPOSITORY_TOKEN }}
+          working-directory: capstone
+          image: "harvardlil/capstone-postgres"
+          docker-file: "../services/docker/extended-postgres.dockerfile"
+          rebuild-if-changed: "../services/docker/extended-postgres.dockerfile"
+          registry-user: ${{ secrets.REPOSITORY_USER }}
+          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
 
-      - name: Build docker image and push
-        if: github.event_name == 'push' && steps.check-need-build.outputs.need-build == '1'
-        uses: docker/build-push-action@v2
+      - name: Rebuild harvardlil/capstone if necessary
+        uses: harvard-lil/docker-compose-update-action@main
         with:
-          context: capstone/
-          push: true
-          tags: ${{ steps.get-tag.outputs.tag }}
-
-      - name: Build docker image locally for pull request
-        if: github.event_name == 'pull_request' && steps.check-need-build.outputs.need-build == '1'
-        uses: docker/build-push-action@v2
-        with:
-          context: capstone/
-          load: true
-          tags: ${{ steps.get-tag.outputs.tag }}
+          working-directory: capstone
+          image: "harvardlil/capstone"
+          rebuild-if-changed: "Dockerfile requirements.txt yarn.lock"
+          registry-user: ${{ secrets.REPOSITORY_USER }}
+          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
 
       ### run tests ###
 
@@ -107,11 +46,11 @@ jobs:
           docker-compose logs                               # show logs
 
       - name: Collect static files
-        shell: 'script -q -e -c "bash {0}"'
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
 
       - name: Run tests
-        shell: 'script -q -e -c "bash {0}"'
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: |
           mkdir -p junit/pytest                             # storage for junit test info
           docker-compose exec web pytest \
@@ -130,11 +69,16 @@ jobs:
       # Commit built assets if necessary, then deploy via Salt reactor
       - name: Deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        shell: 'script -q -e -c "bash {0}"'
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: |
           git config user.email "lil@law.harvard.edu"
           git config user.name "Github Actions"
           docker-compose exec web yarn build
+          if [[ `git status docker-compose.yml --porcelain` ]] ; then
+            git add docker-compose.yml
+            git commit -m "Bump image version"
+            git push origin develop || exit 1
+          fi
           if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
               git add static/dist/ webpack-stats.json
               git commit -m "Add built JS"
