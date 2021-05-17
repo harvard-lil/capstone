@@ -1,7 +1,9 @@
 version: '2.2'
 services:
+    db:
+        build:
+          context: ../services/docker
+          dockerfile: extended-postgres.dockerfile
     web:
         build:
             context: .
-            cache_from:
-                - harvardlil/capstone
