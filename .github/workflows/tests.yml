@@ -41,6 +41,7 @@ jobs:
       - name: docker-compose up
         run: |
           sudo sysctl -w vm.max_map_count=262144            # for elasticsearch's bootstrap check
+          docker-compose -f docker-compose.yml pull         # separate pull so downloads run in parallel
           docker-compose -f docker-compose.yml up -d        # use -f to suppress docker-compose.override.yml
           docker ps -a                                      # show running containers
           docker-compose logs                               # show logs
@@ -54,6 +55,7 @@ jobs:
         run: |
           mkdir -p junit/pytest                             # storage for junit test info
           docker-compose exec web pytest \
+            -n 2                                           `# run tests in parallel for speed` \
             --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
             -v
@@ -71,6 +73,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: |
+          set -x
           git config user.email "lil@law.harvard.edu"
           git config user.name "Github Actions"
           docker-compose exec web yarn build
