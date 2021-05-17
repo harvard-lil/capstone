@@ -53,13 +53,12 @@ jobs:
       - name: Run tests
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: |
-          mkdir -p junit/pytest                             # storage for junit test info
+          set -x
           docker-compose exec web pytest \
             -n 2                                           `# run tests in parallel for speed` \
             --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
             -v
-          echo "done"                                       # sometimes this step hangs after completing pytest, so let's see what this does
 
       ### codecov ###
       # https://github.com/codecov/codecov-action
