@@ -1,76 +1,77 @@
 {% load static %}
+{% load api_url %}
+
 <footer class="footer">
-  <div class="row footer-content">
-    <div class="col-4">
+    <section class="logo">
       <a href="https://lil.law.harvard.edu"
          class="lil-logo"
          aria-label="Library Innovation Lab"
          target="_blank">
       </a>
-      <div class="social">
-        <span class="github">
-          <a href="https://github.com/harvard-lil/capstone" target="_blank"
-             title="Caselaw Access Project Github"
-             aria-label="Caselaw Access Project Github"></a>
-        </span>
-
-        <span class="twitter">
-          <a href="https://twitter.com/caselawaccess" target="_blank"
-             title="Caselaw Access Project Twitter"
-             aria-label="Caselaw Access Project Twitter"></a>
-        </span>
-      </div>
-
-    </div>
-  <div class="col-4 footer-copyright small">
-      <p>
-        {# spans stop text from breaking within sentences if avoidable #}
-        <span>&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
-        <span>Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</span>
-        <span><a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
-        <span>Harvard asserts no copyright in caselaw retrieved from this site.</span>
-      </p>
-  </div>
-    <div class="col">
-      <nav aria-label="footer">
-        <ul class="list-inline links">
-          <li class="list-inline-item">
-            <a href="{% url "home" %}">HOME</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "about" %}">ABOUT</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "terms" %}">TERMS</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "privacy" %}">PRIVACY</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "tools" %}">CASELAW</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "gallery" %}">GALLERY</a>
-          </li>
-          <li class="list-inline-item">
-            {% if request.user.is_authenticated %}
-              <a href="{% url "user-details" %}">
-                ACCOUNT
-              </a>
-            {% else %}
-              <a href="{% url "login" %}">
-                LOG IN
-              </a>
-            {% endif %}
-          </li>
-          <li class="list-inline-item">
-            <a href="{% url "contact" %}">CONTACT</a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </div>
-  <div class="row footer-copyright small">
-
-  </div>
+    </section>
+    <section class="sitemap">
+        <nav>
+            <section class="caselaw">
+                <h6>Caselaw</h6>
+                <ul>
+                    <li><a href="{% url 'search' %}">Search</a></li>
+                    <li><a href="{% api_url 'api-root' %}v1/">API</a></li>
+                    <li><a href="{% url 'trends' %}">Trends</a></li>
+                    <li><a href="{% url 'download-files' '' %}">Bulk Data</a></li>
+                    <li><a href="{% url 'cite_home' host 'cite' %}">By Jurisdiction</a></li>
+                    <li><a href="{% url 'fetch' %}">Fetch PDFs</a></li>
+                </ul>
+            </section>
+            <section class="gallery">
+                <h6>Gallery</h6>
+                <ul>
+                    <li><a href="{% url 'labs:labs' %}">CAP Labs</a></li>
+                    <li><a href="{% url 'gallery' %}#research-results">Research</a></li>
+                    <li><a href="{% url 'gallery' %}#coursework">Coursework</a></li>
+                    <li><a href="{% url 'gallery' %}#fun-stuff">Fun Stuff</a></li>
+                    <li><a href="{% url 'gallery' %}#applications-third-party">Community Apps</a></li>
+                    <li><a href="{% url 'gallery' %}#applications">Our Apps</a></li>
+                    <li><a href="{% url 'gallery' %}#tutorials">Community Tutorials</a></li>
+                </ul>
+            </section>
+            <section class="docs">
+                <h6>Docs</h6>
+                <ul>
+                    <li><a href="{% url 'about' %}">About CAP</a></li>
+                    <li><a href="{% url 'api' %}">API</a></li>
+                    <li><a href="{% url 'bulk-docs' %}">Bulk Data</a></li>
+                    <li><a href="{% url 'docs' '' %}site_features/search">Search</a></li>
+                </ul>
+            </section>
+        </nav>
+    </section>
+    <section class="copyright">
+        <span class="cclic">Site text is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. <a href="https://github.com/harvard-lil/capstone">Source code</a> is MIT licensed.</span>
+        <span class="lawlic">Harvard asserts no copyright in caselaw retrieved from this site.</span>
+        <span class="pfhu">&#169;{% now 'Y' %} The President and Fellows of Harvard University.</span>
+    </section>
+    <section class="links">
+        <div class="social">
+            <span class="twitter">
+                <a href="https://twitter.com/caselawaccess"></a>
+            </span>
+            <span class="github">
+                <a href="https://github.com/harvard-lil/capstone"></a>
+            </span>
+            <span class="email">
+                <a href="{% url 'contact' %}"></a>
+            </span>
+        </div>
+        <nav class="policy">
+            <div class="policylink">
+                <a href="{% url 'terms' %}">terms</a>
+            </div>
+            <div class="policylink">
+                <a href="{% url 'privacy' %}">privacy</a>
+            </div>
+            <div class="policylink">
+                <a href="https://accessibility.huit.harvard.edu/digital-accessibility-policy">accessibility</a>
+            </div>
+        </nav>
+    </section>
 </footer>

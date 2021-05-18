@@ -1,23 +1,24 @@
-import functools
 import json
 import re
 import socket
-from collections import namedtuple, OrderedDict
+import requests
+from collections import namedtuple
 from contextlib import contextmanager
-from functools import wraps
+import django_hosts
+from elasticsearch.exceptions import NotFoundError
+from functools import wraps, lru_cache
 from urllib.parse import urlencode
-
+from pathlib import Path
 import markdown
 from django.core.signing import Signer
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.template.loader import render_to_string
 from markdown.extensions.attr_list import AttrListExtension
 from markdown.extensions.toc import TocExtension
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
-
-import requests
-import django_hosts
+from rest_framework.negotiation import DefaultContentNegotiation
+from rest_framework import renderers
+from rest_framework.request import Request as RestRequest
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -26,6 +27,7 @@ from django.core.mail import EmailMessage
 from django.db import transaction, connections, OperationalError
 from django.urls import NoReverseMatch
 from django.utils.functional import lazy
+from django.utils.safestring import mark_safe
 
 
 def cache_func(key, timeout=None, cache_name='default'):
@@ -58,7 +60,11 @@ def cache_func(key, timeout=None, cache_name='default'):
     timeout=settings.CACHED_LIL_DATA_TIMEOUT
 )
 def get_data_from_lil_site(section="news"):
-    response = requests.get("https://lil.law.harvard.edu/api/%s/caselaw-access-project/" % section)
+    try:
+        response = requests.get("https://lil.law.harvard.edu/api/%s/caselaw-access-project/" % section)
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        return []
     content = response.content.decode()
     start_index = content.index('(')
     if section == "contributors":
@@ -75,7 +81,7 @@ def reverse(*args, **kwargs):
     """
         Wrap django_hosts.reverse() to try all known hosts.
     """
-    kwargs.setdefault('scheme', 'http' if settings.DEBUG else 'https')
+    kwargs.setdefault('scheme', 'https' if settings.MAKE_HTTPS_URLS else 'http')
 
     # if host is provided, just use that
     if 'host' in kwargs:
@@ -186,7 +192,7 @@ def render_markdown(markdown_doc):
     md = markdown.Markdown(extensions=[TocExtension(baselevel=2, marker=''), AttrListExtension(), listStyleExtension(),
                                        'meta'])
     html = md.convert(markdown_doc.lstrip())
-    toc = md.toc.replace('<a ', '<a class="list-group-item" ')
+    toc = md.toc.replace('<a ', '<a class="list-group-item" ').replace('<li', '<li class="doc-toc-item"')
     toc = "".join(toc.splitlines(True)[2:-2])  # strip <div><ul> around toc by dropping first and last two lines
     meta = {k:' '.join(v) for k, v in md.Meta.items()}
     return html, toc, meta
@@ -233,53 +239,148 @@ def is_google_bot(request):
     return host_ip == ip
 
 
-def password_protected_page(key):
-    """
-        Apply a low-security password to a pre-release page. Example settings.py:
-            PASSWORD_PROTECTED_PAGES = {'foo': ['password']}
-        Example view:
-            @password_protected_page('foo')
-            def my_view(...):
-    """
-    session_key = 'simple_password_%s' % key
-    passwords_dict = settings.PASSWORD_PROTECTED_PAGES
-    def outer(func):
-        @functools.wraps(func)
-        def inner(request, *args, **kwargs):
-            if (key in passwords_dict and passwords_dict[key] is None) or request.session.get(session_key):
-                return func(request, *args, **kwargs)
-            message = ''
-            if request.method == 'POST':
-                if request.POST.get('password') in passwords_dict.get(key, []):
-                    request.session[session_key] = True
-                    return HttpResponseRedirect(request.path_info)
-                message = 'Password not recognized.'
-            return render(request, 'password_protected_page.html', {"message": message})
-        return inner
-    return outer
-
-def natural_sort_key(text):
-    """
-        Sort numeric parts of text numerically and text parts alphabetically. Example:
-            >>> sorted(["9 Foo", "10 Foo", "9A Foo"], key=natural_sort_key)
-            ['9 Foo', '9A Foo', '10 Foo']
-    """
-    return [int(part) if part.isdigit() else part for word in text.split() for part in re.split('(\d+)', word)]
-
-def page_image_url(url, targets=[], waits=[], fallback=None, timeout=None):
+def page_image_url(url, **kwargs):
     """
         Generate a link to the /screenshot/ view for the given url and target.
     """
-    payload = OrderedDict({'url': url})
-    if targets:
-        payload['targets'] = targets
-    if waits:
-        payload['waits'] = waits
-    if fallback:
-        payload['fallback'] = fallback
-    if timeout is not None:
-        payload['timeout'] = timeout
+    payload = {'url': url, **kwargs}
     signed_payload = Signer().sign(json.dumps(payload))
     return "%s?%s" % (reverse('screenshot'), urlencode({
         'payload': signed_payload,
     }))
+
+
+def is_browser_request(request):
+    """
+    Differentiate between command line and browser requests
+    """
+    drf_renderer = DefaultContentNegotiation().select_renderer(RestRequest(request), [renderers.JSONRenderer, renderers.TemplateHTMLRenderer])
+    return drf_renderer[0] is renderers.TemplateHTMLRenderer
+
+
+safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
+
+
+### docs indexing ###
+# functions to load and index the documentation files in templates/docs
+
+docs_path = Path(__file__).parent.joinpath('templates/docs')
+
+
+def path_to_url(path):
+    if str(path) == '.':
+        return ''
+    return re.sub(r'\d+_', '', str(path.with_suffix('')))
+
+
+def iter_docs():
+    for path in sorted(docs_path.glob('**/*')):
+        if not (path.suffix == '.md' or path.is_dir()):
+            continue
+        yield path
+
+
+def get_doc_links():
+    """
+        Return a map of doc name to url. Given 'docs/01_user_pathways/01_researchers.md', return
+        {'researchers': 'user_pathways/researchers'}.
+    """
+    doc_links = {}
+    for path in iter_docs():
+        order, file_name = path.with_suffix('').name.split('_', 1)
+        if file_name == 'index':
+            continue
+        if file_name in doc_links:
+            raise ValueError(f"Two documentation pages have the file name '{file_name}'. Change the file name for one of them.")
+        doc_links[file_name] = path_to_url(path.relative_to(docs_path))
+    return doc_links
+
+
+def get_toc_by_url():
+    from capapi.documents import CaseDocument
+    base_path = Path(__file__).parent.joinpath('templates/docs')
+    toc_by_url = {
+        '': {
+            'parents': [],
+            'children': [],
+            'url': '',
+            'meta': {
+                'doc_link': '/',
+            }
+        },
+    }
+
+    # context variables for rendering markdown templates
+    context = {
+        'email': settings.DEFAULT_FROM_EMAIL,
+        'news': get_data_from_lil_site(section="news"),
+    }
+    try:
+        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
+    except NotFoundError:
+        try:
+            case = CaseDocument.search()[0].execute()[0]
+        except NotFoundError:
+            case = None
+    context['case_id'] = case.id if case else 1
+    context['case_url'] = reverse('cases-detail', args=[context['case_id']], host='api')
+    context['case_cite'] = case.citations[0].cite if case else "123 U.S. 456"
+
+    def path_string_to_title(string):
+        return string.replace('-', ' ').replace('_', ' ').title().replace('Api', 'API').replace('Cap', 'CAP')
+
+    for path in iter_docs():
+        if not (path.suffix == '.md' or path.is_dir()):
+            continue
+        rel_path = path.relative_to(base_path)
+        parent_url = path_to_url(rel_path.parent)
+        order, file_name = rel_path.with_suffix('').name.split('_', 1)
+        display_name = path_string_to_title(file_name)
+        is_index = display_name == 'Index'
+        if is_index:
+            entry = toc_by_url[parent_url]
+        else:
+            entry = {
+                'url': path_to_url(rel_path),
+                'file_name': file_name,
+                'label': display_name,
+                'uid': str(rel_path.with_suffix('')).replace("/", "_"),
+                'content': '',
+                'children': [],
+                'order': int(order),
+                'meta': {
+                    'title': display_name,
+                },
+            }
+        if path.suffix == '.md':
+            entry['path'] = str(path)
+            try:
+                markdown_doc = render_to_string(str(path), context)
+            except Exception as e:
+                raise Exception(f"Error rendering template {path}") from e
+            content, doc_toc, meta = render_markdown(markdown_doc)
+            if settings.DOCS_SHOW_DRAFTS is False and meta.get('status') == 'draft':
+                continue
+            entry['doc_toc'] = mark_safe(doc_toc)
+            entry['doc_toc_absolute'] = mark_safe(
+                re.sub(r'href="#', 'href="{}#'.format(reverse('docs', args=[entry['url']])), doc_toc))
+
+            entry['content'] = mark_safe(content)
+            entry['meta'].update({k: mark_safe(v) for k, v in meta.items()})
+            entry['label'] = entry['meta'].get('short_title') or entry['meta']['title']
+        if not is_index:
+            parent_entry = toc_by_url[parent_url]
+            parent_entry['children'].append(entry)
+            entry['parents'] = parent_entry['parents'] + [parent_entry]
+            toc_by_url[entry['url']] = entry
+
+    for item in toc_by_url.values():
+        item['children'].sort(key=lambda i: i['order'])
+
+    return toc_by_url
+
+
+# in production, only calculate these once
+if not settings.DEBUG:
+    get_toc_by_url = lru_cache(None)(get_toc_by_url)
+    get_doc_links = lru_cache(None)(get_doc_links)

@@ -32,7 +32,7 @@
     {% if page_url %}
       <meta property="og:url" content="{{ page_url }}">
     {% else %}
-      <meta property="og:url" content="{{ request.build_absolute_uri }}">
+      {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
     {% endif %}
 
     <meta property="og:type" content="article">
@@ -63,20 +63,23 @@
     {% block base_css %}{% stylesheet "base" %}{% endblock %}
     {% render_bundle 'chunk-common' %}
     {% render_bundle 'base' %}
-    {%  if extra_head %}{{ extra_head }}{% endif %}
+    {% if extra_head %}{{ extra_head }}{% endif %}
     {% block extra_head %}{% endblock %}
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">
 
     {% include "includes/nav.html" %}
-    <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
-      {% block content %}{% endblock content %}
-    </main>
+    <div id="content-and-footer" tabindex="-1">
+      <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">
+        {% block content %}{% endblock content %}
+      </main>
 
-    {% if not hide_footer %}
-      {% block footer %}
-          {% include "includes/footer.html" %}
-      {% endblock %}
-    {% endif %}
+      {% if not hide_footer %}
+        {% block footer %}
+            {% include "includes/footer.html" %}
+        {% endblock %}
+      {% endif %}
+      {% block extra_footer %}{% endblock %}
+    </div>
   </body>
 </html>

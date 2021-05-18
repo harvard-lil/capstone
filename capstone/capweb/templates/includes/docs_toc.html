@@ -1,0 +1,40 @@
+{% load startswith %}
+
+<ul class="nav">
+  {% for item in toc %}
+    <li>
+      {# hide/show icon #}
+      <button class="btn btn-link {% if req_doc_path|startswith:item.url %}current-branch{% else %}collapsed{% endif %} interior-directory-link"
+              data-toggle="collapse"
+              data-target="#menu_{{ item.uid }}"
+              {% if not item.children and not item.doc_toc %}style="visibility: hidden"{% endif %}
+              aria-expanded="{% if req_doc_path|startswith:item.url %}true{% else %}false{% endif %}"
+              aria-controls="menu_{{ item.uid }}"></button>
+
+      {# label #}
+      <a href="{% url "docs" item.url %}">{{ item.label }}</a>
+
+      {% if req_doc_path|startswith:item.url %}
+        <div class="collapse show" id="menu_{{ item.uid }}" aria-expanded="false">
+      {% else %}
+        <div class="collapse" id="menu_{{ item.uid }}" aria-expanded="false">
+      {% endif %}
+      <ul class="interior-directory">
+        {% if item.children %}
+          <li>
+            {% include "includes/docs_toc.html" with toc=item.children %}
+          </li>
+        {% elif item.doc_toc %}
+          <ul class="nav">
+            {% if req_doc_path == item.url %}
+              {{ item.doc_toc }}
+            {% else %}
+              {{ item.doc_toc_absolute }}
+            {% endif %}
+          </ul>
+        {% endif %}
+      </ul>
+      </div>
+    </li>
+  {% endfor %}
+</ul>

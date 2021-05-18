@@ -1,0 +1,46 @@
+{% extends "./labs_base.html" %}
+{% load static %}
+{% load pipeline %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load snippet %}
+
+{% block title %}Chronolawgic{% endblock %}
+{% block content_title %}{% endblock %}
+{% block extra_head %}{% stylesheet "labs-chronolawgic" %}{% endblock %}
+{% block meta_description %}Chronolawgic— a caselaw timeline tool{% endblock %}
+{% block project_name %}Chronolawgic{% endblock %}
+
+{% block main_content %}
+<div id="app" class="content"></div>
+
+<script>
+    // This is essentially each endpoint with its API interface
+    // eslint-disable-next-line
+    const urls = {
+        chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}",
+        chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
+        chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' 2147483627%}".replace('2147483627', ""),
+        chronolawgic_api_update_admin: "{% url 'labs:chronolawgic-api-update-admin' 2147483627%}".replace('2147483627', ""),
+        chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' 2147483627%}".replace('2147483627', ""),
+        static: "{% static '' %}",
+        api_root: "{% api_url 'api-root' %}v1/",
+    };
+
+    // eslint-disable-next-line
+    const choices = {
+      jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %},
+      courts: {% snippet 'search_court_list' '[]' %}
+    }
+
+    const user = {
+        id: "{{ user.id }}",
+        is_authenticated: "{{ request.user.is_authenticated }}"
+    }
+
+</script>
+<noscript>
+  This experimental interface requires javascript, even for basic functionality.
+</noscript>
+{% render_bundle 'labs-chronolawgic' %}
+{% endblock %}

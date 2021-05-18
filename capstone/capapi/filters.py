@@ -1,19 +1,23 @@
 from functools import lru_cache
 
-from django.conf import settings
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.functional import SimpleLazyObject
-from django.contrib.postgres.search import SearchQuery
-
-import rest_framework_filters as filters
+from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
+    OrderingFilterBackend
+from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
+from django_filters.utils import translate_validation
 from rest_framework.exceptions import ValidationError
 
 from capdb import models
+from scripts.helpers import normalize_cite
+from scripts.extract_cites import extract_citations_normalized
+from user_data.models import UserHistory
 
 
 ### HELPERS ###
 
 # lazy load and cache choices so we don't get an error if this file is imported when database tables don't exist yet
+
+
 def lazy_choices(queryset, id_attr, label_attr):
     @lru_cache(None)
     def get_choices():
@@ -22,6 +26,7 @@ def lazy_choices(queryset, id_attr, label_attr):
 jur_choices = lazy_choices(models.Jurisdiction.objects.all(), 'slug', 'name_long')
 court_choices = lazy_choices(models.Court.objects.all(), 'slug', 'name')
 reporter_choices = lazy_choices(models.Reporter.objects.all(), 'id', 'short_name')
+analysis_fields = ['word_count', 'char_count', 'ocr_confidence', 'pagerank.percentile', 'pagerank.raw', 'simhash', 'sha256', 'cardinality']
 
 
 class NoopMixin():
@@ -31,19 +36,9 @@ class NoopMixin():
     def noop(self, qs, name, value):
         return qs
 
-class MinLengthCharFilter(filters.CharFilter):
-    def __init__(self, *args, **kwargs):
-        self.min_length = kwargs.pop('min_length', 0)
-        super().__init__(*args, **kwargs)
-
-    def filter(self, qs, value):
-        if value and len(value) < self.min_length:
-            raise ValidationError({self.field_name: "Minimum query length is %s characters." % self.min_length})
-        return super().filter(qs, value)
-
 ### FILTERS ###
 
-class JurisdictionFilter(filters.FilterSet):
+class JurisdictionFilter(FilterSet):
     whitelisted = filters.BooleanFilter()
     slug = filters.ChoiceFilter(choices=jur_choices, label='Name')
     name_long = filters.CharFilter(label='Long Name')
@@ -59,7 +54,7 @@ class JurisdictionFilter(filters.FilterSet):
         ]
 
 
-class ReporterFilter(filters.FilterSet):
+class ReporterFilter(FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(
         field_name='jurisdictions__slug',
         choices=jur_choices)
@@ -77,13 +72,14 @@ class ReporterFilter(filters.FilterSet):
         ]
 
 
-class VolumeFilter(filters.FilterSet):
+class VolumeFilter(FilterSet):
     jurisdictions = filters.MultipleChoiceFilter(
+        label='Jurisdiction',
         field_name='reporter__jurisdictions__slug',
         choices=jur_choices)
 
     reporter = filters.MultipleChoiceFilter(
-        field_name='reporter__short_name',
+        field_name='reporter',
         choices=reporter_choices)
 
     volume_number = filters.NumberFilter(field_name='volume_number')
@@ -99,7 +95,7 @@ class VolumeFilter(filters.FilterSet):
         ]
 
 
-class CourtFilter(filters.FilterSet):
+class CourtFilter(FilterSet):
     jurisdiction = filters.ChoiceFilter(
         field_name='jurisdiction__slug',
         choices=jur_choices)
@@ -116,108 +112,7 @@ class CourtFilter(filters.FilterSet):
         ]
 
 
-class CaseFilter(NoopMixin, filters.FilterSet):
-    name_abbreviation = MinLengthCharFilter(
-        field_name='name_abbreviation',
-        label='Name Abbreviation (contains)',
-        lookup_expr='icontains',
-        min_length=3)
-    cite = filters.CharFilter(
-        field_name='cite',
-        label='Citation',
-        method='find_by_citation')
-    court = filters.ChoiceFilter(
-        field_name='court_slug',
-        label='Court Slug',
-        choices=court_choices)
-    court_id = filters.NumberFilter(
-        field_name='court_id',
-        label='Court ID',
-    )
-    reporter = filters.ChoiceFilter(
-        field_name='reporter_id',
-        label='Reporter',
-        choices=reporter_choices)
-    jurisdiction = filters.ChoiceFilter(
-        field_name='jurisdiction_slug',
-        label='Jurisdiction',
-        choices=jur_choices)
-    decision_date_min = filters.CharFilter(
-        label='Date Min (Format YYYY-MM-DD)',
-        field_name='decision_date_min',
-        method='find_by_date')
-    decision_date_max = filters.CharFilter(
-        label='Date Max (Format YYYY-MM-DD)',
-        field_name='decision_date_max',
-        method='find_by_date')
-    docket_number = MinLengthCharFilter(
-        field_name='docket_number',
-        label='Docket Number (contains)',
-        lookup_expr='icontains',
-        min_length=3)
-
-    if settings.FULL_TEXT_FEATURE:
-        search = filters.CharFilter(
-            label='Full-Text Search',
-            help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.',
-            method='full_text_search_simple')
-
-    # These aren't really filters, but are used elsewhere in preparing the response.
-    # Included here so they'll show up in the UI.
-    full_case = filters.ChoiceFilter(
-        method='noop',
-        label='Include full case text or just metadata?',
-        choices=(('', 'Just metadata (default)'), ('true', 'Full case text')),
-    )
-    body_format = filters.ChoiceFilter(
-        method='noop',
-        label='Format for case text (applies only if including case text)',
-        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
-    )
-
-    def find_by_citation(self, qs, name, value):
-        return qs.filter(citations__normalized_cite__exact=models.Citation.normalize_cite(value))
-
-    def find_by_date(self, qs, name, value):
-        try:
-            if '_min' in name:
-                return qs.filter(decision_date__gte=value)
-            else:
-                return qs.filter(decision_date__lte=value)
-        except DjangoValidationError:
-            raise ValidationError({name: "Invalid date format. Expected YYYY-MM-DD format."})
-
-    def full_text_search_simple(self, qs, name, value):
-        value = value.strip()
-        value = " ".join(part for part in value.split() if len(part) > 2)
-        if value:
-            return qs.filter(
-                case_text__tsv= parse_phrase_search(value)
-            ).exclude(
-                case_text=None  # ensure inner join
-            ).extra(
-                # For full-text search to be indexed properly, using the rum index, we have to order by the rum
-                # operator that compares metadata_id to 0. Name the result 'fts_order' so we can order by it later.
-                # See https://github.com/postgrespro/rum/issues/15#issuecomment-349690826
-                select={'fts_order': 'capdb_casetext.metadata_id <=> 0'}
-            ).order_by('fts_order')
-        else:
-            return qs
-
-    class Meta:
-        model = models.CaseMetadata
-        fields = [
-                  'cite',
-                  'name_abbreviation',
-                  'jurisdiction',
-                  'reporter',
-                  'decision_date_min',
-                  'decision_date_max',
-                  'docket_number',
-                  ]
-
-
-class CaseExportFilter(NoopMixin, filters.FilterSet):
+class CaseExportFilter(NoopMixin, FilterSet):
     with_old = filters.ChoiceFilter(
         field_name='with_old',
         label='Include previous versions of files?',
@@ -234,7 +129,7 @@ class CaseExportFilter(NoopMixin, filters.FilterSet):
         }
 
 
-class NgramFilter(filters.FilterSet):
+class NgramFilter(FilterSet):
     q = filters.CharFilter(
         label='Words',
         help_text='Up to three words separated by spaces',
@@ -251,30 +146,190 @@ class NgramFilter(filters.FilterSet):
         fields = ['q', 'jurisdiction', 'year']
 
 
-def parse_phrase_search(search_term):
-    results = SearchQuery("")
-    normalized = search_term.replace('“', '"').replace('”', '"').replace('"', ' " ')
+class UserHistoryFilter(FilterSet):
+    case_id = filters.NumberFilter()
+    date = filters.DateTimeFromToRangeFilter()
 
-    # balance out uneven quotes by killing the last one
-    if normalized.count('"') % 2 != 0:
-        last_comma_index = normalized.rfind('"')
-        normalized = "{} {}".format(normalized[:last_comma_index], normalized[last_comma_index + 1:])
+    class Meta:
+        model = UserHistory
+        fields = ['case_id', 'date']
 
-    # I used this loop because my regex solution was harder to read, and just as much code
-    current_phrase = []
-    in_a_phrase = False
-    for word in normalized.split(" "):
-        if word == '':
-            continue
-        elif word == '"' and not in_a_phrase:
-            in_a_phrase = True
-        elif word == '"' and in_a_phrase:
-            in_a_phrase = False
-            results &= SearchQuery(" ".join(current_phrase), search_type="phrase")
-            current_phrase = []
-        elif in_a_phrase:
-            current_phrase.append(word)
-        else:
-            results &= SearchQuery(word, search_type="plain")
 
-    return results
+class CaseFilter(FilterSet):
+    """
+        Used for HTML display and validation, but not actual filtering.
+        Rendered by CaseFilterBackend, which applies filters to the ES query.
+    """
+    search = filters.CharFilter(
+        label='Full-Text Search',
+        help_text='Search for words separated by spaces. All words are required in results. Words less than 3 characters are ignored.')
+    cite = filters.CharFilter(label='Citation')
+    name_abbreviation = filters.CharFilter(label='Name Abbreviation (contains)')
+    name = filters.CharFilter(label='Full Name (contains)')
+    jurisdiction = filters.ChoiceFilter(choices=jur_choices)
+    reporter = filters.ChoiceFilter(choices=reporter_choices, label='Reporter Series')
+    decision_date__gte = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
+    decision_date__lte = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
+    docket_number = filters.CharFilter(label='Docket Number (contains)')
+    court = filters.ChoiceFilter(choices=court_choices)
+    court_id = filters.NumberFilter(label='Court ID')
+    full_case = filters.ChoiceFilter(
+        label='Include full case text or just metadata?',
+        choices=(('', 'Just metadata (default)'), ('true', 'Full case text')),
+    )
+    body_format = filters.ChoiceFilter(
+        label='Format for case text (applies only if including case text)',
+        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
+    )
+    cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
+    ordering = filters.ChoiceFilter(
+        label='Sort order (defaults to relevance, if search is provided, else decision_date)',
+        choices=[
+            ('relevance', 'Relevance'),
+            ('decision_date', 'Decision date'),
+            ('-decision_date', 'Reverse decision date'),
+            ('name_abbreviation', 'Name abbreviation'),
+            ('-name_abbreviation', 'Reverse name abbreviation'),
+            ('id', 'id'),
+            ('-id', 'Reverse id'),
+            ('', '--- Analysis fields ---')
+        ]+[choice for field in analysis_fields for choice in [[f'analysis.{field}', field], [f'-analysis.{field}', f'Reverse {field}']]],
+    )
+    page_size = filters.NumberFilter(min_value=1, max_value=10000, label='Results per page (1 to 10,000; default 100)')
+    last_updated__gte = filters.CharFilter(label='last_updated greater than or equal to this prefix')
+    last_updated__lte = filters.CharFilter(label='last_updated less than or equal to this prefix')
+
+    class Meta:
+        model = models.CaseMetadata
+        fields = []
+
+
+class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        """
+            Apply form validation from DjangoFilterBackend.filter_queryset(), which uses the fields
+             defined on CaseFilter, before applying actual filters from FilteringFilterBackend.
+        """
+        filterset = self.get_filterset(request, None, view)
+        if not filterset.is_valid():
+            raise translate_validation(filterset.errors)
+        return super().filter_queryset(request, queryset, view)
+
+    def get_filter_query_params(self, request, view):
+        def lc_values(values):
+            return [value.lower() for value in values if isinstance(value, str)]
+
+        query_params = super().get_filter_query_params(request, view)
+
+        if 'cite' in query_params:
+            query_params['cite']['values'] = [normalize_cite(cite) for cite in lc_values(query_params['cite']['values'])]
+
+        if 'court' in query_params:
+            query_params['court']['values'] = lc_values(query_params['court']['values'])
+
+        if 'jurisdiction' in query_params:
+            query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
+
+        if 'cites_to' in query_params:
+            query_params['cites_to']['values'] = [normalize_cite(c) for c in query_params['cites_to']['values']]
+        return query_params
+
+
+class BaseFTSFilter(SimpleQueryStringSearchFilterBackend):
+    """ Base filter for query params that search by simple_query_string. """
+    def filter_queryset(self, request, queryset, view):
+        # ignore empty searches
+        if request.GET.get(self.search_param):
+            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
+            # set up to be used multiple times on the same view.
+            view.simple_query_string_search_fields = self.fields
+            return super().filter_queryset(request, queryset, view)
+        return queryset
+
+
+class MultiFieldFTSFilter(BaseFTSFilter):
+    search_param = 'search'
+    fields = (
+        'name',
+        'name_abbreviation',
+        'jurisdiction.name_long',
+        'court.name',
+        'casebody_data.text.head_matter',
+        'casebody_data.text.opinions.author',
+        'casebody_data.text.opinions.text',
+        'casebody_data.text.corrections',
+        'docket_number',
+    )
+
+
+class NameFTSFilter(BaseFTSFilter):
+    search_param = 'name'
+    fields = ('name',)
+
+
+class NameAbbreviationFTSFilter(BaseFTSFilter):
+    search_param = 'name_abbreviation'
+    fields = ('name_abbreviation',)
+
+
+class DocketNumberFTSFilter(BaseFTSFilter):
+    search_param = 'docket_number'
+    fields = ('docket_number',)
+
+
+class CAPOrderingFilterBackend(OrderingFilterBackend):
+    # NOTE: ordering in Elasticsearch falls back to the "internal Lucene doc id" for a given shard,
+    # which means it is stable as long as we have only one shard. If we add additional shards, we will
+    # need to bind each user to a single shard for pagination.
+    @classmethod
+    def transform_ordering_params(cls, ordering_params, ordering_fields):
+        # changes relevance to -relevance (and vice versa) to avoid the rather unintuitive reverse-relevance sort
+        # when sort=relevance
+        return super().transform_ordering_params(
+            ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
+            ordering_fields)
+
+
+class ResolveFilter(FilterSet):
+    """
+        Used for HTML display and validation, but not actual filtering.
+        Rendered by ResolveFilterBackend, which applies filters to the ES query.
+    """
+    q = filters.CharFilter(label='Citation', help_text='Citation, or text containing multiple citations')
+
+    class Meta:
+        model = models.CaseMetadata
+        fields = []
+
+
+class ResolveFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        """
+            Apply form validation from DjangoFilterBackend.filter_queryset(), which uses the fields
+             defined on ResolveFilter, before applying actual filters from FilteringFilterBackend.
+        """
+        filterset = self.get_filterset(request, None, view)
+        if not filterset.is_valid():
+            raise translate_validation(filterset.errors)
+        return super().filter_queryset(request, queryset, view)
+
+    def get_filter_query_params(self, request, view):
+        query_params = super().get_filter_query_params(request, view)
+        if not query_params:
+            raise ValidationError("Query parameter 'q' is required")
+
+        # extract cites from query string and build lookup of normalized cites -> matched text in query
+        extracted_cites = {}
+        for v in query_params['q']['values']:
+            for cite_text, normalized_cite, rdb_normalized_cite in extract_citations_normalized(v):
+                extracted_cites[normalized_cite] = cite_text
+                extracted_cites[rdb_normalized_cite] = cite_text
+
+        if not extracted_cites:
+            raise ValidationError("No citations found in query.")
+        query_params['q']['values'] = set(extracted_cites)
+
+        # attach lookup to request so it can be used by ResolveDocumentListSerializer
+        request.extracted_cites = extracted_cites
+
+        return query_params

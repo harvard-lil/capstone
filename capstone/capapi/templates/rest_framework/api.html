@@ -133,13 +133,13 @@
       <pre class="prettyprint"><b>{{ request.method }}</b> {{ request.get_full_path }}</pre>
     </div>
 
-    <div class="response-info" aria-label="{% trans "response info" %}">
-        <pre class="prettyprint"><span
-                class="meta nocode"><b>HTTP {{ response.status_code }} {{ response.status_text }}</b>
-          {% for key, val in response_headers|items %}
-            <b>{{ key }}:</b><span class="lit">{{ val|break_long_headers|urlize_quoted_links }}</span>{% endfor %}
-
-  </span>{{ content|urlize_url_fields_only }}</pre>
+    <div class="response-info prettyprint" aria-label="{% trans "response info" %}">
+      <b>HTTP {{ response.status_code }} {{ response.status_text }}</b><br>
+      {% for key, val in response_headers|items %}
+        <b>{{ key }}:</b> <span class="lit">{{ val|break_long_headers|urlize }}</span><br>
+      {% endfor %}
+      <br>
+      <pre>{{ content|urlize_url_fields_only }}</pre>
     </div>
   </div>
 
@@ -258,18 +258,32 @@
   <script>
     window.drf = {
       csrfHeaderName: "{{ csrf_header_name|default:'X-CSRFToken' }}",
-      csrfCookieName: "{{ csrf_cookie_name|default:'csrftoken' }}"
+      {# Don't load csrftoken here to avoid unnecessarily breaking caching; we don't do any POST through DRF #}
+      {# csrfToken: "{% if request %}{{ csrf_token }}{% endif %}" #}
+      csrfToken: null
     };
   </script>
-  <script src="{% static "rest_framework/js/jquery-3.3.1.min.js" %}"></script>
+  <script src="{% static "rest_framework/js/jquery-3.5.1.min.js" %}"></script>
   <script src="{% static "rest_framework/js/ajax-form.js" %}"></script>
   <script src="{% static "rest_framework/js/csrf.js" %}"></script>
   <script src="{% static "rest_framework/js/bootstrap.min.js" %}"></script>
-  <script src="{% static "rest_framework/js/prettify-min.js" %}"></script>
+
+  {# make the prettyPrint() function call in rest_framework/js/default.js a no-op, as it is currently causing CPU hangs in Chrome #}
+  {# see https://github.com/encode/django-rest-framework/issues/1137 #}
+  {# <script src="{% static "rest_framework/js/prettify-min.js" %}"></script> #}
+  <script>
+    function prettyPrint() {}
+  </script>
+
   <script src="{% static "rest_framework/js/default.js" %}"></script>
   <script>
     $(document).ready(function () {
       $('form').ajaxForm();
+
+      // avoid submitting empty filter fields
+      $('#filtersModal form').submit(function() {
+        $(this).find('input,select').filter(function(){return $(this).val() === ''}).attr('name', '');
+      });
     });
   </script>
 {% endblock %}

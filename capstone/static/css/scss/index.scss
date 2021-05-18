@@ -1,7 +1,6 @@
 @import 'variables';
 @import 'base.scss';
 @import 'map';
-@import 'footer/black';
 
 /**************************************************************
 *
@@ -32,35 +31,34 @@
   margin-bottom: $headings-margin-bottom;
 }
 
-h2.section-title {
-  @extend .h1;
+h3, h2.section-title {
   @include header-styles;
-  font-family: $font-sans-title;
-  letter-spacing: 0.16rem;
+  font-family: $font-sans-serif;
   font-size: 2.25rem;
-  @include media-breakpoint-only(xl) {
-    font-size: 4rem;
-  }
-  @include media-breakpoint-only(lg) {
-    font-size: 3rem;
-  }
-  @include media-breakpoint-only(md) {
+  @include media-breakpoint-up (md) {
     font-size: 2.5rem;
   }
   @include media-breakpoint-only(sm) {
-    font-size: 2.75rem;
+    font-size: 2.25rem;
     margin-bottom: 0;
   }
+
   &.long-title {
     @include media-breakpoint-up(lg) {
-      font-size: 3.5rem;
       letter-spacing: 0;
       line-height: 1em;
     }
   }
 }
 
+p.section-subtitle {
+  font-family: $font-serif;
+  font-size: 0.85em;
+  margin: 0;
+}
+
 .section-intro {
+  font-size: 1.05em;
   line-height: 1.75rem;
 }
 
@@ -87,7 +85,6 @@ h2.section-title {
 
 .boxcontainer-img {
   max-width: 100%;
-  border: 1px solid white;
 }
 
 .short-standalone-quote {
@@ -124,6 +121,7 @@ h2.section-title {
   h1 {
     @include sr-only;
   }
+
   #splash-quote {
     @include header-styles;
     letter-spacing: .065rem;
@@ -149,34 +147,54 @@ h2.section-title {
 *
 ***************************************************************/
 
-.map-section:before {
-  left: 50%;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-  border: 20px solid rgba(0, 0, 0, 0);
-  border-top-color: $color-black;
-  margin-left: -20px;
-  margin-top: -1px;
-}
-
 .map-section {
   background-color: $color-black;
+  position: relative;
+
+  // black arrows at top and bottom
+  &:before, &:after {
+    left: 50%;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-top-color: $color-black !important;
+  }
+
+  &:before {
+    border: 20px solid rgba(0, 0, 0, 0);
+    margin-left: -20px;
+    margin-top: -1px;
+  }
+
+  &:after {
+    border: 39px solid rgba(0, 0, 0, 0);
+    margin-left: -41px;
+    margin-top: -6rem;
+    transform: rotate(180deg);
+    @include media-breakpoint-down(md) {
+      display: none;
+    }
+  }
+
   .federal-numbers-boxcontainer {
     max-width: 19rem;
+
     .boxcontainer-header {
       font-family: $font-sans-serif;
       font-size: 1.75rem;
       letter-spacing: .08rem;
     }
+
     .boxcontainer-title {
       border-bottom: 1px solid #fff;
       font-family: $font-serif;
     }
+
     .number-set {
       letter-spacing: .06rem;
+
       .figure {
         font-size: 1.8rem;
         font-family: $font-serif;
@@ -186,34 +204,43 @@ h2.section-title {
 
   .state-numbers-boxcontainer {
     max-width: 19rem;
+
     .boxcontainer-body {
       letter-spacing: 0.05rem;
     }
+
     .boxcontainer-header {
       font-family: $font-sans-serif;
       font-size: 1.75rem;
       letter-spacing: .08rem;
     }
+
     .boxcontainer-title {
       border-bottom: 1px solid #fff;
       font-family: $font-serif;
     }
+
     .number-set {
       letter-spacing: .06rem;
+
       .figure {
         font-size: 1.3rem;
         font-family: $font-serif;
       }
     }
   }
+
   .map {
     margin-top: -2rem;
   }
+
   .content-row {
     margin-bottom: 2rem;
   }
+
   .small-screen-map-section {
     font-family: $font-sans-title;
+
     .bignumber {
       font-size: 5em;
       font-weight: $font-weight-black;
@@ -224,6 +251,7 @@ h2.section-title {
         line-height: 9rem;
       }
     }
+
     .sixtwentyseven {
       font-size: 3.5rem;
       font-weight: $font-weight-bold;
@@ -244,6 +272,7 @@ h2.section-title {
         font-size: 3rem;
       }
     }
+
     .uniquecases {
       font-size: 1.2rem;
       font-weight: $font-weight-semibold;
@@ -251,6 +280,7 @@ h2.section-title {
         font-size: 2.15rem;
       }
     }
+
     .fortym {
       font-weight: $font-weight-extra-light;
       font-family: $font-sans-title;
@@ -261,6 +291,7 @@ h2.section-title {
         font-size: 6rem;
       }
     }
+
     .bottom-text {
       letter-spacing: .075rem;
       font-size: 1.1rem;
@@ -269,12 +300,14 @@ h2.section-title {
         font-size: 1.85rem;
       }
     }
+
     .bottom-text-border {
       border-right: 2px solid $color-white;
       @include media-breakpoint-only(sm) {
         border-right: 4px solid $color-white;
       }
     }
+
     .vseparator {
       border-top: 2px solid $color-white;
       @include media-breakpoint-only(sm) {
@@ -285,42 +318,36 @@ h2.section-title {
   }
 }
 
-.map-section:after {
-  left: 50%;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-  border: 50px solid rgba(0, 0, 0, 0);
-  border-top-color: $color-black;
-  margin-left: -50px;
-  margin-top: -8rem;
-  transform: rotate(180deg);
-  display: inline-block;
-  @include media-breakpoint-down(md) {
-    display: none;
-  }
-}
-
 /**************************************************************
 *
 * == Dive-In Section ==
 *
 ***************************************************************/
-/*
+
 .dive-in-section {
-  .boxcontainer-body {
-    p {
-      @include media-breakpoint-down(lg){
-        font-size: 1rem;
-      }
-    }
-  }
-
+  background-image: linear-gradient(#2F2F2F, #373737);
 }
-*/
 
+
+/**************************************************************
+*
+* == Gallery Section ==
+*
+***************************************************************/
+
+.gallery-section {
+  background-image: linear-gradient(#373737, #353535);
+}
+
+/**************************************************************
+*
+* == Press Section ==
+*
+***************************************************************/
+
+.press-section {
+  background-image: linear-gradient(#353535, #373737);
+}
 /**************************************************************
 *
 * == Contact Section ==
@@ -339,13 +366,16 @@ h2.section-title {
 
   form.email_form {
     margin-bottom: 0;
+
     .alert {
       font-size: $font-size-sm;
       padding: .25rem;
     }
+
     button.close {
       display: none;
     }
+
     .invalid-feedback {
       display: none;
     }
@@ -371,6 +401,7 @@ h2.section-title {
     font-size: $font-size-sm;
     line-height: 1.25rem;
   }
+
   .social-top {
     @extend .social;
   }

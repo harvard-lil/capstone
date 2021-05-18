@@ -8,17 +8,13 @@ from django.conf import settings
 
 from capapi.tests.helpers import check_response
 from capweb.helpers import reverse, page_image_url
-from scripts import update_snippets
 
 
 @pytest.mark.django_db
-def test_nav(client, ingest_case_xml, reporter):
+def test_nav(client, case, reporter):
     """
     All our navigation links lead to somewhere 200 Ok
     """
-    # this is necessary because some routes need specific snippets now
-    update_snippets.update_all()
-
     response = client.get(reverse('home'))
     check_response(response)
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
@@ -26,12 +22,22 @@ def test_nav(client, ingest_case_xml, reporter):
     dropdown_item = soup.find_all('a', {'class': 'dropdown-item'})
     for a in dropdown_item:
         res = client.get(a.get('href'))
-        check_response(res)
+        if 'download' in a.get('href'):
+            # ideally would be caught by is_browser_request,
+            # but for pytests we can explicitly add content_type assumption
+            check_response(res, content_type='application/json')
+        else:
+            check_response(res)
 
     nav_links = soup.find_all('a', {'class': 'nav-link'})
     for a in nav_links:
         res = client.get(a.get('href'))
-        check_response(res)
+        try:
+            check_response(res)
+        except AssertionError:
+            check_response(res, status_code=302)
+            assert "/docs/" in res.url
+            assert "/docs/" not in a.get('href')
 
 
 @pytest.mark.django_db
@@ -46,28 +52,50 @@ def test_footer(client):
         url = a.get('href')
         if settings.PARENT_HOST in url:
             res = client.get(url)
-            check_response(res)
-
+            try:
+                if 'download' in a.get('href'):
+                    # ideally would be caught by is_browser_request,
+                    # but for pytests we can explicitly add content_type assumption
+                    check_response(res, content_type='application/json')
+                else:
+                    check_response(res)
+            except AssertionError:
+                check_response(res, status_code=302)
+                assert "/docs/" in res.url
+                assert "/docs/" not in a.get('href')
 
 @pytest.mark.django_db
-def test_contact(client, auth_client):
+def test_contact(client, auth_client, mailoutbox):
+    # email field is empty if logged out
     response = client.get(reverse('contact'))
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
-    email = soup.find('a', {'class': 'contact_email'})
-    assert email.get('href').split("mailto:")[1] == settings.DEFAULT_FROM_EMAIL
     assert not soup.find('input', {'id': 'id_email'}).get('value')
 
+    # email field is filled if logged in
     response = auth_client.get(reverse('contact'))
     soup = BeautifulSoup(response.content.decode(), 'html.parser')
     assert soup.find('input', {'id': 'id_email'}).get('value') == auth_client.auth_user.email
 
+    # submitting form will send an email
+    post_vals = {'subject': 'subject', 'box2': 'body', 'email': 'foo@example.com'}
+    response = client.post(reverse('contact'), post_vals)
+    check_response(response, status_code=302)
+    assert len(mailoutbox) == 1
 
-def test_screenshot(client, live_server, settings, ngrammed_cases):
+    # submitting box1 will not send an email
+    post_vals = {'subject': 'subject', 'box1': 'body', 'box2': 'body', 'email': 'foo@example.com'}
+    response = client.post(reverse('contact'), post_vals)
+    check_response(response, status_code=302)  # form pretends to succeed
+    assert len(mailoutbox) == 1
+
+
+@pytest.mark.xfail
+def test_screenshot__parallel(client, live_server, settings, ngrammed_cases):
     # set up conditions for /screenshot/ route to work
     settings.SCREENSHOT_FEATURE = True
-    settings.DEBUG = True  # so view expects an http url
+    settings.DEBUG = True  # so view runs browser unsandboxed for docker
     live_server_port = live_server.url.rsplit(':', 1)[1]
-    with mock.patch('capweb.views._safe_domains', ['case.test:%s' % live_server_port]):
+    with mock.patch('capweb.views.safe_domains', ['case.test:%s' % live_server_port]):
 
         # url we want a screenshot of -- .graph-container in /trends/?q=the
         target_url = reverse('trends', port=live_server_port).replace(':8000', '') + '?q=the'

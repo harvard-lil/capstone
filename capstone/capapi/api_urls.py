@@ -9,13 +9,24 @@ from capapi.views import api_views
 
 router = routers.DefaultRouter()
 router.register('cases', api_views.CaseDocumentViewSet, basename="cases")
-router.register('citations', api_views.CitationViewSet)
 router.register('jurisdictions', api_views.JurisdictionViewSet)
 router.register('courts', api_views.CourtViewSet)
 router.register('volumes', api_views.VolumeViewSet)
 router.register('reporters', api_views.ReporterViewSet)
 router.register('bulk', api_views.CaseExportViewSet)
 router.register('ngrams', api_views.NgramViewSet, basename='ngrams')
+router.register('user_history', api_views.UserHistoryViewSet)
+
+unstable_router = routers.DefaultRouter()
+unstable_router.register('resolve', api_views.ResolveDocumentViewSet, basename="resolve")
+
+# filter out bulk endpoint from API browser listing
+class FilteredAPIRootView(routers.APIRootView):
+    def get(self, request, *args, **kwargs):
+        self.api_root_dict = {k:v for k,v in self.api_root_dict.items() if k != 'bulk'}
+        return super().get(request, *args, **kwargs)
+router.APIRootView = FilteredAPIRootView
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -33,6 +44,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
+    path('unstable/', include(unstable_router.urls)),
     # convenience pattern: catch all citations, redirect in CaseDocumentViewSet's retrieve
     re_path(r'^v1/cases/(?P<id>[0-9A-Za-z\s\.]+)/$', api_views.CaseDocumentViewSet.as_view({'get': 'retrieve'}), name='case-get-cite'),
 

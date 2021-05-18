@@ -1,5 +1,8 @@
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import path
 from django.utils import timezone
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
 from capdb.admin import new_class
@@ -23,7 +26,7 @@ authenticate_user.short_description = "Authenticate selected Users"
 class CapUserAdmin(UserAdmin):
     ## override unhelpful settings from the parent UserAdmin
     ordering = ('-date_joined',)
-    filter_horizontal = []
+    filter_horizontal = ['user_permissions']
     ## end override
 
     readonly_fields = ('date_joined',)
@@ -44,6 +47,7 @@ class CapUserAdmin(UserAdmin):
                 'first_name',
                 'last_name',
                 'date_joined',
+                'track_history',
             )
         }),
         ('Permissions', {
@@ -70,8 +74,14 @@ class CapUserAdmin(UserAdmin):
             )
         }),
     )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2'),
+        }),
+    )
     search_fields = ('email', 'last_name', 'first_name')
-    list_filter = ('research_requests__status', 'research_contracts__status', 'is_staff', 'unlimited_access')
+    list_filter = ('research_requests__status', 'research_contracts__status', 'is_staff', 'is_superuser', 'unlimited_access')
     actions = [authenticate_user]
     inlines = (
         new_class('ResearchContractInline', admin.StackedInline, model=models.ResearchContract, fk_name='user', raw_id_fields=['approver']),
@@ -84,11 +94,29 @@ class CapUserAdmin(UserAdmin):
         return instance.unlimited_access_in_effect()
     unlimited_access_in_effect.short_description = "Unmetered Access"
 
-    def has_add_permission(self, request, obj=None):
-        """ We don't currently support adding users via admin -- see Perma code for hints on doing this. """
-        return False
-
 
 @admin.register(models.SiteLimits)
 class SiteLimitsAdmin(admin.ModelAdmin):
     list_display = ('id', 'daily_signup_limit', 'daily_signups', 'daily_download_limit', 'daily_downloads')
+
+
+@admin.register(models.EmailBlocklist)
+class EmailBlocklistAdmin(admin.ModelAdmin):
+    list_display = ('id', 'domain', 'regex', 'notes', 'created_at')
+
+    def get_urls(self):
+        return [
+            path('deactivate/', self.admin_site.admin_view(self.deactivate_accounts)),
+        ] + super().get_urls()
+
+    def deactivate_accounts(self, request):
+        accounts = models.EmailBlocklist.matching_accounts()
+        if request.POST.get('post'):
+            updated = models.CapUser.objects.filter(id__in=[a.id for a in accounts]).update(is_active=False)
+            self.message_user(request, "Deactivated %s accounts." % updated, messages.SUCCESS)
+            return HttpResponseRedirect("../")
+        return render(request, "admin/capapi/emailblocklist/deactivate.html", {
+            **self.admin_site.each_context(request),
+            'accounts': accounts,
+            'account_count': len(accounts),
+        })

@@ -51,7 +51,7 @@ def cases_by_jurisdiction_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for jurisdiction in tqdm(Jurisdiction.objects.annotate(case_count=Count('case_metadatas'))):
+    for jurisdiction in tqdm(Jurisdiction.objects.order_by('name').annotate(case_count=Count('case_metadatas'))):
         if jurisdiction.case_count == 0:
             continue
         writer.writerow(
@@ -75,7 +75,7 @@ def cases_by_reporter_tsv():
     snippet_format="text/tab-separated-values"
     output = io.StringIO()
     writer = csv.writer(output, delimiter='\t',quoting=csv.QUOTE_NONNUMERIC)
-    for reporter in tqdm(Reporter.objects.annotate(case_count=Count(
+    for reporter in tqdm(Reporter.objects.order_by('full_name').annotate(case_count=Count(
             Case(When(case_metadatas__duplicative=False, then=1), output_field=IntegerField())))):
         if reporter.case_count == 0:
             continue
@@ -95,18 +95,6 @@ def update_map_numbers():
     """ Write map_numbers snippet. """
     label = "map_numbers"
     snippet_format = "application/json"
-    jurisdiction_translate = {
-        "regional":"Regional", "dakota-territory":"Dakota-Territory", "tribal":"Native American",
-        "navajo-nation":"Navajo-Nation", "guam":"GU", "us":"US", "n-mar-i":"MP", "pr":"PR", "am-samoa":"AS",
-        "vi":"VI", "nev":"US-NV", "dc":"US-DC", "nc":"US-NC", "nh":"US-NH", "pa":"US-PA", "mont":"US-MT",
-        "ind":"US-IN", "la":"US-LA", "wis":"US-WI", "nj":"US-NJ", "ga":"US-GA", "sd":"US-SD", "mass":"US-MA",
-        "miss":"US-MS", "cal":"US-CA", "okla":"US-OK", "nd":"US-ND", "vt":"US-VT", "ariz":"US-AZ", "w-va":"US-WV",
-        "mich":"US-MI", "utah":"US-UT", "idaho":"US-ID", "wyo":"US-WY", "colo":"US-CO", "ny":"US-NY",
-        "ky":"US-KY", "kan":"US-KS", "alaska":"US-AK", "fla":"US-FL", "or":"US-OR", "tenn":"US-TN", "md":"US-MD",
-        "ill":"US-IL", "ohio":"US-OH", "ala":"US-AL", "sc":"US-SC", "ark":"US-AR", "ri":"US-RI", "minn":"US-MN",
-        "neb":"US-NE", "conn":"US-CT", "me":"US-ME", "iowa":"US-IA", "tex":"US-TX", "del":"US-DE", "mo":"US-MO",
-        "haw":"US-HI", "nm":"US-NM", "wash":"US-WA", "va":"US-VA"
-    }
     cursor = connections['capdb'].cursor()
     cursor.execute(r"""
         SELECT 
@@ -124,7 +112,7 @@ def update_map_numbers():
     # get column names from sql query
     cols = [col[0] for col in cursor.description]
     # create output where each key is a jurisdiction and each value is a dict of values from the sql query
-    output = {jurisdiction_translate[row[0]]: dict(zip(cols[1:], row[1:])) for row in cursor.fetchall()}
+    output = {row[0]: dict(zip(cols[1:], row[1:])) for row in cursor.fetchall()}
     write_update(label, snippet_format, json.dumps(output))
 
 def search_jurisdiction_list():

@@ -1,41 +1,56 @@
 import bisect
-import re
 import urllib
+from datetime import datetime
 from collections import OrderedDict, defaultdict
-from functools import reduce
 from pathlib import Path
 
-from django.http import HttpResponseRedirect, FileResponse
-from django.template import loader
-
+from django.utils.functional import partition
 from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
+from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
+from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest, StreamingHttpResponse
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
-from capapi.documents import CaseDocument
+from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
-from capapi.serializers import CaseDocumentSerializer
+from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
-from capdb.models import Citation
+from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
+from scripts.helpers import normalize_cite
+from user_data.models import UserHistory
 
-from django_elasticsearch_dsl_drf.constants import (
-    LOOKUP_FILTER_RANGE,
-    LOOKUP_QUERY_IN,
-    LOOKUP_QUERY_GT,
-    LOOKUP_QUERY_GTE,
-    LOOKUP_QUERY_LT,
-    LOOKUP_QUERY_LTE)
-from django_elasticsearch_dsl_drf.filter_backends import (
-    FilteringFilterBackend,
-    IdsFilterBackend,
-    OrderingFilterBackend,
-    DefaultOrderingFilterBackend,
-    SimpleQueryStringSearchFilterBackend)
-from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet
+
+class BaseDocumentViewSet(DEDDBaseDocumentViewSet):
+    pagination_class = CapESCursorPagination
+
+    def __init__(self, *args, **kwargs):
+        # use RawSearch to avoid using Elasticsearch wrappers, for speed
+        super().__init__(*args, **kwargs)
+        self.search.__class__ = RawSearch
+
+    # this lets DRF handle 'not found' issues the way they they are with the DB back end
+    ignore = [404]
+
+    lookup_field = 'id'
+
+    simple_query_string_options = {
+        "default_operator": "and",
+    }
+
+    filterset_fields = []  # make CaseFilter, which we use just for presentation in the HTML viewer, ignore filter_fields, which we use for filtering on Elasticsearch
+
+    # Specify default ordering. Relevance is a synonym for score, so we reverse it. It's reversed in the user-specified
+    # ordering backend.
+    ordering = ('-relevance', 'decision_date')
+
+    def filter_queryset(self, queryset):
+        queryset = super(BaseDocumentViewSet, self).filter_queryset(queryset)
+        return queryset.extra(track_total_hits=True)
 
 
 class BaseViewSet(viewsets.ReadOnlyModelViewSet):
@@ -70,271 +85,82 @@ class CourtViewSet(BaseViewSet):
     lookup_field = 'slug'
 
 
-class CitationViewSet(BaseViewSet):
-    serializer_class = serializers.CitationWithCaseSerializer
-    queryset = models.Citation.objects.order_by('pk')
-
-
-class CAPFiltering(FilteringFilterBackend):
-    def get_filter_query_params(self, request, view):
-        def lc_values(values):
-            return [value.lower() for value in values if isinstance(value, str)]
-
-        def tokenize(filter_values):
-            # takes each entry in filter_values and splits them on non alphanumeric characters into separate entries
-            output = reduce(
-                lambda tokenized_list, current_term: tokenized_list + re.split(r'[^a-zA-Z0-9]', current_term),
-                filter_values, [])
-            return(output)
-
-        query_params = super().get_filter_query_params(request, view)
-        if 'cite' in query_params:
-            query_params['cite']['values'] = [Citation.normalize_cite(cite) for cite in
-                                              lc_values(query_params['cite']['values']) ]
-
-        if 'court_id' in query_params:
-            query_params['court_id']['values'] = [ court_id for court_id
-                                                   in query_params['court_id']['values'] if court_id.isdigit() ]
-            if len(query_params['court_id']['values']) < 1:
-                del query_params['court_id']
-
-        if 'name' in query_params:
-            query_params['name']['values'] = lc_values(tokenize(query_params['name']['values']))
-            query_params['name']['lookup'] = 'in'
-
-        if 'name_abbreviation' in query_params:
-            query_params['name_abbreviation']['values'] = lc_values(tokenize(query_params['name_abbreviation']['values']))
-            query_params['name_abbreviation']['lookup'] = 'in'
-
-        if 'court' in query_params:
-            query_params['court']['values'] = lc_values(query_params['court']['values'])
-
-        if 'jurisdiction' in query_params:
-            query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
-
-        if 'docket_number' in query_params:
-            query_params['docket_number']['values'] = lc_values(tokenize(query_params['docket_number']['values']))
-
-        return query_params
-
-    def to_html(self, request, queryset, view):
-        """ This makes the html that goes inside the filters modal in the browsable API. Returns HTML string."""
-
-        query_params = self.get_filter_query_params(request, view)
-        filter_values = { param_name: param_data['values'] for param_name, param_data in query_params.items() }
-
-        # this is for the content of the dropdown menus for jurisdiction, court, and reporter
-        options = {}
-        options['jurisdiction'] = [ {
-                'value': jurisdiction[0],
-                'label': jurisdiction[1],
-                'selected': 'selected' if 'jurisdiction' in filter_values
-                                          and jurisdiction[0] in filter_values['jurisdiction'] else ''
-                }
-            for jurisdiction in filters.jur_choices]
-
-        options['court'] = [ {
-                'value': court[0],
-                'label': court[1],
-                'selected': 'selected' if 'court' in filter_values and court[0] in filter_values['court'] else ''
-                }
-            for court in filters.court_choices]
-        options['reporter'] = [{
-            'value': str(reporter[0]),
-            'label': reporter[1],
-            'selected': 'selected' if 'reporter' in filter_values
-                                      and str(reporter[0]) in filter_values['reporter'] else ''
-            }
-            for reporter in filters.reporter_choices]
-
-        # For fields that look better with custom labels
-        labels = {
-                  'reporter': 'Reporter Series',
-                  'decision_date_min': 'Earliest Decision Date (Format YYYY-MM-DD)',
-                  'decision_date_max': 'Latest Decision Date (Format YYYY-MM-DD)',
-                  'cite': 'Citation',
-                  'docket_number': 'Docket Number (contains)',
-                  'id': 'ID',
-                  'court_id': 'Court ID'
-                  }
-
-        # this creates a dictionary that holds each field and data about it
-        fields = OrderedDict()
-        fields['cite']= {}
-        fields['name_abbreviation']= {}
-        fields['jurisdiction']= {}
-        fields['reporter']= {}
-        fields['decision_date_min']= {}
-        fields['decision_date_max']= {}
-        fields['docket_number']= {}
-        fields['court']= {}
-        fields['court_id']= {}
-        fields['search']= {}
-        fields['full_case']= {}
-        fields['body_format']= {}
-
-        for f in view.filter_fields:
-            if f not in fields:
-                if f == 'decision_date' or f == 'id' or f == 'name':
-                    continue
-                fields[f] = {}
-
-            fields[f]['id'] = f
-
-            if f.endswith('id'):
-                fields[f]['type'] = 'number'
-                fields[f]['step'] = 'any'
-            elif f not in options:
-                fields[f]['type'] = 'text'
-
-            if f in options:
-                fields[f]['options'] = options[f]
-            else:
-                fields[f]['value'] = ''
-
-            if f in filter_values:
-                fields[f]['value'] = ' '.join(filter_values[f])
-
-            fields[f]['label'] = labels[f] if f in labels else f.replace('_', ' ').title()
-
-        # full_case and body_format aren't part of the filters so I add them separately
-        full_case = True if 'full_case' in request.GET and request.GET['full_case'] != '' else False
-        fields['full_case'] = {
-            'id': 'full_case',
-            'label': 'Include full case text or just metadata?',
-            'options': [
-                {'value': 'true',
-                 'label': 'Full case text',
-                 'selected': 'selected' if  full_case else '',
-                 },
-                {'value': '',
-                 'label': 'Just metadata (default)',
-                 'selected': '' if  full_case else 'selected',
-                 }]
-        }
-
-        body_format = request.GET['body_format'] if 'body_format' in request.GET else ''
-        fields['body_format'] = {
-            'id': 'body_format',
-            'label': 'Format for case text (applies only if including case text):',
-            'options': [
-                {'value': 'text',
-                 'label': 'Text Only (default)',
-                 'selected': 'selected' if body_format == 'text' or body_format == '' else '',
-                 },
-                {'value': 'html',
-                 'label': 'HTML',
-                 'selected': 'selected' if body_format == 'html' else '',
-                 },
-                {'value': 'xml',
-                 'label': 'XML',
-                 'selected': 'selected' if body_format == 'xml' else '',
-                 }]
-        }
-
-        # search is also separate from a filter, so it needs to be added separately
-        fields['search'] = {
-            'id': 'search',
-            'value': request.query_params.get('search', ''),
-            'label': 'Full-Text Search',
-            'type': 'search'
-        }
-
-        template = loader.get_template('rest_framework/filters/cases.html')
-        return template.render({'fields': fields })
-
-class CAPFTSFilter(SimpleQueryStringSearchFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        # ignores empty searches
-        if 'search' in request.GET and request.GET['search'] is not '':
-            queryset = super().filter_queryset(request, queryset, view)
-        return queryset
-
-    search_param = 'search'
-
 class CaseDocumentViewSet(BaseDocumentViewSet):
-
     """The CaseDocument view."""
-
-    # this lets DRF handle 'not found' issues the way they they are with the DB back end
-    ignore = [404]
-
     document = CaseDocument
     serializer_class = CaseDocumentSerializer
-    pagination_class = CapESCursorPagination
-
-    renderer_classes = (
-        renderers.JSONRenderer,
-        capapi_renderers.BrowsableAPIRenderer,
-        capapi_renderers.XMLRenderer,
-        capapi_renderers.HTMLRenderer,
-    )
-
-    lookup_field = 'id'
+    filterset_class = filters.CaseFilter
 
     filter_backends = [
-        CAPFTSFilter, # Facilitates FTS
-        CAPFiltering, # Facilitates Filtering (Filters)
-        IdsFilterBackend, # Filtering based on IDs
-        OrderingFilterBackend, # Orders Document
+        # queries that take full-text search operators:
+        filters.MultiFieldFTSFilter,
+        filters.NameFTSFilter,
+        filters.NameAbbreviationFTSFilter,
+        filters.DocketNumberFTSFilter,
+        filters.CaseFilterBackend, # Facilitates Filtering (Filters)
+        filters.CAPOrderingFilterBackend, # Orders Document
+        HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
 
-    # Define search fields
-    simple_query_string_search_fields = (
-        'name',
-        'name_abbreviation.suggest',
-        'jurisdiction.name_long',
-        'court.name',
-        # these are included in head_matter or text:
-        # 'casebody_data.text.attorneys',
-        # 'casebody_data.text.judges',
-        # 'casebody_data.text.parties',
-        'casebody_data.text.head_matter',
-        'casebody_data.text.opinions.author',
-        'casebody_data.text.opinions.text',
-        'casebody_data.text.opinions.type',
-        'casebody_data.text.corrections',
-        'docket_number',
-    )
-    simple_query_string_options = {
-        "default_operator": "and",
-    }
-
     # Define filter fields
     filter_fields = {
-        'id': {
-            'field': 'id',
-            'lookups': [
-                LOOKUP_FILTER_RANGE,
-                LOOKUP_QUERY_IN,
-                LOOKUP_QUERY_GT,
-                LOOKUP_QUERY_GTE,
-                LOOKUP_QUERY_LT,
-                LOOKUP_QUERY_LTE,
-            ],
-        },
-        'name': 'name',
-        'name_abbreviation': 'name_abbreviation',
+        'id': 'id',
         'court': 'court.slug',
         'court_id': 'court.id',
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
-        'docket_number': 'docket_number',
         'cite': 'citations.normalized_cite',
-        'decision_date': 'decision_date',
-        'decision_date_min': {'field': 'decision_date', 'default_lookup': 'gte'},
-        'decision_date_max': {'field': 'decision_date', 'default_lookup': 'lte'},
+        'cites_to': 'extracted_citations.normalized_cite',
+        'cites_to_id': 'extracted_citations.target_cases',
+        'decision_date': 'decision_date_original',
+        'last_updated': 'last_updated',
+        **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
+        # legacy fields:
+        'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
+        'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
     }
 
     # Define ordering fields
     ordering_fields = {
-        'decision_date': 'decision_date',
+        'relevance': '_score',
+        'decision_date': 'decision_date_original',
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
+        'last_updated': 'last_updated',
+        **{'analysis.' + k: 'analysis.' + k for k in filters.analysis_fields},
     }
-    # Specify default ordering
-    ordering = ('decision_date', 'id')
+
+    highlight_fields = {
+        'casebody_data.text.head_matter': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+        'casebody_data.text.opinions.author': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+        'casebody_data.text.opinions.text': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+        'casebody_data.text.corrections': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+    }
 
     def is_full_case_request(self):
         return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
@@ -348,27 +174,107 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
         # exclude all values from casebody_data that we don't need to complete the request
-
         if self.is_full_case_request():
-            data_formats = ["xml", "html", "text"]
-            requested_format = self.request.query_params.get('body_format', 'text')
-            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats if format != requested_format]}
+            data_formats_to_exclude = ["text", "html", "xml"]
+
+            try:
+                data_formats_to_exclude.remove(self.request.query_params.get('body_format', 'text'))
+            except ValueError:
+                # defaults to sending text if it's a full case request with no body_format specified.
+                data_formats_to_exclude.remove('text')
+
+            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude]}
         else:
             source_filter = {"excludes": "casebody_data.*"}
 
         return queryset.source(source_filter)
 
-    def retrieve(self, *args, **kwargs):
+    def get_renderers(self):
+        if self.action == 'retrieve':
+            return [renderers.JSONRenderer(), capapi_renderers.PdfRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
+        else:
+            return [renderers.JSONRenderer(), capapi_renderers.BrowsableAPIRenderer(), capapi_renderers.CSVRenderer()]
+
+    def retrieve(self, request, *args, **kwargs):
         # for user's convenience, if user gets /cases/casecitation or /cases/Case Citation (or any non-numeric value)
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
-        if re.search(r'\D', id):
-            normalized_cite = Citation.normalize_cite(id)
+        if not id.isdigit():
+            normalized_cite = normalize_cite(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)
 
-        return super(CaseDocumentViewSet, self).retrieve(*args, **kwargs)
+        if self.request.query_params.get('format') == 'html':
+            # if previously-supported format=html is requested, redirect to frontend_url
+            case = models.CaseMetadata.objects.filter(id=id).first()
+            if case:
+                return HttpResponseRedirect(case.get_full_frontend_url())
+
+        # handle ?format=pdf
+        if request.accepted_renderer.format == 'pdf':
+            data = self.get_serializer(self.get_object()).data
+            if 'casebody' not in data:
+                return HttpResponseBadRequest("full_case=true is required for format=pdf")
+            if data['casebody']['status'] != 'ok':
+                return HttpResponseBadRequest(data['casebody']['status'])
+            case = CaseMetadata.objects.get(pk=data['id'])
+            if not case.pdf_available():
+                return HttpResponseBadRequest("pdf is not available for this case")
+            return Response(case.get_pdf())
+
+        response = super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
+
+        # handle ?format=csv
+        if request.accepted_renderer.format == 'csv':
+            response = self.bundle_csv_response(response)
+
+        return response
+
+    def list(self, request, *args, **kwargs):
+        # cites_to can contain citations or IDs, so split out IDs into separate
+        # cites_to_id parameter
+        if 'cites_to' in request.query_params:
+            request._request.GET = params = request._request.GET.copy()
+            cites_to, cites_to_id = partition(lambda c: c.isdigit(), params.getlist('cites_to'))
+            params.setlist('cites_to', cites_to)
+            params.setlist('cites_to_id', cites_to_id)
+
+        response = super(CaseDocumentViewSet, self).list(request, *args, **kwargs)
+
+        if request.accepted_renderer.format == 'csv':
+            response = self.bundle_csv_response(response)
+
+        return response
+
+    @staticmethod
+    def bundle_csv_response(response):
+        data = capapi_renderers.CSVRenderer().render(response.data)
+        response = StreamingHttpResponse(data, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="CAP_{}.csv"'.format(str(datetime.now()))
+        return response
+
+class ResolveDocumentViewSet(BaseDocumentViewSet):
+    """The ResolveDocument view."""
+
+    document = ResolveDocument
+    serializer_class = ResolveDocumentSerializer
+    filterset_class = filters.ResolveFilter
+    pagination_class = None
+
+    filter_backends = [
+        filters.ResolveFilterBackend,
+    ]
+
+    # Define filter fields
+    filter_fields = {
+        'q': 'citations.normalized_cite',
+    }
+
+    retrieve = None
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class CaseExportViewSet(BaseViewSet):
@@ -568,3 +474,15 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         return Response(paginated)
 
+
+class UserHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    http_method_names = ['get']
+    queryset = UserHistory.objects.all()
+    filterset_class = filters.UserHistoryFilter
+    serializer_class = serializers.UserHistorySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_anonymous:
+            return self.queryset.none()
+        return self.queryset.filter(user_id=user.id)

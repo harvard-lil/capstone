@@ -1,14 +1,15 @@
-import logging
-from werkzeug.http import parse_range_header
-
 from django.conf import settings
+from django.contrib import auth
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
 from django.middleware.common import CommonMiddleware as DjangoCommonMiddleware
+from django.middleware.gzip import GZipMiddleware
 from django.utils.cache import patch_cache_control
+from django.utils.functional import SimpleLazyObject
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 
 from .resources import wrap_user
-
-logger = logging.getLogger(__name__)
+from config.logging import logger
 
 
 ### cache_header_middleware ###
@@ -19,12 +20,17 @@ _capuser_cache_safe_attributes = {
     'is_anonymous', 'is_authenticated', '__class__',
 }
 
-def add_cache_header(response, s_maxage=settings.CACHE_CONTROL_DEFAULT_MAX_AGE):
-    patch_cache_control(response, s_maxage=s_maxage)
+def add_cache_header(response):
+    patch_cache_control(response, s_maxage=settings.CDN_CACHE_LENGTH, max_age=settings.BROWSER_CACHE_LENGTH)
+
+
+def add_no_cache_header(response):
+    patch_cache_control(response, s_maxage=0, max_age=0)
+
 
 def cache_header_middleware(get_response):
     """
-        Set an outgoing "Cache-Control: s-maxage=<settings.CACHE_CONTROL_DEFAULT_MAX_AGE>" header on all requests
+        Set an outgoing "Cache-Control: s-maxage=<settings.CDN_CACHE_LENGTH>, max-age=<settings.BROWSER_CACHE_LENGTH>" header on all requests
         that are detected to be cacheable.
 
         See test_cache.py for examples of when we set or don't set cache headers.
@@ -78,86 +84,43 @@ def cache_header_middleware(get_response):
 
         # If all tests pass, we can set the Cache-Control header
         cache_response = all(view_tests.values())
-        logger.info("Cacheable response: %s (%s)" % (cache_response, view_tests))
+        logger.debug("Cacheable response: %s (%s)" % (cache_response, view_tests))
         if cache_response:
             add_cache_header(response)
         else:
-            add_cache_header(response, s_maxage=0)
+            add_no_cache_header(response)
 
         return response
 
     return middleware
 
 
-# Override Django's AuthenticationMiddleware to call wrap_user() on the user object
-# This is also done in capapi.authentication to handle user objects created by DRF.
+## authentication ##
+
+_drf_token_authenticator = TokenAuthentication()
+
+def get_user(request):
+    """ Override django get_user to authenticate via DRF token auth if provided. """
+    if not hasattr(request, '_cached_user'):
+        user = auth.get_user(request)
+        if user.is_anonymous:
+            try:
+                user_and_token = _drf_token_authenticator.authenticate(request)
+                if user_and_token:
+                    user = user_and_token[0]
+            except AuthenticationFailed:
+                pass
+        request._cached_user = user
+    return request._cached_user
+
 
 class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
     def process_request(self, request):
-        super().process_request(request)
+        request.user = SimpleLazyObject(lambda: get_user(request))
+        # Call wrap_user() on the user object.
+        # This is also done in capapi.authentication to handle user objects created by DRF.
         request.user = wrap_user(request, request.user)
 
-
-# see https://stackoverflow.com/a/35928017
-#     https://docs.djangoproject.com/en/2.0/topics/http/middleware/
-#     https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
-class RangeRequestMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        if not settings.RANGE_REQUEST_FEATURE:
-            return response
-
-        # is this request eligible for a range request?
-        if response.status_code != 200 or not hasattr(response, 'file_to_stream'):
-            return response
-
-        # we're not really handling If-Range headers; if present and ill-formed,
-        # return the whole content
-        if_range = request.META.get('HTTP_IF_RANGE')
-        if if_range and if_range != response.get('Last-Modified') and if_range != response.get('ETag'):
-            return response
-
-        # parse the range(s) -- at the moment, we're only responding to the
-        # first range, but we coalesce adjacent and overlapping ranges below
-        if request.META.get('HTTP_RANGE'):
-            ranges = parse_range_header(request.META.get('HTTP_RANGE'))
-            if not ranges:
-                return response
-            f = response.file_to_stream
-            response_size = f.size
-            # to handle more than the first range, we'd need to produce a
-            # multipart response...
-            try:
-                (start, end) = ranges.range_for_length(f.size)
-            except TypeError:
-                response.status_code = 416
-                response['Content-Range'] = 'bytes */%d' % response_size
-                return response
-
-            # if the range encompasses the whole response, return 200 --
-            if start == 0 and end > (response_size - 1):
-                return response
-
-            # iterator for range of file
-            def fchunks(start, end):
-                remaining = end - start
-                f.seek(start)
-                while remaining > 0:
-                    chunk = f.read(min(remaining, 2**20))
-                    if not chunk:
-                        break
-                    yield chunk
-                    remaining -= len(chunk)
-
-            response.streaming_content = fchunks(start, end)
-            response.status_code = 206
-            response['Content-Length'] = end + 1 - start
-            response['Content-Range'] = 'bytes %d-%d/%d' % (start, end, response_size)
-        return response
 
 ### access control header middleware ###
 
@@ -172,3 +135,16 @@ class CommonMiddleware(DjangoCommonMiddleware):
             response["Access-Control-Allow-Origin"] = "*"
             response["Access-Control-Allow-Headers"] = "Authorization"
         return response
+
+
+### gzip json responses ###
+
+class GZipJsonMiddleware(GZipMiddleware):
+    """
+        Only gzip responses if we are returning json, to reduce the risk of BREACH attacks that might recover CSRF
+        tokens from HTML. See recommendation at https://docs.djangoproject.com/en/2.2/ref/middleware/#module-django.middleware.gzip
+    """
+    def process_response(self, request, response):
+        if response['Content-Type'] != 'application/json':
+            return response
+        return super().process_response(request, response)

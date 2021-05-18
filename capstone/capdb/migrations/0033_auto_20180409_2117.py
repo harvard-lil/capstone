@@ -10,20 +10,20 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql='CREATE EXTENSION IF NOT EXISTS pg_trgm;',
-            reverse_sql='DROP EXTENSION pg_trgm;'
-        ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_reporter_full_name_upper_gin ON capdb_reporter USING GIN (UPPER(full_name) gin_trgm_ops) ;',
-            reverse_sql='DROP INDEX idx_reporter_full_name_upper_gin;'
-        ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_court_name_upper_gin ON capdb_court USING GIN (UPPER(name) gin_trgm_ops) ;',
-            reverse_sql='DROP INDEX idx_court_name_upper_gin;'
-        ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_casemetadata_name_abbr_upper_gin ON capdb_casemetadata USING GIN (UPPER(name_abbreviation) gin_trgm_ops) ;',
-            reverse_sql='DROP INDEX idx_casemetadata_name_abbr_upper_gin;'
-        ),
+        # migrations.RunSQL(
+        #     sql='CREATE EXTENSION IF NOT EXISTS pg_trgm;',
+        #     reverse_sql='DROP EXTENSION pg_trgm;'
+        # ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_reporter_full_name_upper_gin ON capdb_reporter USING GIN (UPPER(full_name) gin_trgm_ops) ;',
+        #     reverse_sql='DROP INDEX idx_reporter_full_name_upper_gin;'
+        # ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_court_name_upper_gin ON capdb_court USING GIN (UPPER(name) gin_trgm_ops) ;',
+        #     reverse_sql='DROP INDEX idx_court_name_upper_gin;'
+        # ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_casemetadata_name_abbr_upper_gin ON capdb_casemetadata USING GIN (UPPER(name_abbreviation) gin_trgm_ops) ;',
+        #     reverse_sql='DROP INDEX idx_casemetadata_name_abbr_upper_gin;'
+        # ),
     ]

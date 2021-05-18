@@ -1,15 +1,15 @@
 import re
+import requests
 
+from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
-from django.conf import settings
 
-from mailchimp3 import MailChimp
-
-from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract
+from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract, EmailBlocklist
 from capweb.helpers import reverse, reverse_lazy
+from config.logging import logger
 
 
 class LoginForm(AuthenticationForm):
@@ -34,7 +34,7 @@ class ResendVerificationForm(forms.Form):
 
 class RegisterUserForm(UserCreationForm):
     agreed_to_tos = forms.BooleanField()
-    mailing_list = forms.BooleanField(initial=False, required=False)
+    mailing_list = forms.BooleanField(initial=True, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -53,20 +53,33 @@ class RegisterUserForm(UserCreationForm):
             raise forms.ValidationError("Email address may not contain spaces.")
         if CapUser.objects.filter(normalized_email=CapUser.normalize_email(email)).exists():
             raise forms.ValidationError("A user with the same email address has already registered.")
+
+        # validate email against blocklists
+        if not EmailBlocklist.email_allowed(email):
+            logger.warning("Email address blocked: %s" % email)
+            raise forms.ValidationError("This email address is invalid. If you believe this is an error, please contact us.")
+
+        # validate email against mailgun api
+        if settings.VALIDATE_EMAIL_SIGNUPS:
+            try:
+                response = requests.get(
+                    "https://api.mailgun.net/v4/address/validate",
+                    auth=("api", settings.MAILGUN_API_KEY),
+                    params={"address": email})
+                response.raise_for_status()
+            except requests.RequestException:
+                raise forms.ValidationError("Cannot connect to email validation server. If this problem persists, please contact us.")
+            response_json = response.json()
+            if response_json['result'] == 'undeliverable' or (response_json['result'] == 'do_not_send' and 'mailbox_is_disposable_address' in response_json['reason']):
+                # reject undeliverable addresses and disposable addresses
+                logger.warning("Invalid email address: %s" % response_json)
+                raise forms.ValidationError("This email address is invalid. If you believe this is an error, please contact us.")
+
         return email
 
     def save(self, commit=True):
         user = super().save(commit)
         user.create_nonce()
-        # This will sign them up for the mailing list if they selected the mailing_list checkbox.
-        if settings.MAILCHIMP['api_key'] is not '' and self.cleaned_data['mailing_list']:
-            mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
-            mc_client.lists.members.create(
-                settings.MAILCHIMP['id'], {
-                    'email_address': user.email,
-                    'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
-                    'status': 'pending'
-                })
         return user
 
 

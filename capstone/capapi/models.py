@@ -1,20 +1,15 @@
 from datetime import timedelta
 import uuid
-import logging
-
 import email_normalize
+from netaddr import IPAddress, AddrFormatError, IPNetwork
+from model_utils import FieldTracker
+from rest_framework.authtoken.models import Token
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AnonymousUser, PermissionsMixin
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.utils import timezone
 from django.conf import settings
-from netaddr import IPAddress, AddrFormatError, IPNetwork
-
-from model_utils import FieldTracker
-
-from rest_framework.authtoken.models import Token
-
-logger = logging.getLogger(__name__)
 
 
 class CapUserManager(BaseUserManager):
@@ -41,6 +36,14 @@ class CapUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email=email, password=password, **kwargs)
+
+    def get_by_natural_key(self, username):
+        """
+            Make user logins case-insensitive, which works because you can't sign up
+            with the same email with different capitalization anyway.
+        """
+        return self.get(email__iexact=username)
+
 
 # This is a temporary workaround for the problem described in
 # https://github.com/jazzband/django-model-utils/issues/331#issuecomment-478994563
@@ -75,6 +78,12 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
 
     date_joined = models.DateTimeField(auto_now_add=True)
     agreed_to_tos = models.BooleanField(default=False)
+    track_history = models.BooleanField(default=False, help_text="Whether to record cases accessed by this user")
+    has_tracked_history = models.BooleanField(default=False, help_text="Whether this user has history entries")
+
+    # this has not been backfilled to be accurate for people who signed up for the mailing list before late dec of 2019
+    # you should use the MailChimp campaign for a more accurate list.
+    mailing_list = models.BooleanField(default=False)
 
     deactivated_by_user = models.BooleanField(default=False)
     deactivated_date = models.DateTimeField(null=True, auto_now_add=False)
@@ -132,8 +141,8 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
             self.save(update_fields=['case_allowance_remaining', 'case_allowance_last_updated'])
 
     def authenticate_user(self, activation_nonce):
-        if self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(hours=24) > timezone.now():
-            Token.objects.create(user=self)
+        if self.is_active and self.activation_nonce == activation_nonce and self.nonce_expires + timedelta(days=3) > timezone.now():
+            Token.objects.get_or_create(user=self)
             self.activation_nonce = ''
             self.email_verified = True
             self.save()
@@ -141,10 +150,9 @@ class CapUser(PermissionsMixin, AbstractBaseUser):
             raise PermissionDenied
 
     def reset_api_key(self):
-        if self.get_api_key() and self.email_verified:
-            Token.objects.get(user=self).delete()
+        if self.email_verified:
+            Token.objects.filter(user=self).delete()
             Token.objects.create(user=self)
-            self.save()
         else:
             raise PermissionDenied
 
@@ -209,7 +217,7 @@ class ResearchRequest(models.Model):
     area_of_interest = models.TextField(blank=True, null=True)
 
     status = models.CharField(max_length=20, default='pending', verbose_name="research request status",
-                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature')))
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('awaiting signature', 'awaiting signature'), ('withdrawn', 'withdrawn')))
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -232,7 +240,7 @@ class ResearchContract(models.Model):
     approver = models.ForeignKey(CapUser, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='approved_contracts')
     approver_signature_date = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=20, default='pending', verbose_name="research contract status",
-                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied')))
+                              choices=(('pending', 'pending'), ('approved', 'approved'), ('denied', 'denied'), ('withdrawn', 'withdrawn')))
     approver_notes = models.TextField(blank=True, null=True)
 
     notes = models.TextField(blank=True, null=True)
@@ -336,3 +344,56 @@ class MailingList(models.Model):
     # this field could be manually set in the unlikely case that someone repeatedly signs someone else up. They couldn't
     # re-add the address since their it would already be in here, but we'd know to not email them.
     do_not_email = models.BooleanField(default=False)
+
+
+class EmailBlocklist(models.Model):
+    domain = models.CharField(max_length=1000, blank=True, help_text="Exact match for email domain, e.g. 'example.com'")
+    regex = models.CharField(max_length=1000, blank=True, help_text=r"Postgres regex match for entire email address, e.g. '\yfoo@.*\.com\y'")
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.domain
+
+    @classmethod
+    def email_allowed(cls, email):
+        """
+            Return True if email does not match any domains or regexes in the EmailBlocklist.
+
+            >>> email_blocklist_factory = getfixture('email_blocklist_factory')
+            >>> _ = email_blocklist_factory(domain='blocked.com')
+            >>> _ = email_blocklist_factory(regex=r'\yfoo@.*\.org\y')
+            >>> assert EmailBlocklist.email_allowed('foo@good.com')
+            >>> assert EmailBlocklist.email_allowed('nofoo@good.org')
+            >>> assert not EmailBlocklist.email_allowed('foo@blocked.com')
+            >>> assert not EmailBlocklist.email_allowed('foo@blocked.org')
+            >>> assert not EmailBlocklist.email_allowed("foo@'\\'blocked.org")  # make sure 'extra()' is injection safe
+        """
+        parts = email.lower().split('@')
+        if len(parts) != 2:
+            return False
+        domain = parts[1]
+        return (
+            not cls.objects.filter(domain=domain).exists()
+            and not cls.objects.exclude(regex='').extra(where=["%s ~ regex"], params=[email]).exists()
+        )
+
+    @classmethod
+    def matching_accounts(self):
+        """
+            Return CapUser objects for existing accounts that should be blocked.
+
+            >>> email_blocklist_factory, cap_user_factory = [getfixture(f) for f in ('email_blocklist_factory', 'cap_user_factory')]
+            >>> blocklists = [email_blocklist_factory(domain='blocked.com'), email_blocklist_factory(regex=r'\yfoo@')]
+            >>> users = [cap_user_factory(email=e) for e in ('ok@good.com', 'bad@blocked.com', 'foo@bad.com')]
+            >>> assert set(EmailBlocklist.matching_accounts()) == {users[1], users[2]}
+        """
+        return list(CapUser.objects.raw("""
+            SELECT u.* 
+            FROM capapi_capuser u, capapi_emailblocklist e 
+            WHERE 
+                (
+                    lower(substring(u.email from '@(.*)$')) = domain
+                    OR (regex != '' AND lower(u.email) ~ regex)
+                ) AND is_active is true
+        """))

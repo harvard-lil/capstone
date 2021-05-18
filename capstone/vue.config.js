@@ -37,12 +37,15 @@ let vueConfig = {
 
   pages: {
     base: 'static/js/base.js',
-    map: 'static/js/map-actions.js',
+    map: 'static/js/homepage-map/main.js',
     limericks: 'static/js/generate_limericks.js',
-    witchcraft: 'static/js/witchcraft.js',
-    search: 'static/js/search.js',
-    trends: 'static/js/trends.js',
-    case: 'static/js/case.js'
+    witchcraft: 'static/js/witchcraft/main.js',
+    search: 'static/js/search/main.js',
+    trends: 'static/js/trends/main.js',
+    case: 'static/js/case/main.js',
+    'cite-grid': 'static/js/cite-grid/main.js',
+    'case-editor': 'static/js/case-editor/main.js',
+    'labs-chronolawgic': 'static/js/labs/chronolawgic/main.js',
   },
 
   configureWebpack: {
@@ -52,7 +55,8 @@ let vueConfig = {
     ],
     resolve: {
       alias: {
-        'vue$': 'vue/dist/vue.esm.js'
+        'vue$': 'vue/dist/vue.esm.js',
+        static: path.resolve(__dirname, 'static'),
       }
     }
   },
@@ -64,9 +68,9 @@ let vueConfig = {
     allowedHosts: [
         '.case.test'
     ],
-    watchOptions: {
-      poll: true
-    }
+    // watchOptions: {
+    //   poll: true
+    // }
 
   },
 
@@ -103,6 +107,26 @@ let vueConfig = {
     config.externals({
       moment: 'moment'
     });
+
+    // embed svgs
+    // via https://github.com/visualfanatic/vue-svg-loader
+    const svgRule = config.module.rule('svg');
+    svgRule.uses.clear();
+    svgRule
+      .use('babel-loader')
+      .loader('babel-loader')
+      .end()
+      .use('vue-svg-loader')
+      .loader('vue-svg-loader')
+      // don't strip IDs from SVGs
+      // via https://github.com/visualfanatic/vue-svg-loader/issues/97
+      .options({
+        svgo: {
+          plugins: [
+            { cleanupIDs: false },
+          ],
+        },
+      });
   },
 
 };

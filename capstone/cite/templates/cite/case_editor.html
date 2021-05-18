@@ -1,0 +1,28 @@
+{% extends "layouts/wide.html" %}
+{% load pipeline %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load capweb_static %}
+
+{% block title %}Editing {{ citation_full }}{% endblock %}
+{% block content_title %}<a href="{{ case.get_full_frontend_url }}">{{ citation_full }}</a>{% endblock %}
+{% block base_css %}{% stylesheet 'case_editor' %}{% endblock %}
+{% block meta_description %}Editing {{ citation_full|striptags }} from the Caselaw Access Project.{% endblock %}
+
+{% block content %}
+    <div id="app"></div>
+    <script>
+      const templateVars = {
+        urls: {
+          case: "{{ case.get_full_frontend_url }}"
+        },
+        citation_full: "{{ citation_full|safe }}",
+        metadata: {{ case_json|safe }},
+        pages: {{ pages_json|safe }},
+        fonts: {{ fonts_json|safe }},
+        opinions: {{ opinions_json|safe }},
+      };
+    </script>
+    {% render_bundle 'case-editor' %}
+{% endblock %}

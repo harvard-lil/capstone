@@ -4,6 +4,23 @@
 @import 'bootstrap/mixins';
 @import 'bootstrap/tooltip';
 
+@import "case_sidebar";
+
+@media print {
+  #main-nav {
+    display: none;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .main-content {
+    padding-top: 0 !important;
+  }
+  .alert {
+    text-align: center;
+  }
+}
+
 .casebody {
   img {
     max-width: 100%;
@@ -13,6 +30,10 @@
   section {
     // for .page-label:before absolute positioning
     position: relative;
+  }
+
+  p {
+    font-family: $font-serif;
   }
 }
 
@@ -31,55 +52,39 @@ p {
   margin-bottom: 0;
 }
 
-.full_cite {
-  font-family: $font-family-sans-serif;
-  font-size: $font-size-sm;
-  color: $color-black;
-  background-color: $color-light-gray;
-  border-radius: 1rem;
-  margin-top: 0;
-  margin-bottom: 1rem;
-}
-
-.court {
-  font-family: $font-sans-serif;
+.case-header {
+  font-size: 0.9em;
+  font-family: $font-serif-fancy;
   text-align: center;
-  margin-bottom: 1em;
-  a {
-    color: $color-blue;
+  padding: 2em 2em 0;
+  @include media-breakpoint-up(lg) {
+    padding: 0;
+    &::after {
+      content: '*';
+      color: $color-medium-gray;
+    }
+  }
+
+  > h1 {
+    font-family: $font-serif-fancy;
+    font-weight: $font-weight-bold;
+    font-size: 1.3em;
+    line-height: 1.4em;
+    padding: 0;
+    margin: 0;
+  }
+
+  .decision-date, .court-name {
+    line-height: 1.4em;
+  }
+
+  .citations {
+    line-height: 2em;
   }
 }
 
 .tooltip {
   cursor: pointer;
-}
-
-.context-menu {
-  position: fixed !important;
-  width: 130px;
-  left: -999em;
-  border: 1px solid $color-blue;
-  background-color: $color-white;
-  z-index: 999;
-  text-align: left;
-  font-size: 1em;
-  font-style: normal;
-
-  li {
-    border-bottom: 1px solid $color-blue;
-
-    a {
-      z-index: 999;
-      width: 100%;
-      height: 100%;
-      display: inline-block;
-      padding: 0.3em;
-    }
-  }
-  .copied-successfully {
-    display: none;
-    padding: 0.3em;
-  }
 }
 
 .offscreen {
@@ -89,6 +94,7 @@ p {
 
 .case-container {
   padding-bottom: 100px !important;
+  padding-top: 0;
 }
 
 .metadata {
@@ -100,10 +106,16 @@ section.casebody {
 }
 
 blockquote {
-  padding: 0 1em;
+  font-family: $font-serif;
+  padding: .5rem 1rem .5rem 1rem;
+  border-left: .5rem solid $color-gray;
+  color: $color-medium-dark-blue;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
 }
 
 p.small-text {
+  font-family: $font-serif;
   font-size: 14px;
   font-weight: $font-weight-semibold;
 }
@@ -122,21 +134,15 @@ p.small-text {
   margin-top: 20px;
 }
 
-h4.case-name {
-  line-height: 1.4em;
-  letter-spacing: 0;
+.case-name {
+  @include make-col(8);
+  @include make-col-offset(2);
   font-family: $font-serif;
-}
-
-.citations, .court {
-  font-family: $font-sans-serif;
-  font-size: 1.2em;
-  line-height: 2em;
-}
-
-.docket-number, .decision_date {
-  font-size: 1em;
-  line-height: 1.5em;
+  .case-name-v {
+    display: block;
+    margin: .5em;
+    font-style: italic;
+  }
 }
 
 #citation_container {
@@ -169,48 +175,73 @@ h4.case-name {
 
 section.head-matter {
   padding-bottom: 0;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
   p, aside {
-    // on large screens, head matter goes into a narrower column
-    margin-top: 1em;
-    margin-bottom: 1em;
-    &.summary, &.history, &.headnotes {
-      margin-top: 0;
-      margin-bottom: 0;
-
-      margin-left: 5em;
-      // on small screens, don't make head matter narrow
-      @media (max-width: 767.98px) {
-        margin-left: 6em;
+      &.summary, &.history, &.headnotes, &.disposition, &.syllabus, &.attorneys {
+        margin-bottom: 0;
+        margin-top: 0;
+        background-color: $color-light-gray;
+        padding: 0rem 2rem 1rem 2rem;
       }
-    }
-    &.attorneys {
-      margin-top: 0;
-    }
   }
-}
 
-.attorneys {
-  font-family: $font-serif;
-  letter-spacing: 0;
-  margin-bottom: 0.5em;
-}
+  @mixin head-matter-label {
+      padding-left: 0;
+      font-family: $font-sans-title;
+      font-weight: bold;
+      color: $color-medium-gray;
+      word-break: break-all;
+      text-align: left;
+      font-size: 1rem;
+      text-transform: uppercase;
+      position: absolute;
+      top: 1rem;
+  }
 
-@mixin head-matter-label {
-  font-weight: bold;
-  color: $color-violet-gray;
-  word-break: break-all;
-  position: absolute;
+  :not(.headnotes) + .headnotes:before, :not(.summary) + .summary:before, :not(.history) + .history:before,
+  :not(.syllabus) + .syllabus:before, :not(.disposition) + .disposition:before, :not(.attorneys) + .attorneys:before {
+    @include head-matter-label;
+    content: attr(class);
+  }
 
-  // on large screens, label is right-aligned to left of paragraph
-  margin-left: -10em;
-  width: 9em;
-  text-align: right;
+  :not(.footnote) + .footnote:before {
+    @include head-matter-label;
+    content: "Head Matter Footnotes";
+  }
 
-  // on small screens, label is left-aligned to left of paragraph
-  @media (max-width: 767.98px) {
-    margin-left: -6em;
-    width: 5em;
-    text-align: left;
+  :not(.headnotes) + .headnotes, :not(.summary) + .summary, :not(.history) + .history,
+  :not(.syllabus) + .syllabus, :not(.disposition) + .disposition, :not(.attorneys) + .attorneys,
+  :not(.footnote) + .footnote {
+      margin-top: 1rem;
+      padding-bottom: 1rem;
+      padding-top: 3rem;
+  }
+
+  .page-label:before {
+    display: none;
+    /*
+    display: inline-block;
+    content: attr(data-label);
+    position: absolute;
+    transform: translateX(30%);
+    padding-right: 0;
+    font-size: 1.2rem;
+    padding-left: 0;
+    padding-top: 2rem;
+    */
+  }
+
+  .footnote {
+        margin-bottom: 0;
+        margin-top: 0;
+        background-color: $color-light-gray;
+        padding: 0rem 2rem 1rem 2rem;
+  }
+
+  .footnote > p, footnote > blockquote {
+    padding-bottom: .5em;
+    margin-bottom: 0;
   }
 }
 
@@ -219,7 +250,7 @@ section.head-matter {
 }
 
 .attorneys, .judges {
-  text-align: center;
+  text-align: left;
   font-size: 1.25rem;
 }
 
@@ -233,30 +264,7 @@ mark {
   color: $color-magenta;
 }
 
-.headnotes:before {
-  @include head-matter-label;
-  content: "Headnote: ";
-}
 
-.summary:before {
-  @include head-matter-label;
-  content: "Summary: ";
-}
-
-.history:before {
-  @include head-matter-label;
-  content: "History: ";
-}
-
-.disposition:before {
-  @include head-matter-label;
-  content: "Disposition: ";
-}
-
-.syllabus:before {
-  @include head-matter-label;
-  content: "Syllabus: ";
-}
 
 //*** opinion
 
@@ -270,6 +278,7 @@ mark {
   &:before {
     content: "Opinion";
     font-weight: bold;
+    font-family: $font-serif-fancy;
   }
 
   > p {
@@ -279,31 +288,35 @@ mark {
 
 .footnotemark {
   border-bottom: 0;
-  font-weight: $font-weight-semibold;
   margin-bottom: 5px;
   color: $color-magenta;
   vertical-align: super;
+  font-size: .75rem;
+  font-weight: bold;
 }
 
 .footnote {
-  font-size: 0.9em;
-  margin-left: 2em;
+  font-size: $font-size-sm;
+  line-height: $line-height-sm;
+  padding: 0rem 2rem 1rem 2rem;
   line-height: $line-height-sm;
   position: relative;
 
+
   > p, > blockquote {
     margin-bottom: .5em;
+    margin-top: 0;
   }
 
   // footnote number
   > a {
     position: absolute;
-    left: 0;
-    transform: translateX(-100%);
-    padding-right: 1em;
+    left: .5rem;
     border-bottom: 0;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-bold;
     color: $color-magenta;
+    font-family: $font-serif;
+    font-size: .75rem;
   }
 
   // highlight selected footnote
@@ -314,6 +327,7 @@ mark {
   // hide floating page label within footnotes
   .page-label:before {
     display: none;
+    text-align: left;
   }
 }
 
@@ -321,7 +335,7 @@ mark {
   color: $color-medium-gray;
   font-size: .8em;
   padding: .4em;
-
+  font-style: italic;
   &:before {
     display: inline-block;
     content: attr(data-label);

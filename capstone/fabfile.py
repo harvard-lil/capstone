@@ -1,15 +1,22 @@
 import csv
-import glob
 import gzip
 import hashlib
 import os
-import pathlib
+import re
+import signal
+import subprocess
+import sys
+import tempfile
+from collections import defaultdict
+from contextlib import contextmanager
 from datetime import datetime
+from getpass import getpass
+
 import django
 import json
-from random import randrange, randint
+from random import randint
 from pathlib import Path
-from celery import shared_task, group
+from celery import group
 from tqdm import tqdm
 
 # set up Django
@@ -21,29 +28,53 @@ except Exception as e:
     print("WARNING: Can't configure Django -- tasks depending on Django will fail:\n%s" % e)
 
 from django.core import management
-from django.db import connections
-from django.utils.encoding import force_str, force_bytes
+from django.db import connections, transaction
+from django.db.models import Prefetch, Min, Max
+from django.utils import timezone
+from django.utils.encoding import force_bytes
 from django.conf import settings
 from fabric.api import local
 from fabric.decorators import task
 
-from capapi.models import CapUser
-from capdb.models import VolumeXML, VolumeMetadata, CaseXML, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
-    Court
+from capapi.models import CapUser, EmailBlocklist
+from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
+    Court, Reporter, PageStructure, CaseAnalysis
 
 import capdb.tasks as tasks
-from scripts import set_up_postgres, ingest_tt_data, data_migrations, ingest_by_manifest, mass_update, \
-    validate_private_volumes as validate_private_volumes_script, compare_alto_case, export, count_chars, \
-    update_snippets
-from scripts.helpers import parse_xml, serialize_xml, copy_file, resolve_namespace, volume_barcode_from_folder, \
-    up_to_date_volumes, storage_lookup
+from scripts import set_up_postgres, data_migrations, \
+    validate_private_volumes as validate_private_volumes_script, export, update_snippets
+from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
+
+
+@contextmanager
+def open_subprocess(command):
+    """ Call command as a subprocess, and kill when with block exits. """
+    print("Starting: %s" % command)
+    proc = subprocess.Popen(command, shell=True, stdout=sys.stdout, stderr=sys.stderr)
+    try:
+        yield
+    finally:
+        print("Killing: %s" % command)
+        os.kill(proc.pid, signal.SIGKILL)
 
 
 @task(alias='run')
 def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
-    management.call_command('runserver', port)
+    # run celerybeat in background for elasticsearch indexing
+    with open_subprocess("watchmedo auto-restart -d ./ -p '*.py' -R -- celery worker -A config.celery.app -c 1 -B"):
+        # This was `management.call_command('runserver', port)`, but then the Django autoreloader
+        # itself calls fab run and we get two copies of everything!
+        # --nostatic so whitenoise is used in dev
+        local(f"python manage.py runserver {port} --nostatic")
+
+
+@task
+def run_frontend(port=None):
+    with open_subprocess("npm run serve"):
+        run_django(port)
+
 
 @task
 def test():
@@ -52,17 +83,6 @@ def test():
 
 @task(alias='pip-compile')
 def pip_compile(args=''):
-    """
-        We want to run `pip-compile --generate-hashes` so hash values of packages are locked.
-        This breaks packages installed from source; pip currently refuses to install source packages alongside hashed packages:
-            https://github.com/pypa/pip/issues/4995
-        pip will install packages from github in gz form, but those are currently rejected by pip-compile:
-            https://github.com/jazzband/pip-tools/issues/700
-        So we need to keep package requirements in requirements.in that look like this:
-            -e git+git://github.com/jcushman/email-normalize.git@6b5088bd05de247a9a33ad4e5c7911b676d6daf2#egg=email-normalize
-        and convert them to https form with hashes once they're written to requirements.txt:
-            https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.tar.gz#egg=email-normalize --hash=sha256:530851e150781c5208f0b60a278a902a3e5c6b98cd31d21f86eba54335134766
-    """
     import subprocess
 
     # run pip-compile
@@ -71,7 +91,6 @@ def pip_compile(args=''):
     command = ['pip-compile', '--generate-hashes', '--allow-unsafe']+args.split()
     print("Calling %s" % " ".join(command))
     subprocess.check_call(command, env=dict(os.environ, CUSTOM_COMPILE_COMMAND='fab pip-compile'))
-    update_docker_image_version()
 
 @task
 def update_docker_image_version():
@@ -81,6 +100,7 @@ def update_docker_image_version():
     import re
 
     # get hash of Dockerfile input files
+    # if this list changes, also update .circleci/config.yml
     paths = ['Dockerfile', 'requirements.txt', 'yarn.lock']
     hasher = hashlib.sha256()
     for path in paths:
@@ -100,7 +120,7 @@ def update_docker_image_version():
         docker_compose = docker_compose.replace(current_version, new_version)
         docker_compose_path.write_text(docker_compose)
         print("%s updated to version %s" % (docker_compose_path, new_version))
-        
+
     else:
         print("%s is already up to date" % docker_compose_path)
 
@@ -112,54 +132,117 @@ def show_urls():
         print("\nURLs for %s (%s):\n" % (name, host["urlconf"]))
         management.call_command('show_urls', urlconf='URLCONF')
 
-@task
-def sync_with_s3():
-    """ Import XML for volumes that have not had a previous completed import with that VolumeXML md5. """
-    for volume_barcode in VolumeMetadata.objects.filter(ingest_status__in=['to_ingest', 'error']).values_list('barcode', flat=True):
-        ingest_by_manifest.ingest_volume_from_s3.delay(volume_barcode)
-
-@task
-def total_sync_with_s3():
-    """
-        Inspect and import any changed XML for all volumes not yet imported.
-
-        This now does the same thing as sync_with_s3, but is more efficient than sync_with_s3 for large numbers of volumes
-        because it uses the S3 manifest.
-    """
-    ingest_by_manifest.sync_s3_data.delay(full_sync=False)
 
 @task
 def validate_private_volumes():
     """ Confirm that all volmets files in private S3 bin match S3 inventory. """
     validate_private_volumes_script.validate_private_volumes()
 
+
+fixtures = [
+    ('default', 'capweb', ('galleryentry', 'cmspicture', 'gallerysection')),
+    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'snippet', 'casefont')),
+]
+
 @task
 def ingest_fixtures():
-    management.call_command(
-        'loaddata',
-        'capdb/fixtures/jurisdictions.json',
-        'capdb/fixtures/reporters.json',
-        database='capdb')
+    for db, app, models in fixtures:
+        management.call_command('loaddata', *models, database=db)
 
-    management.call_command(
-        'loaddata',
-        'capweb/fixtures/gallery_sections.json',
-        'capweb/fixtures/gallery_entries.json',
-        'capweb/fixtures/gallery_pictures.json',
-        database='default')
 
 @task
-def ingest_metadata():
-    ingest_fixtures()
-    ingest_tt_data.ingest(False)
+def update_fixtures():
+    for db, app, models in fixtures:
+        for model in models:
+            output_path = Path(settings.BASE_DIR, '%s/fixtures/%s.%s.json.gz' % (app, model, db))
+            print("Exporting %s to %s" % (model, output_path))
+            with gzip.open(str(output_path), 'wt') as out:
+                management.call_command('dumpdata', '%s.%s' % (app, model), database=db, stdout=out, indent=2)
 
 @task
-def sync_metadata():
+def export_volume(volume_id, output_zip=None):
     """
-    Takes data from tracking tool db and translates them to the postgres db.
-    Changes field names according to maps listed at the top of ingest_tt_data script.
+        Run this on production to export all data for a volume and its cases, as well as the volume's PDF, to a zip file.
+        Use import_volume() to load the zip on dev.
     """
-    ingest_tt_data.ingest(True)
+    from django.core import serializers
+    import zipfile
+
+    if output_zip is None:
+        output_zip = '%s.zip' % volume_id
+    print("Exporting volume to %s" % output_zip)
+
+    to_serialize = set()
+    volume = (VolumeMetadata.objects.filter(pk=volume_id)
+        .select_related('request', 'created_by')
+        .prefetch_related(
+            Prefetch('page_structures', queryset=PageStructure.objects.select_related('ingest_source')),
+            Prefetch('case_metadatas', queryset=(CaseMetadata.objects
+                .select_related('structure', 'initial_metadata', 'body_cache', 'court',)
+                .prefetch_related('citations', 'extracted_citations', 'analysis'))),
+        ).get()
+    )
+    to_serialize.add(volume)
+    if volume.request:
+        to_serialize.add(volume.request)
+    if volume.created_by:
+        to_serialize.add(volume.created_by)
+    for page_structure in volume.page_structures.all():
+        to_serialize.add(page_structure)
+        to_serialize.add(page_structure.ingest_source)
+    for case in volume.case_metadatas.all():
+        to_serialize.add(case)
+        to_serialize.add(case.structure)
+        to_serialize.add(case.initial_metadata)
+        to_serialize.add(case.body_cache)
+        to_serialize.add(case.court)
+        to_serialize.update(case.citations.all())
+        to_serialize.update(case.extracted_citations.all())
+        to_serialize.update(case.analysis.all())
+    serializer = serializers.get_serializer("json")()
+    with zipfile.ZipFile(output_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zip:
+        zip.writestr("volume.json", serializer.serialize(to_serialize))
+        if volume.pdf_file:
+            with volume.pdf_file.open() as pdf:
+                zip.writestr("downloads/%s" % volume.pdf_file, pdf.read())
+
+@task
+def import_volume(volume_zip_path):
+    """
+        Run this on dev to import all data for a volume and its cases, as well as the volume's PDF.
+        Use export_volume() on prod to generate zips for this function.
+    """
+    from distutils.dir_util import copy_tree
+    import zipfile
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        with zipfile.ZipFile(volume_zip_path, 'r') as zip_ref:
+            zip_ref.extractall(tmpdirname)
+        management.call_command('loaddata', str(Path(tmpdirname, 'volume.json')), database='capdb')
+        copy_tree(str(Path(tmpdirname, 'downloads')), str(Path(settings.BASE_DIR, 'test_data/downloads')))
+
+
+@task
+def import_web_volumes():
+    """
+        Import all volumes from https://case.law/download/developer/volumes
+    """
+    import requests
+    import shutil
+    from django.db import IntegrityError
+
+    for info in requests.get('https://case.law/download/developer/volumes/').json()['files']:
+        print("Importing", info['path'])
+        with tempfile.NamedTemporaryFile() as f:
+            print("- downloading")
+            with requests.get(f"https://case.law/download/{info['path']}", stream=True) as r:
+                shutil.copyfileobj(r.raw, f)
+            f.flush()
+            print("- importing")
+            try:
+                import_volume(f.name)
+            except IntegrityError:
+                print(" - integrity error; volume already imported? skipping")
+
 
 @task
 def run_pending_migrations():
@@ -169,16 +252,6 @@ def run_pending_migrations():
 def update_postgres_env(db='capdb'):
     set_up_postgres.update_postgres_env(db=db)
 
-@task
-def initialize_denormalization_fields():
-    """
-        Manually populate or repopulate denormalized fields.
-
-        Typically initialize_denormalization_fields should instead be called in a migration that adds denormalized fields, as
-            migrations.RunPython(initialize_denormalization_fields),
-        but this allows it to be re-run manually if necessary.
-    """
-    set_up_postgres.initialize_denormalization_fields()
 
 @task
 def update_volume_metadata():
@@ -195,12 +268,6 @@ def create_or_update_case_metadata(update_existing=False):
     """
     update_existing = True if update_existing else False
     tasks.create_case_metadata_from_all_vols(update_existing=update_existing)
-
-@task
-def rename_tags_from_json_id_list(json_path, tag=None):
-    with open(os.path.abspath(os.path.expanduser(json_path))) as data_file:
-        parsed_json = json.load(data_file)
-    mass_update.rename_casebody_tags_from_json_id_list(parsed_json, tag)
 
 @task
 def init_dev_db():
@@ -222,41 +289,58 @@ def init_dev_db():
         approver.groups.add(approvers_group)
 
 @task
-def migrate():
+def migrate(*args):
     """
-        Migrate all dbs at once
+        Migrate all dbs at once.
+        Backwards migration example: fab migrate:capdb,0112
     """
 
-    management.call_command('migrate', database="default")
-    management.call_command('migrate', database="capdb")
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        management.call_command('migrate', database="tracking_tool")
+    management.call_command('migrate', database="default", *args)
+    management.call_command('migrate', database="capdb", *args)
+    management.call_command('migrate', database="user_data", *args)
 
     update_postgres_env()
 
 @task
 def populate_search_index(last_run_before=None):
+    print("Scheduling tasks to reindex volumes")
     tasks.run_task_for_volumes(
         tasks.update_elasticsearch_for_vol,
-        VolumeMetadata.objects.exclude(xml_metadata=None).exclude(out_of_scope=True),
+        VolumeMetadata.objects.exclude(out_of_scope=True),
         last_run_before=last_run_before)
 
-@task
-def rebuild_search_index(force=False):
-    if force:
-        management.call_command('search_index', '--delete', '-f')
-        management.call_command('search_index', '--create', '-f')
-    else:
-        management.call_command('search_index', '--delete')
-        management.call_command('search_index', '--create')
-    populate_search_index()
 
 @task
-def load_test_data():
-    if settings.USE_TEST_TRACKING_TOOL_DB:
-        management.call_command('loaddata', 'test_data/tracking_tool.json', database="tracking_tool")
-    ingest_metadata()
-    total_sync_with_s3()
+def rebuild_search_index(force=False, indexes="cases", populate="true"):
+    """Use indexes=cases,resolve to rebuild both. By default only rebuilds cases."""
+    import capapi.documents
+
+    if not force:
+        if input(f"Really delete and recreate {indexes}? [y/N] ").lower() != "y":
+            return
+    index_names = indexes.split(",")
+    indexes = [capapi.documents.indexes[i] for i in index_names]
+    for index in indexes:
+        print(f"Deleting {index._name}")
+        index.delete(ignore=404)
+        print(f"Creating {index._name}")
+        index.create()
+    if populate == "true":
+        if "cases" in index_names:
+            populate_search_index()
+        if "resolve" in index_names:
+            ingest_courtlistener()
+
+
+@task
+def update_search_index_settings():
+    """ Update settings on existing index, based on the case_index.settings() call in capapi.documents. """
+    from capapi.documents import get_index
+    for k in settings.ELASTICSEARCH_INDEXES:
+        index = get_index(k)
+        # remove settings that cannot be changed on existing indexes
+        new_settings = {k:v for k, v in index._settings.items() if k not in ('number_of_shards')}
+        index.put_settings(body={"index": new_settings})
 
 
 @task
@@ -269,178 +353,51 @@ def add_permissions_groups():
 
 
 @task
-def validate_casemets_alto_link(sample_size=100000):
+def export_cases(*changes):
     """
-    Will test a random sample of cases.
-    Tests 100,000 by default, but you can specify a sample set size on the command line. For example, to test 14 cases:
-    fab validate_casemets_alto_link:14
+        Export all cases from Elasticsearch to download/bulk_exports/<timestamp>.
+        Set up a new set of folders for a bulk data version, and queue jobs to export each jurisdiction and reporter.
+        Example usage: fab 'export_cases:change 1\, with a comma,change 2'
     """
-    sample_size = int(sample_size) if int(sample_size) < CaseXML.objects.all().count() else CaseXML.objects.all().count()
-    tested = []
-    while len(tested) < sample_size:
-        try:
-            key = randrange(1, CaseXML.objects.last().id + 1)
-            while key in tested:
-                key = randrange(1, CaseXML.objects.last().id + 1)
-            tested.append(key)
-            case_xml = CaseXML.objects.get(pk=key)
-            print(compare_alto_case.validate(case_xml))
-        except CaseXML.DoesNotExist:
-            continue
-    print("Tested these CaseXML IDs:")
-    print(tested)
-
+    export.init_export('* '+'\n* '.join(changes)+'\n')
 
 
 @task
-def add_test_case(*barcodes):
+def retry_export_cases(version_string):
     """
-        Write test data and fixtures for given volume and case. Example: fab add_test_case:32044057891608_0001
-
-        NOTE:
-            DATABASES['tracking_tool'] must point to real tracking tool db.
-            STORAGES['ingest_storage'] must point to real harvard-ftl-shared.
-
-        Output is stored in test_data/tracking_tool.json and test_data/from_vendor.
-        Tracking tool user details are anonymized.
+        Requeue all the jobs to export files to download/bulk_exports/<version_string>.
+        Jobs that see existing exported files will immediately exit, so this can be run to pick
+        up an existing export_cases() bulk export where it left off.
     """
+    export.export_all(version_string)
 
-    from django.core import serializers
-    from tracking_tool.models import Volumes, Reporters, BookRequests, Pstep, Eventloggers, Hollis, Users
-    from capdb.storages import ingest_storage
-
-    ## write S3 files to local disk
-
-    for barcode in barcodes:
-
-        print("Writing data for", barcode)
-
-        volume_barcode, case_number = barcode.rsplit('_', 1)
-
-        # get volume dir
-        source_volume_dirs = list(ingest_storage.iter_files(volume_barcode, partial_path=True))
-        if not source_volume_dirs:
-            print("ERROR: Can't find volume %s. Skipping!" % volume_barcode)
-        source_volume_dir = sorted(source_volume_dirs, reverse=True)[0]
-
-        # make local dir
-        dest_volume_dir = os.path.join(settings.BASE_DIR, 'test_data/from_vendor/%s' % os.path.basename(source_volume_dir))
-        os.makedirs(dest_volume_dir, exist_ok=True)
-
-        # copy volume-level files
-        for source_volume_path in ingest_storage.iter_files(source_volume_dir):
-            dest_volume_path = os.path.join(dest_volume_dir, os.path.basename(source_volume_path))
-            if '.' in os.path.basename(source_volume_path):
-                # files
-                copy_file(source_volume_path, dest_volume_path, from_storage=ingest_storage)
-            else:
-                # dirs
-                os.makedirs(dest_volume_path, exist_ok=True)
-
-        # read volmets xml
-        source_volmets_path = glob.glob(os.path.join(dest_volume_dir, '*.xml'))[0]
-        with open(source_volmets_path) as volmets_file:
-            volmets_xml = parse_xml(volmets_file.read())
-
-        # copy case file and read xml
-        source_case_path = volmets_xml.find('mets|file[ID="casemets_%s"] > mets|FLocat' % case_number).attr(resolve_namespace('xlink|href'))
-        source_case_path = os.path.join(source_volume_dir, source_case_path)
-        dest_case_path = os.path.join(dest_volume_dir, source_case_path[len(source_volume_dir)+1:])
-        copy_file(source_case_path, dest_case_path, from_storage=ingest_storage)
-        with open(dest_case_path) as case_file:
-            case_xml = parse_xml(case_file.read())
-
-        # copy support files for case
-        for flocat_el in case_xml.find('mets|FLocat'):
-            source_path = os.path.normpath(os.path.join(os.path.dirname(source_case_path), flocat_el.attrib[resolve_namespace('xlink|href')]))
-            dest_path = os.path.join(dest_volume_dir, source_path[len(source_volume_dir) + 1:])
-            copy_file(source_path, dest_path, from_storage=ingest_storage)
-
-        # remove unused files from volmets
-        local_files = glob.glob(os.path.join(dest_volume_dir, '*/*'))
-        local_files = [x[len(dest_volume_dir)+1:] for x in local_files]
-        for flocat_el in volmets_xml.find('mets|FLocat'):
-            if not flocat_el.attrib[resolve_namespace('xlink|href')] in local_files:
-                file_el = flocat_el.getparent()
-                file_el.getparent().remove(file_el)
-        with open(source_volmets_path, "wb") as out_file:
-            out_file.write(serialize_xml(volmets_xml))
-
-    ## load metadata into JSON fixtures from tracking tool
-
-    to_serialize = set()
-    user_ids = set()
-    volume_barcodes = [
-        volume_barcode_from_folder(os.path.basename(d)) for d in
-        glob.glob(os.path.join(settings.BASE_DIR, 'test_data/from_vendor/*'))
-    ]
-
-    for volume_barcode in volume_barcodes:
-
-        print("Updating metadata for", volume_barcode)
-
-        try:
-            tt_volume = Volumes.objects.get(bar_code=volume_barcode)
-        except Volumes.DoesNotExist:
-            raise Exception("Volume %s not found in the tracking tool -- is settings.py configured to point to live tracking tool data?" % volume_barcode)
-        to_serialize.add(tt_volume)
-
-        user_ids.add(tt_volume.created_by)
-
-        tt_reporter = Reporters.objects.get(id=tt_volume.reporter_id)
-        to_serialize.add(tt_reporter)
-
-        to_serialize.update(Hollis.objects.filter(reporter_id=tt_reporter.id))
-
-        request = BookRequests.objects.get(id=tt_volume.request_id)
-        request.from_field = request.recipients = 'example@example.com'
-        to_serialize.add(request)
-
-        for event in Eventloggers.objects.filter(bar_code=tt_volume.bar_code):
-            if not event.updated_at:
-                event.updated_at = event.created_at
-            to_serialize.add(event)
-            user_ids.add(event.created_by)
-            if event.pstep_id:
-                pstep = Pstep.objects.get(step_id=event.pstep_id)
-                to_serialize.add(pstep)
-
-    for i, user in enumerate(Users.objects.filter(id__in=user_ids)):
-        user.email = "example%s@example.com" % i
-        user.password = 'password'
-        user.remember_token = ''
-        to_serialize.add(user)
-
-    serializer = serializers.get_serializer("json")()
-    with open(os.path.join(settings.BASE_DIR, "test_data/tracking_tool.json"), "w") as out:
-        serializer.serialize(to_serialize, stream=out, indent=2)
-
-    ## update inventory files
-    write_inventory_files()
 
 @task
-def bag_jurisdiction(name):
-    """ Write a BagIt package of all cases in a given jurisdiction. E.g. fab bag_jurisdiction:Ill. """
-    jurisdiction = Jurisdiction.objects.get(name=name)
-    export.export_cases_by_jurisdiction.delay(jurisdiction.pk)
-
-@task
-def bag_reporter(reporter_id):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    export.export_cases_by_reporter.delay(reporter_id)
-
-@task
-def bag_all_cases(before_date=None):
+def make_latest_folder(target_path, latest_path=None):
     """
-        Export cases for all jurisdictions and reporters.
-        If before_date is provided, only export targets where the export_date for the last export is less than before_date.
+        Create a "latest" version of a datestamped folder in the downloads area, symlinking to the original files.
+        Example: fab make_latest_folder:bulk_exports/20200101
     """
-    export.export_all(before_date)
+    from capdb.storages import download_files_storage
+    if not latest_path:
+        latest_path = str(Path(target_path).with_name('latest'))
 
-@task
-def bag_all_reporters(name):
-    """ Write a BagIt package of all cases in a given reporter. E.g. `fab bag_jurisdiction:Illinois Appellate Court Reports """
-    export.export_cases_by_reporter.delay(name)
+    # remove existing latest_path
+    if download_files_storage.exists(latest_path):
+        if input("%s already exists. Delete and replace? [y/N] " % latest_path) != 'y':
+            return
+        download_files_storage.rmtree(latest_path)
+
+    # create new latest_path
+    for path in download_files_storage.iter_files_recursive(target_path):
+        new_path = str(Path(latest_path) / Path(path).relative_to(target_path))
+        new_path = re.sub(r'_\d{8}\b', '', new_path)  # remove dates
+        new_path_dir = str(Path(new_path).parent)
+        download_files_storage.mkdir(new_path_dir, parents=True, exist_ok=True)
+        symlink_val = os.path.relpath(path, new_path_dir)
+        print(new_path, symlink_val)
+        download_files_storage.symlink(symlink_val, new_path)
+
 
 @task
 def write_inventory_files(output_directory=os.path.join(settings.BASE_DIR, 'test_data/inventory/data')):
@@ -519,7 +476,7 @@ def show_slow_queries(server='capstone'):
         today = datetime.now().strftime("%Y-%m-%d")
         heading = "*slow query report for %s on %s*" % (server, today)
         queries = []
-    except:
+    except Exception:
         print(json.dumps({'text': 'Could not get slow queries'}))
         return
     for row in rows:
@@ -552,7 +509,7 @@ def create_fixtures_db_for_benchmarking():
     try:
         local('psql -c "CREATE DATABASE %s;"' % settings.TEST_SLOW_QUERIES_DB_NAME)
         init_dev_db()
-    except:
+    except Exception:
         # Exception is thrown if test db has already been created
         pass
 
@@ -566,15 +523,6 @@ def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False
     This tasks assumes the existence of some casemet xmls in test_data
 
     Make sure that you have the necessary jurisdictions for this task.
-    It might be a good idea to:
-        1. point tracking_tool to prod (WARNING: you are dealing with prod data be very very careful!)
-        2. go to ingest_tt_data.py's `ingest` method and comment out all
-            copyModel statements except
-            `copyModel(Reporters, Reporter, reporter_field_map, dupcheck)`
-            since Reporter is required for populating jurisdictions
-
-        3. run `fab ingest_metadata`
-        4. remove pointer to prod tracking_tool db!!
     """
     from test_data.test_fixtures.factories import CaseXMLFactory
     if randomize_casemets:
@@ -596,7 +544,7 @@ def create_case_fixtures_for_benchmarking(amount=50000, randomize_casemets=False
         try:
             # create casexml and casemetadata objects, save to db
             CaseXMLFactory(orig_xml=case_xml)
-        except:
+        except Exception:
             # Exception could happen because of duplicate slug keys on jurisdiction creation
             # For now, skipping this issue
             pass
@@ -689,32 +637,43 @@ def count_case_totals(write_to_file=True, min_year=1640):
 
 
 @task
-def fix_jurisdictions():
+@transaction.atomic(using='capdb')
+def fix_reporter_jurisdictions():
     """
-        Finds cases where the XML jurisdiction value is different from the text in the jurisdiction table and fixes it.
+        Update Reporter.jurisdictions values based on case jurisdictions.
+        For regional reporters, reporter is associated with all jurisdictions for which it has cases.
+        For other reporters, reporter is only associated with most frequent jurisdiction.
     """
-    @shared_task
-    def update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id):
-        parsed = parse_xml(orig_xml)
-        print("Updating {} to {} in {}".format(parsed('case|court')[0].get("jurisdiction"), jurisdiction, case_id))
-        parsed('case|court')[0].set("jurisdiction", jurisdiction)
-        CaseXML.objects.filter(pk=case_xml_id).update(orig_xml=force_str(serialize_xml(parsed)))
+    from capweb.helpers import select_raw_sql
 
-    query = """SELECT x.id, x.orig_xml, j.name_long, m.case_id from capdb_casexml x
-    inner join capdb_casemetadata m on x.metadata_id = m.id
-    inner join capdb_jurisdiction j on m.jurisdiction_id = j.id
-    where text((ns_xpath('//case:court/@jurisdiction', x.orig_xml))[1]) != text(j.name_long)"""
+    # clear existing relationships
+    join_model = Reporter.jurisdictions.through
+    join_model.objects.all().delete()
 
-    with connections['capdb'].cursor() as cursor:
-        cursor.execute(query)
-        row = cursor.fetchone()
-        while row is not None:
-            case_xml_id = row[0]
-            orig_xml = row[1]
-            jurisdiction = row[2]
-            case_id = row[3]
-            update_xml_jurisdiction(case_xml_id, orig_xml, jurisdiction, case_id)
-            row = cursor.fetchone()
+    # get count of cases in each jurisdiction for each reporter
+    reporters = defaultdict(list)
+    query = """SELECT reporter_id, jurisdiction_id, count(*) as case_count FROM capdb_casemetadata WHERE in_scope = true GROUP BY reporter_id, jurisdiction_id"""
+    for row in select_raw_sql(query, using='capdb'):
+        reporters[row.reporter_id].append([row.case_count, row.jurisdiction_id])
+
+    # add reporter <-> jurisdiction relationship for primary jurisdiction for each reporter
+    regional = Jurisdiction.objects.get(name='Regional')
+    to_insert = []
+    for reporter_id, jurisdictions in reporters.items():
+        reporter = Reporter.objects.get(pk=reporter_id)
+        jurisdictions.sort(reverse=True)
+
+        # handle regional reporters
+        if re.match(r'(A\.|P\.|S\.W\.|So\.|N\.W\.|N\.E\.)(\dd)?$', reporter.short_name):
+            to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=regional.id))
+            for case_count, jurisdiction_id in jurisdictions:
+                to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=jurisdiction_id))
+
+        # non-regional reporters
+        else:
+            to_insert.append(join_model(reporter_id=reporter_id, jurisdiction_id=jurisdictions[0][1]))
+
+    join_model.objects.bulk_create(to_insert)
 
 
 @task
@@ -800,15 +759,6 @@ def list_missing_captar_volumes():
         else:
             print("- all volumes finished")
 
-@task
-def create_case_text_for_all_cases(update_existing=False):
-    update_existing = True if update_existing else False
-    tasks.create_case_text_for_all_cases(update_existing=update_existing)
-
-@task
-def count_chars_in_all_cases(path="/tmp/counts"):
-    count_chars.count_chars_in_all_cases(path)
-
 
 @task
 def ngram_jurisdictions(slug=None):
@@ -843,7 +793,7 @@ def url_to_js_string(target_url="http://case.test:8000/maintenance/?no_toolbar",
         # replace case.test:8000 with case.law
         data = data.replace(urlparse(target_url).netloc, new_domain)
     data = escapejs(data)           # encode for storage in javascript
-    pathlib.Path(out_path).write_text(data)
+    Path(out_path).write_text(data)
 
 
 @task
@@ -868,42 +818,6 @@ def run_edit_script(script=None, dry_run='true', **kwargs):
         print("Script not found. Attempted to import %s" % import_path)
     else:
         method(dry_run=dry_run, **kwargs)
-
-
-@task
-def report_multiple_jurisdictions(out_path="court_jurisdictions.csv"):
-    """
-        Write a CSV report of courts with multiple jurisdictions.
-    """
-    from capweb.helpers import select_raw_sql
-
-    # select distinct cm.court_id from capdb_casemetadata cm, capdb_court c where cm.court_id=c.id and c.jurisdiction_id != cm.jurisdiction_id;
-    court_ids = {
-    8770, 8775, 8797, 8802, 8805, 8815, 8818, 8823, 8826, 8829, 8832, 8840, 8847, 8847, 8864, 8894, 8910, 8910, 8933,
-    8944, 8954, 8962, 8973, 8977, 8978, 8978, 8981, 8991, 8991, 8992, 9000, 9004, 9009, 9016, 9018, 9020, 9021, 9022,
-    9026, 9027, 9029, 9034, 9039, 9041, 9044, 9045, 9048, 9049, 9051, 9056, 9058, 9059, 9062, 9063, 9065, 9066, 9068,
-    9071, 9074, 9076, 9081, 9081, 9083, 9085, 9086, 9089, 9092, 9094, 9099, 9103, 9104, 9104, 9107, 9112, 9114, 9130,
-    9131, 9132, 9138, 9138, 9141, 9148, 9149, 9153, 9158, 9181, 9198, 9200, 9204, 9212, 9223, 9223, 9225, 9229, 9252,
-    9266, 9270, 9274, 9297, 9302, 9310, 9311, 9318, 9328, 9341, 9353, 9358, 9385, 9386, 9388, 9389, 9395, 9424, 9426,
-    9429, 9434, 9434, 9444, 9444, 9447, 9455, 9465, 9480, 9485, 9494, 9509, 9509, 9511, 9511, 9511, 9513, 9524, 9534,
-    9540, 9549, 9551, 9554, 9620, 9708, 9725, 9805, 9846, 9874, 9892, 9906, 9907, 9929, 9948, 9976, 9999, 10006, 10076,
-    10101, 10108, 10111, 10117, 10152, 10152, 10179, 10312, 10363, 10451, 10497, 10597, 10888, 11154, 11211, 11274,
-    11277, 11613, 11696, 11757, 11860, 11887, 11933, 11933, 11942, 11944, 11969, 11976, 11985, 11987, 11987, 12083,
-    12104, 12136, 12997, 13048, 13076, 13083, 13093, 13097, 13100, 13104, 13132, 13148, 13205, 13326, 13390, 13393,
-    13428, 13438, 13543, 13543, 13565, 13570, 13797, 14005, 14156, 14236, 14272, 14337, 14473, 14476, 14477, 14490,
-    14607, 14978, 14986, 15006, 15006, 15007, 15016, 15201, 15300, 15344, 15741, 15767, 16436, 16657, 16681, 16686,
-    17013, 17111, 17229, 17308, 17319, 17329, 17329, 17627, 18775, 18961, 18968, 20164}
-    with open(out_path, 'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile)
-        for court_id in tqdm(court_ids):
-            rows = select_raw_sql("select count(m), jurisdiction_slug, court_name, court_slug "
-                                  "from capdb_casemetadata m where court_id=%s "
-                                  "group by jurisdiction_slug, court_name, court_slug",
-                                  [court_id], using='capdb')
-            csv_writer.writerow([rows[0].court_name])
-            for row in rows:
-                url = "https://api.case.law/v1/cases/?court=%s&jurisdiction=%s" % (row.court_slug, row.jurisdiction_slug)
-                csv_writer.writerow([row.jurisdiction_slug, row.count, url])
 
 @task
 def update_all_snippets():
@@ -1014,7 +928,7 @@ def make_pdfs(volume_path=None, replace_existing=False):
     from itertools import chain
 
     if volume_path:
-        make_pdf.delay(volume_path)
+        make_pdf.delay(volume_path, replace_existing=replace_existing)
     else:
         print("Adding volumes to celery queue:")
         for barcode, volume_path in tqdm(chain(up_to_date_volumes(captar_storage.iter_files('redacted')), up_to_date_volumes(captar_storage.iter_files('unredacted')))):
@@ -1085,15 +999,30 @@ def load_token_streams(replace_existing=False):
             continue
         scripts.refactor_xml.write_to_db.delay(volume_barcode, str(path))
 
+
 @task
-def refresh_case_body_cache(last_run_before=None, rerender=True):
+def refresh_case_body_cache(last_run_before=None, rerender=True, volume=None):
     """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
+    volumes = VolumeMetadata.objects.exclude(xml_metadata=None)
+    if volume:
+        volumes = volumes.filter(pk=volume)
     tasks.run_task_for_volumes(
         tasks.sync_case_body_cache_for_vol,
-        VolumeMetadata.objects.exclude(xml_metadata=None),
+        volumes,
         last_run_before=last_run_before,
         rerender=rerender != 'false',
     )
+
+
+@task
+def run_text_analysis(last_run_before=None):
+    """ Call run_text_analysis for all cases. """
+    tasks.run_task_for_volumes(
+        tasks.run_text_analysis_for_vol,
+        VolumeMetadata.objects.exclude(out_of_scope=True),
+        last_run_before=last_run_before,
+    )
+
 
 @task
 def sync_from_initial_metadata(last_run_before=None, force=False):
@@ -1188,23 +1117,569 @@ def retrieve_and_store_images(last_run_before=None):
     """ Retrieve images from inside cases """
     tasks.run_task_for_volumes(tasks.retrieve_images_from_cases, last_run_before=last_run_before)
 
+@task
+def redact_id_numbers(last_run_before=None):
+    tasks.run_task_for_volumes(tasks.remove_id_number_in_volume, last_run_before=last_run_before)
 
 @task
-def update_reporter_years():
-    """ Update Reporter.start_year and Reporter.end_year to match actual dates of cases. """
+def update_reporter_years(reporter_id=None):
+    """
+        Update Reporter.start_year and Reporter.end_year to match actual dates of cases.
+        If reporter_id is supplied, only update that reporter.
+    """
     cursor = django.db.connections['capdb'].cursor()
     cursor.execute("""
         update capdb_reporter r
         set start_year = new_start_year, end_year = new_end_year
-        from (
-                 select reporter_id,
+        from capdb_reporter r2
+        left join (
+                 select c.reporter_id,
                         min(date_part('year', decision_date)) as new_start_year,
                         max(date_part('year', decision_date)) as new_end_year
-                 from capdb_casemetadata
-                 group by reporter_id
-             ) as cases
-        where cases.reporter_id = r.id;
+                 from capdb_casemetadata c, capdb_volumemetadata v
+                 where v.barcode=c.volume_id and c.in_scope is true and v.out_of_scope is false
+                 %s
+                 group by c.reporter_id
+             ) as cases on cases.reporter_id = r2.id
+        where r2.id=r.id %s;
+    """ % (
+        ("and c.reporter_id=%s" % reporter_id) if reporter_id else '',
+        ("and r.id=%s" % reporter_id) if reporter_id else '',
+    ))
+
+
+@task
+def check_existing_emails():
+    """
+        Report mailgun validity of all existing email accounts.
+    """
+    import requests
+    import time
+    emails = CapUser.objects.filter(is_active=True).values_list('email', flat=True)
+    response = requests.post(
+        "https://api.mailgun.net/v4/address/validate/bulk/emails",
+        files={'file': ('report.csv', 'email\n%s\n' % "\n".join(emails))},
+        auth=('api', settings.MAILGUN_API_KEY))
+    print(response.json())
+    while True:
+        response = requests.get("https://api.mailgun.net/v4/address/validate/bulk/emails", auth=('api', settings.MAILGUN_API_KEY))
+        print(response.json())
+        if response.json()['status'] == 'uploaded':
+            break
+        time.sleep(1)
+    response = requests.get(response.json()['download_url']['csv'])
+    with open('email_report.csv.zip', 'wb') as out:
+        out.write(response.content)
+
+
+@task
+def download_pdfs(jurisdiction=None):
+    """
+        Download all PDFs, or all for a jurisdiction, to download_files_storage.
+    """
+    from capdb.storages import pdf_storage, download_files_storage
+    import re
+
+    # find each PDF by checking TarFile, since we have a 1-to-1 mapping between tar files and PDFs
+    volumes = (VolumeMetadata.objects.filter(out_of_scope=False, pdf_file='')
+        .select_related('reporter', 'nominative_reporter')
+        .prefetch_related('reporter__jurisdictions')
+        .order_by('reporter__jurisdictions__slug', 'pk'))
+    if jurisdiction:
+        volumes = volumes.filter(reporter__jurisdictions__slug=jurisdiction)
+
+    for volume in volumes:
+        # get info about this volume
+        source_path = "redacted/%s.pdf" % volume.pk
+        print("Downloading %s ..." % source_path)
+        reporter = volume.reporter
+        jurisdiction = reporter.jurisdictions.first()
+
+        # generate a path for the PDF, like:
+        # PDFs / open / North Carolina / N.C. / 1 N.C. (1 Tay.).pdf
+        new_name_prefix = '%s %s' % (volume.volume_number, reporter.short_name)
+        if volume.nominative_reporter:
+            new_name_prefix += ' (%s %s)' % (volume.nominative_volume_number, volume.nominative_reporter.short_name)
+        new_name_prefix = re.sub(r'[\\/:*?"<>|]', '-', new_name_prefix)  # replace windows-illegal characters with -
+        open_or_restricted = 'open' if jurisdiction.whitelisted else 'restricted'
+        for i in range(10):
+            # retry so we can append ' a', ' b', etc. for duplicate volumes
+            new_name = new_name_prefix + (' %s' % chr(97+i) if i else '') + '.pdf'
+            new_name = new_name.replace('..', '.')  # avoid double period in '1 Mass..pdf'
+            new_path = Path('PDFs', open_or_restricted, jurisdiction.name_long, reporter.short_name, new_name)
+            if not download_files_storage.exists(str(new_path)):
+                break
+        else:
+            raise Exception("Failed to find a non-existent path for %s" % new_path)
+
+        try:
+            # copy file
+            try:
+                copy_file(source_path, new_path, from_storage=pdf_storage, to_storage=download_files_storage)
+            except IOError:
+                print("  - ERROR: source file not found")
+                continue
+
+            # save PDF location on volume model
+            volume.pdf_file.name = str(new_path)
+            volume.save()
+            print("  - Downloaded to %s" % new_path)
+        except Exception:
+            # clean up partial downloads if process is killed
+            download_files_storage.delete(str(new_path))
+            raise
+
+
+def unredact_volumes(volumes, dry_run='true', warn_after_year=None):
+    key = getpass("Enter decryption key: ").strip() if dry_run == 'false' else None
+    volumes = (volumes
+        .filter(out_of_scope=False, redacted=True)
+        .select_related('reporter')
+        .order_by('publication_year', 'volume_number'))
+    for v in volumes:
+        years = v.case_metadatas.aggregate(min_date=Min('decision_date'), max_date=Max('decision_date'))
+        if years['min_date']:
+            min_date = years['min_date'].year
+            max_date = years['max_date'].year
+        else:
+            min_date = None
+            max_date = None
+        print(f"Unredacting {v.barcode}: {v.volume_number} {v.reporter.short_name} ({v.publication_year}, cases {min_date}-{max_date})")
+        if warn_after_year is not None and max_date > warn_after_year:
+            print("- WARNING: year exceeds threshold")
+            for c in v.case_metadatas.filter(decision_date__year__gt=warn_after_year):
+                print(" -", c.full_cite())
+        if dry_run == 'false':
+            v.unredact(key)
+
+
+@task
+def unredact_out_of_copyright_volumes(dry_run='true'):
+    from django.utils import timezone
+    release_year = timezone.now().year-96
+    unredact_volumes(VolumeMetadata.objects.filter(publication_year__lte=release_year), dry_run, warn_after_year=release_year)
+
+
+@task
+def unredact_jurisdiction_volumes(jurisdiction_slug, dry_run='true'):
+    unredact_volumes(VolumeMetadata.objects.filter(reporter__jurisdictions__slug=jurisdiction_slug), dry_run)
+
+
+@task
+def unredact_reporter_volumes(reporter_id, dry_run='true'):
+    unredact_volumes(VolumeMetadata.objects.filter(reporter_id=reporter_id), dry_run)
+
+
+@task
+def populate_case_page_order():
+    """
+        Set all CaseMetadata.first_page_order and .last_page_order values based on PageStructure.
+    """
+    cursor = django.db.connections['capdb'].cursor()
+    cursor.execute("""
+        UPDATE capdb_casemetadata m
+        SET first_page_order=j.first_page_order, last_page_order=j.last_page_order
+        FROM
+            capdb_casestructure c,
+            (
+                SELECT min(p.order) as first_page_order, max(p.order) as last_page_order, cp.casestructure_id
+                FROM capdb_pagestructure p, capdb_casestructure_pages cp
+                WHERE p.id=cp.pagestructure_id
+                GROUP BY cp.casestructure_id
+            ) j
+        WHERE c.metadata_id=m.id and c.id=j.casestructure_id
     """)
+
+
+@task
+def export_citation_graph(output_folder="graph"):
+    """writes cited from and citing to to file"""
+    from django.utils import timezone
+    from django.contrib.postgres.aggregates import ArrayAgg
+
+    # create path if doesn't exist
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+    citations_path = output_folder / 'citations.csv.gz'
+    citations_path.touch(mode=0o644)  # check that we have write access
+
+    # write citations.csv.gz
+    nodes = set()
+    edge_count = 0
+    chunk_size = 10000
+    query = """
+        DECLARE cite_cursor CURSOR for
+        select
+            cited_by.id, array_agg(distinct target_case.id)
+        from
+            capdb_extractedcitation ec
+            inner join
+                capdb_casemetadata target_case on ec.target_case_id = target_case.id
+            inner join
+                capdb_casemetadata cited_by on ec.cited_by_id = cited_by.id
+        where 
+            cited_by.in_scope is true
+            and target_case.in_scope is true
+            and cited_by.decision_date_original >= target_case.decision_date_original
+            and cited_by.id != target_case.id
+        group by cited_by.id;
+    """
+    print("Running citations query")
+    with transaction.atomic(using='capdb'), \
+            connections['capdb'].cursor() as cursor, \
+            gzip.open(str(citations_path), "wt") as f, \
+            tqdm() as pbar:
+        csv_w = csv.writer(f)
+        cursor.execute(query)
+        while True:
+            cursor.execute("FETCH %s FROM cite_cursor" % chunk_size)
+            chunk = cursor.fetchall()
+            pbar.update()
+            if not chunk:
+                break
+            for row in chunk:
+                out = [row[0]] + row[1]
+                csv_w.writerow(out)
+                nodes.update(out)
+                edge_count += len(out) - 1
+
+    # write README.txt
+    output_folder.joinpath('README.md').write_text(
+        f"Citation graph exported {timezone.now()}:\n\n"
+        f"* Nodes: {len(nodes)}\n"
+        f"* Edges: {edge_count}\n"
+    )
+
+    # write metadata.csv.gz
+    metadata_fields = [
+        'id', 'frontend_url', 'jurisdiction__name', 'jurisdiction_id', 'court__name_abbreviation', 'court_id',
+        'reporter__short_name', 'reporter_id', 'name_abbreviation', 'decision_date_original', 'cites'
+    ]
+    nodes = sorted(nodes)
+    print("Writing metadata")
+    metadata = {}
+    with gzip.open(str(output_folder / 'metadata.csv.gz'), "wt") as f:
+        csv_w = csv.writer(f)
+        csv_w.writerow(metadata_fields)
+        query = CaseMetadata.objects.annotate(cites=ArrayAgg('citations__cite')).values_list(*metadata_fields)
+        for i in tqdm(range(0, len(nodes), chunk_size)):
+            for row in query.filter(id__in=nodes[i:i+chunk_size]):
+                row = row[:-1] + ("; ".join(row[-1]),)  # combine citations
+                metadata[row[0]] = row
+                csv_w.writerow(row)
+
+    ### write outputs per-jurisdiction --
+    print("Writing jurisdiction files")
+
+    # read back through the adjacency list and write each row to the appropriate subfolder
+    jurisdictions = {}
+    jurs_folder = output_folder / 'by_jurisdiction'
+    jurs_folder.mkdir(parents=True, exist_ok=True)
+    jurs_folder.joinpath('README.md').write_text("Subsets of the full graph consisting only of citations between cases within a particular jurisdiction.")
+    with gzip.open(str(citations_path), 'rt') as f:
+        reader = csv.reader(f)
+        for ids in tqdm(reader):
+            # filter to only in-jurisdiction cites
+            ids = [int(i) for i in ids]
+            jur_name = metadata[ids[0]][2]
+            ids = [id for id in ids if metadata[id][2] == jur_name]
+            if len(ids) < 2:
+                continue
+
+            # if this is the first time we're seeing this jurisdiction, set up output streams for the
+            # adjacency list and metadata
+            if jur_name not in jurisdictions:
+                jur_folder = jurs_folder / jur_name
+                jur_folder.mkdir(parents=True, exist_ok=True)
+                graph_file = gzip.open(str(jur_folder / 'citations.csv.gz'), "wt")
+                graph_file_writer = csv.writer(graph_file)
+                metadata_file = gzip.open(str(jur_folder / 'metadata.csv.gz'), "wt")
+                metadata_file_writer = csv.writer(metadata_file)
+                metadata_file_writer.writerow(metadata_fields)
+                nodes = set()
+                jurisdictions[jur_name] = {
+                    'name': jur_name,
+                    'folder': jur_folder,
+                    'nodes': nodes,
+                    'graph_file': graph_file,
+                    'graph_file_writer': graph_file_writer,
+                    'metadata_file': metadata_file,
+                    'metadata_file_writer': metadata_file_writer,
+                    'edge_count': 0,
+                }
+
+            # write out adjacency list and metadata
+            jur = jurisdictions[jur_name]
+            nodes = jur['nodes']
+            metadata_file_writer = jur['metadata_file_writer']
+            jur['graph_file_writer'].writerow(ids)
+            jur['edge_count'] += len(ids) - 1
+            for id in ids:
+                if id not in nodes:
+                    nodes.add(id)
+                    metadata_file_writer.writerow(metadata[id])
+
+    # close streams for each jurisdiction and write out metadata
+    for jur in jurisdictions.values():
+        jur['graph_file'].close()
+        jur['metadata_file'].close()
+        jur['folder'].joinpath('README.md').write_text(
+            f"Citation graph for {jur['name']} exported {timezone.now()}:\n\n"
+            f"* Nodes: {len(jur['nodes'])}\n"
+            f"* Edges: {jur['edge_count']}\n"
+        )
+
+    print("Calling count_cites_by_year")
+    count_cites_by_year(output_folder, output_folder / 'aggregations')
+
+    print("Calling calculate_pagerank_scores")
+    calculate_pagerank_scores(output_folder / "citations.csv.gz", output_folder / "pagerank_scores.csv.gz")
+
+    print("Calling load_pagerank_scores")
+    load_pagerank_scores(output_folder / "pagerank_scores.csv.gz")
+
+
+@task
+def count_cites_by_year(folder, output_folder):
+    """ Write summaries from citation graph in folder to output_folder. """
+    folder = Path(folder)
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    print("Loading metadata")
+    metadata = {}
+    with gzip.open(str(folder / 'metadata.csv.gz'), "rt") as f:
+        for row in tqdm(csv.DictReader(f)):
+            metadata[int(row['id'])] = (int(row['jurisdiction_id']), int(row['decision_date_original'][:4]))
+    cites_per_jurisdiction = defaultdict(int)
+    totals = defaultdict(lambda: defaultdict(int))
+    totals_by_year = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+
+    print("Counting totals")
+    with gzip.open(str(folder / 'citations.csv.gz'), "rt") as f:
+        for row in tqdm(csv.reader(f)):
+            from_id, *to_ids = [int(i) for i in row]
+            from_jur_id, year = metadata[from_id]
+            cites_per_jurisdiction[from_jur_id] += len(to_ids)
+            for to_id in to_ids:
+                to_jur_id = metadata[to_id][0]
+                totals[from_jur_id][to_jur_id] += 1
+                totals_by_year[year][from_jur_id][to_jur_id] += 1
+
+    print("Writing output")
+    jurisdiction_metadata = [
+        {'id': j.id, 'slug': j.slug, 'name': j.name, 'name_long': j.name_long, 'cites': cites_per_jurisdiction[j.id]}
+        for j in Jurisdiction.objects.filter(id__in=cites_per_jurisdiction.keys()).order_by('name')
+    ]
+    output_folder.joinpath('jurisdictions.json').write_text(json.dumps(jurisdiction_metadata))
+    output_folder.joinpath('totals.json').write_text(json.dumps(totals))
+    output_folder.joinpath('totals_by_year.json').write_text(json.dumps(totals_by_year))
+    output_folder.joinpath('README.md').write_text(
+        "This directory contains aggregations of data by jurisdiction from the citation graph:\n\n"
+        "* jurisdictions.json: citation counts by citing jurisdiction\n"
+        "* totals.json: citation counts from each jurisdiction to each jurisdiction\n"
+        "* totals_by_year.json: citation counts from each jurisdiction to each jurisdiction for each year\n"
+    )
+
+
+@task
+def filter_limerick_lines(stopwords_path):
+    """
+        Filter limerick_lines.js against a list of stopwords,
+        such as https://www.freewebheaders.com/download/files/full-list-of-bad-words_text-file_2018_07_30.zip
+        or https://www.cs.cmu.edu/~biglou/resources/bad-words.txt
+    """
+    import re
+    stopwords_set = set(s.lower() for s in Path(stopwords_path).read_text().splitlines(keepends=False))
+    limerick_text = Path('static/js/limerick_lines.js').read_text()
+    assignment, limerick_json = limerick_text.split(' = ', 1)
+    limericks = json.loads(limerick_json)
+    all_blocked = set()
+    for a in limericks.values():
+        for b in a.values():
+            for c in b.values():
+                for word, sentences in c.items():
+                    fixed = []
+                    blocked_any = False
+                    for sentence in sentences:
+                        words = set(w.lower() for w in re.findall(r'\w+', sentence))
+                        blocked = words & stopwords_set
+                        all_blocked |= blocked
+                        if blocked:
+                            blocked_any = True
+                            print("Removed ", sentence, blocked)
+                        else:
+                            fixed.append(sentence)
+                    if blocked_any:
+                        c[word] = fixed
+    Path('static/js/limerick_lines_fixed.js').write_text(assignment + " = " + json.dumps(limericks))
+
+
+@task
+def write_manifest_files():
+    """ Update manifest.csv in /download/ """
+    from capdb.storages import download_files_storage
+    with download_files_storage.open('manifest.csv', 'w') as out:
+        writer = csv.writer(out)
+        writer.writerow(["path", "size", "last_modified"])
+        for path in tqdm(sorted(download_files_storage.iter_files_recursive())):
+            stat = download_files_storage.stat(path)
+            writer.writerow([
+                path,
+                stat.st_size,
+                datetime.utcfromtimestamp(stat.st_mtime).replace(tzinfo=timezone.utc),
+            ])
+
+
+@task
+def calculate_pagerank_scores(citation_graph_path="graph/citations.csv.gz", pagerank_score_output="graph/pagerank_scores.csv.gz"):
+    """ Generate pageranks scores for all nodes in the given citation graph """
+    import networkx as nx
+    print("Reading citation graph")
+    graph = nx.read_adjlist(citation_graph_path, delimiter=",", create_using=nx.DiGraph())
+    print("Calculating PageRank")
+    pagerank_scores = sorted(nx.pagerank(graph).items(), key=lambda x: x[1])
+    print("Writing output")
+    with gzip.open(pagerank_score_output, "wt") as f:
+        csv_output = csv.writer(f)
+        csv_output.writerow(['id','raw_score','percentile'])
+        last_score = 0
+        percentile = 0
+        total_rows = len(pagerank_scores)
+        for i, [id, score] in tqdm(enumerate(pagerank_scores)):
+            if score > last_score:
+                percentile = i
+            csv_output.writerow([id, score, percentile/total_rows])
+
+
+@task
+def load_pagerank_scores(pagerank_score_output):
+    existing_scores = {c.case_id: c for c in CaseAnalysis.objects.filter(key='pagerank')}
+    to_insert = []
+    to_update = []
+    with gzip.open(pagerank_score_output, 'rt') as f:
+        reader = csv.DictReader(f)
+        for line in reader:
+            new_score = {'raw': float(line['raw_score']), 'percentile': float(line['percentile'])}
+            existing_score = existing_scores.pop(int(line['id']), None)
+            if existing_score:
+                if existing_score.value != new_score:
+                    existing_score.value = new_score
+                    to_update.append(existing_score)
+            else:
+                to_insert.append(CaseAnalysis(key='pagerank', value=new_score, case_id=line['id']))
+    with transaction.atomic(using='capdb'):
+        CaseAnalysis.objects.filter(id__in=existing_scores.keys()).delete()
+        CaseAnalysis.objects.bulk_create(to_insert)
+        CaseAnalysis.objects.bulk_update(to_update, ['value'], batch_size=1000)
+
+
+@task
+def ingest_courtlistener(download_dir='/tmp', start_from=None):
+    """ Download CourtListener cases and add metadata to citation resolver endpoint. """
+    print("Ingesting CourtListener data")
+    from scripts.ingest_courtlistener import ingest_courtlistener
+    ingest_courtlistener(download_dir, start_from)
+
+
+@task
+def print_harvard_ip_ranges():
+    """ Fetch IP ranges for known Harvard ASNs. Manually copy results to settings.HARVARD_IP_RANGES."""
+    import requests
+    from time import sleep
+
+    def get_json(url):
+        response = requests.get(url)
+        response.raise_for_status()
+        sleep(.5)  # api rate limit
+        return response.json()
+
+    for asn in ["1742", "13315", "40127"]:
+        label = get_json(f'https://api.bgpview.io/asn/{asn}')['data']['description_short']
+        print(f'# AS{asn} {label}')
+        addrs = get_json(f'https://api.bgpview.io/asn/{asn}/prefixes')
+        for k in ['ipv4_prefixes', 'ipv6_prefixes']:
+            for addr in addrs['data'][k]:
+                print(f"'{addr['prefix']}',")
+
+@task
+def ingest_labs_fixtures():
+    fixtures = [
+        ('default', 'labs', ('timeline', )),
+    ]
+
+    for db, app, models in fixtures:
+        management.call_command('loaddata', *models, database=db)
+
+
+@task
+def block_domain(domain, notes=""):
+    users = CapUser.objects.filter(email__iendswith=f'@{domain}')
+    if users:
+        emails = [u.email for u in users]
+        min_date = min(u.date_joined for u in users)
+        max_date = max(u.date_joined for u in users)
+        if notes:
+            notes += " "
+        notes += f"Blocked accounts created {min_date} to {max_date}."
+        print(f"Existing users to block, created {min_date} to {max_date}: {emails}")
+    else:
+        print("No existing users to block.")
+    if input("Continue? [y/N] ").lower() != "y":
+        return
+    with transaction.atomic():
+        EmailBlocklist.objects.create(domain=domain, notes=notes)
+        for user in users:
+            user.case_allowance_remaining = 0
+            user.total_case_allowance = 0
+            user.is_active = False
+            user.save()
+    print("Done.")
+
+
+@task
+def set_rdb_cites():
+    """Set rdb_cite for cites that are missing it."""
+    to_update = []
+    chunk_size = 2000
+    for cite in tqdm(Citation.objects.filter(rdb_cite=None).iterator(chunk_size=chunk_size)):
+        try:
+            cite.cite_updated()
+        except Exception as e:
+            print(cite.pk, cite.cite, e)
+            continue
+        if cite.rdb_cite:
+            to_update.append(cite)
+            if len(to_update) >= chunk_size:
+                Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
+                to_update = []
+    if to_update:
+        Citation.objects.bulk_update(to_update, ['rdb_cite', 'rdb_normalized_cite'])
+
+
+@task
+def celery_jobs_pending():
+    """List all celery jobs not claimed by a worker."""
+    import scripts.celery_queues
+    scripts.celery_queues.jobs_pending()
+
+
+@task
+def celery_job_info(index=0, queue='celery'):
+    """Dump info for a particular pending job."""
+    import scripts.celery_queues
+    index = int(index)
+    scripts.celery_queues.job_info(index, queue)
+
+
+@task
+def celery_remove_jobs(task_name, queue='celery'):
+    """
+       Remove all jobs from a given queue matching a given task name.
+       Example: fab celery_remove_jobs:capdb.tasks.update_elasticsearch_from_queue
+    """
+    import scripts.celery_queues
+    scripts.celery_queues.remove_jobs(task_name, queue)
 
 
 if __name__ == "__main__":

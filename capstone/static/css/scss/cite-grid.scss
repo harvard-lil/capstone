@@ -1,0 +1,59 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "bootstrap/utilities/align";
+@import "base.scss";
+
+.basic-page {
+  .main-content {
+    @include media-breakpoint-up(lg) {
+      @include make-col(10);
+    }
+  }
+}
+
+.table-scroll {
+  width: 100%;
+  height: calc(100vh - 75px);
+  position: relative;
+  overflow: scroll;
+}
+
+table {
+  position: relative;
+  background-color: white;
+  margin-bottom: 0;
+}
+
+td {
+  border: 1px solid #FFF;
+}
+
+th {
+  white-space: nowrap;
+  background-color: white;
+  position: sticky;
+  line-height: 1em;
+  font-size: 75%;
+
+  &.top-header.left-header {
+    z-index: 1;
+  }
+  &.top-header {
+    vertical-align: bottom;
+    top: 0;
+  }
+  &.left-header {
+    text-align: right;
+    left: 0;
+  }
+
+  &.disabled {
+    color: gray;
+  }
+
+  &.rotate > div{
+    writing-mode: vertical-rl;
+    width: 1em;  // firefox 76 can't see the width of the rotated headers, so hardcode
+  }
+}

@@ -17,11 +17,15 @@ CELERY_TASK_ALWAYS_EAGER = True
 # propagate exceptions
 CELERY_TASK_EAGER_PROPAGATES = True
 
+MAKE_HTTPS_URLS = False
+
 if os.environ.get('DOCKERIZED'):
     DATABASES['default']['PASSWORD'] = 'password'
     DATABASES['default']['HOST'] = 'db'
     DATABASES['capdb']['PASSWORD'] = 'password'
     DATABASES['capdb']['HOST'] = 'db'
+    DATABASES['user_data']['PASSWORD'] = 'password'
+    DATABASES['user_data']['HOST'] = 'db'
     REDIS_HOST = 'redis'
 
     # this will only be used if CELERY_TASK_ALWAYS_EAGER = False
@@ -47,25 +51,21 @@ TEST_SLOW_QUERIES_DB_NAME = 'capstone_test_queries'
 # to use slow queries db, add this to settings.py:
 # DATABASES['default']['NAME'] = TEST_SLOW_QUERIES_DB_NAME
 
-# avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
-STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
-
 # don't update elasticsearch index on dev when savings cases (this may want to change -- not sure)
-MAINTAIN_ELASTICSEARCH_INDEX = False
+MAINTAIN_ELASTICSEARCH_INDEX = True
 
-ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases_test'
-
-# django-debug-toolbar
 import sys
-if 'pytest' not in sys.modules:  # don't run this from tests
+if 'pytest' not in sys.modules:
+    ## settings not for tests
+
+    # django-debug-toolbar
     try:
-            ELASTICSEARCH_INDEXES['cases_endpoint'] = 'cases'
             import debug_toolbar  # noqa
             INSTALLED_APPS += (
                 'debug_toolbar',
             )
             MIDDLEWARE.insert(
-                MIDDLEWARE.index('django_hosts.middleware.HostsRequestMiddleware')+1,
+                MIDDLEWARE.index('django.contrib.sessions.middleware.SessionMiddleware'),
                 'debug_toolbar.middleware.DebugToolbarMiddleware',
             )
             DEBUG_TOOLBAR_CONFIG = {
@@ -81,3 +81,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # For testing error reporting
 ADMINS = [('John', 'john@example.com'), ('Mary', 'mary@example.com')]
+
+# Reveal 'draft' markdown documents
+DOCS_SHOW_DRAFTS = True
+
+# a list of labs projects to hide
+LABS_HIDDEN = []

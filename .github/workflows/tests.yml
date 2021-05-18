@@ -1,0 +1,91 @@
+name: Tests
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    working-directory: capstone
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    # don't run on pushes to forks
+    if: github.event_name == 'pull_request' || github.repository == 'harvard-lil/capstone'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      ### build docker images ###
+
+      - name: Rebuild harvardlil/capstone-postgres if necessary
+        uses: harvard-lil/docker-compose-update-action@main
+        with:
+          working-directory: capstone
+          image: "harvardlil/capstone-postgres"
+          docker-file: "../services/docker/extended-postgres.dockerfile"
+          rebuild-if-changed: "../services/docker/extended-postgres.dockerfile"
+          registry-user: ${{ secrets.REPOSITORY_USER }}
+          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
+
+      - name: Rebuild harvardlil/capstone if necessary
+        uses: harvard-lil/docker-compose-update-action@main
+        with:
+          working-directory: capstone
+          image: "harvardlil/capstone"
+          rebuild-if-changed: "Dockerfile requirements.txt yarn.lock"
+          registry-user: ${{ secrets.REPOSITORY_USER }}
+          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
+
+      ### run tests ###
+
+      - name: docker-compose up
+        run: |
+          sudo sysctl -w vm.max_map_count=262144            # for elasticsearch's bootstrap check
+          docker-compose -f docker-compose.yml pull         # separate pull so downloads run in parallel
+          docker-compose -f docker-compose.yml up -d        # use -f to suppress docker-compose.override.yml
+          docker ps -a                                      # show running containers
+          docker-compose logs                               # show logs
+
+      - name: Collect static files
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
+        run: docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
+
+      - name: Run tests
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
+        run: |
+          set -x
+          docker-compose exec web pytest \
+            -n 2                                           `# run tests in parallel for speed` \
+            --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
+            --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
+            -v
+
+      ### codecov ###
+      # https://github.com/codecov/codecov-action
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          directory: capstone/
+
+      # Commit built assets if necessary, then deploy via Salt reactor
+      - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
+        run: |
+          set -x
+          git config user.email "lil@law.harvard.edu"
+          git config user.name "Github Actions"
+          docker-compose exec web yarn build
+          if [[ `git status docker-compose.yml --porcelain` ]] ; then
+            git add docker-compose.yml
+            git commit -m "Bump image version"
+            git push origin develop || exit 1
+          fi
+          if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
+              git add static/dist/ webpack-stats.json
+              git commit -m "Add built JS"
+              git push origin develop || exit 1
+          fi
+#          export DEPLOY_CONTENT='{"CIRCLE_BUILD_NUM":"'$CIRCLE_BUILD_NUM'","CIRCLE_SHA1":"'$CIRCLE_SHA1'","CIRCLE_BRANCH":"'$CIRCLE_BRANCH'","CIRCLE_PROJECT_REPONAME":"'$CIRCLE_PROJECT_REPONAME'","CIRCLE_PROJECT_USERNAME":"'$CIRCLE_PROJECT_USERNAME'"}' ;
+#          export DEPLOY_SIG="sha1=`echo -n "$DEPLOY_CONTENT" | openssl sha1 -hmac $DEPLOY_KEY | sed 's/^.* //'`" ;
+#          curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "X-Circle-Signature: $DEPLOY_SIG"

@@ -12,7 +12,7 @@ nav {
 }
 
 /* give container closest to nav some padding */
-nav[aria-label="main"] ~ .container {
+#main-nav ~ .container {
   padding-top: 90px;
 }
 
@@ -34,7 +34,7 @@ nav[aria-label="main"] ~ .container {
     padding: 3px 7px;
     cursor: pointer;
     border: 2px solid $color-violet;
-     > a {
+    > a {
       border-bottom: 0;
       color: $color-white;
       font-weight: $font-weight-semibold;
@@ -46,7 +46,9 @@ nav[aria-label="main"] ~ .container {
         color: $color-violet;
       }
     }
-
+    &.disabled {
+      display: none;
+    }
   }
 
   .prettyprint {
@@ -91,16 +93,16 @@ nav[aria-label="main"] ~ .container {
       clear: both;
     }
   }
+}
 
+.request-info, .response-info {
+  font-family: $font-monospace;
+  font-size: 1rem;
 }
 
 // hide "Get" button -- button itself doesn't do anything, and dropdown is broken from including bootstrap 4 instead of 3
 #get-form {
   display: none;
-}
-
-.param-label {
-  font-weight: bold;
 }
 
 .list-group-item > ul {
@@ -153,4 +155,3 @@ li > code {
     text-transform: capitalize;
   }
 }
-

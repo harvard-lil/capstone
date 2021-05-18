@@ -2,7 +2,7 @@
 title: About
 meta_description: About the Caselaw Access Project
 page_image: img/og_image/about.png
-explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law Library. 
+explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. law. Our goal is to make all published U.S. court decisions freely available to the public online, in a consistent format, digitized from the collection of the Harvard Law School Library. 
 top_section_style: bg-black
 row_style: bg-tan
 
@@ -18,7 +18,7 @@ recent cases are from 2018.
 Each volume has been converted into structured, case-level data broken out by majority and dissenting opinion, with 
 human-checked metadata for party names, docket number, citation, and date.
 
-We also plan to share (but have not yet published) page images and page-level OCR data for all volumes. 
+We also offer PDFs with selectable OCR text for each case. 
 
 
 # Scope limits {: class="subtitle" } 
@@ -30,7 +30,7 @@ CAP does not include:
 * Cases not designated as officially published, such as most lower court decisions.
 * Non-published trial documents such as party filings, orders, and exhibits.
 * Parallel versions of cases from regional reporters, unless those cases were designated by a court as official.
-* Cases officially published in digital form, such as recent cases from Illinois and Arkansas.
+* Cases officially published in digital form, such as recent cases from Illinois, Arkansas, New Mexico, and North Carolina.
 {: add_list_class="spacious-list bullets" }
 
 Cases published after 1922 do not include headnotes.
@@ -104,9 +104,9 @@ Access limitations on full text and bulk data are a component of Harvard’s col
 (now part of Lexis-Nexis). These limitations will end, at the latest, in March of 2024. In addition, these limitations 
 apply only to cases from jurisdictions that continue to publish their official case law in print form. Once a 
 jurisdiction transitions from print-first publishing to digital-first publishing, these limitations cease. Thus far, 
-Illinois and Arkansas have made this important and positive shift and, as a result, all historical cases from these 
-jurisdictions are freely available to the public without restriction. We hope many other jurisdictions will follow 
-their example soon.
+Illinois, Arkansas, New Mexico, and North Carolina have made this important and positive shift and, as a result,
+all historical cases from these jurisdictions are freely available to the public without restriction. We hope many
+other jurisdictions will follow their example soon.
 
 
 # Press {: class="subtitle" } 
@@ -124,7 +124,7 @@ their example soon.
 * The Caselaw Access Project is a [Harvard Law School Library Innovation Lab](https://lil.law.harvard.edu/) Project.
 * LIL is part of the [Harvard Law School Library](https://hls.harvard.edu/library){: add_list_class="item-name" }.
 * [Berkman-Klein Center](https://cyber.law.harvard.edu) cooperated with LIL on the Caselaw Access Project.
-* [Ravel Law](https://www.ravellaw.com/) has partnered with the Harvard Law Library and LIL since the beginning of the 
+* [Ravel Law](https://www.ravellaw.com/) has partnered with the Harvard Law School Library and LIL since the beginning of the 
 Caselaw Access Project. Ravel funded the digitization effort and now offers free public access to the entire corpus 
 through their [search interface](https://home.ravellaw.com) and their 
 [non-commercial API](https://home.ravellaw.com/api).

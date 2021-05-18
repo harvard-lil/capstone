@@ -35,16 +35,16 @@ class Migration(migrations.Migration):
             name='name_abbreviation',
             field=models.CharField(blank=True, db_index=True, max_length=1024),
         ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_casemetadata_name_abbr_upper ON capdb_casemetadata (UPPER(name_abbreviation) varchar_pattern_ops);',
-            reverse_sql='DROP INDEX idx_casemetadata_name_abbr_upper;'
-        ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_court_name_upper ON capdb_court (UPPER(name) varchar_pattern_ops);',
-            reverse_sql='DROP INDEX idx_court_name_upper;'
-        ),
-        migrations.RunSQL(
-            sql='CREATE INDEX idx_reporter_name_upper ON capdb_reporter (UPPER(full_name) varchar_pattern_ops);',
-            reverse_sql='DROP INDEX idx_reporter_name_upper;'
-        ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_casemetadata_name_abbr_upper ON capdb_casemetadata (UPPER(name_abbreviation) varchar_pattern_ops);',
+        #     reverse_sql='DROP INDEX idx_casemetadata_name_abbr_upper;'
+        # ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_court_name_upper ON capdb_court (UPPER(name) varchar_pattern_ops);',
+        #     reverse_sql='DROP INDEX idx_court_name_upper;'
+        # ),
+        # migrations.RunSQL(
+        #     sql='CREATE INDEX idx_reporter_name_upper ON capdb_reporter (UPPER(full_name) varchar_pattern_ops);',
+        #     reverse_sql='DROP INDEX idx_reporter_name_upper;'
+        # ),
     ]

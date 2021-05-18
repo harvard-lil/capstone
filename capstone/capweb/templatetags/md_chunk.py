@@ -1,4 +1,5 @@
 from django import template
+from django.utils.safestring import mark_safe
 from markdown import Markdown as md
 from django.template import Template, Context
 
@@ -10,4 +11,4 @@ def md_chunk(md_chunk, *args, **kwargs):
     context = Context()
 
     html_content = md().convert(template.render(context))
-    return html_content
+    return mark_safe(html_content)

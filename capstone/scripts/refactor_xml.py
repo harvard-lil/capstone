@@ -11,8 +11,9 @@ from io import BytesIO
 from zipfile import ZipFile, ZIP_BZIP2
 from pathlib import Path
 from PIL import Image
+from pyquery import PyQuery
 from celery import shared_task
-from diff_match_patch import diff_match_patch
+import diff_match_patch
 from lxml import etree
 
 from django.conf import settings
@@ -210,35 +211,31 @@ def diff_strings(text1, text2):
         Example:
             >>> blocks_text = "1234a5678a1234b5678"
             >>> case_text = "1234c5678c12345678d"
-            >>> diff_strings(blocks_text, case_text)
-            [('equal', 0, 4, 0, 4),
-             ('replace', 4, 5, 4, 5),
-             ('equal', 5, 9, 5, 9),
-             ('replace', 9, 10, 9, 10),
-             ('equal', 10, 14, 10, 14),
-             ('delete', 14, 15, 14, 14),
-             ('equal', 15, 19, 14, 18),
-             ('insert', 19, 19, 18, 19)]
-            >>> diff_strings(blocks_text, case_text) == difflib.SequenceMatcher(None, text1, text2).get_opcodes()
-            True
+            >>> assert diff_strings(blocks_text, case_text) == [
+            ...     ('equal', 0, 4, 0, 4),
+            ...     ('replace', 4, 5, 4, 5),
+            ...     ('equal', 5, 9, 5, 9),
+            ...     ('replace', 9, 10, 9, 10),
+            ...     ('equal', 10, 14, 10, 14),
+            ...     ('delete', 14, 15, 14, 14),
+            ...     ('equal', 15, 19, 14, 18),
+            ...     ('insert', 19, 19, 18, 19)]
+            >>> assert diff_strings(blocks_text, case_text) == difflib.SequenceMatcher(None, blocks_text, case_text).get_opcodes()
     """
-    # get diff
-    diff = diff_match_patch().diff_main(text1, text2)
 
     # convert to difflib format
     opcodes = []
     i = 0
     j = 0
-    for opcode, text in diff:
-        text_length = len(text)
-        if opcode == diff_match_patch.DIFF_EQUAL:
+    for opcode, text_length in diff_match_patch.diff(text1, text2, timelimit=0, checklines=False, cleanup_semantic=False):
+        if opcode == "=":
             opcodes.append(('equal', i, i+text_length, j, j+text_length))
             i += text_length
             j += text_length
-        elif opcode == diff_match_patch.DIFF_DELETE:
+        elif opcode == "-":
             opcodes.append(('delete', i, i+text_length, j, j))
             i += text_length
-        elif opcode == diff_match_patch.DIFF_INSERT:
+        elif opcode == "+":
             if opcodes and opcodes[-1][0] == 'delete':
                 prev = opcodes.pop()
                 opcodes.append(('replace', prev[1], prev[2], j, j+text_length))
@@ -250,8 +247,8 @@ def diff_strings(text1, text2):
 def tokenize_element(parent):
     """
         Tokenize the contents of an lxml Element. Example:
-        >>> tokenize_element(etree.XML("<p>text <footnotemark ref='foo'>1</footnotemark> text</p>"))
-        ['text ', ['footnotemark', {'ref':'foo'}], '1', ['/footnotemark'], ' text']
+        >>> assert list(tokenize_element(etree.XML("<p>text <footnotemark ref='foo'>1</footnotemark> text</p>"))) == [
+        ...     'text ', ['footnotemark', {'ref':'foo'}], '1', ['/footnotemark'], ' text']
     """
     yield parent.text
     for el in parent:
@@ -266,10 +263,8 @@ def insert_tags(block, i, offset, new_tokens):
         Return change in length of block.
         Example:
         >>> block = ['foo', 'bar']
-        >>> insert_tags(block, 1, 2, [['new'], ['stuff']])
-        3
-        >>> blocks
-        ['foo', 'ba', ['new'], ['stuff'], 'r']
+        >>> assert insert_tags(block, 1, 2, [['new'], ['stuff']]) == 3
+        >>> assert block == ['foo', 'ba', ['new'], ['stuff'], 'r']
     """
     text = block[i]
     to_insert = [token for token in [text[:offset]]+new_tokens+[text[offset:]] if token]
@@ -295,17 +290,18 @@ def index_blocks(blocks):
             (b) the offsets mapping from that text back to each string in the blocks
             (c) a lookup of the strings themselves
             (d) a list of all tag marker names in the text
+
         Example:
-            >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
-            >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
-            >>> blocks_text
-            'foobarbaz'
-            >>> blocks_offsets
-            [0, 3, 6]
-            >>> blocks_lookup
-            [[0, ['foo', ['tag'], 'bar'], 0], [3, ['foo', ['tag'], 'bar'], 2], [6, ['baz'], 0]]
-            >>> block_tag_names
-            ['bracketnum', '/bracketnum']
+        >>> blocks = [[tag_marker_lookup['bracketnum']+'foo'+tag_marker_lookup['/bracketnum'], ['tag'], 'bar'], ['baz']]
+        >>> blocks_text, blocks_offsets, blocks_lookup, block_tag_names = index_blocks(blocks)
+        >>> assert blocks_text == '%sfoo%sbarbaz' % (tag_marker, tag_marker)
+        >>> assert blocks_offsets == [0, 5, 8]
+        >>> assert blocks_lookup == [
+        ...     (0, ['%sfoo%s' % (tag_marker, tag_marker), ['tag'], 'bar'], 0),
+        ...     (5, ['%sfoo%s' % (tag_marker, tag_marker), ['tag'], 'bar'], 2),
+        ...     (8, ['baz'], 0)]
+        >>> assert block_tag_names == ['bracketnum', '/bracketnum']
+
         This allows us to start from the combined text and use it to modify the individual strings in the blocks object.
         For example, if we want to modify blocks_text[5] (an 'r'), we can search blocks_offsets to figure out that it is part
         of entry 1 (because it is after 3 and before 6), and then use blocks_lookup[1] to update the original string.
@@ -335,11 +331,10 @@ def sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens):
         Given a list of blocks of tokens from ALTO, and a single tokenized paragraph from CaseMETS, add 'edit' tags to
         make the ALTO text match the case text. Then import all tags from the CaseMETS (such as footnotemark) into the
         ALTO. Example:
-            >>> alto_blocks = [[["baz"], "abc-", "def"], ["gh-i", "jkl", ["/baz"]]]
-            >>> case_tokens = [["bar"], "abcd", ["foo"], "efg", ['/foo'], "hijkl", ["/bar"]]
-            >>> sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens)
-            >>> blocks
-            [[['baz'], ['bar'], 'abc', ['edit', {'was': '-'}], ['/edit'], 'd', ['foo'], 'ef'], [['edit', {'was': '-'}], ['/edit'], 'g', ['/foo'], 'hi', 'jkl', ['/bar'], ['/baz']]]
+        >>> alto_blocks = [[["baz"], "abc-", "def"], ["gh-i", "jkl", ["/baz"]]]
+        >>> case_tokens = [["bar"], "abcd", ["foo"], "efg", ['/foo'], "hijkl", ["/bar"]]
+        >>> sync_alto_blocks_with_case_tokens(alto_blocks, case_tokens)
+        >>> assert alto_blocks == [[['baz'], ['edit', {'was': ''}], ['bar'], ['/edit'], 'abc', ['edit', {'was': '-'}], ['/edit'], 'd', ['edit', {'was': ''}], ['foo'], ['/edit'], 'ef'], ['g', ['edit', {'was': ''}], ['/foo'], ['/edit'], 'h', ['edit', {'was': '-'}], ['/edit'], 'i', 'jkl', ['edit', {'was': ''}], ['/bar'], ['/edit'], ['/baz']]]
     """
 
     ## initial indexing ##
@@ -504,15 +499,15 @@ def sync_alto_blocks_with_case_paragraphs(pars, blocks_by_id, case_id_to_alto_id
 def extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id):
     """
         Extract paragraph and footnote structures from a list of CaseMETS paragraphs and footnotes as PyQuery elements.
+
         Example:
-            >>> children = PyQuery("<opinion><author id='1'>text</author><footnote id='footnote_1_1'><p id='2'>footnote text</p></footnote></opinion>").children().items()
-            >>> paragraphs, footnotes, paragraph_els = extract_paragraphs(children, case_id_to_alto_ids, blocks_by_id)
-            >>> paragraphs
-            [{'id': 1, 'class': 'author', 'block_ids':[1]}]
-            >>> footnotes
-            [{'id': 'footnote_1_1', 'paragraphs': [{'id': 2, 'class': 'p', 'block_ids':[2, 3]}]
-            >>> paragraph_els
-            [<PyQuery ...>, <PyQuery ...>]
+        >>> doc = PyQuery("<opinion><author id='1'>text</author><footnote id='footnote_1_1'><p id='2'>footnote text</p></footnote></opinion>")
+        >>> case_id_to_alto_ids = {'1': [1], 'footnote_1_1': [1], '2': [1]}
+        >>> blocks_by_id = {1: {}}
+        >>> paragraphs, footnotes, paragraph_els = extract_paragraphs(doc.children().items(), case_id_to_alto_ids, blocks_by_id)
+        >>> assert paragraphs == [{'id': '1', 'class': 'author', 'block_ids':[1]}]
+        >>> assert footnotes == [{'id': 'footnote_1_1', 'paragraphs': [{'block_ids': [1], 'id': '2', 'class': 'p'}]}]
+        >>> assert paragraph_els == [doc('author'), doc('p')]
     """
     paragraphs = []
     footnotes = []
@@ -738,7 +733,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
 
             try:
                 xml_strings_equal(alto_xml_output, original_alto, ignore)
-            except ValueError as e:
+            except ValueError:
                 if redacted and redacted_errors_as_warnings:
                     volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                     print("- ignoring validation error in %s" % path)
@@ -799,7 +794,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
                         'footnote': {'redact'},  # the redact attr isn't reliably set in the original, so our output may not match. comparison will still ensure that redacted footnotes don't appear.
                     }
                 })
-            except ValueError as e:
+            except ValueError:
                 if redacted and redacted_errors_as_warnings:
                     volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                     print("- ignoring validation error in %s" % path)
@@ -821,7 +816,7 @@ def assert_reversability(volume_barcode, unredacted_storage, redacted_storage,
 
                 try:
                     xml_strings_equal(*case_heads)
-                except ValueError as e:
+                except ValueError:
                     if redacted and redacted_errors_as_warnings:
                         volume['metadata'].setdefault('errors', {}).setdefault('failed_validations', {})[path] = True
                         print("- ignoring validation error in %s" % path)
@@ -843,7 +838,7 @@ def volume_to_json(volume_barcode, primary_path, secondary_path, key=settings.RE
                     volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage, key, save_failed, catch_validation_errors)
             else:
                 volume_to_json_inner(volume_barcode, unredacted_storage, None, key, save_failed, catch_validation_errors)
-    except:
+    except Exception:
         if isinstance(captar_storage, CapS3Storage):
             # copy busted S3 files locally for further inspection
             for storage in (unredacted_storage, redacted_storage):
@@ -1441,7 +1436,7 @@ def volume_to_json_inner(volume_barcode, unredacted_storage, redacted_storage=No
                 volume_barcode, unredacted_storage, redacted_storage,
                 volume, pages, cases, fonts_by_id, text_replacements,
                 paths, blocks_by_id, key, catch_validation_errors)
-        except:
+        except Exception:
             # save temp zip locally if requested
             if save_failed:
                 dest_path = Path(settings.BASE_DIR, 'test_data/zips', 'token_streams', unredacted_storage.path.name + '-failed.zip')
@@ -1581,10 +1576,18 @@ def write_to_db(volume_barcode, zip_path):
         # save join table between CaseStructure and PageStructure
         print("Saving join table")
         page_objs_by_block_id = {block['id']:p for p in page_objs for block in p.blocks}
-        links = {(case.id, page_objs_by_block_id[block_id].id)
-                 for case in case_objs
-                 for par in iter_pars(case.opinions)
-                 for block_id in par['block_ids']}
+        links = set()
+        for case in case_objs:
+            metadata_obj = case.metadata
+            for par in iter_pars(case.opinions):
+                for block_id in par['block_ids']:
+                    page_obj = page_objs_by_block_id[block_id]
+                    links.add((case.id, page_obj.id))
+                    # update CaseMetadata first and last order fields
+                    if not metadata_obj.first_page_order or metadata_obj.first_page_order > page_obj.order:
+                        metadata_obj.first_page_order = page_obj.order
+                    if not metadata_obj.last_page_order or metadata_obj.last_page_order < page_obj.order:
+                        metadata_obj.last_page_order = page_obj.order
         link_objs = [CaseStructure.pages.through(casestructure_id=case_id, pagestructure_id=page_id) for case_id, page_id in links]
         CaseStructure.pages.through.objects.bulk_create(link_objs)
 

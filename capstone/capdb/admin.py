@@ -1,6 +1,9 @@
-from django.conf import settings
+from collections import defaultdict
+
 from django.contrib import admin
 from django.forms.widgets import Textarea
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.text import normalize_newlines
 from simple_history.admin import SimpleHistoryAdmin
 
@@ -28,10 +31,10 @@ class ReadonlyInlineMixin(object):
     """ Mixin for inlines to not allow editing. """
     can_delete = False
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, *args, **kwargs):
         return False
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_readonly_fields(self, *args, **kwargs):
         result = list(set(
                 [field.name for field in self.opts.local_fields] +
                 [field.name for field in self.opts.local_many_to_many]
@@ -72,41 +75,30 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
                        'no_index_elided', 'no_index_redacted',
                        'robots_txt_until', 'withdrawn', 'replaced_by', 'in_scope', 'custom_footer_message'),
         }),
-        ('', {
-            'fields': ('frontend_url',)
+        ('Metadata', {
+            'fields': ('docket_number', 'decision_date', 'decision_date_original', 'name_abbreviation', 'name',),
+        }),
+        ('Automatically generated fields', {
+            'fields': ('frontend_url', 'attorneys', 'opinions', 'parties', 'judges',),
         }),
         ('Ingest metadata', {
-            'fields': ('date_added',)
+            'fields': ('date_added', 'case_id', 'last_page', 'first_page', 'duplicative'),
         }),
-        ('Volume and reporter relationship', {
+        ('Relationship', {
             'description': "These cannot currently be changed via the admin.",
-            'fields': ('reporter', 'volume'),
-        }),
-        ('Metadata from xml', {
-            'description': "These values are extracted from the CaseXML, and should be changed there.",
-            'fields': ('court', 'jurisdiction', 'attorneys', 'opinions', 'parties', 'judges',
-                       'docket_number', 'decision_date', 'decision_date_original', 'name_abbreviation',
-                       'name', 'case_id', 'last_page', 'first_page', 'duplicative'),
-        }),
-        ('Denormalized fields', {
-            'description': "Copies of data from related models.",
-            'classes': ('collapse',),
-            'fields': (
-                'jurisdiction_name', 'jurisdiction_whitelisted', 'jurisdiction_slug', 'jurisdiction_name_long',
-                'court_slug', 'court_name_abbreviation', 'court_name')
+            'fields': ('reporter', 'volume', 'court', 'jurisdiction',),
         }),
     )
     raw_id_fields = ['duplicate_of', 'replaced_by', 'reporter', 'volume', 'court', 'jurisdiction']
     # mark all fields as readonly
-    readonly_fields = sum((f[1]['fields'] for f in fieldsets[1:]), ())
+    readonly_fields = sum((f[1]['fields'] for f in fieldsets[2:]), ())
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         # handle changes to obj.withdrawn
         if 'withdrawn' in form.changed_data or 'replaced_by' in form.changed_data:
             obj.withdraw(obj.withdrawn, obj.replaced_by)
-        if settings.MAINTAIN_ELASTICSEARCH_INDEX:
-            obj.update_search_index()
+        obj.save()  # manual reindex for instant results
 
 
 class CasePageInline(admin.TabularInline):
@@ -167,9 +159,54 @@ class EditLogAdmin(admin.ModelAdmin):
         return CapUser.objects.get(id=obj.user_id)
 
 
-# models with no admin class yet
+@admin.register(VolumeMetadata)
+class VolumeMetadataAdmin(admin.ModelAdmin):
+    raw_id_fields = ['duplicate_of', 'reporter', 'nominative_reporter', 'request', 'second_part_of']
+    list_display = ['pk', 'volume_number', 'reporter', 'out_of_scope', 'duplicate']
+    list_select_related = ['reporter']
+    ordering = ['reporter__full_name', 'volume_number']
+    search_fields = ['reporter__short_name', 'reporter__full_name', 'pk']
+    list_filter = ['reporter__jurisdictions', 'reporter']
+    fieldsets = (
+        ('', {
+            'fields': (
+                'barcode', 'out_of_scope', 'title', 'reporter', 'volume_number', 'nominative_reporter', 'nominative_volume_number',
+                'duplicate', 'duplicate_of',
+                'second_part_of',
+                'pdf_file',
+                'task_statuses', 'xml_metadata',
+                'ingest_status', 'ingest_errors',
+                'notes', 'description',
+            ),
+        }),
+    )
+    readonly_fields = ['barcode', 'task_statuses', 'xml_metadata', 'ingest_status', 'ingest_errors']
 
-admin.site.register(VolumeMetadata)
-# admin.site.register(ProcessStep)
-# admin.site.register(BookRequest)
-# admin.site.register(TrackingToolUser)
+    def get_urls(self):
+        return [
+            path('task_statuses/', self.admin_site.admin_view(self.task_statuses))
+        ] + super().get_urls()
+
+    def task_statuses(self, request):
+        """
+            View to summarize .task_statuses field for all volumes.
+        """
+        statuses = defaultdict(lambda: {'success': 0, 'error': 0, 'last_success': '', 'last_error': ''})
+
+        for volume_statuses in VolumeMetadata.objects.filter(out_of_scope=False).values_list('task_statuses', flat=True):
+            for task_name, outcome in volume_statuses.items():
+                task = statuses[task_name]
+                outcome_key = 'success' if 'success' in outcome else 'error'
+                task[outcome_key] += 1
+                ts_key = 'last_' + outcome_key
+                ts = outcome['timestamp']
+                if ts > task[ts_key]:
+                    task[ts_key] = ts
+                    if outcome_key == 'error':
+                        task['error_message'] = outcome['error']
+
+        return TemplateResponse(request, "admin/capdb/volumemetadata/task_statuses.html", {
+            **self.admin_site.each_context(request),
+            'title': 'Volume task results',
+            'statuses': sorted(statuses.items()),
+        })

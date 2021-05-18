@@ -2,7 +2,7 @@ from .settings_base import *  # noqa
 
 DEBUG = False
 
-STORAGES = {
+STORAGES.update({
     'ingest_storage': {
         'class': 'CapS3Storage',
         'kwargs': {
@@ -56,34 +56,12 @@ STORAGES = {
             'location': os.path.join(BASE_DIR, 'ngrams'),
         },
     },
-    'download_files_storage': {
-        'class': 'CapFileStorage',
-        'kwargs': {
-            'location': os.path.join(BASE_DIR, 'downloads'),
-        }
-    },
-
-}
+})
 
 INVENTORY = {
     # prefix to strip from paths in manifest.json
     'manifest_path_prefix': 'harvard-ftl-shared/PrimarySharedInventoryReport/',
     'private_manifest_path_prefix': 'harvard-ftl-private/PrivateBucketInventory/',
-}
-
-USE_TEST_TRACKING_TOOL_DB = False
-DATABASES = DATABASES.copy()
-DATABASES['tracking_tool'] = {
-    'ENGINE': 'django.db.backends.mysql',
-    'NAME': 'ftl_tt',
-    'USER': 'ftl_readonly',  # GRANT select ON ftl_tt.* TO 'ftl_readonly'@'%' identified by 'password' REQUIRE SSL;
-    'PASSWORD': '',  # add to settings.py
-    'HOST': '',      # add to settings.py
-    'OPTIONS': {
-        'ssl': {
-            'ca': os.path.join(BASE_DIR, '../services/aws/rds-combined-ca-bundle.pem'),
-        }
-    }
 }
 
 ### API
@@ -119,19 +97,7 @@ MAILCHIMP = {
     'api_key': ''
 }
 
-# logging
-LOGGING['loggers'] = {
-    'django': {
-        'handlers': ['mail_admins'],
-        'level': 'INFO',
-        'propagate': True,
-    },
-    'django.request': {
-        'handlers': ['mail_admins'],
-        'level': 'ERROR',
-        'propagate': False,
-    },
-}
+VALIDATE_EMAIL_SIGNUPS = True
 
 ## logging errors via email requires these to be set:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -140,3 +106,10 @@ LOGGING['loggers'] = {
 # EMAIL_HOST = 'smtp.example.com'
 # EMAIL_HOST_USER = 'smtpuser'
 # EMAIL_HOST_PASSWORD = 'smtppw'
+
+RESOLVE_API_PREFIX = 'https://api.case.law/v1/cases/'
+RESOLVE_FRONTEND_PREFIX = 'https://cite.case.law'
+
+# for production, compress static files and add hashes to file names for permanent caching.
+# this takes about 8x as long as plain pipeline.storage.PipelineStorage
+STATICFILES_STORAGE = 'capdb.storages.WhitenoisePipelineStorage'

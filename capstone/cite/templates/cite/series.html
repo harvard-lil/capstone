@@ -22,11 +22,16 @@
     </nav>
     {% for reporter, volumes in reporters %}
       <h3 class="subtitle">{{ reporter.short_name }}</h3>
-      <p>{{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }})</p>
+      <p>
+        {{ reporter.full_name }} ({{ reporter.start_year|default:"" }}-{{ reporter.end_year|default:"" }}).
+        <a href="{% url 'reporter-detail' reporter.pk host 'api' %}">View API.</a>
+      </p>
       <p>
         <strong>Volume number:</strong>
         {% for volume in volumes %}
-          <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number=volume.volume_number host 'cite' %}">{{ volume.volume_number }}</a>
+          {% ifchanged %}
+            <a href="{% url 'volume' series_slug=reporter.short_name_slug volume_number_slug=volume.volume_number_slug host 'cite' %}">{{ volume.volume_number }}</a>
+          {% endifchanged %}
         {% endfor %}
       </p>
     {% endfor %}

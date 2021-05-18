@@ -1,36 +1,37 @@
-from datetime import datetime
+from copy import copy
+from datetime import datetime, timedelta
 from time import sleep
 
 from celery import shared_task
 from celery.exceptions import Reject
-from django.db import connections
+from elasticsearch import ElasticsearchException
+from urllib3.exceptions import ReadTimeoutError
 from django.db.models import Prefetch
 from django.utils import timezone
-from elasticsearch import ElasticsearchException
-from elasticsearch.helpers import BulkIndexError
-from urllib3.exceptions import ReadTimeoutError
-
-from capapi.documents import CaseDocument
-from scripts.helpers import ordered_query_iterator
 
 from capdb.models import *
 
 
 ### HELPERS ###
 
-def run_task_for_volumes(task, volumes=None, last_run_before=None, synchronous=False, **kwargs):
+def run_task_for_volumes(task, volumes=None, last_run_before=None, **kwargs):
     """
         Run the given celery task for the given queryset of volumes, or all volumes if not specified.
         If last_run_before is provided as an ISO timestamp, volumes will only be run if volume.task_statuses indicates that
         the task has not succeeded after that time.
     """
     if volumes is None:
-        volumes = VolumeMetadata.objects.all()
+        volumes = VolumeMetadata.objects.filter(out_of_scope=False, duplicate=False)
     if last_run_before:
-        volumes = volumes.exclude(**{
-            "task_statuses__%s__success" % task.name: True,
-            "task_statuses__%s__timestamp__gte" % task.name: last_run_before
-        })
+        # find volumes where task has never run, or had an error, or had a success before last_run_before date
+        volumes = volumes.filter(
+            ~Q(task_statuses__has_key=task.name) |
+            Q(**{"task_statuses__%s__has_key" % task.name: "error"}) |
+            Q(**{
+                "task_statuses__%s__has_key" % task.name: "success",
+                "task_statuses__%s__timestamp__lt" % task.name: last_run_before
+            })
+        )
     for volume_id in volumes.values_list('pk', flat=True):
         task.delay(volume_id, **kwargs)
 
@@ -40,7 +41,8 @@ def record_task_status_for_volume(task, volume_id):
         Context manager to record in volume.task_statuses whether the given task succeeds or fails.
     """
     try:
-        yield
+        with transaction.atomic(using='capdb'):
+            yield
     except Exception as e:
         volume = VolumeMetadata.objects.get(pk=volume_id)
         volume.task_statuses[task.name] = {
@@ -59,6 +61,42 @@ def record_task_status_for_volume(task, volume_id):
 
 ### TASKS ###
 
+@shared_task(bind=True, acks_late=True)
+def remove_id_number_in_volume(self, volume_id):
+    # patterns to replace
+    regexes = [
+        # a-number
+        r'\bA(?:[ \-—]*\d){8,9}\b',
+        # ssn
+        r'\b\d{3} *[\-—] *\d{2} *[\-—] *\d{4}\b',
+        r'\b\d{3} +\d{2} +\d{4}\b',
+    ]
+
+    # database filter for text matching any of those patterns
+    filters = Q()
+    for regex in regexes:
+        postgres_regex = regex.replace(r'\b', r'\y')  # postgres uses \y instead of \b for boundaries
+        filters |= Q(name__regex=postgres_regex) | Q(body_cache__text__regex=postgres_regex)
+    cases = (CaseMetadata.objects
+                 .filter(filters, volume_id=volume_id)
+                 .select_related('body_cache')
+                 .only('body_cache__text'))
+
+    # set no_index_redacted for each matching case
+    with record_task_status_for_volume(self, volume_id):
+        for case in cases:
+            replacement = copy(case.no_index_redacted) if case.no_index_redacted else {}
+            for regex in regexes:
+                for match in set(re.findall(regex, case.body_cache.text + case.name)):
+                    if match in replacement:
+                        continue
+                    replacement[match] = re.sub(r'\d', 'X', match)
+            if replacement != case.no_index_redacted:
+                case.no_index_redacted = replacement
+                case.robots_txt_until = timezone.now() + timedelta(days=7)
+                case.save()
+
+
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 def update_in_scope_for_vol(self, volume_id):
     """
@@ -75,18 +113,13 @@ def update_elasticsearch_for_vol(self, volume_id):
     """
     with record_task_status_for_volume(self, volume_id):
         # fetch cases
-        cases = (CaseMetadata.objects
-            .in_scope()
-            .filter(volume_id=volume_id)
-            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache')
-            .exclude(body_cache=None))
+        cases = CaseMetadata.objects.filter(volume_id=volume_id).for_indexing()
 
         # attempt to store 10 times, with linearly increasing backoff. this gives time for the bulk queue to be processed
         # if necessary (in which case we'll get BulkIndexError with error 429, too many requests).
         for i in range(10):
             try:
-                CaseDocument().update(cases)
-                VolumeMetadata.objects.filter(pk=volume_id).update(last_es_index=timezone.now())
+                CaseMetadata.reindex_cases(cases)
                 return
             except (ElasticsearchException, ReadTimeoutError) as e:
                 if i == 9:
@@ -98,6 +131,23 @@ def update_elasticsearch_for_vol(self, volume_id):
                                 v['data'] = '[data omitted]'
                     raise Reject('Bulk indexing of volume %s failed: %s' % (volume_id, e), requeue=True)
                 sleep(i)
+
+
+@shared_task(acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def update_elasticsearch_from_queue():
+    """
+        Index 100 cases that need to be indexed from CaseLastUpdate, in a loop, until we run out.
+    """
+    if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
+        return
+    while True:
+        with transaction.atomic(using='capdb'):
+            case_ids = CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:100].values_list('case_id', flat=True)
+            if not case_ids:
+                break
+            cases = CaseMetadata.objects.filter(id__in=case_ids).for_indexing()
+            CaseMetadata.reindex_cases(cases)
+            CaseLastUpdate.objects.filter(case_id__in=case_ids).update(indexed=True)
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
@@ -115,23 +165,82 @@ def sync_from_initial_metadata_for_vol(self, volume_id, force):
             c.sync_from_initial_metadata(force=force)
 
 
-@shared_task
-def sync_case_body_cache_for_vol(volume_id, rerender=True):
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
     """
         call sync_case_body_cache on cases in given volume
     """
-    volume = VolumeMetadata.objects.get(pk=volume_id)
-    pages = list(volume.page_structures.all())
-    blocks_by_id = PageStructure.blocks_by_id(pages)
-    fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
-    labels_by_block_id = PageStructure.labels_by_block_id(pages)
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        to_update = []
+        to_create = []
+        all_analyses = []
+        all_cites_to_delete = []
+        all_cites_to_create = []
+        query = volume.case_metadatas.select_related('body_cache')
 
-    query = volume.case_metadatas\
-        .select_related('structure', 'body_cache')\
-        .defer('body_cache__html', 'body_cache__xml', 'body_cache__text', 'body_cache__json')
+        # full rendering of HTML/XML
+        if rerender:
+            pages = list(volume.page_structures.all())
+            blocks_by_id = PageStructure.blocks_by_id(pages)
+            fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+            labels_by_block_id = PageStructure.labels_by_block_id(pages)
+            update_fields = ['html', 'xml', 'text', 'json']
+            query = query.select_related('structure').prefetch_related('citations', 'extracted_citations')
 
-    for case_metadata in query:
-        case_metadata.sync_case_body_cache(blocks_by_id, fonts_by_id, labels_by_block_id, rerender=rerender)
+        # just rendering text/json
+        else:
+            query = query.exclude(body_cache=None)
+            blocks_by_id = fonts_by_id = labels_by_block_id = None
+            update_fields = ['text', 'json']
+
+        # do processing
+        for case_metadata in query:
+            changed, analyses, cites_to_delete, cites_to_create = case_metadata.sync_case_body_cache(
+                blocks_by_id,
+                fonts_by_id,
+                labels_by_block_id,
+                rerender=rerender,
+                save=False)
+            if changed:
+                all_analyses.extend(analyses)
+                body_cache = case_metadata.body_cache
+                if body_cache.id:
+                    to_update.append(body_cache)
+                else:
+                    to_create.append(body_cache)
+                all_cites_to_create += cites_to_create
+                all_cites_to_delete += cites_to_delete
+
+        # save
+        if to_create:
+            CaseBodyCache.objects.bulk_create(to_create)
+        if to_update:
+            CaseBodyCache.objects.bulk_update(to_update, update_fields)
+        if all_analyses:
+            CaseAnalysis.bulk_upsert(all_analyses)
+        if all_cites_to_delete:
+            ExtractedCitation.objects.filter(id__in=[c.id for c in all_cites_to_delete]).delete()
+        if all_cites_to_create:
+            ExtractedCitation.objects.bulk_create(all_cites_to_create)
+
+
+@shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
+def run_text_analysis_for_vol(self, volume_id):
+    """
+        call run_text_analysis on cases in given volume
+    """
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.get(pk=volume_id)
+        all_analyses = []
+        query = (volume.case_metadatas.in_scope()
+             .select_related('body_cache', 'structure')
+             .defer('body_cache__xml', 'body_cache__html', 'body_cache__json'))
+        blocks_by_id = PageStructure.blocks_by_id(volume.page_structures.all())
+        for case_metadata in query:
+            all_analyses.extend(case_metadata.run_text_analysis(blocks_by_id, save=False))
+        if all_analyses:
+            CaseAnalysis.bulk_upsert(all_analyses)
 
 
 def create_case_metadata_from_all_vols(update_existing=False):
@@ -291,31 +400,6 @@ def get_court_count_for_jur(jurisdiction_id):
     return results
 
 
-def create_case_text_for_all_cases(update_existing=False):
-    """
-        Call create_case_text for each volume
-    """
-    run_task_for_volumes(create_case_text, update_existing=update_existing)
-
-
-@shared_task
-def create_case_text(volume_id, update_existing=False):
-    """
-        Create or update cases for each volume
-    """
-    cases = CaseMetadata.objects \
-        .in_scope() \
-        .order_by('id') \
-        .filter(volume_id=volume_id) \
-        .select_related('case_xml', 'case_text')
-
-    if not update_existing:
-        cases = cases.filter(case_text=None)
-
-    for case in ordered_query_iterator(cases):
-        case.create_or_update_case_text()
-
-
 def retrieve_images_from_all_cases(update_existing=False):
     """
         Call celery task to get images for each volume
@@ -324,7 +408,6 @@ def retrieve_images_from_all_cases(update_existing=False):
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
-@transaction.atomic(using='capdb')
 def retrieve_images_from_cases(self, volume_id, update_existing=True):
     """
         Create or update case images for each volume

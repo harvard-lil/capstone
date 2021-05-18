@@ -1,40 +1,44 @@
-import io
 import os
-import csv
 import json
-import logging
-import subprocess
-from datetime import datetime
-from collections import OrderedDict
-from pathlib import Path
-from wsgiref.util import FileWrapper
 
+from elasticsearch_dsl import Q
+from natsort import natsorted
+import re
+import stat
+import subprocess
+import tempfile
+from collections import OrderedDict, defaultdict
+from pathlib import Path
+from zipfile import ZipFile
+
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core import signing
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect, HttpResponse, Http404, \
-    HttpResponseBadRequest, StreamingHttpResponse
+    HttpResponseBadRequest, FileResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.template import Template, RequestContext
 from django.template.loader import render_to_string
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.utils.safestring import mark_safe
+from django.db.models import Prefetch
 
-
-from capweb.forms import ContactForm
-from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown
-from capweb.models import GallerySection
-
-from capdb.models import Snippet
-from capdb.storages import download_files_storage
-from capapi.resources import form_for_request
 from capapi.documents import CaseDocument
-
-from elasticsearch.exceptions import NotFoundError
-
-logger = logging.getLogger(__name__)
+from capapi.views.api_views import CaseDocumentViewSet
+from capweb.forms import ContactForm
+from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
+    page_image_url, safe_domains, get_toc_by_url
+from capweb.models import GallerySection, GalleryEntry
+from capdb.models import Snippet, Court, Reporter, Jurisdiction, CaseMetadata
+from capdb.storages import download_files_storage
+from capapi.resources import form_for_request, api_request
+from capweb.templatetags.docs_url import docs_url
+from config.logging import logger
+from scripts.extract_cites import extract_citations_normalized
 
 
 def index(request):
@@ -58,33 +62,27 @@ def index(request):
         'state': state,
         'federal': federal,
         'page_image': 'img/og_image/index.png',
-        'page_name': 'home'
     })
 
 
-def about(request):
-    contributors = get_data_from_lil_site(section="contributors")
-    sorted_contributors = {}
-    for contributor in contributors:
-        sorted_contributors[contributor['sort_name']] = contributor
-        if contributor['affiliated']:
-            sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
-    sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
-
-    markdown_doc = render_to_string("about.md", {
-        "contributors": sorted_contributors,
-        "news": get_data_from_lil_site(section="news"),
-        "email": settings.DEFAULT_FROM_EMAIL
-    }, request)
-
-    # render markdown document to html
-    html, toc, meta = render_markdown(markdown_doc)
-
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
+def docs(request, req_doc_path):
+    """
+        Gets a list of MD documents and their file structure from the docs_path directory and creates the docs nav
+        structure from it. Serves up a specific doc or the default docs entry page.
+    """
+    toc_by_url = get_toc_by_url()
+    page = toc_by_url.get(req_doc_path.rstrip('/'))
+    if not page:
+        raise Http404
+    return render(request, 'docs.html', {
+        'content': page['content'],
+        'toc': toc_by_url['']['children'],
+        'page_image': 'img/og_image/documentation.png',
+        'req_doc_path': req_doc_path,
+        'parents': page['parents'],
+        # this can be overridden by meta_description: in an individual doc page:
+        'meta_description': f'Caselaw Access Project: {page["meta"]["title"]} Documentation',
+        **page['meta'],
     })
 
 
@@ -93,8 +91,13 @@ def contact(request):
 
     if request.method == 'POST' and form.is_valid():
         data = form.data
-        send_contact_email(data.get('subject'), data.get('message'), data.get('email'))
-        logger.info("sent contact email: %s" % data)
+        # Only send email if box2 is filled out and box1 is not.
+        # box1 is display: none, so should never be filled out except by spam bots.
+        if data.get('box2') and not data.get('box1'):
+            send_contact_email(data.get('subject'), data.get('box2'), data.get('email'))
+            logger.info("sent contact email: %s" % data)
+        else:
+            logger.info("suppressing invalid contact email: %s" % data)
         return HttpResponseRedirect(reverse('contact-success'))
 
     email_from = request.user.email if request.user.is_authenticated else ""
@@ -108,21 +111,11 @@ def contact(request):
     })
 
 
-def tools(request):
-    extra_context = {}
-    markdown_doc = render_to_string("tools.md", extra_context, request)
-    html, toc, meta = render_markdown(markdown_doc)
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
-    })
-
-
 def gallery(request):
-    sections = GallerySection.objects.prefetch_related('entries').order_by('order')
-    return render(request, 'gallery.html', {
+    sections = GallerySection.objects.prefetch_related(
+        Prefetch('entries', queryset=GalleryEntry.objects.filter(featured=True))).order_by('order')
+
+    return render(request, 'gallery/gallery.html', {
         'sections': sections,
         'email': settings.DEFAULT_FROM_EMAIL,
         'page_image': 'img/og_image/gallery.png',
@@ -130,6 +123,18 @@ def gallery(request):
     })
 
 
+def gallery_section(request, section_slug):
+    # historical redirect
+    if section_slug in ['wordclouds', 'limericks', 'witchcraft']:
+        return HttpResponseRedirect(reverse(section_slug))
+
+    section = get_object_or_404(GallerySection.objects.prefetch_related('entries'), title_slug=section_slug)
+
+    return render(request, 'gallery/gallery_section.html', {
+        'section': section,
+        'page_image': 'img/og_image/gallery.png',
+        'meta_description': 'Caselaw Access Project Gallery: ' + section.title
+    })
 
 def maintenance_mode(request):
     return render(request, "error_page.html", {
@@ -159,68 +164,28 @@ def limericks(request):
     })
 
 
-def api(request):
-    try:
-        case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
-    except NotFoundError:
-        case = CaseDocument.search().filter("term", jurisdiction__slug="ill").execute()[0]
-
-    markdown_doc = render_to_string("api.md", {
-        "citation": case.citations[0].cite,
-        "case_id": case.id,
-    }, request)
-
-    # render markdown document to html
-    html, toc, meta = render_markdown(markdown_doc)
-
-    meta = {k: mark_safe(v) for k, v in meta.items()}
-    return render(request, "layouts/full.html", {
-        'main_content': mark_safe(html),
-        'sidebar_menu_items': mark_safe(toc),
-        **meta,
-    })
-
-
-
-def search_docs(request):
-    return render(request, 'search_docs.md')
-
-
 def snippet(request, label):
     snippet = get_object_or_404(Snippet, label=label).contents
     return HttpResponse(snippet, content_type=snippet.format)
 
 
-class MarkdownView(View):
-    """
-        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
-        for display as HTML.
-
-        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
-    """
-    base_template_name = "layouts/full.html"
-    extra_context = {}
-    template_name = None
-
-    def get(self, request, *args, **kwargs):
-        # render any django template tags in markdown document
-        markdown_doc = render_to_string(self.template_name, self.extra_context, request)
-
-        # render markdown document to html
-        html, toc, meta = render_markdown(markdown_doc)
-
-        # present markdown html within base_template_name
-        meta = {k:mark_safe(v) for k,v in meta.items()}
-        return render(request, self.base_template_name, {
-            'main_content': mark_safe(html),
-            'sidebar_menu_items': mark_safe(toc),
-            'main_content_style': 'markdown',
-            **self.extra_context,
-            **meta,
-        })
+def legacy_docs_redirect(request):
+    url_path = request.path.strip('/')
+    translation = {
+        "api": "api",
+        "search-docs": "search",
+        "trends-docs": "trends",
+        "bulk": "bulk",
+        "changelog": "changelog",
+        "action": "courts",
+        "action/guidelines": "guidelines",
+        "action/case-study-nm": "case-study-nm",
+        "action/case-study-ark": "case-study-ark",
+        "action/case-study-canada": "case-study-canada",
+    }
+    return redirect(docs_url(translation[url_path]))
 
 
-_safe_domains = [(h['subdomain']+"." if h['subdomain'] else "") + settings.PARENT_HOST for h in settings.HOSTS.values()]
 def screenshot(request):
     """
         Return screenshot of a given URL on this site. This is a light wrapper around "node scripts/screenshot.js".
@@ -244,10 +209,10 @@ def screenshot(request):
     url = payload.get('url')
     if not url:
         return HttpResponseBadRequest("URL parameter required.")
-    if not url.startswith('http://' if settings.DEBUG else 'https://'):
+    if not url.startswith('https://' if settings.MAKE_HTTPS_URLS else 'http://'):
         return HttpResponseBadRequest("Invalid URL protocol.")
-    if not is_safe_url(url, _safe_domains):
-        return HttpResponseBadRequest("URL should match one of these domains: %s" % _safe_domains)
+    if not url_has_allowed_host_and_scheme(url, safe_domains):
+        return HttpResponseBadRequest("URL should match one of these domains: %s" % safe_domains)
 
     # apply target= and wait= query params
     command_args = []
@@ -255,6 +220,8 @@ def screenshot(request):
         command_args += ['--wait', selector]
     for selector in payload.get('targets', []):
         command_args += ['--target', selector]
+    for selector in payload.get('disable', []):
+        command_args += ['--disable', selector]
     timeout = payload.get('timeout', settings.SCREENSHOT_DEFAULT_TIMEOUT)
 
     # disable puppeteer sandbox just for dockerized dev/test env
@@ -287,115 +254,301 @@ def download_files(request, filepath=""):
     If directory requested: show list of files inside dir
     If file requested: download file
     """
+    real_path = download_files_storage.realpath(filepath)
+    allow_downloads = True
+    if "restricted" in filepath:
+        allow_downloads = request.user.unlimited_access_in_effect()
+    status = 200
 
-    absolute_path = download_files_storage.path(filepath)
-
-    allow_downloads = "restricted" not in absolute_path or request.user.unlimited_access_in_effect()
+    # symlink requested
+    if filepath and filepath.rstrip('/') != real_path:
+        redirect_to = reverse('download-files', args=[real_path])
+        if filepath.endswith('/'):
+            redirect_to += '/'
+        return HttpResponseRedirect(redirect_to)
 
     # file requested
-    if download_files_storage.isfile(filepath):
-        if not allow_downloads:
-            context = {
-                "filename": filepath,
-                "error": "If you believe you should have access to this file, "
-                         "please <a href='https://caselaw.freshdesk.com/support/tickets/new'>let us know</a>.",
-                "title": "403 - Access to this file is restricted",
-            }
-            return render(request, "file_download_400.html", context, status=403)
-        import magic
-        mime = magic.Magic(mime=True)
-        content_type = mime.from_file(absolute_path)
-        chunk_size = 8192
+    elif download_files_storage.isfile(filepath):
+        if allow_downloads:
+            return FileResponse(download_files_storage.open(filepath, 'rb'))
 
-        response = StreamingHttpResponse(FileWrapper(open(absolute_path, 'rb'), chunk_size), content_type=content_type)
-        response['Content-Length'] = download_files_storage.getsize(absolute_path)
-        response['Content-Disposition'] = 'attachment; filename="%s"' % filepath.split('/')[-1]
-
-        return response
+        response_template = "error_page.html"
+        status = 403
+        context = {
+            "title": "File restricted",
+            "middle": mark_safe(
+                "Sorry! This file is available only to logged-in users with a <a href='%s#usage-access'>research scholar account</a>."
+                % (reverse('about'))
+            ),
+        }
 
     # directory requested
     elif download_files_storage.isdir(filepath):
+        if filepath and not filepath.endswith('/'):
+            return HttpResponseRedirect(reverse('download-files', args=[filepath+'/']))
 
         # create clickable breadcrumbs
         breadcrumb_parts = filepath.split('/')
-
         breadcrumbs = []
         for idx, breadcrumb in enumerate(breadcrumb_parts):
             if breadcrumb:
                 breadcrumbs.append({'name': breadcrumb,
                                     'path': "/".join(breadcrumb_parts[0:idx + 1])})
+        if breadcrumbs:
+            breadcrumbs = [{'name': 'home', 'path': ''}] + breadcrumbs
 
         readme = ""
         files = []
-        for filename in list(download_files_storage.iter_files(filepath)):
+        for filename in download_files_storage.iter_files(filepath):
             if "README.md" in filename:
-                with open(download_files_storage.path(filename), "r") as f:
-                    readme_content = f.read()
-                readme, toc, meta = render_markdown(readme_content)
+                readme_content = download_files_storage.contents(filename)
+                markdown_doc = Template(readme_content).render(RequestContext(request))
+                readme, toc, meta = render_markdown(markdown_doc)
+                continue
 
-            fileobject = {
-                "name": filename.split('/')[-1],
-                "path": filename,
-                "is_dir": download_files_storage.isdir(filename),
-                "size": download_files_storage.getsize(filename)
-            }
-
-            files.append(fileobject)
-
-        # if we're  in the root folder, also add a manifest.csv
-        if filepath == "":
+            # use stat() to follow symlinks and fetch directory status and size in one call
+            file_stat = download_files_storage.stat(filename)
+            is_dir = stat.S_ISDIR(file_stat.st_mode)
             files.append({
-                "name": "manifest.csv",
-                "path": "manifest.csv",
-                "is_dir": False,
+                "name": filename.split('/')[-1],
+                "path": filename + ('/' if is_dir else ''),
+                "is_dir": is_dir,
+                "size": file_stat.st_size,
             })
 
         # sort files alphabetically
-        files = sorted(files, key=lambda x: x["name"].lower())
+        files = natsorted(files, key=lambda x: x["name"].lower())
 
+        response_template = "file_download.html"
         context = {
             'files': files,
             'allow_downloads': allow_downloads,
+            'readme': mark_safe(readme),
+            'breadcrumbs': breadcrumbs,
         }
-
-        if len(breadcrumbs) > 0:
-            # Add home path to root folder if breadcrumbs exist
-            context['breadcrumbs'] = [{'name': 'home', 'path': ''}] + breadcrumbs
-        if readme:
-            context['readme'] = mark_safe(readme)
-
-        return render(request, "file_download.html", context)
 
     # path does not exist
     else:
-        context = {
-            "title": "404 - File not found",
-            "error": "This file was not found in our system."
-        }
-        return render(request, "file_download_400.html", context, status=404)
+        raise Http404
+
+    # return response
+    if is_browser_request(request):
+        return render(request, response_template, context, status=status)
+    else:
+        return HttpResponse(json.dumps(context), content_type='application/json', status=status)
 
 
-def download_manifest_file(request, filepath=""):
-    output = io.StringIO()
-    fieldnames = ["path", "size", "last_modified"]
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
-    writer.writeheader()
-    absolute_path = download_files_storage.path(filepath)
+def view_jurisdiction(request, jurisdiction_id):
+    jurisdiction = get_object_or_404(Jurisdiction, pk=jurisdiction_id)
 
-    def write_file_info(abs_filepath):
-        fp = download_files_storage.relpath(abs_filepath)
+    fields = OrderedDict([
+        ("ID", jurisdiction.id),
+        ("Name", jurisdiction.name),
+        ("Long Name", jurisdiction.name_long),
+        ("Slug", jurisdiction.slug),
+        ("whitelisted", jurisdiction.whitelisted),
+    ])
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'jurisdiction',
+        'title': jurisdiction.name
+    })
+
+
+def view_reporter(request, reporter_id):
+    reporter = get_object_or_404(Reporter, pk=reporter_id)
+    fields = OrderedDict([
+        ("ID", reporter.id),
+        ("Full Name", reporter.full_name),
+        ("Short Name", reporter.short_name),
+        ("Start Year", reporter.start_year),
+        ("End Year", reporter.end_year),
+        ("Volume Count", reporter.volume_count),
+    ])
+
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'reporter',
+        'title': reporter.short_name
+    })
+
+
+def view_court(request, court_id):
+    court = get_object_or_404(Court, pk=court_id)
+    fields = OrderedDict([
+        ("ID", court.id),
+        ("Name", court.name),
+        ("Name Abbreviation", court.name_abbreviation),
+        ("Jurisdiction", court.jurisdiction.name),
+        ("Slug", court.slug),
+    ])
+
+    return render(request, "view_metadata.html", {
+        'fields': fields,
+        'type': 'court',
+        'title': court.name_abbreviation
+    })
+
+
+def search(request):
+    return render(request, "search.html")
+
+
+def trends(request):
+    q = request.GET.get('q')
+    if q:
+        title_suffix = ' for "%s"' % q
+    else:
+        title_suffix = ''
+    if settings.SCREENSHOT_FEATURE:
+        page_image = page_image_url(
+            request.build_absolute_uri(),
+            targets=['.graph-container'],
+            waits=['#screenshot-ready'],
+            disable=['#main-nav'],
+        )
+    else:
+        page_image = None
+    return render(request, "trends.html", {
+        'title': 'Historical Trends' + title_suffix,
+        'page_image': page_image,
+    })
+
+
+@csrf_exempt
+def fetch(request):
+    """ Extract citations from text and link to PDFs. """
+
+    # zip file download
+    error = None
+    if request.method == 'POST' and request.POST.get('download'):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        case_ids = set(request.POST.getlist('case_ids'))
+        if not request.user.unlimited_access_in_effect() and request.user.case_allowance_remaining < len(case_ids):
+            error = "You do not have sufficient downloads remaining to fetch the requested cases"
+        else:
+            cases_by_id = {c.id: c for c in CaseMetadata.objects.filter(pk__in=case_ids).prefetch_related('citations')}
+            try:
+                tmp = tempfile.NamedTemporaryFile(delete=False)
+                with ZipFile(tmp.name, 'w') as zip:
+                    for case_id in case_ids:
+                        api_response = api_request(request, CaseDocumentViewSet, 'retrieve', {'id': case_id}, {'format': 'pdf', 'full_case': 'true'})
+                        if not hasattr(api_response, 'data') or api_response.status_code != 200:
+                            return api_response
+                        zip.writestr("cases/"+cases_by_id[int(case_id)].get_pdf_name(), api_response.data)
+                return FileResponse(open(tmp.name, 'rb'), as_attachment=True, filename='cases.zip')
+            finally:
+                os.remove(tmp.name)
+
+    # prefer POST because it doesn't record queried text in server logs, but also accept GET to allow linking to search results
+    text = request.POST.get('q', '') or request.GET.get('q', '')
+    results = []
+
+    if text:
+        cites = extract_citations_normalized(text)
+        if cites:
+            # extract citations
+            cite_lookup = {
+                i: cite_text
+                for cite_text, normalized_cite, rdb_normalized_cite in cites
+                for i in (normalized_cite, rdb_normalized_cite)
+            }
+            normalized_cites = list(cite_lookup.keys())
+
+            es_cases = CaseDocument.search().query(
+                Q(
+                    'bool',
+                    should=[
+                        Q("terms", citations__normalized_cite=normalized_cites),
+                        Q("terms", citations__rdb_normalized_cite=normalized_cites),
+                    ]
+                )
+            ).source(
+                includes=['id']
+            ).execute()
+            cases = CaseMetadata.objects.filter(id__in=[c.id for c in es_cases]).prefetch_related('citations')
+
+            # get possible cases matching each extracted cite
+            cases_by_cite = defaultdict(set)
+            for case in cases:
+                for cite in case.citations.all():
+                    cases_by_cite[cite.normalized_cite].add(case)
+                    cases_by_cite[cite.rdb_normalized_cite].add(case)
+
+            for cite_text, normalized_cite, rdb_normalized_cite in cites:
+                cases = cases_by_cite.get(normalized_cite, set()) | cases_by_cite.get(rdb_normalized_cite, set())
+
+                # add context before and after matched cite
+                context_before = 40
+                context_after = 30
+                before = ''
+                after = ''
+                m = re.search(r'([^\n]{,%s})\b%s\b([^\n]{,%s})' % (context_before, re.escape(cite_text), context_after), text)
+                if m:
+                    before = ('... ' if len(m[1]) == context_before else '') + m[1]
+                    after = m[2] + (' ...' if len(m[2]) == context_after else '')
+
+                results.append({
+                    'cite': cite_text,
+                    'cases': cases,
+                    'before': before,
+                    'after': after,
+                })
+
+    return render(request, "fetch.html", {
+        'text': text,
+        'results': results,
+        'error': error,
+    })
+
+
+class MarkdownView(View):
+    """
+        Render template_name as markdown, and then pass 'main_content', 'sidebar_menu_items', and 'meta' to base_template_name
+        for display as HTML.
+        IMPORTANT: As all outputs are marked safe, subclasses should never include user-generated input in the template context.
+    """
+    base_template_name = "markdown.html"
+    extra_context = {}
+    template_name = None
+
+    def get(self, request, *args, **kwargs):
+        context = {**self.extra_context, **self.get_context(request)}
+        # render any django template tags in markdown document
+        markdown_doc = render_to_string(self.template_name, context, request)
+
+        # render markdown document to html
+        html, toc, meta = render_markdown(markdown_doc)
+
+        # present markdown html within base_template_name
+        meta = {k:mark_safe(v) for k,v in meta.items()}
+        return render(request, self.base_template_name, {
+            'main_content': mark_safe(html),
+            'sidebar_menu_items': mark_safe(toc),
+            'main_content_style': 'markdown',
+            **context,
+            **meta,
+        })
+
+    def get_context(self, request):
+        return {}
+
+
+class AboutView(MarkdownView):
+    template_name = "about.md"
+
+    def get_context(self, request):
+        contributors = get_data_from_lil_site(section="contributors")
+        sorted_contributors = {}
+        for contributor in contributors:
+            sorted_contributors[contributor['sort_name']] = contributor
+            if contributor['affiliated']:
+                sorted_contributors[contributor['sort_name']]['hash'] = contributor['name'].replace(' ', '-').lower()
+        sorted_contributors = OrderedDict(sorted(sorted_contributors.items()), key=lambda t: t[0])
+
         return {
-            "path": fp,
-            "size": download_files_storage.getsize(fp),
-            "last_modified": str(datetime.utcfromtimestamp(download_files_storage.getmtime(fp)))
+            "contributors": sorted_contributors,
+            "news": get_data_from_lil_site(section="news"),
+            "email": settings.DEFAULT_FROM_EMAIL
         }
-
-    for root, dirs, files in os.walk(absolute_path):
-        for name in files:
-            writer.writerow(write_file_info(os.path.join(root, name)))
-        for name in dirs:
-            writer.writerow(write_file_info(os.path.join(root, name)))
-
-    response = HttpResponse(output.getvalue(), content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=manifest.csv'
-    return response

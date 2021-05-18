@@ -11,7 +11,7 @@ from capweb.helpers import reverse
 
 
 @pytest.mark.django_db
-def test_site_limits(client, auth_client, non_whitelisted_case_document, mailoutbox):
+def test_site_limits(client, auth_client, restricted_case, mailoutbox, elasticsearch):
 
     ### registration limit ###
 
@@ -37,7 +37,7 @@ def test_site_limits(client, auth_client, non_whitelisted_case_document, mailout
     verify_email = mail.outbox[0].body
     verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
-    check_response(response, content_includes="Thank you for verifying")
+    check_response(response, content_includes="We've verified your email address.")
     user.refresh_from_db()
     assert user.email_verified
     assert user.auth_token
@@ -48,12 +48,12 @@ def test_site_limits(client, auth_client, non_whitelisted_case_document, mailout
     ### case download limit ###
 
     # can fetch one case
-    response = auth_client.get(api_reverse('cases-detail', args=[non_whitelisted_case_document.id]), {'full_case':'true'})
+    response = auth_client.get(api_reverse('cases-detail', args=[restricted_case.id]), {'full_case':'true'})
     result = response.json()
     assert result['casebody']['status'] == 'ok'
 
     # cannot fetch second case
-    response = auth_client.get(api_reverse('cases-detail', args=[non_whitelisted_case_document.id]), {'full_case':'true'})
+    response = auth_client.get(api_reverse('cases-detail', args=[restricted_case.id]), {'full_case':'true'})
     result = response.json()
     assert result['casebody']['status'] == 'error_sitewide_limit_exceeded'
 

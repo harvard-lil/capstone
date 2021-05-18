@@ -1,5 +1,8 @@
-FROM python:3.5-stretch
+FROM python:3.7-buster
 ENV PYTHONUNBUFFERED 1
+
+# Enable apt-get -t buster-backports
+RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
 
 # Get build dependencies and packages required by the app
 # FIRST LINE:
@@ -13,17 +16,19 @@ ENV PYTHONUNBUFFERED 1
 #  ldd /node_modules/puppeteer/.local-chromium/linux-672088/chrome-linux/chrome | grep not
 # and then looking for relevant packages listed in
 #  https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
-RUN echo 'deb http://deb.debian.org/debian stretch-backports main' > /etc/apt/sources.list.d/backports.list
+# FOURTH LINE:
+# libhyperscan-dev for pip hyperscan package
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
-    && apt-get install -t stretch-backports -y librocksdb5.17 libzstd-dev liblz4-dev libgflags-dev libbz2-dev zlib1g-dev libsnappy-dev librocksdb-dev rocksdb-tools \
-    && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3
+    && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
+    && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
+    && apt-get -t buster-backports install -y libhyperscan-dev
 
 # pip
 RUN mkdir /app
 WORKDIR /app
 COPY requirements.txt /app
-RUN pip install pip==19.3.1 \
+RUN pip install pip==21.0.1 \
     && pip install -r requirements.txt --src /usr/local/src \
     && rm requirements.txt
 
@@ -34,10 +39,10 @@ RUN echo "--modules-folder /node_modules" > /.yarnrc
 COPY package.json /app
 COPY yarn.lock /app
 # pin node version -- see https://github.com/nodesource/distributions/issues/33
-RUN curl -o nodejs.deb https://deb.nodesource.com/node_11.x/pool/main/n/nodejs/nodejs_11.15.0-1nodesource1_amd64.deb \
+RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.17.0-1nodesource1_amd64.deb \
     && dpkg -i ./nodejs.deb \
     && rm nodejs.deb \
-    && npm install -g yarn@1.16.0 \
+    && npm install -g yarn@1.22.5 \
     && yarn install --frozen-lockfile \
     && rm package.json \
     && rm yarn.lock

@@ -4,7 +4,19 @@
 {% block meta_description %}Caselaw Access Project cases{% endblock %}
 
 {% block explainer %}
-  Browse the collection of the <a href="{% url 'home' %}">Caselaw Access Project</a>.
+  <p class="mb-4">Browse all volumes of the Caselaw Access Project below.</p>
+  <form id="search" class="form-inline mb-4">
+    <label for="q">Search the collection:</label>
+    <input type="text" class="form-control flex-fill ml-2" id="q">
+    <input type="submit" class="btn btn-primary" value="Search">
+  </form>
+  <script>
+    document.getElementById('search').addEventListener('submit', function(e) {
+      document.location = '{% url "search" %}#/cases?page=1&search=' + encodeURIComponent(document.getElementById('q').value);
+      e.preventDefault();
+    })
+  </script>
+  <p class="mb-0">View a <a href="{% url "random" host "cite" %}">random case</a>.</p>
 {% endblock %}
 
 {% block sidebar_menu_items %}

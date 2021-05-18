@@ -11,27 +11,27 @@ class Migration(migrations.Migration):
 
     operations = [
         # drop unused regular btree indexes from 0032
-        migrations.RunSQL(
-            sql='DROP INDEX idx_casemetadata_name_abbr_upper;',
-            reverse_sql='CREATE INDEX idx_casemetadata_name_abbr_upper ON capdb_casemetadata (UPPER(name_abbreviation) varchar_pattern_ops);',
-        ),
-        migrations.RunSQL(
-            sql='DROP INDEX idx_court_name_upper;',
-            reverse_sql='CREATE INDEX idx_court_name_upper ON capdb_court (UPPER(name) varchar_pattern_ops);',
-        ),
-        migrations.RunSQL(
-            sql='DROP INDEX idx_reporter_name_upper;',
-            reverse_sql='CREATE INDEX idx_reporter_name_upper ON capdb_reporter (UPPER(full_name) varchar_pattern_ops);',
-        ),
+        # migrations.RunSQL(
+        #     sql='DROP INDEX idx_casemetadata_name_abbr_upper;',
+        #     reverse_sql='CREATE INDEX idx_casemetadata_name_abbr_upper ON capdb_casemetadata (UPPER(name_abbreviation) varchar_pattern_ops);',
+        # ),
+        # migrations.RunSQL(
+        #     sql='DROP INDEX idx_court_name_upper;',
+        #     reverse_sql='CREATE INDEX idx_court_name_upper ON capdb_court (UPPER(name) varchar_pattern_ops);',
+        # ),
+        # migrations.RunSQL(
+        #     sql='DROP INDEX idx_reporter_name_upper;',
+        #     reverse_sql='CREATE INDEX idx_reporter_name_upper ON capdb_reporter (UPPER(full_name) varchar_pattern_ops);',
+        # ),
 
         # drop gin indexes on court and reporter from 0033 -- no longer searching by substring
         # keep gin index on casemetadata_name
-        migrations.RunSQL(
-            sql='DROP INDEX idx_reporter_full_name_upper_gin;',
-            reverse_sql='CREATE INDEX idx_reporter_full_name_upper_gin ON capdb_reporter USING GIN (UPPER(full_name) gin_trgm_ops) ;',
-        ),
-        migrations.RunSQL(
-            sql='DROP INDEX idx_court_name_upper_gin;',
-            reverse_sql='CREATE INDEX idx_court_name_upper_gin ON capdb_court USING GIN (UPPER(name) gin_trgm_ops) ;',
-        ),
+        # migrations.RunSQL(
+        #     sql='DROP INDEX idx_reporter_full_name_upper_gin;',
+        #     reverse_sql='CREATE INDEX idx_reporter_full_name_upper_gin ON capdb_reporter USING GIN (UPPER(full_name) gin_trgm_ops) ;',
+        # ),
+        # migrations.RunSQL(
+        #     sql='DROP INDEX idx_court_name_upper_gin;',
+        #     reverse_sql='CREATE INDEX idx_court_name_upper_gin ON capdb_court USING GIN (UPPER(name) gin_trgm_ops) ;',
+        # ),
     ]

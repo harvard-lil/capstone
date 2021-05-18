@@ -1,190 +1,160 @@
+import datetime
 import re
 import json
 from datetime import timedelta
+from difflib import unified_diff
+from pathlib import Path
 
+import mock
 import pytest
 from bs4 import BeautifulSoup
-from django.conf import settings
+
 from django.utils import timezone
-from django.utils.text import slugify
+
 from capapi.tests.helpers import check_response, is_cached
+from capdb.tasks import update_elasticsearch_from_queue, CaseAnalysis
 from capweb.helpers import reverse
-from capweb import helpers
-from retry import retry
+from test_data.test_fixtures.helpers import set_case_text
 
-
-from fabfile import rebuild_search_index
-from scripts.helpers import parse_xml
-
-## TIMING ##
-# I moved a quite a few blocks of code into separate function with the @retry decorator because
-# the elaasticserach-dsl will return the function before the data is available through the API.
-# If you're making new tests and you wish to use the modify/save/test workflow, put the tests
-# immediately following the save in a separate function with the retry decorator.
 
 def full_url(document):
     return "{}{}".format(reverse('cite_home'), document.frontend_url.replace('/', '', 1))
 
 @pytest.mark.django_db
-def test_home(client, django_assert_num_queries, ingest_metadata):
+def test_home(client, django_assert_num_queries, reporter):
     """ Test / """
     with django_assert_num_queries(select=2):
         response = client.get(reverse('cite_home', host='cite'))
-    check_response(response, content_includes="Alabama Appellate Courts Reports")
+    check_response(response, content_includes=reporter.full_name)
 
 
 @pytest.mark.django_db
-def test_series(client, django_assert_num_queries, volume_factory, whitelisted_case_document):
-
+def test_series(client, django_assert_num_queries, volume_metadata_factory):
     """ Test /series/ """
 
     # make sure we correctly handle multiple reporters with same slug
-    volume_1, volume_2 = [volume_factory() for _ in range(2)]
-    volume_2.reporter.short_name_slug = volume_1.reporter.short_name_slug
-    volume_2.reporter.save()
-
-    rebuild_search_index(force=True)
-
-    @retry(tries=10, delay=1)
-    def check_series(client, volume_1):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(reverse('series', args=[volume_1.reporter.short_name_slug], host='cite'))
-        check_response(response)
-        content = response.content.decode()
-        for vol in (volume_1, volume_2):
-            assert vol.volume_number in content
-            assert vol.reporter.full_name in content
+    volume_1, volume_2 = [volume_metadata_factory(
+        reporter__short_name='Mass.',
+        reporter__short_name_slug='mass',
+    ) for _ in range(2)]
+    response = client.get(reverse('series', args=['mass'], host='cite'))
+    check_response(response)
+    content = response.content.decode()
+    for vol in (volume_1, volume_2):
+        assert vol.volume_number in content
+        assert vol.reporter.full_name in content
 
     # make sure we redirect if series is not slugified
-    series_slug = whitelisted_case_document.reporter.short_name_slug.replace('-', '. ').upper()
-    response = client.get(reverse('series', args=[series_slug], host='cite'))
+    response = client.get(reverse('series', args=['Mass.'], host='cite'))
     check_response(response, status_code=302)
-    response = client.get(reverse('series', args=[series_slug], host='cite'), follow=True)
+    response = client.get(reverse('series', args=['mass'], host='cite'), follow=True)
     check_response(response, status_code=200)
+    
+    # make sure we get 404 if bad series input
+    response = client.get(reverse('series', args=['*'], host='cite'))
+    check_response(response, status_code=404)
 
 
 @pytest.mark.django_db
-def test_volume(client, django_assert_num_queries, three_case_documents):
+def test_volume(client, django_assert_num_queries, case_factory, elasticsearch):
     """ Test /series/volume/ """
+    cases = [case_factory(
+        volume__reporter__full_name='Massachusetts%s' % i,
+        volume__reporter__short_name='Mass.',
+        volume__reporter__short_name_slug='mass',
+        volume__volume_number='1',
+        volume__volume_number_slug='1',
+    ) for i in range(3)]
 
-    # make sure we correctly handle multiple reporters with same slug
-    case_1, case_2, case_3 = three_case_documents
-    for case in [case_2, case_3]:
-        case.reporter.short_name_slug = case_1.reporter.short_name_slug
-        case.save()
-        case.volume.volume_number = case_1.volume.volume_number
-        case.save()
+    with django_assert_num_queries(select=1):
+        response = client.get(reverse('volume', args=['mass', '1'], host='cite'))
+    check_response(response)
 
-    @retry(tries=10, delay=1)
-    def get_volume_page(client, case_1, case_2):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        with django_assert_num_queries(select=1):
-            response = client.get(
-                reverse('volume', args=[case_1.reporter.short_name_slug, case_1.volume.volume_number], host='cite'))
-        check_response(response)
-
-        content = response.content.decode()
-        for case in (case_1, case_2):
-            assert case.volume.volume_number in content
-            assert case.reporter.full_name in content
-            assert case.citations[0].cite in content
-    get_volume_page(client, case_1, case_2)
+    content = response.content.decode()
+    for case in cases:
+        assert case.reporter.full_name in content
+        assert case.citations.first().cite in content
 
     # make sure we redirect if reporter name / series is not slugified
-    series_slug = case_1.reporter.short_name_slug.replace('-', '. ').upper()
-    response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'))
+    response = client.get(reverse('volume', args=['Mass.', '1'], host='cite'))
     check_response(response, status_code=302)
-    with django_assert_num_queries(select=1):
-        response = client.get(reverse('volume', args=[series_slug, case_1.volume.volume_number], host='cite'), follow=True)
+    response = client.get(reverse('volume', args=['Mass.', '1'], host='cite'), follow=True)
     check_response(response, status_code=200)
 
 
 @pytest.mark.django_db
-def test_case_not_found(client, ingest_elasticsearch, django_assert_num_queries):
+def test_case_not_found(client, django_assert_num_queries, elasticsearch):
     """ Test /series/volume/case/ not found """
     with django_assert_num_queries(select=1):
         response = client.get(reverse('citation', args=['fake', '123', '456'], host='cite'))
-    check_response(response, content_includes='Citation "123 Fake 456" was not found')
+    check_response(response, content_includes='Search for "123 Fake 456" in other databases')
 
 
 @pytest.mark.django_db
-def test_cases_multiple(client, django_assert_num_queries, three_case_documents):
+def test_cases_multiple(client, django_assert_num_queries, case_factory, elasticsearch):
     """ Test /series/volume/case/ with multiple matching cases """
-    first_case = three_case_documents[0]
-    cite = {'type': 'official', 'cite': '23 Ill. App. 19', 'normalized_cite': '23illapp19'}
-    for i, case in enumerate(three_case_documents):
-        case.citations = [cite]
-        case.save()
-    cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite['cite']).groups()
+    cases = [case_factory(
+        jurisdiction__whitelisted=True,
+        citations__type='official',
+        citations__cite='23 Ill. App. 19',
+        citations__normalized_cite='23illapp19'
+    ) for i in range(3)]
+    first_case = cases[0]
 
-    @retry(tries=10, delay=1)
-    def multiple_results(client, cite_parts, three_case_documents):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(
-            reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2]], host='cite'), follow=True)
+    # disambiguation page should work even if cases wrongly end up with same frontend_url
+    assert set(c.frontend_url for c in cases) == {'/ill-app/23/19/'}
 
-        check_response(response, content_includes='Multiple cases match')
-        content = response.content.decode()
-        for case in three_case_documents:
-            assert case.name_abbreviation in content
+    # disambiguation page includes all case short names
+    check_response(
+        client.get(reverse('citation', args=['ill-app', '23', '19'], host='cite'), follow=True),
+        content_includes=['Multiple cases match']+[c.name_abbreviation for c in cases],
+        content_excludes=first_case.name,
+    )
 
-    multiple_results(client, cite_parts, three_case_documents)
+    # single case pages work with ID appended, even if not matching frontend_url
+    check_response(
+        client.get(reverse('citation', args=['ill-app', '23', '19', first_case.id], host='cite')),
+        content_includes=first_case.name,
+    )
 
-    # load one of the results
-    first_case.jurisdiction.whitelisted = True
-    first_case.save()
-
-    @retry(tries=10, delay=1)
-    def one_of_the_results(client, cite_parts, first_case):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(
-            reverse('citation', args=[slugify(cite_parts[1]), cite_parts[0], cite_parts[2], first_case.id], host='cite'))
-        check_response(response)
-
-    one_of_the_results(client, cite_parts, first_case)
-
-
-
-@retry(tries=10, delay=1)
-def retrieve_and_check_response_content(client, url, content_includes, follow=False):
-    # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-
-    response = client.get(url, follow=follow)
-    check_response(response, content_includes=content_includes)
 
 @pytest.mark.django_db
-def test_single_case(client, auth_client, whitelisted_case_document):
+@pytest.mark.parametrize('response_type', ['html', 'pdf'])
+def test_single_case(client, auth_client, token_auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries, settings):
     """ Test /series/volume/case/ with one matching case """
 
-    # setup
-    url = full_url(whitelisted_case_document)
-    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
-    case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
+    # set up for viewing html or pdf
+    case_text = "Case HTML"
+    unrestricted_case = case_factory(jurisdiction__whitelisted=True, body_cache__html=case_text, first_page_order=2, last_page_order=2)
+    restricted_case = case_factory(jurisdiction__whitelisted=False, body_cache__html=case_text, first_page_order=2, last_page_order=2)
+    if response_type == 'pdf':
+        case_text = "REMEMBERED"
+        unrestricted_url = unrestricted_case.get_pdf_url()
+        url = restricted_case.get_pdf_url()
+        content_type = 'application/pdf'
+    else:
+        unrestricted_url = full_url(unrestricted_case)
+        url = full_url(restricted_case)
+        content_type = None
 
     ### can load whitelisted case
-
-    whitelisted_case_document.jurisdiction.whitelisted = True
-    whitelisted_case_document.save()
-
-    retrieve_and_check_response_content(client, url, case_text)
+    with django_assert_num_queries(select=2):
+        check_response(client.get(unrestricted_url), content_includes=case_text, content_type=content_type)
 
     ### can load blacklisted case while logged out, via redirect
 
-    whitelisted_case_document.jurisdiction.whitelisted = False
-    whitelisted_case_document.save()
-
     # first we get redirect to JS page
-    retrieve_and_check_response_content(client, url, "Click here to continue", follow=True)
+    check_response(client.get(url, follow=True), content_includes="Click here to continue")
 
     # POSTing will set our cookies and let the case load
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 1
 
     # we can now load directly
     response = client.get(url)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 2
 
@@ -192,31 +162,36 @@ def test_single_case(client, auth_client, whitelisted_case_document):
     session['case_allowance_remaining'] = 0
     session.save()
     response = client.get(url)
-    check_response(response)
-    assert case_text not in response.content.decode()
+    if response_type == 'pdf':
+        assert response.status_code == 302  # PDFs redirect back to HTML version if quota exhausted
+    else:
+        check_response(response)
+        assert case_text not in response.content.decode()
     session = client.session
     assert session['case_allowance_remaining'] == 0
 
-    # check daily quota resettest_unlimited_access
+    # check daily quota reset
     session['case_allowance_last_updated'] -= 60 * 60 * 24 + 1
     session.save()
     response = client.get(url)
-    check_response(response, content_includes=case_text)
+    check_response(response, content_includes=case_text, content_type=content_type)
     session = client.session
     assert session['case_allowance_remaining'] == settings.API_CASE_DAILY_ALLOWANCE - 1
 
     ### can load normally as logged-in user
 
-    response = auth_client.get(url)
-    check_response(response, content_includes=case_text)
-    auth_client.auth_user.refresh_from_db()
-    assert auth_client.auth_user.case_allowance_remaining == settings.API_CASE_DAILY_ALLOWANCE - 1
+    for c in [auth_client, token_auth_client]:
+        response = c.get(url)
+        check_response(response, content_includes=case_text, content_type=content_type)
+        previous_case_allowance = c.auth_user.case_allowance_remaining
+        c.auth_user.refresh_from_db()
+        assert c.auth_user.case_allowance_remaining == previous_case_allowance - 1
 
 
 @pytest.mark.django_db
-def test_case_series_name_redirect(client, whitelisted_case_document):
+def test_case_series_name_redirect(client, unrestricted_case, elasticsearch):
     """ Test /series/volume/case/ with series redirect when not slugified"""
-    cite = whitelisted_case_document.citations[0]
+    cite = unrestricted_case.citations.first()
     cite_parts = re.match(r'(\S+)\s+(.*?)\s+(\S+)$', cite.cite).groups()
 
     # series is not slugified, expect redirect
@@ -230,7 +205,7 @@ def test_case_series_name_redirect(client, whitelisted_case_document):
 
     # series redirect works with case_id
     response = client.get(
-        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], whitelisted_case_document.id], host='cite'))
+        reverse('citation', args=[cite_parts[1], cite_parts[0], cite_parts[2], unrestricted_case.id], host='cite'))
     check_response(response, status_code=302)
 
     response = client.get(
@@ -243,81 +218,39 @@ def get_schema(response):
     scripts = soup.find_all('script', {'type': 'application/ld+json'})
     assert len(scripts) == 1
     script = scripts[0]
-    return json.loads(script.text)
+    return json.loads(script.string)
 
 @pytest.mark.django_db
-def test_schema_in_case(client, whitelisted_case_document):
-    @retry(tries=10, delay=1)
-    def check_wl_schema(client, case_document, content_includes, url):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(url)
-        check_response(response, content_includes=content_includes)
-
-        schema = get_schema(response)
-        assert schema["headline"] == case_document.name_abbreviation
-        assert schema["author"]["name"] == case_document.court.name
-
-        # if case is whitelisted, extra info about inaccessibility is not needed
-        # https://developers.google.com/search/docs/data-types/paywalled-content
-        assert "hasPart" not in schema
-
-    @retry(tries=10, delay=1)
-    def check_bl_schema(client, case_document, content_includes, url):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-        check_response(response, content_includes=content_includes)
-        schema = get_schema(response)
-        assert schema["headline"] == case_document.name_abbreviation
-        assert schema["author"]["name"] == case_document.court.name
-
-        # if case is blacklisted, we include more data
-        assert "hasPart" in schema
-        assert schema["hasPart"]["isAccessibleForFree"] == 'False'
-
-    # setup
-    url = full_url(whitelisted_case_document)
-    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
-    case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
+def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearch):
 
     ### whitelisted case
 
-    whitelisted_case_document.jurisdiction.whitelisted = True
-    whitelisted_case_document.save()
+    response = client.get(full_url(unrestricted_case))
+    check_response(response, content_includes=unrestricted_case.body_cache.html)
 
-    check_wl_schema(client, whitelisted_case_document, case_text, url)
+    schema = get_schema(response)
+    assert schema["headline"] == unrestricted_case.name_abbreviation
+    assert schema["author"]["name"] == unrestricted_case.court.name
+
+    # if case is whitelisted, extra info about inaccessibility is not needed
+    # https://developers.google.com/search/docs/data-types/paywalled-content
+    assert "hasPart" not in schema
 
     ### blacklisted case
 
-    whitelisted_case_document.jurisdiction.whitelisted = False
-    whitelisted_case_document.save()
+    response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': full_url(restricted_case)}, follow=True)
+    check_response(response, content_includes=restricted_case.body_cache.html)
+    schema = get_schema(response)
+    assert schema["headline"] == restricted_case.name_abbreviation
+    assert schema["author"]["name"] == restricted_case.court.name
 
-    check_bl_schema(client, whitelisted_case_document, case_text, url)
-
+    # if case is blacklisted, we include more data
+    assert "hasPart" in schema
+    assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
 
 @pytest.mark.django_db()
-def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeypatch):
-    @retry(tries=10, delay=1)
-    def post_save(client, case_document, case_text):
-        # to see why this is split out into a function, see the ## TIMING ## note at the top of the module
-        response = client.get(full_url(case_document), follow=True)
-        assert not is_cached(response)
-
-        # show cases anyway
-        check_response(response, content_includes=case_text)
-        schema = get_schema(response)
-        assert schema["headline"] == case_document.name_abbreviation
-        assert schema["author"]["name"] == case_document.court.name
-        assert "hasPart" in schema
-        assert schema["hasPart"]["isAccessibleForFree"] == 'False'
-    # setup
-    parsed = parse_xml(whitelisted_case_document.casebody_data.xml)
-    case_text = parsed('casebody|casebody').children()[10].text.replace('\xad', '')
-
-    def mock_is_google_bot(request):
-        return True
-
-    monkeypatch.setattr(helpers, 'is_google_bot', mock_is_google_bot)
+def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
 
     # our bot has seen too many cases!
     session = client.session
@@ -325,34 +258,169 @@ def test_schema_in_case_as_google_bot(client, whitelisted_case_document, monkeyp
     session.save()
     assert session['case_allowance_remaining'] == 0
 
-    whitelisted_case_document.jurisdiction.whitelisted = False
-    whitelisted_case_document.save()
+    with mock.patch('cite.views.is_google_bot', lambda request: True):
+        response = client.get(full_url(restricted_case), follow=True)
+    assert not is_cached(response)
 
-    post_save(client, whitelisted_case_document, case_text)
+    # show cases anyway
+    check_response(response, content_includes=restricted_case.body_cache.html)
+    schema = get_schema(response)
+    assert schema["headline"] == restricted_case.name_abbreviation
+    assert schema["author"]["name"] == restricted_case.court.name
+    assert "hasPart" in schema
+    assert schema["hasPart"]["isAccessibleForFree"] == 'False'
+
 
 @pytest.mark.django_db()
-def test_no_index(auth_client, whitelisted_case_document):
-    whitelisted_case_document.no_index = True
-    whitelisted_case_document.save()
-    retrieve_and_check_response_content(auth_client, full_url(whitelisted_case_document), 'content="noindex"')
+def test_no_index(auth_client, case_factory, elasticsearch):
+    case = case_factory(no_index=True)
+    check_response(auth_client.get(full_url(case)), content_includes='content="noindex"')
+
 
 @pytest.mark.django_db()
 def test_robots(client, case):
+    case_string = "Disallow: %s" % case.frontend_url
+
     # default version is empty:
     url = reverse('robots', host='cite')
     response = client.get(url)
-    check_response(response, content_type="text/plain")
-    assert response.content.decode() == 'user-agent: *\n'
+    check_response(response, content_type="text/plain", content_includes='User-agent: *', content_excludes=case_string)
 
     # case with robots_txt_until in future is included:
     case.no_index = True
     case.robots_txt_until = timezone.now() + timedelta(days=1)
     case.save()
-    check_response(client.get(url), content_includes="disallow: %s" % case.frontend_url, content_type="text/plain")
+    check_response(client.get(url), content_type="text/plain", content_includes=case_string)
 
-    # case with robots_txt_until in future is excluded:
+    # case with robots_txt_until in past is excluded:
     case.robots_txt_until = timezone.now() - timedelta(days=1)
     case.save()
     response = client.get(url)
-    check_response(response, content_type="text/plain")
-    assert response.content.decode() == 'user-agent: *\n'
+    check_response(response, content_type="text/plain", content_includes='User-agent: *', content_excludes=case_string)
+
+
+@pytest.mark.django_db
+def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, caplog):
+    """ Test state-level geolocation logging in case browser """
+    if not Path(settings.GEOIP_PATH).exists():
+        # only test geolocation if database file is available
+        return
+    settings.GEOLOCATION_FEATURE = True
+    check_response(client.get(full_url(unrestricted_case), HTTP_X_FORWARDED_FOR='128.103.1.1'))
+    assert "Someone from Massachusetts, United States read a case" in caplog.text
+
+
+### Extract single page image from a volume PDF with VolumeMetadata's extract_page_image ###
+
+@pytest.mark.django_db
+def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
+    volume_metadata.pdf_file = "fake_volume.pdf"
+    volume_metadata.save()
+    response = admin_client.get(reverse('page_image', args=[volume_metadata.pk, '2'], host='cite'))
+    check_response(response, content_type="image/png")
+    assert b'\x89PNG' in response.content
+
+    response = auth_client.get(reverse('page_image', args=[volume_metadata.pk, '2'], host='cite'))
+    check_response(response, status_code=302)
+
+
+@pytest.mark.django_db
+def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_case_factory):
+    unrestricted_case = unrestricted_case_factory(first_page_order=1, last_page_order=3)
+    url = reverse('case_editor', args=[unrestricted_case.pk], host='cite')
+    response = admin_client.get(url)
+    check_response(response)
+    response = auth_client.get(url)
+    check_response(response, status_code=302)
+
+    # make an edit
+    unrestricted_case.sync_case_body_cache()
+    body_cache = unrestricted_case.body_cache
+    old_html = body_cache.html
+    old_first_page = unrestricted_case.first_page
+    description = "Made some edits"
+    page = unrestricted_case.structure.pages.first()
+    response = admin_client.post(
+        url,
+        json.dumps({
+            'metadata': {
+                'name': [unrestricted_case.name, 'new name'],
+                'decision_date_original': [unrestricted_case.decision_date_original, '2020-01-01'],
+                'first_page': [old_first_page, 'ignore this'],
+                'human_corrected': [False, True],
+            },
+            'description': description,
+            'edit_list': {
+                page.id: {
+                    'BL_81.3': {
+                        3: ["Case text 0", "Replacement text"],
+                    }
+                }
+            }
+        }),
+        content_type="application/json")
+    check_response(response)
+
+    # check OCR edit
+    body_cache.refresh_from_db()
+    new_html = body_cache.html
+    assert list(unified_diff(old_html.splitlines(), new_html.splitlines(), n=0))[3:] == [
+        '-    <h4 class="parties" id="b81-4">Case text 0</h4>',
+        '+    <h4 class="parties" id="b81-4">Replacement text</h4>',
+    ]
+
+    # check metadata
+    unrestricted_case.refresh_from_db()
+    assert unrestricted_case.name == 'new name'
+    assert unrestricted_case.decision_date_original == '2020-01-01'
+    assert unrestricted_case.decision_date == datetime.date(year=2020, month=1, day=1)
+    assert unrestricted_case.human_corrected is True
+    assert unrestricted_case.first_page == old_first_page  # change ignored
+
+    # check log
+    log_entry = unrestricted_case.correction_logs.first()
+    assert log_entry.description == description
+    assert log_entry.user_id == admin_client.auth_user.id
+
+
+@pytest.mark.django_db
+def test_case_cited_by(client, case_factory, elasticsearch):
+    dest_case = case_factory()
+    dest_cite = dest_case.citations.first()
+    source_cases = [case_factory() for _ in range(2)]
+    for case in source_cases:
+        set_case_text(case, dest_cite.cite)
+        case.sync_case_body_cache()
+    non_citing_case = case_factory()
+    update_elasticsearch_from_queue()
+
+    response = client.get(reverse('case_cited_by', args=[dest_case.pk], host='cite'))
+    check_response(
+        response,
+        content_includes=[c.name_abbreviation for c in source_cases],
+        content_excludes=[non_citing_case.name_abbreviation]
+    )
+
+
+@pytest.mark.django_db
+def test_random_case(client, case_factory, elasticsearch):
+    """ Test random endpoint returns both cases eventually. """
+    # set up two cases
+    cases = set()
+    found = set()
+    for i in range(2):
+        case = case_factory()
+        CaseAnalysis(case=case, key='word_count', value=2000).save()
+        cases.add(case.frontend_url)
+    update_elasticsearch_from_queue()
+
+    # try 20 times to get both
+    for i in range(20):
+        response = client.get(reverse('random', host='cite'))
+        check_response(response, status_code=302)
+        assert response.url in cases
+        found.add(response.url)
+        if found == cases:
+            break
+    else:
+        raise Exception(f'Failed to redirect to {cases-found} after 20 tries.')

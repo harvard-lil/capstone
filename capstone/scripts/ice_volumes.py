@@ -1,18 +1,9 @@
-import logging
 from celery import shared_task
 from capdb.storages import transfer_storage
 from scripts.helpers import storage_lookup, volume_barcode_from_folder
+from config.logging import logger
 
-# logging
-# disable boto3 info logging -- see https://github.com/boto/boto3/issues/521
-
-logging.getLogger('boto3').setLevel(logging.WARNING)
-logging.getLogger('botocore').setLevel(logging.WARNING)
-logging.getLogger('nose').setLevel(logging.WARNING)
-logging.getLogger('s3transfer').setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
 info = logger.info
-info = print
 
 
 @shared_task

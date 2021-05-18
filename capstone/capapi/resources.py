@@ -1,10 +1,6 @@
 import hashlib
-import json
-from datetime import datetime
-import logging
-import zipfile
-import tempfile
-from wsgiref.util import FileWrapper
+from copy import copy
+
 import wrapt
 
 from django.conf import settings
@@ -12,46 +8,21 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
-from django.template.defaultfilters import slugify
-from django.http import FileResponse
+from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
-
-logger = logging.getLogger(__name__)
-
-
-def create_zip_filename(case_list):
-    ts = slugify(datetime.now().timestamp())
-    if len(case_list) == 1:
-        return case_list[0].slug + '-' + ts + '.zip'
-
-    return '{0}_{1}_{2}.zip'.format(case_list[0].slug[:20], case_list[-1].slug[:20], ts)
-
-
-def create_download_response(filename='', content=[]):
-    # tmp file backed by RAM up to 10MB, then stored to disk
-    tmp_file = tempfile.SpooledTemporaryFile(10 * 2 ** 20)
-    with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as archive:
-        for item in content:
-            archive.writestr(item['slug'] + '.json', json.dumps(item))
-
-    # Reset file pointer
-    tmp_file.seek(0)
-
-    response = FileResponse(FileWrapper(tmp_file), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-    return response
+from config.logging import logger
 
 
 def send_new_signup_email(request, user):
     token_url = reverse('verify-user', kwargs={'user_id':user.pk, 'activation_nonce': user.get_activation_nonce()}, scheme="https")
     send_mail(
         'Caselaw Access Project: Verify your email address',
-        "Please click here to verify your email address: \n\n%s \n\nIf you believe you have received this message in error, please ignore it." % token_url,
+        "Please click here to verify your email address: \n\n%s \n\nIf you received this message in error, please ignore it." % token_url,
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False, )
@@ -91,7 +62,7 @@ def wrap_user(request, user):
     """
     def inner_wrap_user():
         wrapped_user = TrackingWrapper(user)
-        wrapped_user.ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+        wrapped_user.ip_address = request.META.get('HTTP_CF_CONNECTING_IP')
         return wrapped_user
     return SimpleLazyObject(inner_wrap_user)
 
@@ -159,3 +130,42 @@ def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **e
 
     return out
 
+
+def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
+    """ filters out terms in 'item' with the {'original_text': and 'replacement_text' }
+    >>> apply_replacements("Hello, what's your name?", (('name', 'game'), ('Hello', 'Wow')))
+    "[ Wow ], what's your [ game ]?"
+
+    >>> apply_replacements({"test": "Hello, what's your name?" }, (('name', 'game'), ('Hello', 'Wow')))
+    {'test': "[ Wow ], what's your [ game ]?"}
+    """
+
+    if not replacements:
+        return item
+    replacements = list(replacements)
+
+    if isinstance(item, str):
+        for replacement in replacements:
+            item = item.replace(replacement[0], prefix + replacement[1] + suffix)
+    elif isinstance(item, list):
+        item = [apply_replacements(inner_item, replacements) for inner_item in item]
+    elif isinstance(item, dict):
+        item = {name: apply_replacements(inner_item, replacements) for (name, inner_item) in item.items()}
+    elif not item:
+        return item
+    else:
+        raise Exception("Unexpected redaction format")
+    return item
+
+
+def api_request(request, viewset, method, url_kwargs={}, get_params={}):
+    """
+        Call an API route on behalf of the user request. Examples:
+            data = api_request(request, CaseDocumentViewSet, 'list', get_params={'q': 'foo'}).data
+            data = api_request(request, CaseDocumentViewSet, 'retrieve', url_kwargs={'id': '123'}).data
+    """
+    api_request = copy(request)
+    api_request.method = 'GET'
+    api_request.GET = QueryDict(mutable=True)
+    api_request.GET.update(get_params)
+    return viewset.as_view({'get': method})(api_request, **url_kwargs)

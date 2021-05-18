@@ -1,6 +1,8 @@
 from copy import deepcopy
 
 import pytest
+
+from django.conf import settings
 from django.http import SimpleCookie
 
 from capapi.resources import api_reverse  # noqa -- this is dynamically used by test_cache_headers
@@ -10,47 +12,46 @@ from capdb.models import CaseMetadata
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("view_name, cache_clients, get_kwargs", [
-    # docs pages are cached for both logged in and logged out, but not for token auth
-    ("home",                ["client", "auth_client"],                        {}),
+    # docs pages are cached for both logged in and logged out
+    ("home",                ["client", "auth_client", "token_auth_client"],     {}),
 
     # pages with csrf tokens are not cached for logged out or logged in
-    ("login",               [],                                               {}),
-    ("register",            [],                                               {}),
+    ("login",               [],                                                 {}),
+    ("register",            [],                                                 {}),
 
     # login-only pages are not cached for either (because we don't cache redirects for logged-out user)
-    ("user-details",        [],                                               {}),
+    ("user-details",        [],                                                 {}),
 
     # api views are cached for both logged in and logged out
-    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"reverse_func": "api_reverse"}),
-    ("cases-list",   ["client", "auth_client", "token_auth_client"],   {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
+    ("cases-list",          ["client", "auth_client", "token_auth_client"],     {"reverse_func": "api_reverse"}),
+    ("cases-list",          ["client", "auth_client", "token_auth_client"],     {"HTTP_ACCEPT": "text/html", "reverse_func": "api_reverse"}),
 
     # api views that depend on the user account are cached only for logged out
-    ("cases-list",   ["client"],                                       {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
+    ("cases-list",          ["client"],                                         {"data": {"full_case": "true"}, "reverse_func": "api_reverse"}),
 
     # bulk list cacheable only for logged-out users
-    ("bulk-download",       ["client"],                                       {}),
+    ("bulk-download",       ["client"],                                         {}),
 
     # bulk downloads are cached if public
-    ("caseexport-download", ["client", "auth_client", "token_auth_client"],   {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
+    ("caseexport-download", ["client", "auth_client", "token_auth_client"],     {"reverse_args": ["fixture_case_export"], "reverse_func": "api_reverse"}),
     # bulk downloads are not cached if private
-    ("caseexport-download", [],                                               {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
+    ("caseexport-download", [],                                                 {"reverse_args": ["fixture_private_case_export"], "reverse_func": "api_reverse"}),
 ])
 @pytest.mark.parametrize("client_fixture_name", ["client", "auth_client", "token_auth_client"])
-def test_cache_headers(ingest_elasticsearch, request, settings,
+def test_cache_headers(request, elasticsearch,
                        client_fixture_name,
                        view_name, cache_clients, get_kwargs):
 
     # set up variables
     get_kwargs = deepcopy(get_kwargs)  # avoid modifying between tests
-    settings.SET_CACHE_CONTROL_HEADER = True
-    client = request.getfuncargvalue(client_fixture_name)
+    client = request.getfixturevalue(client_fixture_name)
 
     # Resolve reverse_args. For example, if we see "fixture_case_export" we will fetch the "case_export" fixture
     # and insert its ID as an argument to reverse().
     reverse_args = get_kwargs.pop('reverse_args', [])
     for i, arg in enumerate(reverse_args):
         if arg.startswith("fixture_"):
-            reverse_args[i] = request.getfuncargvalue(arg.split('_', 1)[1]).pk
+            reverse_args[i] = request.getfixturevalue(arg.split('_', 1)[1]).pk
 
     # reverse from the view name, using get_kwargs['reverse_func'] or reverse() by default
     reverse_func = get_kwargs.pop('reverse_func', 'reverse')
@@ -70,27 +71,23 @@ def test_cache_headers(ingest_elasticsearch, request, settings,
     )
 
 @pytest.mark.django_db
-def test_cache_case_cite(client, whitelisted_case_document, non_whitelisted_case_document, settings):
+def test_cache_case_cite(client, unrestricted_case, restricted_case, elasticsearch):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
-    settings.SET_CACHE_CONTROL_HEADER = True
-
-    url = CaseMetadata.objects.get(pk=whitelisted_case_document.id).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=unrestricted_case.id).get_frontend_url()
 
     # whitelisted case is cached
     response = client.get(url)
-    check_response(response, content_includes=whitelisted_case_document.name)
+    check_response(response, content_includes=unrestricted_case.name)
     assert is_cached(response)
 
     # non-whitelisted case not cached
-    url = CaseMetadata.objects.get(pk=non_whitelisted_case_document.id).get_frontend_url()
+    url = CaseMetadata.objects.get(pk=restricted_case.id).get_frontend_url()
     response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': url}, follow=True)
-    check_response(response, content_includes=non_whitelisted_case_document.name)
+    check_response(response, content_includes=restricted_case.name)
     assert not is_cached(response)
 
 @pytest.mark.django_db
-def test_cache_headers_with_bad_auth(client, case, settings):
-    settings.SET_CACHE_CONTROL_HEADER = True
-
+def test_cache_headers_with_bad_auth(client, case):
     # visiting homepage when logged out is cached ...
     response = client.get(reverse('home'))
     assert is_cached(response)

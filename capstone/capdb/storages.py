@@ -1,7 +1,9 @@
 import csv
 import gzip
 import hashlib
+import shutil
 import traceback
+import types
 from contextlib import contextmanager
 
 import msgpack
@@ -15,12 +17,16 @@ import rocksdb
 from django.conf import settings
 from django.core.files import File
 from django.core.files.storage import FileSystemStorage, Storage
+from django.utils.deconstruct import deconstructible
 from django.utils.functional import SimpleLazyObject
+from pipeline.storage import PipelineMixin
 from rocksdb.interfaces import MergeOperator
 from storages.backends.s3boto3 import S3Boto3Storage
+from whitenoise.storage import CompressedManifestStaticFilesStorage
 
 
 class CapStorageMixin(object):
+
     def relpath(self, path):
         return os.path.relpath(path, self.location)
 
@@ -37,18 +43,6 @@ class CapStorageMixin(object):
             deployments doesn't result in a new migration.
         """
         return ("django.core.files.storage.FileSystemStorage", [], {})
-
-    def isdir(self, path):
-        return os.path.isdir(self.path(path))
-
-    def isfile(self, path):
-        return os.path.isfile(self.path(path))
-
-    def getsize(self, path):
-        return os.path.getsize(self.path(path))
-
-    def getmtime(self, path):
-        return os.path.getmtime(self.path(path))
 
 
 class CapS3Storage(CapStorageMixin, S3Boto3Storage):
@@ -139,7 +133,10 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
         if partial_path:
             search_path, prefix = os.path.split(search_path)
 
-        directories, files = self.listdir(search_path)
+        try:
+            directories, files = self.listdir(search_path)
+        except FileNotFoundError:
+            return
         for file_name in itertools.chain(directories, files):
             if partial_path and not file_name.startswith(prefix):
                 continue
@@ -148,7 +145,7 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
                 continue
             yield os.path.join(search_path, file_name)
 
-    def iter_files_recursive(self, path="", with_md5=False):
+    def iter_files_recursive(self, path="", with_md5=False, with_dirs=False):
         """
             Yield each file in path or subdirectories.
             Order is not specified.
@@ -163,10 +160,71 @@ class CapFileStorage(CapStorageMixin, FileSystemStorage):
                     yield rel_path, hashlib.md5(self.contents(rel_path, 'rb')).hexdigest()
                 else:
                     yield rel_path
+            if with_dirs:
+                for file_name in dirs:
+                    # skip hidden files starting with .
+                    if file_name.startswith('.'):
+                        continue
+                    rel_path = self.relpath(os.path.join(root, file_name)).lstrip('/')
+                    yield rel_path
 
     def tag_file(self, path, key, value):
         """ For file storage, tags don't work. """
         return False
+
+    def isdir(self, path):
+        return os.path.isdir(self.path(path))
+
+    def isfile(self, path):
+        return os.path.isfile(self.path(path))
+
+    def islink(self, path):
+        return os.path.islink(self.path(path))
+
+    def realpath(self, path):
+        return self.relpath(self.path(os.path.realpath(self.path(path))))
+
+    def stat(self, path, *args, **kwargs):
+        return os.stat(self.path(path), *args, **kwargs)
+
+    def rmtree(self, path):
+        return shutil.rmtree(self.path(path))
+
+    def mkdir(self, path, *args, **kwargs):
+        return Path(self.path(path)).mkdir(*args, **kwargs)
+
+    def symlink(self, src, dst, *args, **kwargs):
+        return os.symlink(src, self.path(dst))
+
+
+@deconstructible
+class DownloadOverlayStorage(Storage):
+    """
+        Storage that shows the files in BASE_DIR/downloads/ as an overlay over the files in the underlying storage.
+        Files in overlay will cached; restart Django to reload.
+    """
+    def __init__(self, *args, **kwargs):
+        overlay_storage = CapFileStorage(location=os.path.join(settings.BASE_DIR, 'downloads'))
+        underlay_storage = CapFileStorage(*args, **kwargs)
+
+        # functions that check for existence of the file in the overlay, and otherwise return the result for the underlying storage
+        overlay_paths = set(p.strip('/') for p in overlay_storage.iter_files_recursive(with_dirs=True))
+        for method_name in ('isdir', 'isfile', 'islink', 'relpath', 'realpath', 'path', 'open', 'size', 'get_modified_time', 'stat', 'contents', 'exists'):
+            def method(self, path, *args, overlay_method=getattr(overlay_storage, method_name), underlay_method=getattr(underlay_storage, method_name), **kwargs):
+                if path.strip('/') in overlay_paths:
+                    return overlay_method(path, *args, **kwargs)
+                return underlay_method(path, *args, **kwargs)
+            setattr(self, method_name, types.MethodType(method, self))
+
+        # functions that return chained results for both storages
+        for method_name in ('iter_files', 'iter_files_recursive'):
+            def method(self, *args, overlay_method=getattr(overlay_storage, method_name), underlay_method=getattr(underlay_storage, method_name), **kwargs):
+                return set(itertools.chain(overlay_method(*args, **kwargs), underlay_method(*args, **kwargs)))
+            setattr(self, method_name, types.MethodType(method, self))
+
+        # functions that go directly to underlay storage
+        for method_name in ('url', 'mkdir', 'symlink', 'rmtree', 'save'):
+            setattr(self, method_name, getattr(underlay_storage, method_name))
 
 
 class CaptarFile(File):
@@ -507,3 +565,11 @@ class NgramRocksDB(KVDB):
 # using SimpleLazyObject lets our tests mock the wrapped object after import
 ngram_kv_store = SimpleLazyObject(lambda: NgramRocksDB())
 ngram_kv_store_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))
+
+
+### static asset storages ###
+
+class WhitenoisePipelineStorage(PipelineMixin, CompressedManifestStaticFilesStorage):
+    """Combined storage for whitenoise and django-pipeline."""
+    # avoid ValueError("Missing staticfiles manifest entry ...") when django can't find un-hashed files in staticfiles.json
+    manifest_strict = False

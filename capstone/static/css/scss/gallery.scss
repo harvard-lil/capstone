@@ -1,14 +1,5 @@
 @import 'variables';
-@import 'footer/magenta';
 @import 'base.scss';
-
-@include media-breakpoint-down(md) {
-  .dropdown-item {
-    background-color: $color-white;
-    color: $color-black !important;
-    border-bottom: $border-width solid $color-black;
-  }
-}
 
 .main-content {
   padding-top: 1.25rem !important;
@@ -36,8 +27,11 @@ h3.simple-subtitle {
 
 img.gallery-thumbnail {
   border-radius: 50%;
-  border: 1px solid $color-gray;
+  border: 1px solid #D9D9D9;
   max-width: 120px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
 }
 
 /* project specific style */
@@ -122,7 +116,7 @@ img.gallery-thumbnail {
     }
   }
 
-  .state.state-selected {
+  .state-selected {
     fill: $color-magenta !important;
   }
 

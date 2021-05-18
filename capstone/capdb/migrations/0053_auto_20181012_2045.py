@@ -4,8 +4,7 @@ from django.db import migrations
 
 
 # the creation of this jurisdiction was initially accomplished
-# here, but the canonical place for it in new installations is in
-# scripts.ingest_tt_data.populate_jurisdiction
+# here, but it now comes from capdb/fixtures/jurisdiction
 def create_tribal_jurisdiction(apps, schema_editor):
     Jurisdiction = apps.get_model("capdb", "Jurisdiction")
     if not Jurisdiction.objects.filter(name="Tribal").exists():
@@ -18,5 +17,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_tribal_jurisdiction, migrations.RunPython.noop),
+        # migrations.RunPython(create_tribal_jurisdiction, migrations.RunPython.noop),
     ]

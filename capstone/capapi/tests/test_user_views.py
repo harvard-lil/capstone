@@ -17,7 +17,7 @@ from capweb.helpers import reverse
 ### register, verify email address, login ###
 
 @pytest.mark.django_db
-def test_registration_flow(client, non_whitelisted_case_document):
+def test_registration_flow(client, restricted_case, elasticsearch, email_blocklist_factory):
 
     # can't register without agreeing to TOS
     email = 'new_user@gmail.com'
@@ -32,8 +32,15 @@ def test_registration_flow(client, non_whitelisted_case_document):
     response = client.post(reverse('register'), register_kwargs)
     check_response(response, content_includes="This field is required.")
 
-    # can register
+    # can't register with blocked email
+    email_blocklist_factory(domain='blocked.com')
     register_kwargs['agreed_to_tos'] = 'on'
+    register_kwargs['email'] = 'foo@blocked.com'
+    response = client.post(reverse('register'), register_kwargs)
+    check_response(response, content_includes="This email address is invalid.")
+
+    # can register
+    register_kwargs['email'] = email
     response = client.post(reverse('register'), register_kwargs)
     check_response(response)
     user = CapUser.objects.get(email=email)
@@ -57,7 +64,7 @@ def test_registration_flow(client, non_whitelisted_case_document):
     verify_email = mail.outbox[0].body
     verify_url = re.findall(r'https://\S+', verify_email)[0]
     response = client.get(verify_url)
-    check_response(response, content_includes="Thank you for verifying")
+    check_response(response, content_includes="We've verified your email address.")
     user.refresh_from_db()
     assert user.email_verified
     assert user.auth_token
@@ -71,8 +78,11 @@ def test_registration_flow(client, non_whitelisted_case_document):
     check_response(response, status_code=302)
 
     # can fetch blacklisted case
-    response = client.get(api_reverse('cases-detail', kwargs={'id': non_whitelisted_case_document.id}), {'full_case':'true'})
+    response = client.get(api_reverse('cases-detail', kwargs={'id': restricted_case.id}), {'full_case':'true'})
     check_response(response, content_includes="ok")
+
+    # logout to attempt new registration
+    client.logout()
 
     # can't register with similar email addresses
     response = client.post(reverse('register'), {
@@ -116,6 +126,39 @@ def test_resend_verification(client, mailoutbox):
     # same verification email sent
     assert mailoutbox[0].body == mailoutbox[1].body
 
+@pytest.mark.django_db
+def test_registration_after_login(auth_user, auth_client):
+    response = auth_client.get(reverse('user-details'))
+    check_response(response)
+
+    # try going to the registration page
+    # get directed to the details page instead
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=302)
+    assert response.url == reverse('user-details')
+
+    # make sure registration is still reachable after logging out
+    auth_client.logout()
+    response = auth_client.get(reverse('register'))
+    check_response(response, status_code=200)
+    assert "<title>Register | Caselaw Access Project</title>" in response.content.decode()
+
+@pytest.mark.django_db
+def test_redirect_following_login(auth_user, auth_client):
+    """if ?next=url is not set, user gets directed to '/' after login"""
+    auth_client.logout()
+    response = auth_client.get(reverse('login'))
+    check_response(response)
+    password = 'pass'
+    assert auth_user.check_password(password)
+
+    response = auth_client.post(reverse('login'), {
+        'username': auth_user.email,
+        'password': password})
+
+    check_response(response, status_code=302)
+    assert response.url == '/'
+
 
 ### view account details ###
 
@@ -136,7 +179,7 @@ def test_view_user_details(auth_user, auth_client):
     response = auth_client.get(reverse('user-details'))
     check_response(response)
     content = re.sub(r'\s+', ' ', response.content.decode()).strip()
-    assert "Unmetered access:" in content
+    assert "Unmetered access" in content
 
 ### test reset api key ###
 
@@ -186,7 +229,7 @@ def test_change_api_key(auth_user, auth_client, client, mailoutbox):
 ])
 @pytest.mark.django_db
 def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
-    client = request.getfuncargvalue(client_fixture)
+    client = request.getfixturevalue(client_fixture)
     public_url = api_reverse('caseexport-download', args=[case_export.pk])
     private_url = api_reverse('caseexport-download', args=[private_case_export.pk])
 
@@ -213,46 +256,13 @@ def check_zip_response(response):
 ])
 @pytest.mark.django_db
 def test_case_export_download(request, client_fixture, export_fixture, status_code):
-    client = request.getfuncargvalue(client_fixture)
-    export = request.getfuncargvalue(export_fixture)
+    client = request.getfixturevalue(client_fixture)
+    export = request.getfixturevalue(export_fixture)
     response = client.get(api_reverse('caseexport-download', args=[export.pk]))
     if status_code == 200:
         check_zip_response(response)
     else:
         check_response(response, status_code=status_code)
-
-@pytest.mark.parametrize("client_fixture, export_fixture, range_header, status_code, size, content", [
-    ("client", "case_export", "bytes=5-6", 206, 2, "zi"),
-    ("client", "case_export", "bytes=5-", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=5-15", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=5-100", 206, 11, "zip content"),
-    ("client", "case_export", "bytes=-6", 206, 6, "ontent"),
-    ("client", "case_export", "bytes=0-6", 206, 7, "fake zi"),
-    ("client", "case_export", "bytes=0-", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-100", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-15", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=0-14", 206, 15, "fake zip conten"),
-    ("client", "case_export", "bytes=10-0", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=20-", 416, 16, "fake zip content"),
-    ("client", "case_export", "bytes=-20", 416, 16, "fake zip content"),
-    ("client", "case_export", "bytes=-", 200, 16, "fake zip content"),
-    ("client", "case_export", "bytes=hello", 200, 16, "fake zip content"),
-    ("client", "case_export", "hello=world", 200, 16, "fake zip content"),
-])
-@pytest.mark.django_db
-def test_ranged_case_export_download(request, client_fixture, export_fixture, range_header, status_code, size, content, settings):
-    settings.RANGE_REQUEST_FEATURE = True
-    client = request.getfuncargvalue(client_fixture)
-    export = request.getfuncargvalue(export_fixture)
-    response = client.get(api_reverse('caseexport-download', args=[export.pk]),
-                          HTTP_RANGE=range_header)
-    response_content = list(response.streaming_content)[0]
-    if status_code in [200, 416]:
-        check_response(response, status_code=status_code, content_type='application/zip')
-    else:
-        assert response.status_code == status_code
-        assert len(response_content) == size
-        assert response_content == bytes(content, 'utf8')
 
 ### research access request ###
 

@@ -8,20 +8,21 @@
           {{result.name_abbreviation}}
         </a>
       </div>
-      <div class="col-md-3 decision-date">
+      <div v-if="result.decision_date"
+           class="col-md-3 decision-date">
         {{ formatDate(result.decision_date) }}
       </div>
     </div>
-    <div class="row">
+    <div class="row metadata-row">
       <span v-for="(citation, index) in result.citations"
             v-bind:key="citation.cite"
             class="result-citation">
         {{ citation.cite }}<span v-if="index+1 < result.citations.length">, </span>
       </span>
-      <span class="court" target="_blank"
+      <span class="court"
             v-if="result.court">
       &nbsp;&middot;
-        <a class="simple" :href="result.court.url">
+        <a class="simple" target="_blank" :href="result.court.url">
           {{ result.court.name }}
         </a>
       </span>
@@ -30,6 +31,12 @@
         <a class="simple" target="_blank" :href="result.jurisdiction.url">
           {{result.jurisdiction.name_long}}
         </a>
+      </span>
+    </div>
+    <div class="row" v-if="result.preview.length > 0">
+      <span class="previews">
+        <span class="preview_set_elipsis"> ... </span><span
+            v-for="(preview, index) in result.preview" v-bind:key="index" class="preview" v-html="preview"></span><br>
       </span>
     </div>
   </li>

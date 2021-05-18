@@ -1,4 +1,7 @@
 import os
+import sys
+from copy import deepcopy
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -10,6 +13,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
 ADMINS = [('Caselaw Access Project', 'info@case.law')]
 
 AUTH_USER_MODEL = 'capapi.CapUser'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'  # stick to pre-Django 3.2 default for now; 3.2 moved to BigAutoField default
 LOGIN_REDIRECT_URL = '/'
 
 # Application definition
@@ -23,22 +27,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'django.contrib.humanize',
 
     'django_filters',
     'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
-    'compressor',
-    'rest_framework_filters',
     'pipeline',
 
     # ours
     'capdb',
-    'tracking_tool',
     'capapi',
     'django_sql_trace',
     'capweb',
     'cite',
+    'user_data',
+    'labs',
 
     # 3rd party
     'storages',  # http://django-storages.readthedocs.io/en/latest/index.html
@@ -58,7 +62,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_PAGINATION_CLASS': 'capapi.pagination.CapPagination',
     'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework_filters.backends.RestFrameworkFilterBackend',
+        'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'capapi.authentication.TokenAuthentication',
@@ -88,12 +92,11 @@ MIDDLEWARE = [
     # - WhiteNoiseMiddleware, because whitenoise already sets cache headers on static assets
     'capapi.middleware.cache_header_middleware',
 
+    'capapi.middleware.GZipJsonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # custom CommonMiddleware for adding CORS header in API
     'capapi.middleware.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'capapi.middleware.AuthenticationMiddleware',
-    'capapi.middleware.RangeRequestMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -127,12 +130,13 @@ API_HOST_OVERRIDE = None
 # useful for pointing dev JS at prod API for testing. E.g., add this to settings.py:
 # API_HOST_OVERRIDE = 'https://api.case.law'
 
+DOCS_SHOW_DRAFTS = False
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'capapi', 'templates'),
-                 os.path.join(BASE_DIR, 'capweb', 'templates'),
-                 os.path.join(BASE_DIR, 'capbrowse', 'templates')], # required by DRF for some reason
+                 os.path.join(BASE_DIR, 'capweb', 'templates')], # required by DRF for some reason
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -154,7 +158,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-USE_TEST_TRACKING_TOOL_DB = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -172,16 +175,20 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
-    'tracking_tool': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'test_data/tracking_tool.sqlite'),
-    }
+    'user_data': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'cap_user_data',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '',
+    },
 }
 
 # make sure tracking_tool and capdb apps use the correct DBs:
 DATABASE_ROUTERS = [
-    'tracking_tool.routers.TrackingToolDatabaseRouter',
     'capdb.routers.CapDBRouter',
+    'user_data.routers.UserDataRouter',
 ]
 
 # Password validation
@@ -224,7 +231,6 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
     'pipeline.finders.PipelineFinder',
 )
 
@@ -232,123 +238,30 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 PIPELINE = {
     'COMPILERS': (
         'libsasscompiler.LibSassCompiler',
     ),
     'STYLESHEETS': {
-        'base': {
+        k: {
             'source_filenames': (
-                'css/scss/base.scss',
+                f'css/scss/{k}.scss',
             ),
-            'output_filename': 'base.css'
-        },
-        'index': {
-            'source_filenames': (
-                'css/scss/index.scss',
-            ),
-            'output_filename': 'index.css'
-        },
-        'about': {
-            'source_filenames': (
-                'css/scss/about.scss',
-            ),
-            'output_filename': 'about.css'
-        },
-        'bulk': {
-            'source_filenames': (
-                'css/scss/bulk.scss',
-            ),
-            'output_filename': 'bulk.css'
-        },
-        'gallery': {
-            'source_filenames': (
-                'css/scss/gallery.scss',
-            ),
-            'output_filename': 'gallery.css'
-        },
-        'contact': {
-            'source_filenames': (
-                'css/scss/contact.scss',
-            ),
-            'output_filename': 'contact.css'
-        },
-        'docs': {
-            'source_filenames': (
-                'css/scss/docs.scss',
-            ),
-            'output_filename': 'docs.css'
-        },
-        'registration': {
-            'source_filenames': (
-                'css/scss/registration.scss',
-            ),
-            'output_filename': 'registration.css'
-        },
-        'api': {
-            'source_filenames': (
-                'css/scss/api.scss',
-            ),
-            'output_filename': 'api.css'
-        },
-
-        'case': {
-            'source_filenames': {
-                'css/scss/case.scss',
+            'output_filename': f'{k}.css',
+            # avoid missing-template-variable test failure from pytest-django:
+            'extra_context': {
+                'media': 'all',
             },
-            'output_filename': 'case.css'
-        },
-        'search': {
-            'source_filenames': {
-                'css/scss/search.scss',
-            },
-            'output_filename': 'search.css'
-        },
-        'view_metadata': {
-            'source_filenames': {
-                'css/scss/view_metadata.scss',
-            },
-            'output_filename': 'view_metadata.css'
-        },
-        'trends': {
-            'source_filenames': {
-                'css/scss/trends.scss',
-            },
-            'output_filename': 'trends.css'
-        },
-        'cite': {
-            'source_filenames': {
-                'css/scss/cite.scss',
-            },
-            'output_filename': 'cite.css'
-        },
-        'file_download': {
-            'source_filenames': {
-                'css/scss/file_download.scss',
-            },
-            'output_filename': 'file_download.css'
-        }
+        } for k in [
+            # Example: adding 'base' here means there is a file named static/css/scss/base.scss that can be
+            # embedded with {% stylesheet "base" %}:
+            'base', 'index', 'about', 'bulk', 'gallery', 'contact', 'docs', 'registration', 'api', 'case_editor',
+            'case', 'case_cited_by', 'search', 'view_metadata', 'trends', 'cite', 'file_download', 'cite-grid',
+            'unified_docs', 'fetch', 'labs', 'labs-chronolawgic'
+        ]
     },
-    # These are not yet converted to vue/webpack:
-    # 'JAVASCRIPT': {
-    #     'viz_totals': {
-    #         'source_filenames': (
-    #             'js/chart.js',
-    #             'js/color-blend.js',
-    #             'js/viz-totals.js',
-    #         ),
-    #         'output_filename': 'viz_totals.js'
-    #     },
-    #     'viz_details': {
-    #         'source_filenames': (
-    #             'js/chart.js',
-    #             'js/viz-details.js',
-    #         ),
-    #         'output_filename': 'viz_details.js'
-    #     },
-    # },
 
     # avoid compressing assets for now
     'CSS_COMPRESSOR': None,
@@ -420,11 +333,12 @@ STORAGES = {
         }
     },
     'download_files_storage': {
-        'class': 'CapFileStorage',
+        'class': 'DownloadOverlayStorage',
         'kwargs': {
             'location': os.path.join(BASE_DIR, 'test_data/downloads'),
+            'base_url': 'http://case.test:8000/download/',
         }
-    }
+    },
 }
 
 INVENTORY = {
@@ -432,6 +346,8 @@ INVENTORY = {
     'manifest_path_prefix': 'inventory/',
     'private_manifest_path_prefix': 'inventory/',
 }
+
+GEOIP_PATH = os.path.join(BASE_DIR, 'test_data/GeoLite2-City.mmdb')
 
 ### CELERY ###
 from celery.schedules import crontab
@@ -443,6 +359,10 @@ CELERY_BEAT_SCHEDULE = {
     'handle-site-limits': {
         'task': 'capapi.tasks.daily_site_limit_reset_and_report',
         'schedule': crontab(hour=0, minute=0),
+    },
+    'update-elasticsearch': {
+        'task': 'capdb.tasks.update_elasticsearch_from_queue',
+        'schedule': crontab(),
     },
 }
 CELERY_TIMEZONE = 'UTC'
@@ -484,65 +404,47 @@ REDIS_DEFAULT_DB = 0
 REDIS_INGEST_DB = 1         # database for temporary data created during the S3 ingest process
 REDIS_DJANGO_CACHE_DB = 2   # database for django's cache framework
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'api': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/tmp/capapi.log',
-            'delay': True
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'capapi.reporter.CustomAdminEmailHandler'
-        },
+# logging
+# import and modify Django's default logging so we can cleanly override its default behavior --
+# see https://lincolnloop.com/blog/disabling-error-emails-django/ for discussion of this approach
+from django.utils.log import DEFAULT_LOGGING
+LOGGING = deepcopy(DEFAULT_LOGGING)
+LOGGING['handlers'] = {
+    **LOGGING['handlers'],
+    # log everything to console on both dev and prod
+    'console': {
+        'level': 'DEBUG',
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
     },
-    'loggers': {
-        'capapi': {
-            'handlers': ['api'],
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['console'],
-            'propagate': True,
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-        # silence boto3 info logging -- see https://github.com/boto/boto3/issues/521
-        'boto3': {
-            'level': 'WARNING',
-        },
-        'botocore': {
-            'level': 'WARNING',
-        },
-        'nose': {
-            'level': 'WARNING',
-        },
-        's3transfer': {
-            'level': 'WARNING',
-        },
+    # custom error email template
+    'mail_admins': {
+        'level': 'ERROR',
+        'filters': ['require_debug_false'],
+        'class': 'capapi.reporter.CustomAdminEmailHandler'
     },
-    'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s module=%(module)s, '
-            'process_id=%(process)d, %(message)s'
-        }
+}
+LOGGING['loggers'] = {
+    **LOGGING['loggers'],
+    # only show warnings for third-party apps
+    '': {
+        'level': 'WARNING',
+        'handlers': ['console', 'mail_admins'],
     },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+    # disable django's built-in handlers to avoid double emails
+    'django': {'level': 'WARNING'},
+    'celery': {'level': 'INFO'},
+    # show info for our first-party apps
+    **{
+        app_name: {'level': 'INFO'}
+        for app_name in ('capapi', 'capdb', 'capweb', 'cite', 'config', 'user_data', 'labs')
+    },
+}
+LOGGING['formatters'] = {
+    **LOGGING['formatters'],
+    'verbose': {
+        'format': '%(asctime)s [%(process)d] [%(levelname)s] %(pathname)s:%(lineno)s %(message)s',
+        'datefmt': '%Y-%m-%d %H:%M:%S'
     },
 }
 
@@ -562,22 +464,28 @@ CELERY_RESOURCE_LIMITS = [
 
 # security
 SECURE_CONTENT_TYPE_NOSNIFF = True
+MAKE_HTTPS_URLS = True
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+]
 
 SILENCED_SYSTEM_CHECKS = [
     "models.E004"   # For our history tables, the "id" field should not be a primary key. This disables the Django system
                     # check that required "id" fields to be primary keys.
 ]
+SIMPLE_HISTORY_FILEFIELD_TO_CHARFIELD = True
 
 # cache headers
 SET_CACHE_CONTROL_HEADER = False  # whether to set a cache-control header on all cacheable views
-CACHE_CONTROL_DEFAULT_MAX_AGE = 60*60*24  # length of time to cache pages by default, in seconds
+CDN_CACHE_LENGTH = 60*60*24  # for cacheable responses, how long to cache on CDN (Cloudflare)
+BROWSER_CACHE_LENGTH = 60*60  # for cacheable responses, how long to cache in browser
 
 # settings for scripts/compress_volumes.py
 COMPRESS_VOLUMES_THREAD_COUNT = 20   # if < 2, no thread pool will be used
 COMPRESS_VOLUMES_SKIP_EXISTING = True  # don't process volumes that already exist in the dest dir; if False, will create additional files with random suffixes
 
-# override django-storages default
-AWS_DEFAULT_ACL = 'private'
+# override django-storages default -- probably can be removed in django-storages > 1.9
+AWS_DEFAULT_ACL = None
 
 # set the default login
 LOGIN_URL = 'login'
@@ -588,30 +496,38 @@ NLTK_PATH = [os.path.join(SERVICES_DIR, 'nltk')]
 NGRAM_THREAD_COUNT = 4
 
 # feature flags
-FULL_TEXT_FEATURE = True
-NEW_RESEARCHER_FEATURE = True
-HARVARD_RESEARCHER_FEATURE = True
-RANGE_REQUEST_FEATURE = False
 SCREENSHOT_FEATURE = False
+GEOLOCATION_FEATURE = False
 
-HARVARD_IP_RANGES = """
-    12.0.48.0/20
-    12.6.208.0/20
-    65.112.0.0/20
-    67.134.204.0/22
-    128.103.0.0/16
-    134.174.0.0/16
-    140.247.0.0/16
-    192.5.66.0/24
-    192.54.223.0/24
-    192.131.102.0/24
-    199.94.0.0/19
-    199.94.32.0/20
-    199.94.48.0/24
-    199.94.60.0/22
-    206.191.184.0/21
-    206.253.200.0/21
-""".split()
+# generated by `fab print_harvard_ip_ranges`
+HARVARD_IP_RANGES = [
+    # AS1742 Harvard University
+    '12.0.48.0/20',
+    '12.6.208.0/20',
+    '65.112.0.0/20',
+    '67.134.204.0/22',
+    '128.103.0.0/16',
+    '131.142.0.0/16',
+    '140.247.0.0/16',
+    '140.247.111.0/24',
+    '140.247.152.0/24',
+    '140.247.174.0/24',
+    '140.247.236.0/24',
+    '192.5.66.0/24',
+    '192.54.223.0/24',
+    '192.131.102.0/24',
+    '199.94.60.0/22',
+    '206.191.184.0/21',
+    '206.253.200.0/21',
+    '2607:fb60::/32',
+    '2620:32:8000::/48',
+    # AS13315 Harvard Business School
+    '199.94.0.0/19',
+    '199.94.32.0/20',
+    '199.94.48.0/24',
+    # AS40127 Longwood Medical and Academic Area (LMA)
+    '134.174.0.0/16',
+]
 
 WEBPACK_LOADER = {
     'DEFAULT': {
@@ -633,18 +549,14 @@ ELASTICSEARCH_DSL={
         'hosts': 'localhost:9200'
     },
 }
+ELASTICSEARCH_DSL_AUTO_REFRESH = False  # don't force a reindex on every write to ES; let ES do it routinely instead
 MAINTAIN_ELASTICSEARCH_INDEX = True  # whether to update index when changing cases
 
 ELASTICSEARCH_INDEXES={
     'cases_endpoint': 'cases',
+    'resolve_endpoint': 'resolve',
 }
-
-# for views decorated with @password_protected_page('some_key')
-PASSWORD_PROTECTED_PAGES = {
-    # 'some_key': ['some', 'accepted', 'passwords'],
-    # 'some_key': [],  # no passwords will work
-    # 'some_key': None,  # no password will be requested
-}
+MAX_PAGE_SIZE = 10000
 
 SCREENSHOT_DEFAULT_TIMEOUT = 30  # seconds
 
@@ -655,3 +567,22 @@ MAILCHIMP = {
     'api_user': '',
     'api_key': ''
 }
+
+MAILGUN_API_KEY = ''
+VALIDATE_EMAIL_SIGNUPS = False
+
+SITE_LIMIT_REPORT = False
+
+RESOLVE_API_PREFIX = 'http://api.case.test:8000/v1/cases/'
+RESOLVE_FRONTEND_PREFIX = 'http://cite.case.test:8000'
+
+PYTHON_BINARY = sys.executable
+
+# a list of labs projects to hide
+LABS_HIDDEN = []
+
+# somewhere writable only by us
+HYPERSCAN_CACHE_DIR = os.path.join(BASE_DIR, '.hyperscan')
+
+# whether we are running tests
+TESTING = False

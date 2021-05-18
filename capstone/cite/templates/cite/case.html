@@ -1,0 +1,227 @@
+{% extends "layouts/base.html" %}
+{% load pipeline %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load redaction %}
+{% load humanize %}
+
+{% load capweb_static %}
+
+{% block base_css %}{% stylesheet 'case' %}{% endblock %}
+{% block title %}{{ full_citation|elide:db_case|striptags }}{% endblock %}
+{% block meta_description %}Full text of {{ full_citation|elide:db_case|striptags }} from the Caselaw Access Project.{% endblock %}
+{% block extra_footer %}
+  <script>
+    const templateVars = {
+      urls: {
+        search: "{% url "search" %}#/cases",
+        redact: "{% url "redact_case" db_case.id host 'cite' %}",
+        api: "{% api_url "api-root" %}v1/",
+        citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}",
+        static: "{% static "" %}",
+      },
+      fullCite: "{{ full_citation|redact:db_case }}",
+      isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
+      caseId: {{ db_case.id }}
+    };
+  </script>
+  {% render_bundle 'case' %}
+{% endblock %}
+
+{% block title_section %}
+  {% if not request.user.is_authenticated %}
+    <div class="alert alert-success m-0" role="alert">
+      Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see
+      our
+      <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an
+      account</a>
+      to use our API or apply for unlimited research scholar access.
+    </div>
+  {% endif %}
+  <div class="sr-only sr-only-focusable" tabindex="0">
+    Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
+    Press escape to return to last selected case text.
+  </div>
+    <div class="d-block d-lg-none d-xl-none">
+      {% include "cite/case_header.html" with case=db_case %}
+    </div>
+
+
+{% endblock %}
+
+{% block sidebar_menu %}
+  <aside id="sidebar-menu" tabindex="-1" aria-label="Tools">
+    <div class="content">
+      <div id="sidebar-menu-content">
+        <Sidebar>
+
+          <template v-slot:other-formats>
+            <div class="sidebar-section" id="format-section">
+              <h2 class="sidebar-title">Other formats</h2>
+              <div class="sidebar-section-contents">
+                <ul class="list-inline">
+                  {% if can_render_pdf %}
+                    <li class="list-inline-item"><a class="btn" href="{{ db_case.get_pdf_url|elide:db_case|striptags }}">PDF</a></li>
+                  {% endif %}
+                  <li class="list-inline-item" ><a class="btn" href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}">API</a></li>
+                </ul>
+              </div>
+            </div>
+          </template>
+
+          {% if similar_cases %}
+            <template v-slot:similar-cases>
+              <div class="sidebar-section" id="similar-cases">
+                <h2 class="sidebar-title">Other databases</h2>
+                <div class="sidebar-section-contents">
+                  <ul class="list-inline">
+                    {% if similar_cases.cl %}
+                      <li class="list-inline-item"><a class="btn" href="{{ similar_cases.cl.0.frontend_url }}">CourtListener</a></li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          {% if analysis %}
+            <template v-slot:analysis>
+              <div class="sidebar-section d-none d-lg-block" id="analysis-section">
+                <h3>
+                  Analysis
+                  <a class="analysis-link" href="{% url "api" %}#analysis-fields">
+                    <img class="analysis-info" alt="More information about analysis fields" src="{% static "img/icons/question.svg" %}">
+                  </a>
+                </h3>
+                <div class="sidebar-section-contents">
+                  <ul>
+                    {% if analysis.pagerank %}<li>PageRank: {% widthratio analysis.pagerank.percentile 1 100 %}%</li>{% endif %}
+                    {% if analysis.ocr_confidence %}<li>OCR confidence: {{analysis.ocr_confidence}} </li>{% endif %}
+                    {% if analysis.char_count %}<li>Character count: {{analysis.char_count|intcomma}} </li>{% endif %}
+                    {% if analysis.word_count %}<li>Word count: {{analysis.word_count|intcomma}} </li>{% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          {% if request.user.is_staff or perms.capdb.correct_ocr %}
+            <template v-slot:admin-tools>
+              <div class="sidebar-section admin-tools" id="admin-section">
+                <h3>Admin Tools</h3>
+                <div class="sidebar-section-contents">
+                  <ul>
+                    {% if request.user.is_staff %}<li><a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a></li>{% endif %}
+                    {% if perms.capdb.correct_ocr %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
+                  </ul>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
+          <template v-slot:info>
+            <div class="sidebar-section d-none d-lg-block" id="info-section">
+              <h3>What is this page?</h3>
+              <div class="sidebar-section-contents">
+                Every document on this site is part of the official caselaw of a court within the
+                United States, scanned from the collection of the Harvard Law School Library.
+                <a href="{% url "about" %}">Learn more</a>.
+              </div>
+            </div>
+          </template>
+
+        </Sidebar>
+      </div>
+    </div>
+  </aside>
+{% endblock %}
+
+{% block main_content %}
+  <div class="case-container header-margin">
+    <div class="d-none d-lg-block">
+      {% include "cite/case_header.html" with case=db_case %}
+    </div>
+    <div class="metadata text-center col-centered">
+      <div class="case-name">
+        {{ formatted_name|elide:db_case|safe }}
+      </div>
+    </div>
+
+    {% if status == 'error_auth_required' %}
+      <div class="name">
+        <div class="alert-warning text-center">
+          <h6 class="case-viewing-error">
+            You must be signed in to see the full case.
+          </h6>
+        </div>
+      </div>
+    {% elif status != 'ok' %}
+      <div class="alert-warning text-center">
+        <h6 class="case-viewing-error">Could not load case body: {{ status }}</h6>
+      </div>
+    {% else %}
+      {{ case_html|elide:db_case|safe }}
+      {% if db_case.custom_footer_message %}
+        <footer class='custom-case-footer'>{{db_case.custom_footer_message}}</footer>
+      {% endif %}
+      {% if db_case.no_index_redacted %}
+        <footer class='custom-case-footer'>Some text has been redacted.</footer>
+      {% endif %}
+      {% if db_case.no_index_elided %}
+        <footer class='custom-case-footer'>
+          Some text has been hidden for privacy from automated systems, but can be revealed by clicking the elided text.
+        </footer>
+      {% endif %}
+    {% endif %}
+  </div>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id":"{{ db_case.get_full_frontend_url }}"
+      },
+      "headline": "{{ db_case.name_abbreviation|elide:db_case|striptags }}",
+      {% if not es_case.jurisdiction.whitelisted %}
+        "hasPart": {
+          "@type": "WebPageElement",
+          "isAccessibleForFree": "False",
+          "cssSelector": ".casebody"
+        },
+      {% endif %}
+      "author": {
+        "@type": "Organization",
+        "name": "{{ es_case.court.name }}"
+        },
+      "genre": "Law",
+      "keywords": "{{ db_case.citations_by_type|join:", " }}, {{ db_case.name_abbreviation|elide:db_case|striptags }}",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Harvard Law School Library Innovation Lab",
+        "logo": {
+          "@type": "ImageObject",
+          "url":"{% capweb_static "img/lil-logo-black.png" %}",
+          "width": 693,
+          "height": 361
+        }
+      },
+      "image": "{% capweb_static "img/og_image/api.jpg" %}",
+      "datePublished": "{{ db_case.decision_date }}",
+      "dateModified": "2018-10-29",
+      "dateCreated": "{{ db_case.decision_date }}",
+      "description": "{{ formatted_name|elide:db_case|striptags }}"
+    }
+  </script>
+  {# for staff, show question mark after case citations that don't point to a CAP case #}
+  {% if request.user.is_staff %}
+    <style>
+      a.citation:not([data-case-ids]):after {
+        content: '?';
+        border: 1px gray solid;
+        color: gray;
+      }
+    </style>
+  {% endif %}
+{% endblock %}

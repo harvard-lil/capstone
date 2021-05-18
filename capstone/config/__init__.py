@@ -1,3 +1,6 @@
+# Perform any monkeypatching that has to happen before Django loads
+import config.pre_django_setup  # noqa
+
 # via http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
 # This will make sure the app is always imported when
 # Django starts so that shared_task will use this app.

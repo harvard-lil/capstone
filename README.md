@@ -1,7 +1,7 @@
 Capstone
 ========
 
-[![CircleCI](https://circleci.com/gh/harvard-lil/capstone.svg?style=svg)](https://circleci.com/gh/harvard-lil/capstone) [![codecov](https://codecov.io/gh/harvard-lil/capstone/branch/develop/graph/badge.svg)](https://codecov.io/gh/harvard-lil/capstone)
+[![test status](https://github.com/harvard-lil/capstone/actions/workflows/tests.yml/badge.svg)](https://circleci.com/gh/harvard-lil/capstone) [![codecov](https://codecov.io/gh/harvard-lil/capstone/branch/develop/graph/badge.svg)](https://codecov.io/gh/harvard-lil/capstone)
 
 This is the source code for [case.law](https://case.law), a website written by the Harvard Law School Library Innovation Lab to manage and serve court opinions. Other than several cases used for our automated testing, this repository does not contain case data. Case data may be obtained through the website.
 
@@ -103,7 +103,7 @@ Add the following to `/etc/hosts`:
 
 
 #### 1. Install global system requirements <a id="install-global-system-requirements"></a>
-- **Python 3.5.4**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.5.4.
+- **Python 3.7**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.7.
 - **MySQL**— On Macs with homebrew, the version installed with `brew install mysql` works fine. On Linux, [apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04) does the job
 - **Redis**— ([Instructions](https://redis.io/topics/quickstart))
 - **Postgres > 9.5**— ([Instructions](https://www.postgresql.org/download/))
@@ -129,9 +129,9 @@ This will make a virtualenv entitled "capstone." You can tell that you're inside
 
     (capstone)$ psql -c "CREATE DATABASE capdb;"
     (capstone)$ psql -c "CREATE DATABASE capapi;"
+    (capstone)$ psql -c "CREATE DATABASE cap_user_data;"
     (capstone)$ fab init_dev_db  # one time -- set up database tables and development Django admin user, migrate databases
-    (capstone)$ fab load_test_data  # load in our test data
-    (capstone)$ fab update_all_snippets  # make our pre-generated data snippets 
+    (capstone)$ fab ingest_fixtures  # load in our test data
 
 #### 6. Running the capstone server <a id="running-the-capstone-server"></a>
 
@@ -141,14 +141,15 @@ Capstone should now be running at 127.0.0.1:8000.
 
 ### Docker Setup <a id="docker-setup"></a>
 
-We have initial support for local development via `docker compose`. Docker setup looks like this:
+We support local development via `docker compose`. Docker setup looks like this:
 
     $ docker-compose up -d
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
+    $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE cap_user_data;"
     $ docker-compose exec web fab init_dev_db
-    $ docker-compose exec web fab load_test_data
-    $ docker-compose exec web fab update_all_snippets
+    $ docker-compose exec web fab ingest_fixtures
+    $ docker-compose exec web fab import_web_volumes
     $ docker-compose exec web fab run
     
 Capstone should now be running at 127.0.0.1:8000.
@@ -269,13 +270,11 @@ Installing the temporal_tables extension is recommended for performance. If not 
 will be installed by set_up_postgres.py; this is handy for development.
 
 ### Download real data locally <a id="download-real-data-locally"></a>
-*These instructions are likely only going to be useful for internal users with access to our production databases and data stores, but there's no reason you couldn't set up an s3 bucket with the expected structure to ingest volumes. If you have any interest in working on something that requires this, file an issue to request that we extend the documentation. We've found very few instances where our test cases did not fully meet our dev needs.*
 
-To write test data and fixtures for given volume and case:
-run the fab command `fab add_test_case` with a volume barcode
-(like `fab add_test_case:32044057891608_0001`)
-- In settings.py, you will need to point DATABASES['tracking_tool'] to the real tracking tool db
-- You will also need to point STORAGES['ingest_storage'] to real harvard-ftl-shared
+We store complete fixtures for about 1,000 cases in the case.law [downloads section](https://case.law/download/developer/).
+
+You can download and ingest all volume fixtures from that section with the command `fab import_web_volumes`,
+or ingest a single volume downloaded from that section with the command `fab import_volume:some.zip`.  
 
 ### Working with javascript <a id="working-with-javascript"></a>
 
@@ -296,13 +295,6 @@ You can then run the local javascript development server in a separate terminal 
 This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save in the background.
 Your changes should be present at http://127.0.0.1:8000.
 
-*Important:* Any time you run `yarn serve`, before committing, you must then run
-
-    $ yarn build
-
-to compile the production assets and recreate webpack-stats.json, or else tests will fail when you send a pull request.
-(If you don't change anything, you could also just undo the changes to webpack-stats.json.)
-
 Installing node and running `yarn serve` is not necessary unless you are editing javascript. On a clean checkout, or
 after shutting down `yarn serve` and running `yarn build`, the local dev server will use the compiled production
 assets. Under the hood, use of the local dev server vs. production assets is controlled by the contents of
@@ -311,9 +303,6 @@ assets. Under the hood, use of the local dev server vs. production assets is con
 *Installing packages*: You can install new packages with:
 
     $ yarn add --dev package
-
-After changing package.json or yarn.lock, you should run `fab update_docker_image_version` to ensure that docker users
-get the updates.
 
 *Yarn and docker:* `yarn` will also work inside docker-compose:
 

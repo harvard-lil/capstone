@@ -1,36 +1,46 @@
+import inspect
 from collections import defaultdict
+from datetime import datetime
+from functools import wraps
 from urllib.parse import urlparse
 from time import time
-
+from xdist.scheduler import LoadFileScheduling
 import mock
-import pytest
-from django.contrib import auth
-from django.contrib.auth.models import Group
+from moto import mock_s3
+from retry.api import retry_call
+from elasticsearch.exceptions import ConnectionError
+
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
 from django.core.management import call_command
 from django.db import connections
 import django.apps
 from django.utils.functional import SimpleLazyObject
-from moto import mock_s3
 from rest_framework.test import APIRequestFactory, APIClient
-from elasticsearch_dsl import Index as es_index
-from capapi.documents import CaseDocument
 
 # Before importing any of our code, mock capdb.storages redis clients.
 # Do this here so anything that gets imported later will get the mocked versions.
 import capdb.storages
-
-
-def raise_not_implemented(): raise NotImplementedError("Cannot access redis client outside of test")
-
-
-capdb.storages.redis_client = SimpleLazyObject(raise_not_implemented)
-capdb.storages.redis_ingest_client = SimpleLazyObject(raise_not_implemented)
+capdb.storages.redis_client = SimpleLazyObject(lambda: None)
+capdb.storages.redis_ingest_client = SimpleLazyObject(lambda: None)
 
 # our packages
 import fabfile
 from .factories import *
+
+
+### Pytest scheduling ###
+
+def pytest_xdist_make_scheduler(config, log):
+    """
+        pytest-django doesn't currently work with pytest-xdist and multiple databases.
+        This allows us to run some tests in parallel anyway, by naming tests that don't access the database with
+        "__parallel", putting them into a separate bucket and then running "pytest -n 2".
+    """
+    class ParallelScheduling(LoadFileScheduling):
+        def _split_scope(self, nodeid):
+            return 'parallel' if '__parallel' in nodeid else 'primary'
+    return ParallelScheduling(config, log)
 
 
 ### Database setup ###
@@ -42,16 +52,24 @@ from .factories import *
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
     from django.test import TransactionTestCase, TestCase
-    # This is a hack around pytest not playing nice with multiple databases
-    # Without these flags set, we don't get any non-default database cleanup
-    # in between tests
-    # https://github.com/pytest-dev/pytest-django/issues/76
-    TransactionTestCase.multi_db = True
-    TestCase.multi_db = True
+    # Set of databases to clean up between tests
+    # See https://github.com/pytest-dev/pytest-django/issues/76
+    TransactionTestCase.databases = TestCase.databases = set(settings.DATABASES.keys())
 
     with django_db_blocker.unblock():
         # set up postgres functions and triggers
         fabfile.update_postgres_env()
+
+    # monkeypatch elasticsearch to wait for results to be available on data-writing calls
+    from elasticsearch.client import Elasticsearch
+    def force_refresh(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            kwargs['refresh'] = True
+            return f(*args, **kwargs)
+        return wrapper
+    for method in ('bulk', 'delete', 'delete_by_query', 'update_by_query', 'update', 'index'):
+        setattr(Elasticsearch, method, force_refresh(getattr(Elasticsearch, method)))
 
 
 @pytest.fixture(autouse=True)
@@ -110,7 +128,7 @@ def django_assert_num_queries(pytestconfig):
             yield
             query_counts = defaultdict(int)
             for q in context.captured_queries:
-                query_type = q['sql'].split(" ", 1)[0].lower()
+                query_type = q['sql'].strip().split(" ", 1)[0].lower()
                 if query_type not in ('savepoint', 'release', 'set', 'show'):
                     query_counts[query_type] += 1
             if expected_counts != query_counts:
@@ -132,6 +150,17 @@ def django_assert_num_queries(pytestconfig):
                 pytest.fail(msg)
 
     return _assert_num_queries
+
+
+@pytest.fixture
+def reset_sequences(django_db_reset_sequences):
+    """
+        Reset database IDs and Factory sequence IDs. Use this if you need to have predictable IDs between runs.
+        This fixture must be included first (before other fixtures that use the db).
+    """
+    for factory_class in globals().values():
+        if inspect.isclass(factory_class) and issubclass(factory_class, factory.Factory):
+            factory_class.reset_sequence(force=True)
 
 
 @pytest.fixture
@@ -186,11 +215,12 @@ def unaltered_alto_xml():
 @pytest.fixture
 def s3_storage():
     with mock_s3():
-        yield capdb.storages.CapS3Storage(
-            auto_create_bucket=True,
+        storage = capdb.storages.CapS3Storage(
             bucket_name='bucket',
             location='subdir',
         )
+        storage.connection.Bucket('bucket').create()
+        yield storage
 
 
 @pytest.fixture
@@ -206,77 +236,70 @@ def mock_ngram_storage(tmpdir):
 
 
 @pytest.fixture
-def ngrammed_cases(mock_ngram_storage, three_cases, jurisdiction):
+def ngrammed_cases(mock_ngram_storage, case_factory, jurisdiction_factory):
     import scripts.ngrams
 
     # set up two jurisdictions
-    jur0 = jurisdiction
-    jur0.slug = 'jur0'
-    jur0.save()
-    jur1 = three_cases[0].jurisdiction
-    jur1.slug = 'jur1'
-    jur1.save()
+    jur0 = jurisdiction_factory(slug='jur0')
+    jur1 = jurisdiction_factory(slug='jur1')
 
     # set up three cases across two jurisdictions, all in same year
     case_settings = [
-        (jur0, '"One? two three." Four!', 2000),
-        (jur1, "One 'two three' don't.", 2000),
-        (jur1, "(Two, three, don't, don't)", 2000),
+        (jur0, '"One? two three." Four!'),
+        (jur1, "One 'two three' don't."),
+        (jur1, "(Two, three, don't, don't)"),
     ]
-    for case, (jur, text, year) in zip(three_cases, case_settings):
-        case.jurisdiction = jur
-        case.jurisdiction_slug = jur.slug  # something about the test env is stopping the trigger from setting this
-        case.decision_date = case.decision_date.replace(year=year)
-        case.save()
-        CaseBodyCache(metadata=case, text=text).save()
+    cases = [
+        case_factory(jurisdiction=jur, decision_date=datetime(2000, 1, 1), body_cache__text=text)
+        for (jur, text) in case_settings
+    ]
 
     # run ngram code
     scripts.ngrams.ngram_jurisdictions()
     scripts.ngrams.ngram_kv_store_ro.open()  # re-open so we can see the new values
 
-    return three_cases
-        
-### Django json fixtures ###
-
-@pytest.fixture
-def load_tracking_tool_database():
-    call_command('loaddata', 'test_data/tracking_tool.json', database='tracking_tool')
+    return cases
 
 
 ### Factory fixtures ###
-@pytest.fixture
-def case(case_xml):
-    return case_xml.metadata
-
 
 @pytest.fixture
-def case_metadata():
-    """
-        This should be provided by @register on CaseFactory, but for some reason that version currently fails to
-        pass itself to the RelatedFactory attributes, and thus throws an IntegrityError.
-    """
-    return CaseFactory()
-
-
-@pytest.fixture
-def three_cases():
-    return [CaseXMLFactory().metadata for _ in range(3)]
-
-
-@pytest.fixture
-def auth_user(token):
-    token.user.email_verified = True
-    token.user.save()
-    return token.user
+def three_cases(case_factory, volume_metadata_factory):
+    """ Three cases from the same volume. """
+    volume = volume_metadata_factory()
+    return [case_factory(volume=volume) for _ in range(3)]
 
 
 class CapClient(APIClient):
     def generic(self, method, path, *args, **kwargs):
-        # make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        """
+            make test client use domain portion of path to set HTTP_HOST, so subdomain routing works
+        """
         parsed = urlparse(str(path))
         if parsed.netloc:
             kwargs.setdefault('HTTP_HOST', parsed.netloc)
         return super().generic(method, path, *args, **kwargs)
+
+    def request(self, *args, **kwargs):
+        """
+            Allow caller to specify a user login for a particular request with an
+            `as_user` parameter, like `client.get(url, as_user=user).
+        """
+        as_user = kwargs.pop('as_user', None)
+        if as_user:
+            # If as_user is provided, store the current value of the session cookie, call force_login, and then
+            # reset the current value after the request is over.
+            previous_session = self.cookies.get(settings.SESSION_COOKIE_NAME)
+            self.force_login(as_user)
+            try:
+                return super().request(*args, **kwargs)
+            finally:
+                if previous_session:
+                    self.cookies[settings.SESSION_COOKIE_NAME] = previous_session
+                else:
+                    self.cookies.pop(settings.SESSION_COOKIE_NAME)
+        else:
+            return super().request(*args, **kwargs)
 
 
 @pytest.fixture
@@ -284,14 +307,18 @@ def client():
     return CapClient()
 
 
+def client_with_user(user):
+    client = CapClient()
+    client.force_login(user=user)
+    # make user available to tests
+    client.auth_user = user
+    return client
+
+
 @pytest.fixture
 def auth_client(auth_user):
     """ Return client authenticated as auth_user, via Django session. """
-    client = CapClient()
-    client.force_login(user=auth_user)
-    # make user available to tests
-    client.auth_user = auth_user
-    return client
+    return client_with_user(auth_user)
 
 
 @pytest.fixture
@@ -305,22 +332,21 @@ def token_auth_client(auth_user):
 
 
 @pytest.fixture
-def unlimited_auth_client(auth_client):
-    user = auth_client.auth_user
-    user.unlimited_access = True
-    user.unlimited_access_until = timezone.now() + timedelta(days=1)
-    user.save()
-    return auth_client
+def unlimited_auth_client(auth_user_factory):
+    return client_with_user(auth_user_factory(
+        unlimited_access=True,
+        unlimited_access_until=timezone.now() + timedelta(days=1)
+    ))
 
 
 @pytest.fixture
-def contract_approver_auth_client():
-    client = CapClient()
-    user = CapUserFactory(email_verified=True)
-    client.force_login(user)
-    client.auth_user = user
-    user.groups.add(Group.objects.get_or_create(name='contract_approvers')[0])
-    return client
+def contract_approver_auth_client(contract_approver_user_factory):
+    return client_with_user(contract_approver_user_factory())
+
+
+@pytest.fixture()
+def admin_client(admin_user_factory):
+    return client_with_user(admin_user_factory())
 
 
 @pytest.fixture
@@ -329,81 +355,11 @@ def api_request_factory():
 
 
 @pytest.fixture()
-def admin_user(db, django_user_model, django_username_field):
-    # Overwrite of pytest's Django admin_user fixture because
-    # we're using email as username_field
-    UserModel = django_user_model
-    username_field = django_username_field
-
-    try:
-        user = UserModel._default_manager.get(**{username_field: 'admin@example.com'})
-    except UserModel.DoesNotExist:
-        extra_fields = {}
-        user = UserModel._default_manager.create_superuser(
-            'test_admin_user@example.com', 'password', **extra_fields)
-    return user
-
-
-@pytest.fixture()
-def staff_user(cap_user):
-    cap_user.is_staff = True
-    cap_user.save()
-    return cap_user
-
-
-@pytest.fixture
-def anonymous_user(client):
-    user = auth.get_user(client)
-    return user
-
-
-@pytest.fixture()
-def anonymous_client(client, anonymous_user):
-    client.user = anonymous_user
-    return client
-
-
-@pytest.fixture()
-def admin_client(db, admin_user):
-    # Overwrite of pytest's Django admin_client
-    from django.test.client import Client
-
-    client = Client()
-    client.login(email=admin_user.email, password='password')
-    return client
-
-
-@pytest.fixture()
 def private_case_export():
     return CaseExportFactory.create(public=False)
 
 
 ### DATA INGEST FIXTURES ###
-
-@pytest.fixture
-def ingest_metadata(load_tracking_tool_database):
-    fabfile.ingest_metadata()
-
-
-@pytest.fixture
-def ingest_volumes(ingest_metadata):
-    fabfile.total_sync_with_s3()
-
-
-@pytest.fixture
-def ingest_volume_xml(ingest_volumes):
-    return VolumeXML.objects.get(metadata__barcode='32044057892259')
-
-
-@pytest.fixture
-def ingest_case_xml(ingest_volume_xml):
-    return CaseXML.objects.get(metadata__case_id='32044057892259_0001')
-
-
-@pytest.fixture
-def ingest_duplicative_case_xml(ingest_volumes):
-    return CaseXML.objects.get(metadata__case_id='32044061407086_0001')
-
 
 @pytest.fixture
 def valid_mass_casebody_tag_rename():
@@ -427,50 +383,17 @@ def invalid_mass_casebody_tag_rename():
 def inline_image_src():
     return """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 """
 
+
 @pytest.fixture()
-def ingest_elasticsearch(load_tracking_tool_database):
-    call_command('loaddata', 'test_data/jurisdiction.json', database='capdb')
-    call_command('loaddata', 'test_data/reporter.json', database='capdb')
-    call_command('loaddata', 'test_data/court.json', database='capdb')
-    call_command('loaddata', 'test_data/volume_metadata.json', database='capdb')
-    call_command('loaddata', 'test_data/case_metadata.json', database='capdb')
-    call_command('loaddata', 'test_data/body_cache.json', database='capdb')
-    call_command('loaddata', 'test_data/citation.json', database='capdb')
-    fabfile.rebuild_search_index(force=True)
-
-    # Make sure these cases are accessible
-    while es_index("cases_test").stats()['_all']['total']['docs']['count'] < 3:
-        continue
-
+def elasticsearch(settings):
+    settings.MAINTAIN_ELASTICSEARCH_INDEX = True
+    # retry for 60 seconds to make sure the Elasticsearch server is up
+    retry_call(
+        lambda: fabfile.rebuild_search_index(force=True, indexes="cases,resolve", populate="false"),
+        tries=60,
+        delay=1,
+        exceptions=ConnectionError)
+    # populate cases index separately so we don't ingest all of courtlistener into resolve index
+    fabfile.populate_search_index()
     yield
     call_command('search_index', '--delete', '-f')
-
-
-@pytest.fixture
-def taylor_v_sprinkle(ingest_elasticsearch):
-    return CaseDocument.get(id=312)
-
-
-@pytest.fixture
-def home_insurance_co_of_new_york_v_kirk(ingest_elasticsearch):
-    return CaseDocument.get(id=311)
-
-
-@pytest.fixture
-def in_re_the_marriage_of_lyle(ingest_elasticsearch):
-    return CaseDocument.get(id=309)
-
-
-@pytest.fixture
-def whitelisted_case_document(home_insurance_co_of_new_york_v_kirk):
-    return home_insurance_co_of_new_york_v_kirk
-
-
-@pytest.fixture
-def non_whitelisted_case_document(in_re_the_marriage_of_lyle):
-    return in_re_the_marriage_of_lyle
-
-
-@pytest.fixture
-def three_case_documents(in_re_the_marriage_of_lyle, home_insurance_co_of_new_york_v_kirk, taylor_v_sprinkle):
-    return [in_re_the_marriage_of_lyle, home_insurance_co_of_new_york_v_kirk, taylor_v_sprinkle]

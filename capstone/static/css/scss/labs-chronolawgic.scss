@@ -1,0 +1,1011 @@
+@import 'bootstrap/functions';
+@import 'bootstrap/variables';
+@import 'bootstrap/mixins';
+@import 'bootstrap/forms';
+@import "no-select";
+
+@import "base.scss";
+@import "floating-labels";
+
+// overrides
+@import "labs-chronolawgic/base.scss";
+@import "labs-chronolawgic/modal.scss";
+
+
+#main-nav {
+  z-index: 9999;
+}
+
+main.admin {
+  .top-menu {
+    right: 0.5em;
+    padding: 2em;
+
+    h3 {
+      font-size: 2rem;
+    }
+
+    .info {
+      display: inline-block;
+      margin-left: -1.15em;
+      font-weight: $font-weight-semibold;
+      color: $color-blue;
+      text-decoration: none;
+      padding: 0;
+    }
+
+    sup {
+      display: inline-block;
+    }
+  }
+
+  #timeline {
+    padding: 2rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    background-color: $color-white;
+
+    .welcome {
+      width: 100%;
+      padding-right: 30%;
+    }
+
+    .inline-icon {
+      svg {
+        transform: scale(.75);
+        margin-top: -.40rem;
+      }
+    }
+
+    .timeline-assembly {
+      display: grid;
+      grid-template-areas: "nav"
+                           "card";
+      width: 20rem;
+      height: 28rem;
+      margin: 1rem;
+      padding: 0;
+      word-break: break-word;
+
+      nav {
+        display: grid;
+        grid-area: nav;
+        grid-template-areas: ". delete save editcancel"
+                            "card card card card";
+        grid-template-columns: 4fr 1fr 1fr 1fr;
+
+        .editcancel, .delete, .save {
+          button {
+            padding: 0;
+          }
+
+          cursor: pointer;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .editcancel {
+          grid-area: editcancel;
+        }
+
+        .delete {
+          grid-area: delete;
+        }
+
+        .save {
+          grid-area: save;
+        }
+
+      }
+
+      .timeline-card {
+
+        height: 25rem;
+        grid-area: card;
+        display: grid;
+        grid-template-areas: "content"
+                             "details";
+        grid-template-rows: 21rem 2rem;
+        padding: 1rem;
+        border-radius: 2px;
+        border: 1px solid $color-black;
+        background-color: $color-white;
+
+        .content {
+          display: grid;
+          grid-area: content;
+          grid-template-areas: "header"
+                               "desc";
+          grid-template-rows: minmax(3rem, auto) 1fr;
+
+          header {
+            grid-area: header;
+
+            h3 {
+              font-size: 1.35rem;
+              font-weight: $font-weight-semibold;
+              font-family: $font-monospace;
+
+            }
+
+            .title-edit {
+              padding-left: .5rem;
+              padding-right: .5rem;
+
+              .label {
+                font-size: $font-size-sm;
+              }
+
+              .title-input {
+                font-size: 1.35rem;
+                font-weight: $font-weight-semibold;
+                font-family: $font-monospace;
+                border: 1px dashed $color-medium-dark-blue;
+                width: 100%;
+              }
+            }
+          }
+
+          .description {
+            grid-area: desc;
+            padding: .5rem;
+            font-family: $font-sans-serif;
+            font-size: $font-size-sm;
+            line-height: $line-height-sm;
+            overflow: scroll;
+            border: 1px solid $color-black;
+
+            p {
+              margin: 0;
+            }
+
+          }
+
+          .description.editmode {
+            border: none;
+
+            .description-edit {
+              .label {
+                font-size: $font-size-sm;
+              }
+
+              height: 94%;
+              width: 100%;
+
+              .description-input {
+                border: 1px dashed $color-medium-dark-blue;
+                width: 100%;
+                height: 100%;
+              }
+
+            }
+          }
+
+        }
+
+        aside {
+          grid-area: details;
+          font-size: .75rem;
+          padding-left: 0rem;
+          display: flex;
+          padding-top: .5rem;
+
+          .stat {
+            width: 35%;
+            padding-left: 0;
+            display: flex;
+            flex-direction: row;
+
+            .label {
+              margin-right: 1rem;
+              font-size: .75rem;
+              font-weight: $font-weight-black;
+              text-transform: uppercase;
+              color: $color-violet-gray-dark;
+            }
+          }
+        }
+      }
+    }
+
+    .timeline-assembly.add-timeline {
+      padding-top: 2rem;
+
+      .timeline-card {
+        border-radius: 0;
+        background-color: $color-light-gray;
+        border: 1px dashed $color-medium-gray;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        button {
+          padding: 0;
+
+          svg {
+            transform: scale(2);
+            color: $color-violet-gray-dark;
+          }
+        }
+      }
+    }
+
+  }
+}
+
+
+main#main-app {
+  .top-menu {
+    display: grid;
+    grid-template-areas: "caselaw years other-events";
+    grid-template-columns: 55% 30% 15%;
+    min-height: 2rem;
+
+    div.years {
+      grid-area: years;
+      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
+      background-position: center;
+      background-size: 1000px;
+    }
+
+    .zoom-section {
+      grid-area: other-events;
+      background-color: $color-gray;
+
+      #zoom-button-container {
+        text-align: right;
+        position: fixed;
+        right: 0.5em;
+        z-index: 2000;
+
+        .toggles {
+          margin-bottom: 0;
+
+          svg {
+            color: $color-medium-gray;
+            display: block;
+            margin: auto;
+            top: 25%;
+            position: relative;
+          }
+
+          .key {
+            cursor: pointer;
+            width: 55px;
+            height: 55px;
+            background-color: $color-white;
+
+            svg {
+              color: $color-black;
+            }
+
+            &.selected, &:hover, &:active, &:focus {
+              svg {
+                transform: rotate(90deg);
+              }
+
+              background-color: $highlight;
+            }
+          }
+
+          .zoom-toggle {
+            width: 55px;
+            height: 55px;
+            background-color: #ccc;
+            margin-right: 0;
+
+            &.selectable {
+              background-color: $color-white;
+              cursor: pointer;
+
+              svg {
+                color: $color-violet;
+              }
+
+              &:hover, &:focus {
+                background-color: $highlight;
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+    .header-section {
+      min-height: 100px;
+      padding: 1em;
+      z-index: 1000;
+    }
+
+
+    .header-section.title {
+      grid-area: caselaw;
+      background-color: $color-white;
+
+      h4 {
+        font-family: $font-serif;
+        font-weight: $font-weight-semibold;
+        font-size: 24px;
+      }
+
+      #timeline-title {
+        margin-left: 10px;
+        font-size: 1.8em;
+      }
+
+      #timeline-description {
+        background-color: $color-white;
+        margin-left: 10px;
+        font-size: $font-size-sm;
+        line-height: $line-height-sm;
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        cursor: pointer;
+      }
+
+      .my-timelines-link {
+        font-size: $font-size-sm;
+
+        svg {
+          margin-bottom: 5px;
+          stroke-width: 1.5;
+        }
+      }
+    }
+
+    .header-section.expanded {
+      #timeline-description {
+        font-size: $font-size-sm;
+        line-height: $line-height-sm;
+        width: 80%;
+        overflow: scroll;
+        white-space: pre-wrap;
+      }
+    }
+  }
+
+  #timeline {
+    background-color: $color-gray;
+    padding: 0;
+    margin-top: -10em;
+  }
+
+  font-family: $font-monospace;
+
+  section#timeline {
+    grid-area: timeline;
+    padding-top: 0;
+  }
+
+  div.year {
+    max-width: 6fr;
+    width: 100%;
+    display: grid;
+    grid-template-areas: "incidental years spans .";
+    grid-template-columns: 65% 10% 10% 15%;
+    min-height: 8rem;
+    font-size: 18px;
+
+    div.incidental {
+      background-color: $color-white;
+      grid-area: incidental;
+      justify-content: flex-end;
+      display: flex;
+      flex-flow: row wrap;
+    }
+
+    .case-button {
+      padding: 0;
+      margin: 0.5rem;
+      background-color: white;
+      border: 0;
+    }
+
+    article.case {
+      cursor: pointer;
+      font-family: $font-serif;
+      line-height: $line-height-sm;
+      font-weight: normal;
+      text-align: left;
+      font-size: $font-size-sm;
+      background-color: $color-white;
+      border: 1px solid $color-black;
+      width: 20rem;
+      height: 130px;
+      //padding: 0.5rem 0.75rem;
+      text-transform: none;
+      display: grid;
+      grid-template-areas: "border casename"
+                           "border description"
+                           "border categories";
+      grid-template-columns: 25px 1fr;
+
+      &:hover, &:focus, &:active {
+        //border: 2px solid $color-blue;
+      }
+    }
+
+    .border {
+      grid-area: border;
+      width: 15px;
+      height: 100%;
+      background-color: $color-gray-medium;
+      opacity: 0.8;
+      border-right: 1px solid $color-black;
+    }
+
+    header {
+      grid-area: casename;
+      display: grid;
+      grid-template-columns: 90% 10%;
+      font-size: 1.3em;
+      line-height: 1.2em;
+      padding-top: 0.25em;
+    }
+
+    .categories {
+      grid-area: categories;
+      align-self: end;
+      padding-bottom: 0.5em;
+      text-align: right;
+      padding-right: 0.25em;
+      ul, li {
+        margin: 0;
+      }
+    }
+
+    .case-link {
+      margin-top: -3px;
+      svg {
+        fill: $color-violet;
+      }
+
+      &:hover, &:focus, &:active {
+        svg {
+          fill: $color-black;
+        }
+      }
+    }
+
+    section.subhead {
+      padding: 0;
+      font-weight: $font-weight-black;
+      font-size: 0.75rem;
+    }
+
+    section.desc {
+      padding: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.8em;
+      line-height: 1.3em;
+      text-transform: none;
+      max-height: 5em;
+      padding-right: 0.25em;
+      grid-area: description;
+    }
+
+    div.year_scale {
+      grid-area: years;
+      font-family: $font-family-monospace;
+      z-index: 999;
+      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%) center;
+      background-size: 1000px;
+      display: flex;
+      justify-content: center;
+
+
+      .year {
+        text-align: center;
+        align-self: center;
+        justify-content: center;
+      }
+    }
+
+    .event_col {
+      min-width: 1.25rem;
+      background-color: $color-gray;
+    }
+
+    div.spans {
+      padding-left: 2rem;
+      grid-area: spans;
+      display: grid;
+      grid-template-areas: "ec_1 ec_2 ec_3 ec_4 ec_5 ec_6 ec_7 ec_8 ec_9 ec_10 ec_11 ec_12";
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+      background-color: $color-gray;
+    }
+
+    .event_label {
+      transform: rotate(90deg);
+      transform-origin: 0 100% 0;
+      z-index: 1;
+      position: relative;
+      top: -1.25rem;
+      left: 0;
+      margin: 0;
+      font-weight: $font-weight-semibold;
+      font-size: $font-size-sm;
+      color: $color-white;
+      height: 1.25rem;
+      line-height: 1.25rem;
+      padding-left: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 7rem;
+    }
+
+    // colors that are too light for white
+    .light-color > .event_label {
+      color: $color-black;
+    }
+
+    .fill {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .first-event-year {
+      border-top: 1rem solid $color-black;
+    }
+
+    .last-event-year {
+      border-bottom: 1rem solid $color-violet-gray;
+    }
+
+    .ec_1 {
+      grid-area: ec_1;
+    }
+
+    .ec_2 {
+      grid-area: ec_2;
+    }
+
+    .ec_3 {
+      grid-area: ec_3;
+    }
+
+    .ec_4 {
+      grid-area: ec_4;
+    }
+
+    .ec_5 {
+      grid-area: ec_5;
+    }
+
+    .ec_6 {
+      grid-area: ec_6;
+    }
+
+    .ec_7 {
+      grid-area: ec_7;
+    }
+
+    .ec_8 {
+      grid-area: ec_8;
+    }
+
+    .ec_9 {
+      grid-area: ec_9;
+    }
+
+    .ec_10 {
+      grid-area: ec_10;
+    }
+
+    .ec_11 {
+      grid-area: ec_11;
+    }
+
+    .ec_12 {
+      grid-area: ec_12;
+    }
+  }
+
+  div.year.labels {
+    display: grid;
+    grid-template-areas: "incidental years spans";
+    grid-template-columns: 55% 30% 15%;
+    min-height: 2rem;
+    background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
+    background-position: center;
+    background-size: 1000px;
+
+    div.year_scale {
+      padding-top: 15rem;
+      padding-bottom: 3rem;
+
+      div.label_assembly {
+        display: grid;
+        grid-template-areas: "case_add case_label event_label event_add .";
+        grid-template-columns: 50px 90px 80px 50px 10px;
+        background: transparent;
+
+        h6 {
+          font-family: $font-monospace;
+          font-weight: $font-weight-semibold;
+          padding: 0.3em 0.4em;
+          border-left: 0;
+          border-right: 0;
+          border-top: 1px solid $color-black;
+          border-bottom: 1px solid $color-black;
+          margin-bottom: 0;
+          height: 2em;
+        }
+
+        h6#caselaw-label {
+          text-align: right;
+          grid-area: case_label;
+          border-left: 1px solid $color-black;
+          width: 90px;
+        }
+
+        h6#events-label {
+          text-align: left;
+          grid-area: event_label;
+          border-right: 1px solid $color-black;
+          width: 80px;
+        }
+
+        #top-add-cases-button {
+          grid-area: case_add;
+          padding: 0 !important;
+          border: 0;
+          font-size: 0;
+          // patch because this keeps showing up
+          // todo: figure out why this is necessary
+          @include media-breakpoint-down(sm) {
+            display: none;
+          }
+        }
+
+        #top-add-events-button {
+          grid-area: event_add;
+          padding: 0 !important;
+          border: 0;
+          font-size: 0;
+        }
+      }
+    }
+  }
+
+  div.year.welcome {
+    min-height: 50vh;
+
+    div.incidental {
+      padding-left: 2rem;
+      justify-content: flex-start;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  div.year.placeholder {
+    div.year_scale {
+      cursor: pointer;
+      display: flex;
+
+      svg {
+        margin-left: auto;
+        background-color: white;
+        margin-right: auto;
+      }
+    }
+  }
+
+
+  .event-preview {
+    display: block;
+    margin-left: -10em;
+    z-index: 999;
+    font-family: $font-serif;
+    height: 8em;
+    width: 12em;
+    overflow-y: scroll;
+    word-break: break-word;
+    background-color: white;
+    position: relative;
+
+    h5 {
+      margin-bottom: 0;
+    }
+
+    .event-preview-body {
+      padding: 0.6rem 0.6rem 0 0.6rem;
+    }
+
+    .see-more {
+      padding: 0 0.6rem 0.6rem 0.6rem;
+      font-size: small;
+      text-transform: none;
+      float: right;
+    }
+
+    @include media-breakpoint-up(lg) {
+      margin-left: -5em;
+    }
+
+    h5 {
+      font-family: $font-serif;
+      font-size: 19px;
+      padding: 0.2em 0.5em;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 19px;
+      margin: 0;
+    }
+
+    .close {
+      padding-right: 0.65em;
+      padding-top: 0.1em;
+    }
+  }
+
+}
+
+@include media-breakpoint-down(sm) {
+
+  #labs-nav {
+    z-index: 1050;
+
+    #burger-icon {
+      z-index: 1055;
+    }
+  }
+
+  main#main-app {
+
+    .top-menu {
+
+      .header-section.zoom-section {
+        display: none;
+      }
+
+      .years {
+        display: none;
+      }
+
+      .header-section.title {
+        min-height: 3.5rem;
+        padding: 0.125em;
+        position: fixed;
+        width: 100%;
+        z-index: 1020;
+        box-shadow: 0 0 10px #DDD;
+
+        h4#timeline-title {
+          margin-bottom: .25rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 90%;
+          font-size: 1.3rem;
+        }
+
+        #timeline-description {
+          font-size: $font-size-sm;
+          line-height: $line-height-sm;
+          width: 90%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .my-timelines-link {
+          display: none;
+        }
+      }
+
+      .header-section.title.expanded {
+        height: 90vh;
+
+        h4#timeline-title {
+          overflow: visible;
+          white-space: normal;
+        }
+
+        #timeline-description {
+          font-size: $font-size-sm;
+          line-height: $line-height-sm;
+          width: 90%;
+          text-overflow: revert;
+          overflow: scroll;
+          white-space: revert;
+          cursor: pointer;
+        }
+      }
+    }
+
+    button.btn.btn-tertiary.btn-add-event {
+      display: none;
+    }
+
+    div.year {
+      width: 100%;
+      display: grid;
+      grid-template-areas: "incidental years spans";
+      grid-template-columns: 65% 10% 25%;
+      min-height: 8rem;
+      font-size: 18px;
+
+      div.year_scale {
+        display: flex;
+
+        div.simple-mobile-year-label {
+          font-size: .85rem;
+          background-color: white;
+          align-self: center
+        }
+      }
+
+      div.spans {
+        padding-left: 1rem;
+
+        .event_col {
+          min-width: 5px;
+
+          .fill {
+            width: 5px;
+
+            .event_label {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+
+
+    div.year.labels {
+      div.year_scale {
+        padding-top: 12.5rem;
+
+        div.label_assembly {
+          grid-template-areas: ". case_label event_label .";
+          grid-template-columns: 50px 80px 75px 60px;
+
+          h6 {
+            font-size: .85rem;
+          }
+
+          h6#caselaw-label {
+            width: 80px;
+            padding: 0.3em 0.7em;
+            background-color: $highlight;
+          }
+
+          h6#events-label {
+            width: 75px;
+            padding: 0.3em 0.8em;
+            background-color: $color-white;
+          }
+        }
+      }
+    }
+
+    div.year.placeholder {
+      div.year_scale {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          transform: none;
+        }
+      }
+    }
+
+    div.incidental {
+      flex-direction: column;
+
+      button.case-button {
+
+        article.case {
+          float: right;
+          width: 14rem;
+          height: 7rem;
+          overflow: scroll;
+          padding: 0.5rem 0.75rem;
+          align-self: end;
+          @include media-breakpoint-down(md) {
+            padding: 0 0.5rem 0 0;
+          }
+          &:hover, &:focus, &:active {
+            background-color: $highlight;
+          }
+        }
+      }
+
+      article.case_placeholder {
+        display: none;
+      }
+    }
+  }
+
+  main#main-app.mobile-event-expanded {
+    div.year {
+      width: 100%;
+      display: grid;
+      grid-template-areas: "incidental years spans";
+      grid-template-columns: 20% 10% 70%;
+      min-height: 8rem;
+      font-size: 18px;
+
+      div.spans {
+        padding-left: 2rem;
+
+        .event_col {
+          min-width: 1rem;
+
+          .fill {
+            width: 1rem;
+
+            .event_label {
+              display: block;
+              left: -15%;
+            }
+          }
+        }
+      }
+
+      div.event-preview {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      div.case_placeholder {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 1em;
+        font-size: $font-size-sm;
+        height: 3rem;
+        width: 3rem;
+        align-self: center;
+
+        .case_count {
+          font-weight: $font-weight-black;
+          font-size: 1.25rem;
+          display: inline-block;
+        }
+
+        .case_count:before {
+          content: "\a";
+          white-space: pre;
+        }
+      }
+    }
+
+    div.year.labels {
+      div.year_scale {
+        div.label_assembly {
+          h6#caselaw-label {
+            background-color: $color-white;
+          }
+
+          h6#events-label {
+            background-color: $highlight;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+// categories
+.shape {
+  width: 50px;
+  height: 50px;
+}

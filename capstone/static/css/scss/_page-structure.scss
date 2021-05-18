@@ -1,5 +1,6 @@
 .basic-page {
   @extend .row;
+  min-height: 100%;
   ul {
     padding-left: 0;
   }
@@ -30,7 +31,7 @@
     .subtitle:before {
       content: "\00A7";
       color: $color-yellow;
-      margin-left: -2rem;
+      margin-left: -1em;
       font-weight: $font-weight-bold;
       font-size: 60%;
       margin-right: 0.5rem;
@@ -44,7 +45,7 @@
     }
   }
   .main-content {
-    padding-top: 4.5rem;
+    padding-top: 2.5rem;
     padding-bottom: 3rem;
     margin: 0 auto;
     @include media-breakpoint-up(lg) {
@@ -64,7 +65,12 @@
   .decorative-arrow {
     width: 30px;
     margin-top: -20px;
+    display: inline;
   }
+}
+
+.main-content.extended {
+  width: 100%;
 }
 
 .header-margin {
@@ -95,18 +101,21 @@
 .top-section {
   @extend .row;
   padding-bottom: 4.5rem;
-  padding-top: 6.75rem;
+  padding-top: 2rem;
   border-bottom: 1px solid #E7E7ED;
   &.compressed {
     border-bottom: 0;
     padding-top: 4rem;
-    padding-bottom: 3rem;
+    padding-bottom: 2rem;
     .page-title {
       margin-bottom: 0;
     }
     .title-section {
       @include media-breakpoint-down(sm) {
         padding-left: 0;
+      }
+      @include media-breakpoint-down(md) {
+        padding-top: 1rem;
       }
     }
     @include media-breakpoint-down(md) {
@@ -164,6 +173,10 @@
     -webkit-box-shadow: 0 0 27px 0 rgba(222, 222, 230, 0.46);
   }
 
+}
+
+.top-section > .section-intro {
+  width: 100%;
 }
 
 .top-section > .section-intro > .content {
@@ -242,7 +255,6 @@ section > .content > .row > .content-right {
   flex: 0 0 24%;
   max-width: 24%;
   position: static;
-  padding-top: 4.5rem;
   left: 0;
   top: 0;
   font-family: $font-serif;
@@ -255,11 +267,12 @@ section > .content > .row > .content-right {
     border-bottom: 0;
   }
   .content {
-    top: 80px;
+    top: 0;
+    padding-top: 1em;
     position: -webkit-sticky;
     position: sticky;
     height: 90vh;
-    overflow: scroll;
+    overflow: auto;
   }
   .list-group-item {
     border: 0;
@@ -281,10 +294,6 @@ section > .content > .row > .content-right {
   /* hide entirely on medium and small screens */
   @include media-breakpoint-down(md) {
     display: none;
-  }
-
-  .sticky {
-    padding-top: 5.5rem !important;
   }
 }
 

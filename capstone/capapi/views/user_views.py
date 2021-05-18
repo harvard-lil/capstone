@@ -1,4 +1,9 @@
 from collections import OrderedDict
+from copy import copy
+from datetime import datetime
+
+from mailchimp3 import MailChimp
+from mailchimp3.mailchimpclient import MailChimpError
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -9,53 +14,85 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from capapi import resources
 from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
     HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
+from capapi.views.api_views import UserHistoryViewSet
 from capdb.models import CaseExport
 from capweb.helpers import reverse, send_contact_email, user_has_harvard_email
+from config.logging import logger
+from user_data.models import UserHistory
 
 
 def register_user(request):
     """ Create new user """
-    form = form_for_request(request, RegisterUserForm)
+    if not request.user.is_anonymous:
+        return HttpResponseRedirect(reverse('user-details'))
 
+    form = form_for_request(request, RegisterUserForm)
     if request.method == 'POST' and form.is_valid():
         form.save()
         resources.send_new_signup_email(request, form.instance)
         return render(request, 'registration/sign-up-success.html', {
             'status': 'Success!',
             'message': 'Thank you. Please check your email for a verification link.',
-            'page_name': 'user-register-success'
         })
 
-    return render(request, 'registration/register.html', {'form': form,
-                                                          'page_name': 'user-register'})
+    return render(request, 'registration/register.html', {'form': form})
 
 
 def verify_user(request, user_id, activation_nonce):
     """ Verify email and assign api token """
+    user = get_object_or_404(CapUser, pk=user_id)
+
+    # This leaks a little info -- we reveal whether a user ID exists or not and whether it is verified or deactivated.
+    # This seems acceptable to provide better messages to legitimate users.
+    if user.email_verified:
+        return render(request, 'registration/verified.html')
+    if not user.is_active:
+        return render(request, 'registration/verified.html', {'error': 'This account is not active and cannot be verified.'})
+
+    error = None
+    mailing_list_message = "We have not signed you up for our newsletter, Lawvocado. Sign up any time from our homepage."
     try:
-        user = CapUser.objects.get(pk=user_id)
         user.authenticate_user(activation_nonce=activation_nonce)
-    except (CapUser.DoesNotExist, PermissionDenied):
-        error = "Unknown verification code."
+    except PermissionDenied:
+        error = mark_safe("This verification code is invalid or expired. <a href='%s'>Resend verification</a>?" % reverse('resend-verification'))
     else:
         # user authenticated successfully
-        error = None
 
-        # update API limits for first 50 users per day
+        # update API limits for first X users per day
+        # users after this limit will have approved accounts, but we will have to go back manually to increase limits
         site_limits = SiteLimits.add_values(daily_signups=1)
         if site_limits.daily_signups < site_limits.daily_signup_limit:
             user.total_case_allowance = user.case_allowance_remaining = settings.API_CASE_DAILY_ALLOWANCE
             user.save()
+
+        # sign them up for the mailing list if they selected the mailing_list checkbox.
+        if settings.MAILCHIMP['api_key'] and user.mailing_list:
+            try:
+                mc_client = MailChimp(mc_api=settings.MAILCHIMP['api_key'], mc_user=settings.MAILCHIMP['api_user'])
+                mc_client.lists.members.create(
+                    settings.MAILCHIMP['id'], {
+                        'email_address': user.email,
+                        'merge_fields': {'LNAME': user.first_name, 'FNAME': user.last_name},
+                        'status': 'subscribed'
+                    })
+                mailing_list_message = "Also, thanks for signing up for our newsletter, Lawvocado."
+            except MailChimpError as e:
+                if e.args[0]['status'] == 400 and e.args[0]['title'] == 'Member Exists':
+                    mailing_list_message = "Also, thanks for your continued interest in our newsletter, " \
+                                           "Lawvocado. We'll keep you on our list."
+                else:
+                    logger.exception("Error adding user email %s to mailing list" % user.email)
+
     return render(request, 'registration/verified.html', {
-        'contact_email': settings.DEFAULT_FROM_EMAIL,
         'error': error,
-        'page_name': 'user-verify'
+        'mailing_list_message': mailing_list_message,
     })
 
 
@@ -80,7 +117,6 @@ def resend_verification(request):
     return render(request, 'registration/resend-nonce.html', {
         'info_email': settings.DEFAULT_FROM_EMAIL,
         'form': form,
-        'page_name': 'user-resend-verification'
     })
 
 
@@ -89,12 +125,40 @@ def user_details(request):
     """ Show user details """
     request.user.update_case_allowance()
     context = {
-        'page_name': 'user-details',
-        'research_contract': request.user.research_contracts.first(),
-        'research_request': request.user.research_requests.first(),
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
+        'research_contract': request.user.research_contracts.filter(status='pending').first(),
+        'research_request': request.user.research_requests.filter(status='pending').first(),
     }
     return render(request, 'registration/user-details.html', context)
+
+
+@login_required
+def user_history(request):
+    """ Show user history. """
+    # handle updating or deleting user history settings
+    if request.method == 'POST':
+        user = request.user
+        if request.POST.get('delete') == 'true':
+            UserHistory.objects.filter(user_id=user.id).delete()
+            user.has_tracked_history = False
+            user.save()
+        elif request.POST.get('toggle_tracking') == 'true':
+            user.track_history = not user.track_history
+            user.save()
+
+    # get history data from API
+    api_request = copy(request)
+    api_request.method = 'GET'
+    data = UserHistoryViewSet.as_view({'get': 'list'})(api_request).data
+
+    # parse dates
+    for result in data['results']:
+        result['date'] = datetime.strptime(result['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    return render(request, 'registration/user-history.html', {
+        'next': data['next'].split('?')[1] if data['next'] else None,
+        'previous': data['previous'].split('?')[1] if data['previous'] else None,
+        'results': data['results'],
+    })
 
 
 @login_required
@@ -128,7 +192,8 @@ def request_harvard_research_access(request):
             'contract_html': contract.contract_html,
             'signed_date': contract.user_signature_date,
         })
-        msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL, request.user.email])
+        subject = 'CAP Bulk Access Agreement for {}'.format(name)
+        msg = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL, request.user.email])
         msg.content_subtype = "html"  # Main content is text/html
         msg.send()
 
@@ -152,14 +217,12 @@ def request_legacy_research_access(request):
         message = loader.get_template('research_request/emails/legacy_request_email.txt').render({
             'data': form.cleaned_data,
         })
-        send_contact_email('CAP research scholar application', message, request.user.email)
+        subject = 'CAP research scholar application for {}'.format(name)
+        send_contact_email(subject, message, request.user.email)
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
-    return render(request, 'research_request/unaffiliated_research_request.html', {
-        'form': form,
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
-    })
+    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
 
 
 @login_required
@@ -177,14 +240,12 @@ def request_unaffiliated_research_access(request):
         message = loader.get_template('research_request/emails/unaffiliated_request_email.txt').render({
             'data': form.cleaned_data,
         })
-        send_contact_email('CAP independent research scholar application', message, request.user.email)
+        subject = 'CAP independent research scholar application for {}'.format(name)
+        send_contact_email(subject, message, request.user.email)
 
         return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
 
-    return render(request, 'research_request/unaffiliated_research_request.html', {
-        'form': form,
-        'NEW_RESEARCHER_FEATURE': settings.NEW_RESEARCHER_FEATURE,
-    })
+    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
 
 
 @login_required
@@ -208,7 +269,8 @@ def request_affiliated_research_access(request):
         })
         emails = [settings.DEFAULT_FROM_EMAIL] + \
                  [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-        send_mail('CAP research contract application', message, settings.DEFAULT_FROM_EMAIL, emails)
+        subject = 'CAP research scholar application for {}'.format(name)
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
         return HttpResponseRedirect(reverse('affiliated-research-request-success'))
 
@@ -245,7 +307,8 @@ def approve_research_access(request):
                 })
                 emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                          [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-                msg = EmailMessage('CAP Bulk Access Agreement', message, settings.DEFAULT_FROM_EMAIL, emails)
+                subject = 'CAP Bulk Access Agreement for {} {}'.format(contract.user.first_name, contract.user.last_name)
+                msg = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
                 msg.content_subtype = "html"  # Main content is text/html
                 msg.send()
 
@@ -269,7 +332,9 @@ def approve_research_access(request):
             })
             emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                      [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-            send_mail('Your CAP unmetered access application has been denied', message, settings.DEFAULT_FROM_EMAIL, emails)
+            subject = 'CAP unmetered access application denied for {} {}'.format(contract.user.first_name,
+                                                                                 contract.user.last_name)
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
             # show status message
             approver_message = "Research access for %s denied" % contract.name
@@ -331,7 +396,7 @@ def reset_api_key(request):
         "School Library Innovation Lab")
 
         send_mail(
-            'Case.law: API Key Reset',
+            'Case.law: API Key Reset for {} {}'.format(request.user.first_name, request.user.last_name),
             message.format(request.user.first_name, request.user.last_name),
             settings.DEFAULT_FROM_EMAIL, # from email
             [ settings.DEFAULT_FROM_EMAIL, request.user.email ], #to email, (sends a copy to us)

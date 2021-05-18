@@ -25,8 +25,7 @@ def filter_tokens(block, tags, redacted=True):
     """
         Filter a list of tokens and yield only text strings and tags included in `tags`. If redacted=True, filter out
         everything between ['redact'] tags. Example:
-        >>> list(filter_tokens(['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']], {'foo'}))
-        ['text', ['foo']]
+        >>> assert list(filter_tokens({'tokens':  ['text', ['foo'], ['bar'], ['redact'], 'text2', ['redact']]}, {'foo'})) == ['text', ['foo']]
     """
     tokens = block.get('tokens')
     if not tokens:
@@ -270,7 +269,7 @@ class VolumeRenderer:
             Render <casebody> as HTML
         """
         self.format = 'html'
-        return self.render_markup(case).replace('\xad', '')
+        return self.render_markup(case, method='html').replace('\xad', '')
 
     def render_xml(self, case):
         """
@@ -298,7 +297,7 @@ class VolumeRenderer:
             par['blocks'] = [blocks_by_id[id] for id in par['block_ids']]
         return opinions
 
-    def render_markup(self, case):
+    def render_markup(self, case, method='xml'):
         """
             Core renderer.
         """
@@ -343,7 +342,8 @@ class VolumeRenderer:
                 else:
                     case_el.append(opinion_el)
 
-        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print)
+        etree.indent(case_el)
+        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print, method=method)
 
     def make_case_el(self, case):
         """ Make <section class='case'>, or <casebody> """
@@ -443,7 +443,7 @@ class VolumeRenderer:
 
                 # write <img>
                 if block.get('format') == 'image' and not (self.redacted and block.get('redacted')):
-                    if self.format == 'xml':
+                    if self.original_xml:
                         tag_stack.append((handler.characters, ('[[Image here]]',)))
                     else:
                         tag_stack.append((handler.startElement, ('img', {'src': 'data:'+block['data'], 'class': block['class'], 'width': str(round(block['rect'][2])), 'height': str(round(block['rect'][3]))},)))
