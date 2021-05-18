@@ -10,7 +10,7 @@ from capapi.tests.helpers import check_response
 from capweb.helpers import reverse, page_image_url
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_nav(client, case, reporter):
     """
     All our navigation links lead to somewhere 200 Ok
@@ -40,7 +40,7 @@ def test_nav(client, case, reporter):
             assert "/docs/" not in a.get('href')
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_footer(client):
     """
     All our footer links lead to somewhere 200 Ok
@@ -64,7 +64,7 @@ def test_footer(client):
                 assert "/docs/" in res.url
                 assert "/docs/" not in a.get('href')
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_contact(client, auth_client, mailoutbox):
     # email field is empty if logged out
     response = client.get(reverse('contact'))
@@ -90,7 +90,7 @@ def test_contact(client, auth_client, mailoutbox):
 
 
 @pytest.mark.xfail
-def test_screenshot__parallel(client, live_server, settings, ngrammed_cases):
+def test_screenshot(client, live_server, settings, ngrammed_cases):
     # set up conditions for /screenshot/ route to work
     settings.SCREENSHOT_FEATURE = True
     settings.DEBUG = True  # so view runs browser unsandboxed for docker

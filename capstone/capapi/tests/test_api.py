@@ -7,7 +7,7 @@ from capapi.tests.helpers import check_response
 from user_data.models import UserHistory
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_flow(client, unrestricted_case, elasticsearch):
     """user should be able to click through to get to different tables"""
     # start with case
@@ -29,7 +29,7 @@ def test_flow(client, unrestricted_case, elasticsearch):
 
 
 # RESOURCE ENDPOINTS
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 @pytest.mark.parametrize("fixture_name, detail_attr, comparison_attr", [
     ("jurisdiction", "slug", "name_long"),
     ("court", "slug", "name"),
@@ -56,7 +56,7 @@ def test_model_endpoint(request, client, fixture_name, detail_attr, comparison_a
     results = response.json()
     assert results[comparison_attr] == getattr(instance, comparison_attr)
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_cases_endpoint(client, unrestricted_case, elasticsearch):
     # test list endpoint
     case_list_url = api_reverse("cases-list")
@@ -70,7 +70,7 @@ def test_cases_endpoint(client, unrestricted_case, elasticsearch):
     assert results['name'] == unrestricted_case.name
 
 # REQUEST AUTHORIZATION
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_unauthorized_request(cap_user, client, restricted_case, elasticsearch):
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
     client.credentials(HTTP_AUTHORIZATION='Token fake')
@@ -80,7 +80,7 @@ def test_unauthorized_request(cap_user, client, restricted_case, elasticsearch):
     cap_user.refresh_from_db()
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, elasticsearch):
     """
     we should allow users to get full case without authentication
@@ -105,7 +105,7 @@ def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, e
     assert not casebody['data']
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_authenticated_full_case_whitelisted(auth_user, auth_client, unrestricted_case, elasticsearch):
     ### whitelisted jurisdiction should not be counted against the user
 
@@ -121,7 +121,7 @@ def test_authenticated_full_case_whitelisted(auth_user, auth_client, unrestricte
     assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_case, elasticsearch):
     ### blacklisted jurisdiction cases should be counted against the user
 
@@ -196,7 +196,7 @@ def test_csv(transactional_db, client, auth_client, restricted_case, unrestricte
     check_response(response, content_type=content_type)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_track_history(auth_user, auth_client, restricted_case, elasticsearch):
     # initial fetch
     url = api_reverse("cases-detail", args=[restricted_case.id])
@@ -248,7 +248,7 @@ def test_track_history(auth_user, auth_client, restricted_case, elasticsearch):
     assert auth_user.case_allowance_remaining == 0
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_unlimited_access(auth_user, auth_client, restricted_case, elasticsearch):
     ### user with unlimited access should not have blacklisted cases count against them
     auth_user.total_case_allowance = settings.API_CASE_DAILY_ALLOWANCE
@@ -286,7 +286,7 @@ def test_unlimited_access(auth_user, auth_client, restricted_case, elasticsearch
     assert result['casebody']['status'] != 'ok'
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 @pytest.mark.parametrize("client_fixture_name", ["auth_client", "token_auth_client"])
 def test_harvard_access(request, restricted_case, client_fixture_name, elasticsearch):
     ### user with harvard access can download from harvard IPs, even without case allowance
@@ -324,7 +324,7 @@ def test_harvard_access(request, restricted_case, client_fixture_name, elasticse
     assert result['casebody']['status'] != 'ok'
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_authenticated_multiple_full_cases(auth_user, auth_client, case_factory, elasticsearch):
     ### mixed requests should be counted only for blacklisted cases
 
@@ -341,7 +341,7 @@ def test_authenticated_multiple_full_cases(auth_user, auth_client, case_factory,
 
 
 # CITATION REDIRECTS
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_case_citation_redirect(client, case_factory, elasticsearch):
     """Should allow various forms of citation, should redirect to normalized_cite"""
     case = case_factory(citations__cite='123 Mass. App. 456')
@@ -385,7 +385,7 @@ def get_casebody_data_with_format(client, case_id, body_format):
     assert casebody['status'] == "ok"
     return casebody['data']
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_default(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "")
     assert type(data["judges"]) is list
@@ -395,7 +395,7 @@ def test_body_format_default(auth_client, restricted_case, elasticsearch):
     assert set(opinion.keys()) == {'type', 'author', 'text'}
     assert opinion["text"]
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_unrecognized(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "uh_oh_not_a_real_format")
     assert type(data["judges"]) is list
@@ -406,17 +406,17 @@ def test_body_format_unrecognized(auth_client, restricted_case, elasticsearch):
     assert opinion["text"]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_xml(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "xml")
     assert "<?xml version=" in data
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_html(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "html")
     assert restricted_case.body_cache.html in data
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_full_text_search(client, case_factory, elasticsearch):
     case1 = case_factory(name_abbreviation="111 222 333 555666")
     case2 = case_factory(name_abbreviation="111 stop 222 444 555777")
@@ -449,7 +449,7 @@ def test_full_text_search(client, case_factory, elasticsearch):
 
 
 # FILTERING
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_filter_case(client, case_factory, elasticsearch):
     cases = [case_factory() for _ in range(3)]
     search_url = api_reverse("cases-list")
@@ -508,7 +508,7 @@ def test_filter_case(client, case_factory, elasticsearch):
     assert case_to_test.docket_number == result['docket_number']
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, elasticsearch):
     search_url = api_reverse("cases-list")
     cases = [case_factory() for _ in range(4)]
@@ -532,7 +532,7 @@ def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, e
     assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_filter_court(client, court):
     # filtering court by jurisdiction
     jur_slug = court.jurisdiction.slug
@@ -549,7 +549,7 @@ def test_filter_court(client, court):
         assert court_name_str in result['name']
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_filter_reporter(client, reporter):
     # filtering reporter by name substring
     reporter_name_str = reporter.full_name.split(' ')[1]
@@ -562,7 +562,7 @@ def test_filter_reporter(client, reporter):
 # NGRAMS
 
 @flaky(max_runs=10)  # ngrammed_cases call to ngram_jurisdictions doesn't reliably work because it uses multiprocessing within pytest environment
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_ngrams_api(client, request):
     ngrammed_cases = request.getfixturevalue('ngrammed_cases')  # load fixture inside test so flaky() can catch errors
 
@@ -588,7 +588,7 @@ def test_ngrams_api(client, request):
 
 
 # API SPECIFICATION ENDPOINTS
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 @pytest.mark.parametrize("url, content_type", [
     (api_reverse("schema-swagger-ui"), 'text/html'),
     (api_reverse("schema-json", args=['.json']), 'application/json'),
@@ -599,14 +599,13 @@ def test_swagger(client, url, content_type):
     check_response(response, content_type=content_type)
 
 
-@pytest.mark.django_db
 def test_redoc(client):
     response = client.get(api_reverse("schema-redoc"))
     check_response(response, content_type="text/html")
 
 
 # PAGINATION
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_pagination(client, case_factory, elasticsearch):
     cases = [case_factory() for _ in range(3)]
 

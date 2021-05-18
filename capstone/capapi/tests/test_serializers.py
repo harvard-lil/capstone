@@ -6,7 +6,7 @@ from capapi.documents import CaseDocument
 from capapi.resources import api_reverse
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_CaseDocumentSerializerWithCasebody(api_request_factory, case_factory, elasticsearch):
     cases = [case_factory() for i in range(3)]
     case_documents = [CaseDocument.get(c.id) for c in cases]

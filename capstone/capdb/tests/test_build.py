@@ -9,13 +9,13 @@ from io import StringIO
 from django.core import management
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_makemigrations():
     out = StringIO()
     management.call_command('makemigrations', dry_run=True, stdout=out)
     assert out.getvalue() == 'No changes detected\n', "Model changes detected. Please run ./manage.py makemigrations"
 
-def test_pip_compile__parallel():
+def test_pip_compile():
     existing_requirements = Path('requirements.txt').read_bytes()
     subprocess.check_call(["fab", "pip-compile"], stdout=subprocess.PIPE,
                           # strip COV_ environment variables so pip-compile doesn't try to report test coverage
@@ -23,5 +23,5 @@ def test_pip_compile__parallel():
     new_requirements = Path('requirements.txt').read_bytes()
     assert new_requirements == existing_requirements, "Changes detected to requirements.in. Please run fab pip-compile"
 
-def test_flake8__parallel():
+def test_flake8():
     subprocess.check_call('flake8')

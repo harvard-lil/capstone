@@ -10,7 +10,7 @@ from capapi.tests.helpers import is_cached, check_response
 from capweb.helpers import reverse
 from capdb.models import CaseMetadata
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 @pytest.mark.parametrize("view_name, cache_clients, get_kwargs", [
     # docs pages are cached for both logged in and logged out
     ("home",                ["client", "auth_client", "token_auth_client"],     {}),
@@ -70,7 +70,7 @@ def test_cache_headers(request, elasticsearch,
         "" if cache_actual else "not ",
     )
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_cache_case_cite(client, unrestricted_case, restricted_case, elasticsearch):
     """ Single-case cite.case.law page should be cached only if case is whitelisted. """
     url = CaseMetadata.objects.get(pk=unrestricted_case.id).get_frontend_url()
@@ -86,8 +86,9 @@ def test_cache_case_cite(client, unrestricted_case, restricted_case, elasticsear
     check_response(response, content_includes=restricted_case.name)
     assert not is_cached(response)
 
-@pytest.mark.django_db
-def test_cache_headers_with_bad_auth(client, case):
+
+@pytest.mark.django_db(databases=['default', 'capdb'])
+def test_cache_headers_with_bad_auth(client):
     # visiting homepage when logged out is cached ...
     response = client.get(reverse('home'))
     assert is_cached(response)

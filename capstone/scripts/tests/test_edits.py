@@ -4,7 +4,7 @@ from capdb.models import Court
 from scripts.edits import merge_courts
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_merge_courts(case, court):
     wrong_court = Court(name=court.name, name_abbreviation=court.name_abbreviation, jurisdiction_id=court.jurisdiction_id, slug=court.slug+'-1')
     wrong_court.save()

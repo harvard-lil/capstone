@@ -55,7 +55,7 @@ def test_versioning(transactional_db, versioned_fixture_name, request):
     assert previous_version.orig_xml == original_instance.orig_xml
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db(databases=['capdb'], transaction=True)
 def test_last_updated(case, extracted_citation_factory, elasticsearch):
     # creating case creates a timestamp
     timestamp = get_timestamp(case)

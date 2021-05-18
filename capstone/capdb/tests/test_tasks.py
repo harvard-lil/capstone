@@ -24,7 +24,7 @@ from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_chan
     set_case_text
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_export_cases(case_factory, tmp_path, django_assert_num_queries, elasticsearch, monkeypatch):
     version = date.today().strftime('%Y%m%d')
     case1 = case_factory(jurisdiction__slug="aaa", volume__reporter__short_name="aaa", jurisdiction__whitelisted=False)
@@ -102,7 +102,6 @@ def test_export_cases(case_factory, tmp_path, django_assert_num_queries, elastic
             assert 'casebody' not in records[0]
 
 
-@pytest.mark.django_db
 def test_write_inventory_files(tmpdir):
     # write inventory files to a temporary directory
     td = str(tmpdir)
@@ -124,7 +123,7 @@ def test_write_inventory_files(tmpdir):
             assert file_path[len('test_data/'):] in contents
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_show_slow_queries(capsys):
     cursor = connections['capdb'].cursor()
     try:
@@ -137,7 +136,7 @@ def test_show_slow_queries(capsys):
         pytest.skip("pg_stat_statements is not in shared_preload_libraries")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_get_court_count_for_jur(court, jurisdiction):
     court.jurisdiction = jurisdiction
     court.save()
@@ -148,7 +147,7 @@ def test_get_court_count_for_jur(court, jurisdiction):
     assert date.day == datetime.now().day
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_get_case_count_for_jur(three_cases, jurisdiction):
     for case in three_cases:
         case.jurisdiction = jurisdiction
@@ -164,7 +163,7 @@ def test_get_case_count_for_jur(three_cases, jurisdiction):
     assert results['total'] == CaseMetadata.objects.filter(jurisdiction=jurisdiction.id).count()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_get_reporter_count_for_jur(reporter, jurisdiction):
     reporter.jurisdictions.add(jurisdiction)
     reporter.full_name = 'Alabama Reports'
@@ -184,7 +183,7 @@ def test_get_reporter_count_for_jur(reporter, jurisdiction):
     assert results['total'] == Reporter.objects.filter(jurisdictions=jurisdiction.id).count()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_case_frontend_url(case_factory):
     case_metadata = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")
     citation = case_metadata.citations.first()
@@ -197,7 +196,7 @@ def test_update_case_frontend_url(case_factory):
     assert case_metadata.frontend_url == "/test/123/456/"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_case_frontend_url_hyphen_cite(case):
     case.volume.volume_number = "123"
     case.volume.save()
@@ -210,7 +209,7 @@ def test_update_case_frontend_url_hyphen_cite(case):
     assert case.frontend_url == "/test/123/456/%s/" % citation.case_id
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_case_frontend_url_bad_cite(case):
     citation = case.citations.first()
     citation.cite = "BAD"
@@ -220,7 +219,7 @@ def test_update_case_frontend_url_bad_cite(case):
     assert case.frontend_url == "/%s/%s/%s/%s/" % (case.reporter.short_name_slug, case.volume.volume_number, case.first_page, citation.case_id)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_redact_id_numbers(case_factory):
     # redact some numbers
     case = case_factory(body_cache__text="text 123-45-6789  # normal SSN")
@@ -259,7 +258,7 @@ def test_redact_id_numbers(case_factory):
     }
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_extract_citations(case_factory, elasticsearch):
     legitimate_cites = [
         "225 F. Supp. 552",                         # correct
@@ -309,13 +308,13 @@ def test_extract_citations(case_factory, elasticsearch):
     assert {(c.id, c.cite) for c in new_cites} == ({(c.id, c.cite) for c in cites} | {(added_cite.id, added_cite.cite)}) - {(removed_cite.id, removed_cite.cite)}
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_elasticsearch_for_vol(three_cases, volume_metadata, django_assert_num_queries, elasticsearch):
     with django_assert_num_queries(select=2, update=1):
         update_elasticsearch_for_vol(volume_metadata.barcode)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_assert_num_queries, elasticsearch):
     cases = [case_factory(volume=volume_metadata) for c in range(3)]
 
@@ -344,8 +343,8 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 
 
-@pytest.mark.django_db
-def test_run_text_analysis(transactional_db, reset_sequences, case):
+@pytest.mark.django_db(databases=['capdb'], transaction=True)
+def test_run_text_analysis(reset_sequences, case):
     timestamp = get_timestamp(case)
 
     # can update text analysis
@@ -367,7 +366,7 @@ def test_run_text_analysis(transactional_db, reset_sequences, case):
     assert sorted((a.key, a.value) for a in case.analysis.all()) == expected_analysis
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_factory, jurisdiction_factory):
     output_folder = Path(str(tmpdir))
 
@@ -456,7 +455,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
         assert set(c.cite for c in Citation.objects.filter(case_id=r['id'])) == set(r['cites'].split('; '))
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db(databases=['capdb'], transaction=True)
 def test_pagerank(tmp_path, reset_sequences, three_cases):
     """ Test calculate_pagerank_scores and load_pagerank_scores """
     citations_file = tmp_path / 'citations.csv.gz'

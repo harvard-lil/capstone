@@ -25,7 +25,7 @@ events = [
 timeline_data = {"title": "My first timeline", "description": "And my very best one", "cases": cases, "events": events}
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_uuid_workflow(cap_user):
     timeline1 = Timeline(timeline=timeline_data, created_by=cap_user)
     timeline1.save()

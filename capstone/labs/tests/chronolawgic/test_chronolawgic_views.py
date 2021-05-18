@@ -31,20 +31,14 @@ events = [
 complete_timeline = {"title": "My first timeline", "description": "And my very best one", 'events': events, 'cases': cases}
 
 
-@pytest.mark.django_db
-def test_labs_page(client):
-    response = client.get(reverse('labs:labs'))
-    check_response(response, content_includes="CAP LABS")
-
-
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_show_timelines(client, auth_client):
     response = client.get(reverse('labs:chronolawgic-dashboard'))
     # check to see it includes api urls since everything else is rendered in Vue
     check_response(response, content_includes="chronolawgic_api_create")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_create_timeline(client, auth_client):
     # should not allow timeline creation to not-authenticated users
     response = client.post(create_url, timeline)
@@ -58,11 +52,10 @@ def test_create_timeline(client, auth_client):
     assert Timeline.objects.first().timeline['categories'] == []
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_clobber_stopper(auth_client):
     # should not allow editing more than 1 case or event per request
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=complete_timeline)
-
 
     # modify one event field
     modified_timeline = copy.deepcopy(complete_timeline)
@@ -127,7 +120,7 @@ def test_clobber_stopper(auth_client):
     check_response(response, status_code=500, content_type="application/json")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_timeline_retrieve(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     # allow retrieval by anyone
@@ -158,7 +151,7 @@ def test_timeline_retrieve(client, auth_client):
     assert timelines_response[0]["event_count"] == len(events)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_timeline_update(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     response = auth_client.get(retrieve_url + tl.uuid)
@@ -185,7 +178,7 @@ def test_timeline_update(client, auth_client):
     assert response.json()["timeline"]["title"] != timeline["title"]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_timeline_update_validation(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
@@ -268,7 +261,7 @@ def test_timeline_update_validation(client, auth_client):
                    content_includes="Unexpected case field(s)")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_timeline_delete(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
 

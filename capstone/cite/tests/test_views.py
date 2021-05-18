@@ -20,7 +20,7 @@ from test_data.test_fixtures.helpers import set_case_text
 def full_url(document):
     return "{}{}".format(reverse('cite_home'), document.frontend_url.replace('/', '', 1))
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_home(client, django_assert_num_queries, reporter):
     """ Test / """
     with django_assert_num_queries(select=2):
@@ -28,7 +28,7 @@ def test_home(client, django_assert_num_queries, reporter):
     check_response(response, content_includes=reporter.full_name)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_series(client, django_assert_num_queries, volume_metadata_factory):
     """ Test /series/ """
 
@@ -55,7 +55,7 @@ def test_series(client, django_assert_num_queries, volume_metadata_factory):
     check_response(response, status_code=404)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_volume(client, django_assert_num_queries, case_factory, elasticsearch):
     """ Test /series/volume/ """
     cases = [case_factory(
@@ -82,7 +82,7 @@ def test_volume(client, django_assert_num_queries, case_factory, elasticsearch):
     check_response(response, status_code=200)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_case_not_found(client, django_assert_num_queries, elasticsearch):
     """ Test /series/volume/case/ not found """
     with django_assert_num_queries(select=1):
@@ -90,7 +90,7 @@ def test_case_not_found(client, django_assert_num_queries, elasticsearch):
     check_response(response, content_includes='Search for "123 Fake 456" in other databases')
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_cases_multiple(client, django_assert_num_queries, case_factory, elasticsearch):
     """ Test /series/volume/case/ with multiple matching cases """
     cases = [case_factory(
@@ -118,7 +118,7 @@ def test_cases_multiple(client, django_assert_num_queries, case_factory, elastic
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 @pytest.mark.parametrize('response_type', ['html', 'pdf'])
 def test_single_case(client, auth_client, token_auth_client, case_factory, elasticsearch, response_type, django_assert_num_queries, settings):
     """ Test /series/volume/case/ with one matching case """
@@ -188,7 +188,7 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
         assert c.auth_user.case_allowance_remaining == previous_case_allowance - 1
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_case_series_name_redirect(client, unrestricted_case, elasticsearch):
     """ Test /series/volume/case/ with series redirect when not slugified"""
     cite = unrestricted_case.citations.first()
@@ -220,7 +220,7 @@ def get_schema(response):
     script = scripts[0]
     return json.loads(script.string)
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearch):
 
     ### whitelisted case
@@ -249,7 +249,7 @@ def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearc
     assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
 
     # our bot has seen too many cases!
@@ -271,13 +271,13 @@ def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
     assert schema["hasPart"]["isAccessibleForFree"] == 'False'
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_no_index(auth_client, case_factory, elasticsearch):
     case = case_factory(no_index=True)
     check_response(auth_client.get(full_url(case)), content_includes='content="noindex"')
 
 
-@pytest.mark.django_db()
+@pytest.mark.django_db(databases=['capdb'])
 def test_robots(client, case):
     case_string = "Disallow: %s" % case.frontend_url
 
@@ -299,7 +299,7 @@ def test_robots(client, case):
     check_response(response, content_type="text/plain", content_includes='User-agent: *', content_excludes=case_string)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, caplog):
     """ Test state-level geolocation logging in case browser """
     if not Path(settings.GEOIP_PATH).exists():
@@ -312,7 +312,7 @@ def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, cap
 
 ### Extract single page image from a volume PDF with VolumeMetadata's extract_page_image ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
     volume_metadata.pdf_file = "fake_volume.pdf"
     volume_metadata.save()
@@ -324,7 +324,7 @@ def test_retrieve_page_image(admin_client, auth_client, volume_metadata):
     check_response(response, status_code=302)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_case_factory):
     unrestricted_case = unrestricted_case_factory(first_page_order=1, last_page_order=3)
     url = reverse('case_editor', args=[unrestricted_case.pk], host='cite')
@@ -383,7 +383,7 @@ def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_ca
     assert log_entry.user_id == admin_client.auth_user.id
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_case_cited_by(client, case_factory, elasticsearch):
     dest_case = case_factory()
     dest_cite = dest_case.citations.first()
@@ -402,7 +402,7 @@ def test_case_cited_by(client, case_factory, elasticsearch):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_random_case(client, case_factory, elasticsearch):
     """ Test random endpoint returns both cases eventually. """
     # set up two cases

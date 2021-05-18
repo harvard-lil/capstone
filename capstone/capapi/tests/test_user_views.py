@@ -16,7 +16,7 @@ from capweb.helpers import reverse
 
 ### register, verify email address, login ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_registration_flow(client, restricted_case, elasticsearch, email_blocklist_factory):
 
     # can't register without agreeing to TOS
@@ -94,7 +94,7 @@ def test_registration_flow(client, restricted_case, elasticsearch, email_blockli
     })
     check_response(response, content_includes="A user with the same email address has already registered.")
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_login_wrong_password(auth_user, client):
     response = client.post(reverse('login'), {
         'username': auth_user.email,
@@ -103,7 +103,7 @@ def test_login_wrong_password(auth_user, client):
     check_response(response)
     assert "Please enter a correct email and password." in response.content.decode()
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_resend_verification(client, mailoutbox):
     # create new user
     response = client.post(reverse('register'), {
@@ -126,7 +126,7 @@ def test_resend_verification(client, mailoutbox):
     # same verification email sent
     assert mailoutbox[0].body == mailoutbox[1].body
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_registration_after_login(auth_user, auth_client):
     response = auth_client.get(reverse('user-details'))
     check_response(response)
@@ -143,7 +143,7 @@ def test_registration_after_login(auth_user, auth_client):
     check_response(response, status_code=200)
     assert "<title>Register | Caselaw Access Project</title>" in response.content.decode()
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_redirect_following_login(auth_user, auth_client):
     """if ?next=url is not set, user gets directed to '/' after login"""
     auth_client.logout()
@@ -162,7 +162,7 @@ def test_redirect_following_login(auth_user, auth_client):
 
 ### view account details ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_view_user_details(auth_user, auth_client):
     """ User can see their API token """
     response = auth_client.get(reverse('user-details'))
@@ -183,7 +183,7 @@ def test_view_user_details(auth_user, auth_client):
 
 ### test reset api key ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_change_api_key(auth_user, auth_client, client, mailoutbox):
     # Check/store original API key as visible to user
     original_token = auth_user.get_api_key()
@@ -227,7 +227,7 @@ def test_change_api_key(auth_user, auth_client, client, mailoutbox):
     ("auth_client", False),
     ("unlimited_auth_client", True)
 ])
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_bulk_data_list(request, case_export, private_case_export, client_fixture, can_see_private):
     client = request.getfixturevalue(client_fixture)
     public_url = api_reverse('caseexport-download', args=[case_export.pk])
@@ -254,7 +254,7 @@ def check_zip_response(response):
     ("unlimited_auth_client", "case_export", 200),
     ("unlimited_auth_client", "private_case_export", 200),
 ])
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb'])
 def test_case_export_download(request, client_fixture, export_fixture, status_code):
     client = request.getfixturevalue(client_fixture)
     export = request.getfixturevalue(export_fixture)
@@ -266,7 +266,7 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
 
 ### research access request ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_unaffiliated_research_access_request(auth_client, mailoutbox):
     # can view form
     response = auth_client.get(reverse('unaffiliated-research-request'))
@@ -289,7 +289,7 @@ def test_unaffiliated_research_access_request(auth_client, mailoutbox):
         assert getattr(research_request, k) == v
         assert v in message
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_harvard_research_access_request(auth_client, mailoutbox):
     user = auth_client.auth_user
 
@@ -324,7 +324,7 @@ def test_harvard_research_access_request(auth_client, mailoutbox):
     user.refresh_from_db()
     assert user.harvard_access is True
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_affiliated_research_access_request(auth_client, contract_approver_auth_client, mailoutbox):
     user = auth_client.auth_user
 
@@ -389,7 +389,7 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
         assert v in contract.contract_html
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_delete_account(auth_user, auth_client):
     assert auth_user.deactivated_by_user is False
     response = auth_client.post(reverse('delete_account'))

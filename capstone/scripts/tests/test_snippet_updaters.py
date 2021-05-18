@@ -3,7 +3,7 @@ import json
 from scripts import update_snippets
 from capdb.models import Snippet
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_map_numbers(case_factory, jurisdiction):
     [case_factory(jurisdiction=jurisdiction) for i in range(3)]
     update_snippets.update_map_numbers()
@@ -14,7 +14,7 @@ def test_map_numbers(case_factory, jurisdiction):
     assert parsed[jurisdiction.slug]['volume_count'] == 3
     assert parsed[jurisdiction.slug]['page_count'] == 15
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_cases_by_decision_date(case_factory):
     cases = [case_factory() for i in range(3)]
     update_snippets.cases_by_decision_date_tsv()
@@ -22,7 +22,7 @@ def test_cases_by_decision_date(case_factory):
     for case in cases:
         assert case.decision_date_original in cases_by_decision_date.contents
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_cases_by_jurisdiction(jurisdiction, case_factory):
     [case_factory(jurisdiction=jurisdiction) for i in range(3)]
     update_snippets.cases_by_jurisdiction_tsv()
@@ -32,7 +32,7 @@ def test_cases_by_jurisdiction(jurisdiction, case_factory):
     assert rows[0].split("\t")[1] == '"%s"' % jurisdiction.name_long
     assert rows[0].split("\t")[2] == '3'
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_cases_by_reporter(reporter, case_factory):
     [case_factory(reporter=reporter) for i in range(3)]
     update_snippets.cases_by_reporter_tsv()
@@ -42,21 +42,21 @@ def test_cases_by_reporter(reporter, case_factory):
     assert rows[0].split("\t")[1] == '"%s"' % reporter.full_name
     assert rows[0].split("\t")[2] == '3'
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_search_jurisdiction_list(jurisdiction):
     update_snippets.search_jurisdiction_list()
     jurisdictions = Snippet.objects.get(label='search_jurisdiction_list')
     parsed = json.loads(jurisdictions.contents)
     assert parsed[0][1] == jurisdiction.name_long
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_search_court_list(court):
     update_snippets.search_court_list()
     courts = Snippet.objects.get(label='search_court_list')
     parsed = json.loads(courts.contents)
     assert parsed[0][1] == '%s: %s' % (court.jurisdiction.name_long, court.name)
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_search_reporter_list(reporter):
     update_snippets.search_reporter_list()
     reporters = Snippet.objects.get(label='search_reporter_list')

@@ -14,7 +14,7 @@ from capapi.documents import CaseDocument
 ### test our model helpers ###
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_fetch_relations(case, court, django_assert_num_queries):
     case = CaseMetadata.objects.get(pk=case.pk)
     with django_assert_num_queries(select=2):
@@ -49,7 +49,7 @@ def test_fetch_relations(case, court, django_assert_num_queries):
 
 ### Reporter ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_set_reporter_short_name(case_factory):
     case = case_factory(citations__cite="123 U.S. 456", volume__reporter__short_name="U.S.")
     reporter = case.reporter
@@ -72,7 +72,7 @@ def test_set_reporter_short_name(case_factory):
 
 ### VolumeMetadata ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_volume_save_slug_update(volume_metadata):
     original_volume_number = volume_metadata.volume_number
     volume_metadata.volume_number = "77777"
@@ -90,7 +90,7 @@ def test_volume_save_slug_update(volume_metadata):
     assert slugify(volume_metadata.volume_number) == volume_metadata.volume_number_slug
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_volume_unredact(reset_sequences, case_factory):
     # set up a redacted case
     case = case_factory(volume__redacted=True, volume__pdf_file='')
@@ -173,7 +173,7 @@ def test_volume_unredact(reset_sequences, case_factory):
 
 ### BaseXMLModel ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
     # make sure that XMLField.from_db_value is doing its job and putting the correct XML declaration back in:
     volume_xml.orig_xml = unaltered_alto_xml
@@ -185,7 +185,7 @@ def test_database_should_not_modify_xml(volume_xml, unaltered_alto_xml):
 
 ### CaseMetadata ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_withdraw_case(case_factory):
     withdrawn = case_factory()
     replaced_by = case_factory()
@@ -197,7 +197,7 @@ def test_withdraw_case(case_factory):
     assert 'This case was withdrawn and replaced' in withdrawn.body_cache.xml
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_redact_case(case_factory):
     case = case_factory(body_cache__text="foo bar baz boo")
     case.no_index_redacted = {"Case text": "bar", "Case text 0": "foo"}
@@ -205,7 +205,7 @@ def test_redact_case(case_factory):
     assert case.body_cache.text.replace('\n', '') == '[ foo ][ bar ] 1[ bar ] 2[ bar ] 3'
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_frontend_urls(case_factory, django_assert_num_queries):
     case1 = case_factory(citations__cite="123 Test 456", volume__volume_number="123", citations__type="official")
     case2 = case_factory(citations__cite="124 Test 456", volume__volume_number="124", citations__type="official")
@@ -237,7 +237,7 @@ def test_update_frontend_urls(case_factory, django_assert_num_queries):
     assert case1.frontend_url == "/test/123/456/"
     assert case2.frontend_url == "/test/124/456/"
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_set_duplicate(reset_sequences, case, elasticsearch):
     # make sure set_duplicate function updates the cases and removes the cases from the elasticsearch index
     duplicate_of = VolumeMetadata.objects.exclude(pk=case.volume.pk).first()
@@ -248,7 +248,7 @@ def test_set_duplicate(reset_sequences, case, elasticsearch):
     update_elasticsearch_from_queue()
     assert CaseDocument.search().filter("term", volume__barcode=case.volume.barcode).count() == 0
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_set_reporter(reset_sequences, case_factory, elasticsearch, reporter_factory):
     case = case_factory(citations__cite="123 U.S. 456", volume__reporter__short_name="U.S.")
     volume = case.volume
@@ -263,7 +263,7 @@ def test_set_reporter(reset_sequences, case_factory, elasticsearch, reporter_fac
     case.refresh_from_db()
     assert case.frontend_url == '/mass/123/456/'
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_set_volume_number(reset_sequences, case, elasticsearch):
     # make sure set_volume_number function updates the reporter values in the cases and re-indexes properly
     new_volume_number = '2567'
@@ -289,7 +289,7 @@ def test_set_volume_number(reset_sequences, case, elasticsearch):
     assert list(new_frontend_url_vols)[0] == new_volume_number
     assert old_frontend_url_vols != new_frontend_url_vols
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory):
     set_case_text(case, "Foo v. Bar, 1 U.S. 1. ", "Case text 2")
     target_case = case_factory(citations__cite="1 U.S. 1")
@@ -334,7 +334,7 @@ def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory
         '  </opinion>\n'
         '</casebody>\n')
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_update_decision_date_on_save(three_cases):
     for case in three_cases:
         [year, month, day] = [int(val) for val in case.decision_date_original.split('-')]
@@ -348,7 +348,7 @@ def test_update_decision_date_on_save(three_cases):
 
 ### EditLog and EditLogTransaction ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_data_edit(volume_metadata):
     with EditLog(description="test").record() as edit:
         volume_metadata.publisher = "foo"
@@ -361,7 +361,7 @@ def test_data_edit(volume_metadata):
 
 ### CaseImage ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_queries):
     assert not CaseImage.objects.exists()
 
@@ -380,7 +380,7 @@ def test_retrieve_and_store_images(case, inline_image_src, django_assert_num_que
 
 ### Extract single page image from a volume PDF with VolumeMetadata's extract_page_image ###
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_extract_page_image(volume_metadata):
     volume_metadata.pdf_file = "fake_volume.pdf"
     volume_metadata.save()

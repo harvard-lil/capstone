@@ -8,7 +8,8 @@ from capapi import api_reverse
 from capapi.tests.helpers import check_response
 
 
-@pytest.mark.django_db
+
+@pytest.mark.django_db(databases=['capdb'])
 def test_ingest_courtlistener(client, elasticsearch):
     fabfile.ingest_courtlistener(Path(settings.BASE_DIR) / "test_data/courtlistener")
     response = client.get(api_reverse("resolve-list"), {'q': '254 P.3d 649'})

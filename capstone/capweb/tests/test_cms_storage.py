@@ -3,7 +3,7 @@ import pytest
 from capweb.models import GallerySection, GalleryEntry, CMSPicture
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_cms_image_storage():
     section = GallerySection(
         title = "Test Title"
