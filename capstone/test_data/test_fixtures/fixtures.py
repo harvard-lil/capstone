@@ -4,7 +4,6 @@ from datetime import datetime
 from functools import wraps
 from urllib.parse import urlparse
 from time import time
-from xdist.scheduler import LoadFileScheduling
 import mock
 from moto import mock_s3
 from retry.api import retry_call
@@ -12,8 +11,6 @@ from elasticsearch.exceptions import ConnectionError
 
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
-from django.core.management import call_command
-from django.db import connections
 import django.apps
 from django.utils.functional import SimpleLazyObject
 from rest_framework.test import APIRequestFactory, APIClient
@@ -21,26 +18,14 @@ from rest_framework.test import APIRequestFactory, APIClient
 # Before importing any of our code, mock capdb.storages redis clients.
 # Do this here so anything that gets imported later will get the mocked versions.
 import capdb.storages
+from capapi.documents import indexes
+
 capdb.storages.redis_client = SimpleLazyObject(lambda: None)
 capdb.storages.redis_ingest_client = SimpleLazyObject(lambda: None)
 
 # our packages
 import fabfile
 from .factories import *
-
-
-### Pytest scheduling ###
-
-def pytest_xdist_make_scheduler(config, log):
-    """
-        pytest-django doesn't currently work with pytest-xdist and multiple databases.
-        This allows us to run some tests in parallel anyway, by naming tests that don't access the database with
-        "__parallel", putting them into a separate bucket and then running "pytest -n 2".
-    """
-    class ParallelScheduling(LoadFileScheduling):
-        def _split_scope(self, nodeid):
-            return 'parallel' if '__parallel' in nodeid else 'primary'
-    return ParallelScheduling(config, log)
 
 
 ### Database setup ###
@@ -51,10 +36,6 @@ def pytest_xdist_make_scheduler(config, log):
 # deleted with each test), but can set up things like functions and triggers.
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
-    from django.test import TransactionTestCase, TestCase
-    # Set of databases to clean up between tests
-    # See https://github.com/pytest-dev/pytest-django/issues/76
-    TransactionTestCase.databases = TestCase.databases = set(settings.DATABASES.keys())
 
     with django_db_blocker.unblock():
         # set up postgres functions and triggers
@@ -75,6 +56,10 @@ def django_db_setup(django_db_setup, django_db_blocker, redis_proc):
 @pytest.fixture(autouse=True)
 def clear_caches(request):
     """ Clear any caches that might affect later tests. """
+
+    # set default databases for `db` and `transactional_db` fixtures
+    if not hasattr(request.node, '_pytest_django_databases'):
+        request.node._pytest_django_databases = list(settings.DATABASES.keys())
 
     # patch redis clients to point to test-specific redis mock
     import pytest_redis.factories
@@ -170,7 +155,7 @@ def benchmark_requests():
         This is better than measuring the time directly because it doesn't include time used by the test client.
         Example:
 
-            @pytest.mark.django_db
+            @pytest.mark.django_db(databases=['capdb'])
             def test_profile_cases(client, benchmark_requests):
                 url = api_reverse('casemetadata-list')
                 with benchmark_requests() as times:
@@ -385,15 +370,24 @@ def inline_image_src():
 
 
 @pytest.fixture()
-def elasticsearch(settings):
+def elasticsearch(request, settings):
+    # if we are running with xdist, append a suffix to index names to avoid
+    # using the same index from multiple test runners
+    xdist_suffix = getattr(request.config, "workerinput", {}).get("workerid")
+    if xdist_suffix:
+        for index in indexes.values():
+            index._name = index._name.split('_test')[0] + f'_test_{xdist_suffix}'
+
     settings.MAINTAIN_ELASTICSEARCH_INDEX = True
     # retry for 60 seconds to make sure the Elasticsearch server is up
     retry_call(
-        lambda: fabfile.rebuild_search_index(force=True, indexes="cases,resolve", populate="false"),
+        lambda: fabfile.rebuild_search_index(force=True, indexes=",".join(indexes), populate="false"),
         tries=60,
         delay=1,
         exceptions=ConnectionError)
     # populate cases index separately so we don't ingest all of courtlistener into resolve index
     fabfile.populate_search_index()
     yield
-    call_command('search_index', '--delete', '-f')
+    # delete indexes after test is over
+    for index in indexes.values():
+        index.delete(ignore=404)

@@ -1,12 +1,12 @@
 import pytest
 
 
-def test_admin_view__parallel(admin_client):
+def test_admin_view(admin_client):
     response = admin_client.get('/admin/')
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_admin_user_authenticate(admin_client, cap_user):
     """
     Test if we can activate users through the admin panel

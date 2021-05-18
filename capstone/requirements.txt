@@ -1046,9 +1046,9 @@ pytest-cov==2.9.0 \
     --hash=sha256:b6a814b8ed6247bd81ff47f038511b57fe1ce7f4cc25b9106f1a4b106f1d9322 \
     --hash=sha256:c87dfd8465d865655a8213859f1b4749b43448b5fae465cb981e16d52a811424
     # via -r requirements.in
-pytest-django==4.2.0 \
-    --hash=sha256:80f8875226ec4dc0b205f0578072034563879d98d9b1bec143a80b9045716cb0 \
-    --hash=sha256:a51150d8962200250e850c6adcab670779b9c2aa07271471059d1fb92a843fa9
+pytest-django==4.3.0 \
+    --hash=sha256:d1c6758a592fb0ef8abaa2fe12dd28858c1dcfc3d466102ffe52aa8934733dca \
+    --hash=sha256:f96c4556f4e7b15d987dd1dcc1d1526df81d40c1548d31ce840d597ed2be8c46
     # via -r requirements.in
 pytest-forked==1.0.1 \
     --hash=sha256:260d03fbd38d5ce41a657759e8d19bc7c8cfa6d0dcfa36c0bc9742d33bc30742 \

@@ -1,11 +1,9 @@
-import pytest
 from flaky import flaky
 
 from capapi.views.api_views import NgramViewSet
 
 
 @flaky(max_runs=10)  # ngrammed_cases call to ngram_jurisdictions doesn't reliably work because it uses multiprocessing within pytest environment
-@pytest.mark.django_db
 def test_ngrams(request):
     ngrammed_cases = request.getfixturevalue('ngrammed_cases')  # load fixture inside test so flaky() can catch errors
     from capdb.storages import ngram_kv_store_ro  # import here so pytest won't inspect and un-lazy it during test collection

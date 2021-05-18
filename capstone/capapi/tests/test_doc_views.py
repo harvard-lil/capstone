@@ -4,7 +4,7 @@ from capapi.tests.helpers import check_response
 from django.conf import settings
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_get_docs_urls(client, jurisdiction, case, reporter):
     """
     Test that every url in docs.html is functional

@@ -10,7 +10,7 @@ from capapi.tests.helpers import check_response
 from capweb.helpers import reverse
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_site_limits(client, auth_client, restricted_case, mailoutbox, elasticsearch):
 
     ### registration limit ###

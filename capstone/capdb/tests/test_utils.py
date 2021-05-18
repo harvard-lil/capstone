@@ -2,7 +2,7 @@ import pytest
 from django.utils.text import slugify
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_generate_unique_slug_automatically(court):
     old_slug = court.slug
     assert old_slug == slugify(court.name_abbreviation)

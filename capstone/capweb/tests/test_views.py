@@ -12,25 +12,24 @@ from capweb.helpers import reverse
 from test_data.test_fixtures.fixtures import CapClient
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_docs(client, elasticsearch, three_cases):
     response = client.get(reverse('docs', args=['site_features/registration']))
     check_response(response)
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['capdb'])
 def test_docs_default(client, elasticsearch, three_cases):
     response = client.get(reverse('docs', args=['']))
     check_response(response, content_includes="Welcome to the Caselaw Access Project Documentation")
 
 
-@pytest.mark.django_db
 def test_legacy_redirect(client):
     response = client.get(reverse('api'))
     check_response(response, 302)
     assert "/docs/" in response.url
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default'])
 def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, monkeypatch):
     overlay_path = Path(settings.BASE_DIR, 'downloads')
     underlay_path = tmp_path
@@ -92,7 +91,7 @@ def test_download_area(client, auth_client, unlimited_auth_client, tmp_path, mon
         assert response.url == reverse('download-files', args=[p2])
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_fetch(client, auth_client, elasticsearch, case_factory):
     cases = [
         case_factory(jurisdiction__whitelisted=True, first_page_order=1, last_page_order=2),
