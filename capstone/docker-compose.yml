@@ -24,7 +24,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: harvardlil/capstone:142-c0fbab54dc552a3ad20f34ddaad67162
+        image: harvardlil/capstone:143-efd312bc82881d1da5ef46cebce39b4c
         volumes:
             # NAMED VOLUMES
             - node_modules:/app/node_modules:delegated
