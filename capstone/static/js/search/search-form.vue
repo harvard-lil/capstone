@@ -1,6 +1,6 @@
 <template>
   <div class="search-form" id="sidebar-menu">
-    <form @submit.prevent="$emit('new-search', fields, endpoint)"
+    <form @submit.prevent="$emit('new-search', $store.getters.fields, $store.getters.endpoint)"
           class="row">
       <div class="col-centered col-11">
         <div class="col-md-2 empty-push-div"></div>
@@ -21,13 +21,13 @@
                     aria-haspopup="true"
                     aria-expanded="false"
                     :aria-describedby="endpoint">
-              {{ endpoint }}
+              {{ $store.getters.endpoint }}
             </button>
 
             <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
               <a v-for="current_endpoint in Object.keys($parent.endpoints)" :key="current_endpoint"
                  @click="changeEndpoint(current_endpoint)"
-                 :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
+                 :class="['dropdown-item', 'search-tab', current_endpoint===$store.getters.endpoint ? 'active' : '']">
                 {{ current_endpoint }}
               </a>
             </div>
@@ -35,23 +35,23 @@
         </div>
 
         <!-- Table showing search fields. Also includes add field and search buttons. -->
-        <div v-if="search_error"
+        <div v-if="$store.getters.search_error"
              role="alert"
              class="alert alert-danger">
-          <p>{{ search_error }}</p>
+          <p>{{ $store.getters.search_error }}</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            {{ search_error }}
+            {{ $store.getters.search_error }}
           </h2>
         </div>
-        <div v-if="Object.keys(field_errors).length"
+        <div v-if="Object.keys($store.getters.field_errors).length"
              role="alert"
              class="alert alert-danger">
           <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
-          <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
+          <p>Please correct the following {{ Object.keys($store.getters.field_errors).length }} error(s):</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
+            Please correct the following {{ Object.keys($store.getters.field_errors).length }} error(s)</h2>
           <ul class="bullets">
-            <li v-for="(error, name) in field_errors"
+            <li v-for="(error, name) in $store.getters.field_errors"
                 :key="'error' + name">
               <a :href="'#'+name">{{ getFieldByName(name).label }}:</a> {{ error }}
             </li>
@@ -59,15 +59,15 @@
         </div>
 
         <div class="search-fields row">
-          <div v-for="field in fields"
+          <div v-for="field in $store.getters.fields"
                class="search-field"
                v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown && !field.default}"
                :key="field.name">
             <!--Fields default-->
             <template v-if="field.default">
-              <field-item :field="field" :choices="choices[field.choices]"></field-item>
-              <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
-                {{ field_errors[field.name] }}
+              <field-item :field="field" :choices="$store.getters.choices[field.choices]"></field-item>
+              <div v-if="field.default && $store.getters.field_errors[field.name]" class="invalid-feedback">
+                {{ $store.getters.field_errors[field.name] }}
               </div>
               <small v-if="field.default && field.info"
                      :id="`help-text-${field.name}`"
@@ -80,10 +80,10 @@
               <template v-if="advanced_fields_shown">
                 <field-item v-if="!field.default"
                             :field="field"
-                            :choices="choices[field.choices]"
+                            :choices="$store.getters.choices[field.choices]"
                             :key="field.name"></field-item>
-                <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
-                  {{ field_errors[field.name] }}
+                <div v-if="!field.default && $store.getters.field_errors[field.name]" class="invalid-feedback">
+                  {{ $store.getters.field_errors[field.name] }}
                 </div>
                 <small v-if="!field.default && field.info"
                        :id="`help-text-${field.name}`"
@@ -103,7 +103,7 @@
 
         <!--Buttons row-->
         <div class="submit-button-group">
-          <search-button :showLoading="showLoading" :endpoint="endpoint"></search-button>
+          <search-button :showLoading="$store.getters.showLoading" :endpoint="endpoint"></search-button>
           <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer"
              v-if="show_explainer">HIDE API CALL
           </a>
@@ -119,17 +119,17 @@
           </div>
           <div class="row">
             <div class="col-12 url-block">
-              <query-explainer :query_url="query_url"></query-explainer>
+              <query-explainer :query_url="$store.getters.query_url"></query-explainer>
             </div>
           </div>
         </div>
         <div class="search-disclaimer">
           <p>
-            Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+            Searching U.S. caselaw published through mid-2018. <a :href="$store.getters.urls.search_docs">Documentation</a>.<br>
           </p>
           <p>
             <span class="bold">Need legal advice?</span> This is not your best option! Read about
-            <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
+            <a :href="$store.getters.urls.search_docs + '#research'">our limitations and alternatives</a>.
           </p>
         </div>
       </div>
@@ -156,26 +156,13 @@ export default {
       otherFields: []
     }
   },
-  props: [
-    'search_error',
-    'field_errors',
-    'urls',
-    'showLoading',
-    'endpoint',
-    'fields',
-    'query_url',
-    'choices',
-  ],
   methods: {
-    valueUpdated() {
-      this.$parent.updateQueryURL();
-    },
     getFieldByName(field_name) {
       return this.$parent.endpoints[this.endpoint].find(field => field.name === field_name);
     },
     changeEndpoint: function (new_endpoint) {
       this.$emit('update:endpoint', new_endpoint)
-      this.valueUpdated();
+      this.$parent.updateQueryURL();
     },
     toggleExplainer() {
       this.show_explainer = !this.show_explainer;
@@ -185,7 +172,7 @@ export default {
     },
   },
   mounted() {
-    this.valueUpdated();
+    this.$parent.updateQueryURL();
   }
 }
 </script>

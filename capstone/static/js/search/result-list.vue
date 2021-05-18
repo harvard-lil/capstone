@@ -7,7 +7,7 @@
       </div>
     </div>
   </div>
-  <div v-else-if="resultsShown" class="results-list-container">
+  <div v-else-if="$store.resultsShown" class="results-list-container">
     <div class="row">
       <div class="col-11 col-centered">
         <!-- show selected fields --->

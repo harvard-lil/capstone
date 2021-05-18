@@ -1,35 +1,26 @@
 <template>
   <div class="search-page">
     <div class="row">
-      <search-form ref="searchform"
-                   v-on:new-search="newSearch"
-                   :class="display_class"
-                   :field_errors="field_errors"
-                   :search_error="search_error"
-                   :endpoint.sync="endpoint"
-                   :fields="fields"
-                   :query_url="query_url"
-                   :choices="choices"
-                   :urls="urls">
+      <search-form ref="searchform" v-on:new-search="newSearch" :class="$store.getters.display_class">
       </search-form>
       <result-list v-on:see-cases="seeCases"
                    v-on:next-page="nextPage"
                    v-on:prev-page="prevPage"
-                   :class="display_class"
-                   :last_page="last_page"
-                   :first_page="first_page"
-                   :page="page"
-                   :results="results"
-                   :resultsType="resultsType"
-                   :resultsShown="resultsShown"
-                   :first_result_number="first_result_number"
-                   :last_result_number="last_result_number"
-                   :endpoint="endpoint"
-                   :hitcount="hitcount"
-                   :chosen_fields="chosen_fields"
-                   :sort_field="sort_field"
-                   :choices="choices"
-                   :urls="urls">
+                   :class="$store.getters.display_class"
+                   :last_page="$store.getters.last_page"
+                   :first_page="$store.getters.first_page"
+                   :page="$store.getters.page"
+                   :results="$store.getters.results"
+                   :resultsType="$store.getters.resultsType"
+                   :resultsShown="$store.getters.resultsShown"
+                   :first_result_number="$store.getters.first_result_number"
+                   :last_result_number="$store.getters.last_result_number"
+                   :endpoint="$store.getters.endpoint"
+                   :hitcount="$store.getters.hitcount"
+                   :chosen_fields="$store.getters.chosen_fields"
+                   :sort_field="$store.getters.sort_field"
+                   :choices="$store.getters.choices"
+                   :urls="$store.getters.urls">
       </result-list>
     </div>
   </div>
@@ -44,11 +35,6 @@ import {encodeQueryData} from '../utils'
 
 export default {
   beforeMount: function () {
-    /*
-      Here we get a number of variables defined in the django template
-     */
-    this.urls = urls;  // eslint-disable-line
-    this.choices = choices;  // eslint-disable-line
   },
   mounted: function () {
     /* Read url state when first loaded. */
@@ -63,208 +49,27 @@ export default {
       this.handleRouteUpdate(route, oldRoute);
     },
     results() {
-      if (this.results.length && !this.resultsShown) {
-        this.resultsShown = true
+      if (this.$store.getters.results.length && !this.$store.getters.resultsShown) {
+        this.$store.commit('resultsShown', true)
       }
     },
     resultsShown() {
       let full_width = "col-md-12";
-      this.display_class = this.results.length ? "results-shown" : full_width;
+      this.$store.commit('display_class ', this.$store.getters.results.length ? "results-shown" : full_width);
     },
     endpoint() {
-      this.fields = this.endpoints[this.endpoint];
+      this.$store.commit('fields', this.$store.getters.endpoints[this.$store.getters.endpoint]);
     }
   },
   components: {SearchForm, ResultList},
   data: function () {
     return {
-      title: "Search",
-      hitcount: null,
-      page: 0,
-      fields: [],
-      chosen_fields: [], // deep copy of fields to show in results
-      results: [],
-      resultsType: '',
-      resultsShown: false,
-      first_result_number: null,
-      last_result_number: null,
-      showLoading: false,
-      cursors: [],
-      endpoint: 'cases',
-      page_size: 10,
-      choices: {},
-      cursor: null,
-      last_page: true,
-      first_page: true,
-      field_errors: {},
-      search_error: null,
-      display_class: '',
-      endpoints: {
-        cases: [
-          {
-            name: "search",
-            value: "",
-            label: "Full-text search",
-            type: "text",
-            placeholder: "Enter keyword or phrase",
-            info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
-            default: true,
-          },
-          {
-            name: "decision_date_min",
-            label: "Date from YYYY-MM-DD",
-            placeholder: "YYYY-MM-DD",
-            type: "text",
-            value: "",
-          },
-          {
-            name: "decision_date_max",
-            value: "",
-            label: "Date to YYYY-MM-DD",
-            placeholder: "YYYY-MM-DD",
-            type: "text",
-          },
-          {
-            name: "name_abbreviation",
-            label: "Case name abbreviation",
-            value: "",
-            placeholder: "Enter case name abbreviation e.g. Taylor v. Sprinkle",
-          },
-          {
-            name: "docket_number",
-            value: "",
-            label: "Docket number",
-            placeholder: "e.g. Civ. No. 74-289",
-          },
-          {
-            name: "reporter",
-            value: "",
-            label: "Reporter",
-            choices: 'reporter',
-          },
-          {
-            name: "jurisdiction",
-            value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-          },
-          {
-            name: "cite",
-            value: "",
-            label: "Citation e.g. 1 Ill. 17",
-            placeholder: "e.g. 1 Ill. 17",
-          },
-          {
-            name: "court",
-            value: "",
-            label: "Court",
-            placeholder: "e.g. ill-app-ct",
-            hidden: true,
-          },
-        ],
-        courts: [
-          {
-            name: "name",
-            value: "",
-            label: "Name e.g. 'Illinois Supreme Court'",
-            placeholder: "e.g. 'Illinois Supreme Court'",
-            default: true,
-          },
-          {
-            name: "jurisdiction",
-            value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-          },
-          {
-            name: "name_abbreviation",
-            value: "",
-            placeholder: "e.g. 'Ill.'",
-            label: "Name abbreviation e.g. 'Ill.'",
-          },
-          {
-            name: "slug",
-            value: "",
-            label: "Slug e.g. ill-app-ct",
-            placeholder: "e.g. ill-app-ct",
-          },
-        ],
-        jurisdictions: [
-          {
-            name: "name_long",
-            value: "",
-            label: "Long Name e.g. 'Illinois'",
-            default: true,
-          },
-          {
-            name: "name",
-            value: "",
-            label: "Name e.g. 'Ill.'",
-          },
-          {
-            name: "whitelisted",
-            value: "",
-            label: "Whitelisted Jurisdiction",
-            choices: 'whitelisted',
-            info: "Whitelisted jurisdictions are not subject to the 500 case per day access limitation."
-          }
-        ],
-        reporters: [
-          {
-            name: "full_name",
-            value: "",
-            label: "Full Name",
-            default: true,
-          },
-          {
-            name: "jurisdiction",
-            value: "",
-            label: "Jurisdiction",
-            choices: 'jurisdiction',
-
-          },
-          {
-            name: "short_name",
-            value: "",
-            label: "Short Name",
-            placeholder: "e.g. 'Ill. App.'",
-          },
-
-          {
-            name: "start_year",
-            value: "",
-            type: "number",
-            min: "1640",
-            max: "2018",
-            label: "Start Year",
-            placeholder: "e.g. '1893'",
-            info: "Year in which the reporter began publishing."
-          },
-          {
-            name: "end_year",
-            value: "",
-            type: "number",
-            min: "1640",
-            max: "2018",
-            label: "End Year",
-            placeholder: "e.g. '1894'",
-            info: "Year in which the reporter stopped publishing."
-          },
-
-        ]
-      },
-      sort_field: {
-        name: "ordering",
-        value: "relevance",
-        label: "Result Sorting",
-        choices: 'sort',
-      },
-      query_url: '',
+      'test': 'test'
     }
   },
   methods: {
     reset_field(fieldname) {
-      this.fields.map((f) => {
+      this.$store.getters.fields.map((f) => {
         if (f.name === fieldname) {
           f.value = "";
         }
@@ -273,7 +78,7 @@ export default {
       this.newSearch();
     },
     create_chosen_fields() {
-      this.chosen_fields = JSON.parse(JSON.stringify(this.fields))
+      this.$store.getters.chosen_fields = JSON.parse(JSON.stringify(this.$store.getters.fields))
     },
     routeComparisonString(route) {
       /* Construct a stable comparison string for the given route, ignoring pagination parameters */
@@ -288,14 +93,14 @@ export default {
     },
     updateSearchFormFields(query) {
       // load search fields and values from query params
-      let fields = this.endpoints[this.endpoint];
+      let fields = this.$store.getters.endpoints[this.$store.getters.endpoint];
       fields.forEach((field) => {
         if (field && query[field.name]) {
           field.value = query[field.name];
           fields[field] = field;
         }
       })
-      this.fields = fields;
+      this.$store.commit('fields', fields);
     },
     handleRouteUpdate(route, oldRoute) {
       /*
@@ -308,7 +113,7 @@ export default {
       if (this.routeComparisonString(route) !== this.routeComparisonString(oldRoute)) {
         if (route.name) {
           // route can be unnamed, as in '/'
-          this.endpoint = route.params.endpoint;
+          this.$store.commit('endpoint', route.params.endpoint);
         }
         this.updateSearchFormFields(query);
         this.resetResults();
@@ -318,20 +123,20 @@ export default {
       // handle page=n parameter: if it is 1 or greater, we show the requested search result page
       const newPage = query.page ? parseInt(query.page) - 1 : undefined;
       if (newPage >= 0) {
-        this.page = newPage;
+        this.$store.commit('page', newPage);
         if (query.cursor)
-          this.cursors[this.page] = query.cursor;
+          this.$store.getters.cursors[this.$store.getters.page] = query.cursor; //SPECIAL
 
         // render results if we have enough information to do so:
-        if (this.page === 0 || this.results[this.page] || this.cursors[this.page]) {
+        if (this.$store.getters.page === 0 || this.$store.getters.results[this.$store.getters.page] || this.$store.getters.cursors[this.$store.getters.page]) {
           this.getResultsPage().then(() => {
             this.scrollToResults();
 
             // set variables for pagination display -- result count and back and next buttons
-            this.last_page = !this.cursors[this.page + 1];
-            this.first_page = this.page === 0;
-            this.first_result_number = 1 + this.page_size * this.page;
-            this.last_result_number = this.first_result_number + this.results[this.page].length - 1;
+            this.$store.getters.last_page = !this.$store.getters.cursors[this.$store.getters.page + 1];
+            this.$store.getters.first_page = this.$store.getters.page === 0;
+            this.$store.getters.first_result_number = 1 + this.$store.getters.page_size * this.$store.getters.page;
+            this.$store.getters.last_result_number = this.$store.getters.first_result_number + this.$store.getters.results[this.$store.getters.page].length - 1;
           });
         }
       }
@@ -343,33 +148,33 @@ export default {
       this.goToPage(0)
     },
     nextPage() {
-      this.goToPage(this.page + 1)
+      this.goToPage(this.$store.getters.page + 1)
     },
     prevPage() {
-      this.goToPage(this.page - 1)
+      this.goToPage(this.$store.getters.page - 1)
     },
     goToPage: function (page) {
       /* Update URL hash to show the requested search result page. */
-      this.page = page;
+      this.$store.commit('page', page);
 
       // calculate query string from search fields and pagination variables
       const query = {
-        page: this.page + 1
+        page: this.$store.getters.page + 1
       };
-      if (this.cursors[this.page])
-        query.cursor = this.cursors[this.page];
-      for (const field of this.fields)
+      if (this.$store.getters.cursors[this.$store.getters.page])
+        query.cursor = this.$store.getters.cursors[this.$store.getters.page];
+      for (const field of this.$store.getters.fields)
         if (field.value)
           query[field.name] = field.value;
 
-      if (this.sort_field['value']) {
-        query[this.sort_field['name']] = this.sort_field['value'];
+      if (this.$store.getters.sort_field['value']) {
+        query[this.$store.getters.sort_field['name']] = this.$store.getters.sort_field['value'];
       }
 
       // push new route
       this.$router.push({
         name: 'endpoint',
-        params: {endpoint: this.endpoint},
+        params: {endpoint: this.$store.getters.endpoint},
         query: query,
       });
     },
@@ -380,26 +185,26 @@ export default {
 
         Side Effects:
           - Enables and disables the loading screen overlay
-          - Retrieves an API page, updates the current page's entry in the this.results
+          - Retrieves an API page, updates the current page's entry in the this.$store.results
           - Gets the current and previous cursors with output from getCursorFromUrl using the next page url,
-            and previous page url and updates this.cursors if necessary
+            and previous page url and updates this.$store.cursors if necessary
           - Updates error messages for forms or fields
        */
       // if we haven't changed the endpoint
       // and we already have the page in cache, return immediately
-      if (this.results[this.page]) {
+      if (this.$store.getters.results[this.$store.getters.page]) {
         return Promise.resolve();
       }
       this.updateQueryURL();
-      this.search_error = "";
-      this.field_errors = {};
+      this.$store.getters.search_error = "";
+      this.$store.getters.field_errors = {};
       // Track current fetch operation, so we can throw away results if a fetch comes back after a new one has been
       // submitted by the user.
       const currentFetchID = Math.random();
-      this.currentFetchID = currentFetchID;
-      return fetch(this.query_url)
+      this.$store.commit('currentFetchID', currentFetchID);
+      return fetch(this.$store.getters.query_url)
           .then((response) => {
-            if (currentFetchID !== this.currentFetchID) {
+            if (currentFetchID !== this.$store.getters.currentFetchID) {
               throw "canceled"
             }
             if (!response.ok) {
@@ -408,20 +213,20 @@ export default {
             return response.json();
           })
           .then((results_json) => {
-            this.hitcount = results_json.count;
+            this.$store.commit('hitcount', results_json.count);
 
             // extract cursors
             let next_page_url = results_json.next;
             let prev_page_url = results_json.previous;
-            if (this.page > 1 && !this.cursors[this.page - 1] && prev_page_url)
-              this.cursors[this.page - 1] = this.getCursorFromUrl(prev_page_url);
-            if (!this.cursors[this.page + 1] && next_page_url)
-              this.cursors[this.page + 1] = this.getCursorFromUrl(next_page_url);
+            if (this.$store.getters.page > 1 && !this.$store.getters.cursors[this.$store.getters.page - 1] && prev_page_url)
+              this.$store.cursors[this.$store.getters.page - 1] = this.getCursorFromUrl(prev_page_url);
+            if (!this.$store.getters.cursors[this.$store.getters.page + 1] && next_page_url)
+              this.$store.cursors[this.$store.getters.page + 1] = this.getCursorFromUrl(next_page_url);
 
             // use this.$set to set array value with reactivity -- see https://vuejs.org/v2/guide/list.html#Caveats
-            this.$set(this.results, this.page, results_json.results);
-            this.resultsType = this.endpoint;
-            this.showLoading = false;
+            this.$set(this.$store.results, this.$store.page, results_json.results);
+            this.$store.commit('resultsType', this.$store.getters.endpoint);
+            this.$store.commit('showLoading', false);
           })
           .catch((response) => {
             if (response === "canceled") {
@@ -429,24 +234,24 @@ export default {
             }
 
             // scroll up to show error message
-            this.showLoading = false;
+            this.$store.commit('showLoading', false);
             this.scrollToSearchForm();
 
-            if (response.status === 400 && this.field_errors) {
+            if (response.status === 400 && this.$store.getters.field_errors) {
               // handle field errors
               return response.json().then((object) => {
-                this.field_errors = object;
+                this.$store.getters.field_errors = object;
                 throw response;
               });
             }
 
             if (response.status) {
               // handle non-field API errors
-              this.search_error = "Search error: API returned " +
-                  response.status + " for the query " + this.query_url;
+              this.$store.getters.search_error = "Search error: API returned " +
+                  response.status + " for the query " + this.$store.getters.query_url;
             } else {
               // handle connection errors
-              this.search_error = "Search error: failed to load results from " + this.query_url;
+              this.$store.getters.search_error = "Search error: failed to load results from " + this.$store.getters.query_url;
             }
 
             console.log("Search error:", response);  // eslint-disable-line
@@ -462,15 +267,14 @@ export default {
        Side Effects:
          - 'resets' the following variables.
       */
-      this.title = "Search";
-      this.hitcount = null;
-      this.page = 0;
-      this.results = [];
-      this.first_result_number = null;
-      this.last_result_number = null;
-      this.cursors = [];
-      this.last_page = true;
-      this.first_page = true;
+      this.$store.commit('hitcount', null);
+      this.$store.commit('page', 0);
+      this.$store.commit('results', []);
+      this.$store.commit('first_result_number', null);
+      this.$store.commit('last_result_number', null);
+      this.$store.commit('cursors', []);
+      this.$store.commit('last_page', true);
+      this.$store.commit('first_page', true);
     },
     seeCases: function (parameter, value) {
       /*
@@ -517,28 +321,28 @@ export default {
       if (page_size) {
         params.page_size = page_size
       } else {
-        params.page_size = this.page_size
+        params.page_size = this.$store.getters.page_size
       }
 
 
-      if (this.cursors[this.page]) {
-        params.cursor = this.cursors[this.page];
+      if (this.$store.getters.cursors[this.$store.getters.page]) {
+        params.cursor = this.$store.getters.cursors[this.$store.getters.page];
       }
 
       // build the query parameters using the form fields
-      this.fields.forEach((field) => {
+      this.$store.getters.fields.forEach((field) => {
         if (field['value']) {
           params[field['name']] = field['value'];
         }
       });
-      if (this.sort_field['value']) {
-        params[this.sort_field['name']] = this.sort_field['value'];
+      if (this.$store.getters.sort_field['value']) {
+        params[this.$store.getters.sort_field['name']] = this.$store.getters.sort_field['value'];
       }
 
-      return `${this.urls.api_root}${this.endpoint}/?${encodeQueryData(params)}`;
+      return `${this.$store.getters.urls.api_root}${this.$store.getters.endpoint}/?${encodeQueryData(params)}`;
     },
     updateQueryURL: function () {
-      this.query_url = this.assembleUrl();
+      this.$store.getters.query_url = this.assembleUrl();
     },
   },
 }
