@@ -13,16 +13,7 @@ This is the source code for [case.law](https://case.law), a website written by t
   - [Errata](#errata)
 - [The Capstone Application](#the-capstone-application)
 - [CAPAPI](#capapi)
-- [Installing Capstone and CAPAPI](#installing-capstone-and-capapi)
-  - [Hosts Setup](#hosts-setup)
-  - [Manual Local Setup](#manual-local-setup)
-    - [Install global system requirements](#install-global-system-requirements)
-    - [Clone the repository](#clone-the-repository)
-    - [Set up python virtualenv](#set-up-Python-virtualenv)
-    - [Install application requirements](#install-application-requirements)
-    - [Set up the postgres database and load test data](#set-up-the-postgres-database-and-load-test-data)
-    - [Running the capstone server](#running-the-capstone-server)
-  - [Docker Setup](#docker-setup)
+- [Installing Capstone](#installing-capstone-and-capapi)
 - [Administering and Developing Capstone](#administering-and-developing-capstone)
   - [Testing](#testing)
   - [Requirements](#requirements)
@@ -78,12 +69,7 @@ Capstone is a Django application with a PostgreSQL database which stores and man
 * External metadata, such as the Reporter database
 * Changelog data, tracking changes and corrections
 
-## CAPAPI <a id="capapi"></a>
-CAPAPI is the API with which users can access CAP data.
-
 ## Installing Capstone and CAPAPI <a id="installing-capstone-and-capapi"></a>
-- [Manual Local Setup](#manual-local-setup)
-- [Docker Setup](#docker-setup)
 
 ### Hosts Setup <a id="hosts-setup"></a>
 
@@ -93,95 +79,46 @@ Add the following to `/etc/hosts`:
     127.0.0.1       api.case.test
     127.0.0.1       cite.case.test
 
-### Manual Local Setup <a id="manual-local-setup"></a>
-1. [Install global system requirements](#install-global-system-requirements)
-2. [Clone the repository](#clone-the-repository)
-3. [Set up python virtualenv](#set-up-Python-virtualenv)
-4. [Install application requirements](#install-application-requirements)
-5. [Set up the postgres database and load test data](#set-up-the-postgres-database-and-load-test-data)
-6. [Running the capstone server](#running-the-capstone-server)
-
-
-#### 1. Install global system requirements <a id="install-global-system-requirements"></a>
-- **Python 3.7**— While there shouldn't be any issues with using a more recent version, we will only accept PRs that are fully compatible with 3.7.
-- **MySQL**— On Macs with homebrew, the version installed with `brew install mysql` works fine. On Linux, [apt-get](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-14-04) does the job
-- **Redis**— ([Instructions](https://redis.io/topics/quickstart))
-- **Postgres > 9.5**— ([Instructions](https://www.postgresql.org/download/))
-For Mac developers, [Postgres.app](https://postgresapp.com/) is a nice, simple way to get an instant postgres dev installation.
-- **Git**— ([Instructions](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git))
-
-
-#### 2. Clone the repository <a id="clone-the-repository"></a>
-
-    $ git clone https://github.com/harvard-lil/capstone.git
-
-#### 3. Set up Python virtualenv (optional) <a id="set-up-Python-virtualenv"></a>
-
-    $ cd capstone/capstone  # move to Django subdirectory
-    $ mkvirtualenv -p python3 capstone
-
-#### 4. Install application requirements <a id="install-application-requirements"></a>
-    (capstone)$ pip install -r requirements.txt
-
-This will make a virtualenv entitled "capstone." You can tell that you're inside the virtualenv because your shell prompt will now include the string **(capstone)**.
-
-#### 5. Set up the postgres database and load test data <a id="set-up-the-postgres-database-and-load-test-data"></a>
-
-    (capstone)$ psql -c "CREATE DATABASE capdb;"
-    (capstone)$ psql -c "CREATE DATABASE capapi;"
-    (capstone)$ psql -c "CREATE DATABASE cap_user_data;"
-    (capstone)$ fab init_dev_db  # one time -- set up database tables and development Django admin user, migrate databases
-    (capstone)$ fab ingest_fixtures  # load in our test data
-
-#### 6. Running the capstone server <a id="running-the-capstone-server"></a>
-
-    (capstone)$ fab run      # start up Django server
-
-Capstone should now be running at 127.0.0.1:8000.
-
 ### Docker Setup <a id="docker-setup"></a>
 
 We support local development via `docker compose`. Docker setup looks like this:
 
+Using `pull` first will avoid rebuilding images locally:
+
+    $ docker-compose pull
+
+Start docker:
+
     $ docker-compose up -d
+
+Set up databases:
+
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capdb;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE capapi;"
     $ docker-compose exec db psql --user=postgres -c "CREATE DATABASE cap_user_data;"
-    $ docker-compose exec web fab init_dev_db
-    $ docker-compose exec web fab ingest_fixtures
-    $ docker-compose exec web fab import_web_volumes
-    $ docker-compose exec web fab run
+
+Log into web container:
+
+    $ docker-compose exec web bash
+    # 
+
+From now on all commands starting with `#` are assumed to be run from within `docker-compose exec web bash`.
+
+Load dev data:
+
+    # fab init_dev_db
+    # fab ingest_fixtures
+    # fab import_web_volumes
+
+Run the dev server:
+
+    # fab run
     
 Capstone should now be running at 127.0.0.1:8000.
 
-If you are working on frontend, you probably want to run yarn as well.
-In a new shell:
+If you are working on javascript files, frontend, use `fab run_frontend`:
     
-    $ docker-compose exec web yarn serve
-
-
-***Tip***— these commands can be shortened by adding something like this to .bash_profile:
-
-    alias d="docker-compose exec"
-    alias dfab="d web fab"
-    alias dyarn="d web yarn"
-
-Or:
-
-    alias d="docker-compose exec web"
-    
-And then:
-
-    $ d fab 
-    $ d yarn serve
-   
-   
-***Tip***- If `docker-compose up -d` takes too long to run, you might consider the following:
-    
-    $ cp docker-compose.override.yml.example docker-compose.override.yml
-
-This override file will point the `elasticsearch` service to a `hello-world` image instead of its real settings.
-Use this [override file](https://docs.docker.com/compose/extends/#multiple-compose-files) to override more settings for your own development environment.  
+    # fab run_frontend
 
 ## Administering and Developing Capstone <a id="administering-and-developing-capstone"></a>
 - [Testing](#testing)
@@ -199,47 +136,45 @@ We use pytest for tests. Some notable flags:
 
 Run all tests:
 
-    (capstone)$ pytest
+    # pytest
 
 Run one test:
 
-    (capstone)$ pytest -k test_name
+    # pytest -k test_name
 
-Run tests without capturing stdout, to allow debugging with pdb:
+Drop into pdb on test failure:
 
-    (capstone)$ pytest -s
+    # pytest --pdb
 
 Run tests in parallel for speed:
 
-    (capstone)$ pytest -n <number of processes>
+    # pytest -n 2
 
 ### Requirements <a id="requirements"></a>
 
 Top-level requirements are stored in `requirements.in`. After updating that file, you should run
 
-    (capstone)$ fab pip-compile
+    # fab pip_compile
 
 to freeze all subdependencies into `requirements.txt`.
 
-To ensure that your environment matches `requirements.txt`, you can run
+To upgrade a single requirement to the latest version:
 
-    (capstone)$ pip-sync
-
-This will add any missing packages and remove any extra ones.
+    # fab pip_compile:"-P package_name"
 
 ### Applying model changes <a id="applying-model-changes"></a>
 
 Use Django to apply migrations. After you change `models.py`:
 
-    (capstone)$ ./manage.py makemigrations
+    # ./manage.py makemigrations
 
 This will write a migration script to `cap/migrations`. Then apply:
 
-    (capstone)$ fab migrate
+    # fab migrate
 
 ### Stored Postgres functions <a id="stored-postgres-functions"></a>
 
-Some Capstone features depend on stored functions that allow Postgres to deal with XML and JSON fields.
+Some Capstone features depend on stored functions.
 See `set_up_postgres.py` for documentation.
 
 ### Running Command Line Scripts <a id="running-command-line-scripts"></a>
@@ -266,9 +201,6 @@ and querying of the historical tables.
 Data is kept in sync through the [temporal_tables](https://github.com/arkhipov/temporal_tables) Postgres extension
 and the triggers created in our scripts/set_up_postgres.py file.
 
-Installing the temporal_tables extension is recommended for performance. If not installed, a pure postgres version
-will be installed by set_up_postgres.py; this is handy for development.
-
 ### Download real data locally <a id="download-real-data-locally"></a>
 
 We store complete fixtures for about 1,000 cases in the case.law [downloads section](https://case.law/download/developer/).
@@ -282,34 +214,11 @@ We use [Vue CLI 3](https://cli.vuejs.org/) to compile javascript files, so you c
 transpiled to support the browsers listed in package.json. New javascript entrypoints can be added to vue.config.js and
 included in templates with `{% render_bundle %}`.
 
-If you want to edit javascript files, you will need to install `node` and the package.json javascript packages:
+To see javascript changes live, run the dev server with
 
-    $ brew install node
-    $ npm install -g yarn
-    $ yarn install --frozen-lockfile
+    # fab run_frontend
 
-You can then run the local javascript development server in a separate terminal window, or in the background:
-
-    $ yarn serve
-
-This will cause javascript files to be loaded live from http://127.0.0.1:8080/ and recompiled on save in the background.
-Your changes should be present at http://127.0.0.1:8000.
-
-Installing node and running `yarn serve` is not necessary unless you are editing javascript. On a clean checkout, or
-after shutting down `yarn serve` and running `yarn build`, the local dev server will use the compiled production
-assets. Under the hood, use of the local dev server vs. production assets is controlled by the contents of
-`webpack-stats.json`.
-
-*Installing packages*: You can install new packages with:
-
-    $ yarn add --dev package
-
-*Yarn and docker:* `yarn` will also work inside docker-compose:
-
-    $ docker-compose run web yarn build
-
-`yarn` packages inside docker are stored in `/node_modules`. The `/app/capstone/node_modules` folder is just an empty
-mount to block out any `node_modules` folder that might exist on the host.
+This will start `yarn serve` behind the scenes before calling `fab run`.
 
 ### Elasticsearch <a id="elasticsearch"></a>
 
@@ -326,8 +235,6 @@ It may also be useful to run Kibana to directly query Elasticsearch from a brows
 
 You can then go to Kibana -> Dev Tools to run any of the logged queries, or `GET /_mapping` to see the search indexes.
 
-## Documentation <a id="documentation"></a>
-This readme, code comments, and the API usage docs are the only docs we have. If you want something documented more thoroughly, file an issue and we'll get back to you.
-
-## Examples <a id="examples"></a>
-See the [CAP examples repo](https://github.com/harvard-lil/cap-examples) for some ideas about getting started with this data.
+## Code examples <a id="examples"></a>
+We maintain a separate [CAP examples repo](https://github.com/harvard-lil/cap-examples) for some ideas about 
+using code to interact with CAP data.
