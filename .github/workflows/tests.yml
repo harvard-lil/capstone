@@ -41,7 +41,9 @@ jobs:
       - name: docker-compose up
         run: |
           sudo sysctl -w vm.max_map_count=262144            # for elasticsearch's bootstrap check
-          docker-compose -f docker-compose.yml pull         # separate pull so downloads run in parallel
+          # separate pull so downloads run in parallel, with
+          # --ignore-pull-failures for PRs with new images that haven't been pushed yet:
+          docker-compose -f docker-compose.yml pull --ignore-pull-failures || true
           docker-compose -f docker-compose.yml up -d        # use -f to suppress docker-compose.override.yml
           docker ps -a                                      # show running containers
           docker-compose logs                               # show logs
