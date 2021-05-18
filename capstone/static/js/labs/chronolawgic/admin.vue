@@ -4,13 +4,8 @@
             <h3>Your Chronolawgic Timelines
                 <sup> <a href=".." class="btn btn-tertiary info icon-link">?</a> </sup>
             </h3>
-            <div v-if="this.$store.state.user.is_authenticated !== 'True'" class="add-timeline">
-                You need to be logged in to your free case.law account to use Chronolawgic timelines. For more
-                information on this tool,
-                <a href="../">click here</a>.
-            </div>
         </div>
-        <section id="timeline">
+        <section id="timeline" v-if="this.$store.state.user.is_authenticated === 'True'">
             <template v-if="!this.$store.getters.availableTimelines.length">
                 <p class="welcome">
                     Welcome to Chronolawgic, the Caselaw Access Project tool for creating caselaw-focused timelines. To
@@ -91,6 +86,11 @@
                     </div>
                 </div>
             </template>
+        </section>
+        <section class="not-logged-in" v-else>
+            Welcome! To create Chronolawgic timelines, you must log in to your free
+            <a href="http://case.law">Caselaw Access Project</a> account. For more information on Chronolawgic,
+            <a href="../">click here</a>.
         </section>
     </main>
 
