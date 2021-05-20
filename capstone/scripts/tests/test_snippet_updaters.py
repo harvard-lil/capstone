@@ -16,11 +16,15 @@ def test_map_numbers(case_factory, jurisdiction):
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_cases_by_decision_date(case_factory):
-    cases = [case_factory() for i in range(3)]
+    dates = ["2000", "2000-04", "2000-04", "2000-04-15"]
+    _ = [case_factory(decision_date_original=d) for d in dates]
     update_snippets.cases_by_decision_date_tsv()
     cases_by_decision_date = Snippet.objects.get(label='cases_by_decision_date')
-    for case in cases:
-        assert case.decision_date_original in cases_by_decision_date.contents
+    assert cases_by_decision_date.contents == (
+        '"2000"\t4\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000&decision_date__lte=2000-12-31"\r\n'
+        '"2000-04"\t3\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000-04&decision_date__lte=2000-04-31"\r\n'
+        '"2000-04-15"\t1\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000-04-15&decision_date__lte=2000-04-15"\r\n'
+    )
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_cases_by_jurisdiction(jurisdiction, case_factory):
