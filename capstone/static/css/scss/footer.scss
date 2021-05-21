@@ -115,29 +115,27 @@ footer {
   }
   .sitemap {
     grid-area: sitemap;
-    nav {
-      display: grid;
-      /* sitemap links grid layout */
-      .gallery {
-        grid-area: gallery;
-      }
-      .docs {
-        grid-area: docs;
-      }
-      .caselaw {
-        grid-area: caselaw;
-      }
-      //xs phone
-      grid-template-areas: "docs gallery" "caselaw gallery";
-      grid-template-rows: 4fr 5fr;
-      grid-template-columns: 1fr 1fr;
+    display: grid;
+    /* sitemap links grid layout */
+    .gallery {
+      grid-area: gallery;
+    }
+    .docs {
+      grid-area: docs;
+    }
+    .caselaw {
+      grid-area: caselaw;
+    }
+    //xs phone
+    grid-template-areas: "docs gallery" "caselaw gallery";
+    grid-template-rows: 4fr 5fr;
+    grid-template-columns: 1fr 1fr;
 
-      // tablet/desktop
-      @include media-breakpoint-up(sm) {
-        grid-template-areas: "caselaw gallery docs";
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 1fr;
-      }
+    // tablet/desktop
+    @include media-breakpoint-up(sm) {
+      grid-template-areas: "caselaw gallery docs";
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr;
     }
   }
   .copyright {
@@ -234,38 +232,36 @@ footer {
 
   .sitemap {
     padding-top: 2rem;
-    nav{
-      /* sitemap links styling */
-      h6{
-        font-weight: bold;
-        color: $color-yellow;
-        margin: 0;
-        @include media-breakpoint-up(lg) {
-          font-size: 2rem;
-          line-height: 1rem;
-          margin-bottom: 1rem;
-        }
+    /* sitemap links styling */
+    h6{
+      font-weight: bold;
+      color: $color-yellow;
+      margin: 0;
+      @include media-breakpoint-up(lg) {
+        font-size: 2rem;
+        line-height: 1rem;
+        margin-bottom: 1rem;
       }
-      ul {
-        margin-bottom: 0;
-        li{
-          padding-top: .25rem;
-          a {
-            font-size: $font-size-sm;
-            color: $color-white;
-            @include media-breakpoint-up(lg) {
-              font-size: $font-size-lg;
-            }
+    }
+    ul {
+      margin-bottom: 0;
+      li{
+        padding-top: .25rem;
+        a {
+          font-size: $font-size-sm;
+          color: $color-white;
+          @include media-breakpoint-up(lg) {
+            font-size: $font-size-lg;
           }
-          a:hover {
-            color: $color-violet-light;
-          }
+        }
+        a:hover {
+          color: $color-violet-light;
+        }
 
 
-        }
-        li:first-of-type{
-          padding-top: 0;
-        }
+      }
+      li:first-of-type{
+        padding-top: 0;
       }
     }
     @include media-breakpoint-up(xl) {
