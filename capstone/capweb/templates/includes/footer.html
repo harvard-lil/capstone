@@ -1,5 +1,6 @@
 {% load static %}
 {% load api_url %}
+{% load docs_url %}
 
 <footer class="footer">
     <section class="logo">
@@ -38,9 +39,10 @@
                 <h6>Docs</h6>
                 <ul>
                     <li><a href="{% url 'about' %}">About CAP</a></li>
-                    <li><a href="{% url 'api' %}">API</a></li>
-                    <li><a href="{% url 'bulk-docs' %}">Bulk Data</a></li>
-                    <li><a href="{% url 'docs' '' %}site_features/search">Search</a></li>
+                    <li><a href="{% url 'docs' '' %}">Docs Overview</a></li>
+                    <li><a href="{% docs_url 'api' %}">API</a></li>
+                    <li><a href="{% docs_url 'bulk' %}">Bulk Data</a></li>
+                    <li><a href="{% docs_url 'search' %}">Search</a></li>
                 </ul>
             </section>
         </nav>
