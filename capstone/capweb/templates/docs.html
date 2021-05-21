@@ -7,7 +7,7 @@
 
 {% block content %}
   <div id="container" class="gr_container no-nav">
-    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav()">
+    <nav class="breadcrumb" tabindex="0" onclick="toggle_mobile_nav()" aria-label="breadcrumb">
       <div class="row">
         <div class="col-10">
           {% for parent in parents %}
@@ -21,7 +21,7 @@
         </div>
       </div>
     </nav>
-    <nav class="doc-nav show-nav">
+    <nav class="doc-nav show-nav" aria-label="table of contents">
       <div id="docs_toc" class="panel-group w-100 pl-0">
         {% for item in toc %}
           {% if item.children %}
