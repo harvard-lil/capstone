@@ -1,4 +1,4 @@
-version: '2'
+version: '2.2'
 services:
     db:
         image: harvardlil/capstone-postgres:0.4-027c54f92cc347a7b1f3bdc52a29e4a3
