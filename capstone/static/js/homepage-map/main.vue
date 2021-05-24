@@ -40,7 +40,7 @@
     </div>
     <div class="d-none d-md-block d-lg-block d-xl-block pt-5">
       <div class="row top-section-row">
-        <div class="pl-4 col-4 offset-1 offset-lg-0">
+        <div class="pl-4 col-4 offset-lg-0">
           <h3 class="section-title p-0">
             Our data
           </h3>
