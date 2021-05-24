@@ -76,6 +76,7 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
           DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+          DEPLOY_HEADER: ${{ secrets.DEPLOY_HEADER }}
         run: |
           set -x
           git config user.email "lil@law.harvard.edu"
@@ -93,4 +94,4 @@ jobs:
           fi
           export DEPLOY_CONTENT='{"GITHUB_RUN_NUMBER":"'$GITHUB_RUN_NUMBER'","GITHUB_SHA":"'$GITHUB_SHA'","GITHUB_REF":"'$GITHUB_REF'","GITHUB_REPOSITORY":"'$GITHUB_REPOSITORY'","GITHUB_ACTOR":"'$GITHUB_ACTOR'"}' ;
           export DEPLOY_SIG="sha1=`echo -n "$DEPLOY_CONTENT" | openssl sha1 -hmac $DEPLOY_KEY | sed 's/^.* //'`" ;
-          curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "X-GitHub-Signature: $DEPLOY_SIG"
+          curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "$DEPLOY_HEADER: $DEPLOY_SIG"
