@@ -16,6 +16,14 @@
   z-index: 9999;
 }
 
+.timelines-title {
+  flex: 1 100%;
+  margin-left: 0.5em;
+  font-weight: bold;
+  margin-top: 2em;
+  margin-bottom: -1.5em;
+}
+
 main.admin {
   min-height: 75vh;
 
@@ -27,13 +35,10 @@ main.admin {
     margin: 5rem auto auto auto;
     border-radius: 2px;
   }
+
   .top-menu {
     right: 0.5em;
-    padding: 2em;
-
-    h3 {
-      font-size: 2rem;
-    }
+    padding: 2em 2em 0 2em;
 
     .info {
       display: inline-block;
@@ -44,13 +49,10 @@ main.admin {
       padding: 0;
     }
 
-    sup {
-      display: inline-block;
-    }
   }
 
   #timeline {
-    padding: 2rem;
+    padding: 0 2rem;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -74,7 +76,7 @@ main.admin {
                            "card";
       width: 20rem;
       height: 28rem;
-      margin: 1rem;
+      margin: 0 1rem 1rem 1rem;
       padding: 0;
       word-break: break-word;
 
@@ -159,12 +161,12 @@ main.admin {
 
           .description {
             grid-area: desc;
-            padding: .5rem;
+            padding: .5rem .5rem .5rem 0;
             font-family: $font-sans-serif;
             font-size: $font-size-sm;
             line-height: $line-height-sm;
             overflow: scroll;
-            border: 1px solid $color-black;
+            //border: 1px solid $color-black;
 
             p {
               margin: 0;
@@ -176,6 +178,8 @@ main.admin {
             border: none;
 
             .description-edit {
+              padding-left: .5rem;
+
               .label {
                 font-size: $font-size-sm;
               }
@@ -462,6 +466,7 @@ main#main-app {
       padding-bottom: 0.5em;
       text-align: right;
       padding-right: 0.25em;
+
       ul, li {
         margin: 0;
       }
@@ -469,6 +474,7 @@ main#main-app {
 
     .case-link {
       margin-top: -3px;
+
       svg {
         fill: $color-violet;
       }
@@ -931,6 +937,7 @@ main#main-app {
           @include media-breakpoint-down(md) {
             padding: 0 0.5rem 0 0;
           }
+
           &:hover, &:focus, &:active {
             background-color: $highlight;
           }

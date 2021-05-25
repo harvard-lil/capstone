@@ -143,7 +143,7 @@ def maintenance_mode(request):
         "middle": "${middle}",
         "bottom": "${bottom}",
         "action": "${action}",
-        'page_image': 'img/og_image/api.png',
+        'page_image': 'img/og_image/logo.jpg',
         'meta_description': 'This page is broken. Let us know if this should be working.'
     })
 
@@ -240,7 +240,7 @@ def screenshot(request):
         print("Using fallback for screenshot with payload %s: %s" % (payload, e))
         fallback_path = payload.get('fallback')
         if not fallback_path or not staticfiles_storage.exists(fallback_path):
-            fallback_path = 'img/og_image/api.jpg'
+            fallback_path = 'img/og_image/logo.jpg'
         with staticfiles_storage.open(fallback_path) as screenshot_file:
             screenshot = screenshot_file.read()
         content_types_by_suffix = {'png': 'image/png', 'jpg': 'image/jpeg'}

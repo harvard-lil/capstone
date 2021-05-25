@@ -1,4 +1,5 @@
 @import 'social.scss';
+
 /*
                     _
  _ __ ___  __ _  __| |  _ __ ___   ___
@@ -29,7 +30,6 @@ And I'm probably hoping to get way too much out of this, but I'd be love to hear
  */
 
 
-
 /*| __ _ _   _  ___  _   _| |_
 | |/ _` | | | |/ _ \| | | | __|
 | | (_| | |_| | (_) | |_| | |_
@@ -46,53 +46,57 @@ footer {
   }
 
   //phone
-  grid-template-areas: "logo      sitemap"
-                       "links     sitemap"
-                       "copyright sitemap";
-  grid-template-rows: 8rem 7rem 5rem;
-  grid-template-columns: 1fr 1fr;
-
+  @include media-breakpoint-down(xs) {
+    grid-template-areas: "logo      links"
+                       "copyright copyright";
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+  }
   //tablet or landscape phone
   @include media-breakpoint-up(sm) {
     grid-template-areas: "logo      .         sitemap"
                          "links     .         sitemap"
                          ".         .         ."
                          "copyright copyright copyright";
-    grid-template-rows: 9rem 9rem 2rem 2rem;
+    grid-template-rows: 4rem 1rem 2rem;
     grid-template-columns: minmax(155px, 1fr) 1fr 20rem;
+    grid-row-gap: 3rem;
   }
 
   @include media-breakpoint-up(md) {
-    grid-template-areas: "links     logo sitemap"
+    grid-template-areas: "logo     links sitemap"
                          ".         .         ."
                          "copyright copyright copyright";
-    grid-template-rows: 17rem 2rem 2rem;
+    grid-template-rows: 17rem 1rem 2rem;
     grid-template-columns: minmax(155px, 1fr) 2fr 20rem;
     grid-column-gap: 5rem;
+    grid-row-gap: 1rem;
   }
 
   //desktop or landscape tablet
   @include media-breakpoint-up(lg) {
-    grid-template-areas: "links     logo      sitemap"
+    grid-template-areas: "logo     links      sitemap"
                          ".         .         .      "
                          "copyright copyright copyright";
-    grid-template-rows: 27rem 1rem 2rem;
+    grid-template-rows: 12rem 1rem 2rem;
     grid-template-columns: minmax(155px, 1fr) minmax(120px, 2fr) 35rem;
     grid-column-gap: 5rem;
   }
 
   @include media-breakpoint-up(xl) {
-    grid-template-areas: "links     logo sitemap"
+    grid-template-areas: "logo     links sitemap"
                          "copyright copyright copyright";
-    grid-template-rows: 27rem 3rem;
+    grid-template-rows: 15rem 3rem;
     grid-template-columns: minmax(155px, 2fr) minmax(235px, 4fr) 40rem;
     grid-column-gap: 5rem;
   }
 
   @include media-breakpoint-up(xxl) {
-    grid-template-areas: "links     logo sitemap"
+    grid-template-areas: "logo     links sitemap"
                          "copyright copyright copyright";
-    grid-template-rows: 27rem 3rem;
+    grid-template-rows: 18rem 3rem;
     grid-template-columns: minmax(155px, 2fr) minmax(235px, 4fr) 40rem;
     grid-column-gap: 5rem;
   }
@@ -102,42 +106,48 @@ footer {
     grid-area: links;
     display: grid;
     grid-template-areas: "social" "policy";
-    grid-template-rows: 2rem 4rem;
+    grid-template-rows: 2rem 3rem;
+    margin-top: .5rem;
     .social {
       grid-area: social;
     }
+
     .policy {
       grid-area: policy;
     }
   }
+
   .logo {
     grid-area: logo;
   }
+
   .sitemap {
     grid-area: sitemap;
-    display: grid;
     /* sitemap links grid layout */
     .gallery {
       grid-area: gallery;
     }
+
     .docs {
       grid-area: docs;
     }
+
     .caselaw {
       grid-area: caselaw;
     }
+
     //xs phone
-    grid-template-areas: "docs gallery" "caselaw gallery";
-    grid-template-rows: 4fr 5fr;
-    grid-template-columns: 1fr 1fr;
+    display: none;
 
     // tablet/desktop
     @include media-breakpoint-up(sm) {
       grid-template-areas: "caselaw gallery docs";
       grid-template-columns: 1fr 1fr 1fr;
       grid-template-rows: 1fr;
+      display: grid;
     }
   }
+
   .copyright {
     grid-area: copyright;
   }
@@ -153,10 +163,11 @@ footer {
 style & fine spacing adjustments only-- grid layout above */
 
 footer {
-    /* resets */
+  /* resets */
   section {
     padding: 0;
   }
+
   .social {
     display: unset;
   }
@@ -169,12 +180,13 @@ footer {
 
   .logo {
     padding-top: .75rem;
+
     a {
       @extend %footer-lil-logo-white;
-      background-size: 10rem !important;
+      background-size: 8rem !important;
       padding-top: .5rem;
       @include media-breakpoint-up(xl) {
-        background-size: 15rem !important;
+        background-size: 10rem !important;
         width: unset;
         height: 135px;
       }
@@ -195,27 +207,27 @@ footer {
         }
       }
     }
+
     .policy {
       .policylink {
         a {
           font-size: $font-size-sm;
           color: $color-yellow;
-            @include media-breakpoint-up(md) {
-              font-size: 14pt;
-            }
-            @include media-breakpoint-up(lg) {
-            }
-            @include media-breakpoint-up(xl) {
-            }
-        }
-        @include media-breakpoint-up(md) {
-          margin-bottom: .5rem;
+          @include media-breakpoint-up(md) {
+            font-size: 14pt;
+          }
+          @include media-breakpoint-up(lg) {
+          }
+          @include media-breakpoint-up(xl) {
+          }
         }
       }
+
       .policylink:first-of-type {
         padding-top: .25em;
       }
     }
+
     @include media-breakpoint-up(md) {
       padding-top: 2rem;
       padding-left: 1rem;
@@ -225,7 +237,7 @@ footer {
       padding-left: 2rem;
     }
     @include media-breakpoint-up(xl) {
-      padding-top: 3rem;
+      padding-top: 2rem;
       padding-left: 2rem;
     }
   }
@@ -233,37 +245,43 @@ footer {
   .sitemap {
     padding-top: 2rem;
     /* sitemap links styling */
-    h6{
+    h6 {
       font-weight: bold;
       color: $color-yellow;
       margin: 0;
       @include media-breakpoint-up(lg) {
-        font-size: 2rem;
+        font-size: 1.2rem;
         line-height: 1rem;
         margin-bottom: 1rem;
       }
     }
+
     ul {
       margin-bottom: 0;
-      li{
-        padding-top: .25rem;
+
+      li {
+        line-height: 1.1em;
+
         a {
           font-size: $font-size-sm;
           color: $color-white;
           @include media-breakpoint-up(lg) {
-            font-size: $font-size-lg;
+            font-size: $font-size-base;
           }
         }
+
         a:hover {
           color: $color-violet-light;
         }
 
 
       }
-      li:first-of-type{
+
+      li:first-of-type {
         padding-top: 0;
       }
     }
+
     @include media-breakpoint-up(xl) {
       padding-top: 3rem;
     }
@@ -276,8 +294,14 @@ footer {
     align-self: flex-end;
     word-break: break-word;
     text-align: center;
+
     span {
       display: inline;
+    }
+
+    @include media-breakpoint-only(xs) {
+      text-align: left;
+      max-width: 200px;
     }
   }
 }

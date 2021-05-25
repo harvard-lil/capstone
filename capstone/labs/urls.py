@@ -14,8 +14,7 @@ urlpatterns = [
 if 'chronolawgic' not in settings.LABS_HIDDEN:
     # # # # chronolawgic # # # #
     urlpatterns += [
-        path('chronolawgic/', LabMarkdownView.as_view(template_name='lab/chronolawgic/about-chronolawgic.md'),
-             name='chronolawgic'),
+        path('chronolawgic/', views.chronolawgic_redirect, name='chronolawgic'),
         re_path('chronolawgic/timeline/*', views.chronolawgic, name='chronolawgic-dashboard'),
         # your timeline list, create, delete
         path('chronolawgic/api/create/', views.chronolawgic_api_create, name='chronolawgic-api-create'),
