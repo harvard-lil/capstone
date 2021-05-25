@@ -87,6 +87,8 @@
     "**/hosted-git-info": "^2.8.9",
     "**/postcss": "^8.2.10",
     "**/autoprefixer": "^10.2.5",
-    "**/cssnano": "^5.0.2"
+    "**/cssnano": "^5.0.2",
+    "**/browserslist": "^4.16.5",
+    "**/dns-packet": "^5.2.2"
   }
 }
