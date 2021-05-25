@@ -1,6 +1,7 @@
 <template>
-  <div :ref='"field_" + field.name' v-if="field['choices']">
-    <div class="dropdown dropdown-field form-label-group">
+  <div v-if="field['choices']">
+    <div class="dropdown dropdown-field form-label-group"
+         :class="{'querylabel_highlighted': field.highlight_explainer || field.highlight_field}">
       <button class="btn dropdown-toggle dropdown-title"
               type="button"
               :id="field.name"
@@ -8,8 +9,10 @@
               aria-haspopup="true"
               aria-expanded="false"
               :aria-describedby="field.label"
-              @focus="highlightExplainer"
-              @blur="unhighlightExplainer">
+              :class="[{'is-invalid': $store.getters.fieldHasError(field.name)},
+                { 'queryfield_highlighted': field.highlight_explainer || field.highlight_field}]"
+              @focus="$store.commit('highlightExplainer', field.name)"
+              @blur="$store.commit('unhighlightExplainer', field.name)">
         <span class="dropdown-title-text">{{ display_value }}</span>
       </button>
 
@@ -27,29 +30,23 @@
             v-if="display_value !== field.label && !(this.field.label === 'sort_field')"
             @click="$store.commit('clearField', field.name)">
       <small>Reset {{ field.label }} field</small></button>
+
   </div>
-  <textarea :ref='"field_" + field.name'  v-else-if="field.type === 'textarea'"
-            :aria-label="field.name"
-            v-model="value"
-            :class="['queryfield', $store.getters.fieldHasError(field.name) ? 'is-invalid' : '', 'col-12' ]"
-            :id='field["name"]'
-            :placeholder='field["placeholder"] || false'
-            class="form-control"
-            @focus="highlightExplainer"
-            @blur="unhighlightExplainer">
-        </textarea>
   <!-- for text, numbers, and everything else (that we presume is text) -->
-  <div :ref='"field_" + field.name' v-else class="form-label-group">
+  <div v-else class="form-label-group">
     <input v-model='value'
            :aria-label="field.name"
-           :class="['queryfield', $store.getters.fieldHasError(field.name) ? 'is-invalid' : '', 'col-12' ]"
+           :class="['queryfield', 'col-12',
+           {'is-invalid': $store.getters.fieldHasError(field.name)},
+           { 'queryfield_highlighted': field.highlight_explainer || field.highlight_field} ]"
            :type='field.type'
            :placeholder="field.label"
            :id="field.name"
            :min="field.min"
            :max="field.max"
-           @focus="highlightExplainer"
-           @blur="unhighlightExplainer">
+           @focus="$store.commit('highlightExplainer', field.name)"
+           @blur="$store.commit('unhighlightExplainer', field.name)"
+           v-on:keyup.enter="$store.dispatch('searchFromForm')">
     <label :for="field.name">
       {{ field.label }}
     </label>
@@ -91,19 +88,6 @@ export default {
         this.display_value = this.getFormattedDisplayValue();
       } else {
         this.$parent.updateOrdering();
-      }
-    },
-
-    highlightExplainer(event) {
-      let explainer_argument = document.getElementById("p_" + event.target.id);
-      if (explainer_argument) {
-        explainer_argument.classList.add('highlight-parameter');
-      }
-    },
-    unhighlightExplainer(event) {
-      let explainer_argument = document.getElementById("p_" + event.target.id);
-      if (explainer_argument) {
-        explainer_argument.classList.remove('highlight-parameter');
       }
     },
   },

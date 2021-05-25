@@ -1,6 +1,6 @@
 <template>
   <div class="search-form" id="sidebar-menu" v-bind:class="{ 'results-shown': $store.getters.resultsShown }">
-    <form @submit.prevent="$store.dispatch('executeSearch')" class="row">
+    <div class="row">
       <div class="col-centered col-11">
         <div class="col-md-2 empty-push-div"></div>
         <div class="col-md-10 title-container">
@@ -44,8 +44,7 @@
           </small>
 
 
-          <template v-if="$store.getters.advanced_fields_shown">
-
+          <div v-show="$store.getters.advanced_fields_shown">
 
             <field-item :field="$store.getters.getField('decision_date_min')"></field-item>
             <div v-if="$store.getters.fieldHasError('decision_date_min')" class="invalid-feedback">
@@ -117,19 +116,19 @@
             <small :id="`help-text-court`" class="form-text text-muted">
               {{ $store.getters.getField('court').info }}
             </small>
-          </template>
+          </div>
         </div>
-        <a href="#" class="btn btn-tertiary show-advanced-options"
+        <button class="btn btn-tertiary show-advanced-options"
            aria-label="Show or hide advanced filters"
            @click="$store.commit('toggleAdvanced')">
           <span v-if="$store.getters.advanced_fields_shown">Hide advanced filters</span>
           <span v-else>Show advanced filters</span>
-        </a>
+        </button>
 
         <!--Buttons row-->
         <div class="submit-button-group">
           <div class="submit-btn-container">
-            <button @click="$store.dispatch('executeSearch')"
+            <button @click="$store.dispatch('searchFromForm')"
                     class="btn btn-primary d-flex align-items-center">
               Search
               <span v-if="$store.getters.showLoading"
@@ -142,10 +141,10 @@
                   class="sr-only"
                   tabindex="-1">Loading</span>
           </div>
-          <a href="#" id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')"
+          <button id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')"
              v-if="$store.getters.show_explainer">HIDE API CALL
-          </a>
-          <a href="#" id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')" v-else>SHOW API CALL</a>
+          </button>
+          <button id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')" v-else>SHOW API CALL</button>
         </div>
         <div class="query-explainer" v-show="$store.getters.show_explainer">
           <div class="row">
@@ -172,7 +171,7 @@
           </p>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 </template>
 <script>

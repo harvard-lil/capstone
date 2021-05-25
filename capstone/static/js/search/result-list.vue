@@ -1,8 +1,8 @@
 <template>
-  <div v-if="showLoading" class="results-loading-container">
+  <div v-if="$store.getters.showLoading" class="results-loading-container">
     <div class="row">
       <div class="col-11 col-centered">
-        <img alt="" aria-hidden="true" :src='`${urls.static}img/loading.gif`' class="loading-gif"/>
+        <img alt="" aria-hidden="true" :src='`${$store.getters.urls.static}img/loading.gif`' class="loading-gif"/>
         <div class="loading-text">Loading results...</div>
       </div>
     </div>
@@ -89,13 +89,13 @@
             <span class="results-count" v-if="!$store.getters.resultsShown">No results</span>
             <span class="results-count" v-else>
                 {{
-                first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
+                $store.getters.first_result_number !== $store.getters.last_result_number ? `Results ${$store.getters.first_result_number} to ${$store.getters.last_result_number}` : `Result ${$store.getters.first_result_number}`
               }}
-                of {{ hitcount ? hitcount.toLocaleString() : 'many' }}
+                of {{ $store.getters.hitcount }}
             </span>
           </div>
           <div class="col-6 text-right" v-if="$store.getters.resultsShown">
-            <field-item :field="sort_field"></field-item>
+            <field-item :field="$store.getters.sort_field"></field-item>
           </div>
         </div>
         <ul class="results-list">
@@ -106,14 +106,14 @@
         </ul>
         <div class="row page-navigation-buttons" v-if="$store.getters.resultsShown">
           <div class="col-6">
-            <button class="btn-secondary btn btn-sm" v-if="$store.getters.previous_page.url" @click="$store.dispatch('pageForward')">
-              Back
+            <button class="btn-secondary btn btn-sm" v-if="$store.getters.page > 1" @click="$store.dispatch('pageBackward')">
+              Prev: {{ $store.getters.page - 1 }} of {{ $store.getters.total_pages }}
             </button>
             <button class="btn-secondary btn btn-sm disabled" v-else disabled>Back</button>
           </div>
           <div class="col-6 text-right">
-            <button class="btn-secondary btn btn-sm" v-if="$store.getters.last_page !== true" @click="$store.dispatch('pageBackward')">
-              Page {{ page + 2 }}
+            <button class="btn-secondary btn btn-sm" v-if="$store.getters.next_page_url" @click="$store.dispatch('pageForward')">
+              Next: {{ $store.getters.page + 1 }} of {{ $store.getters.total_pages }}
             </button>
             <button class="btn-secondary btn btn-sm disabled" v-else disabled>Next</button>
           </div>
@@ -131,16 +131,6 @@ import DownloadIcon from '../../../static/img/icons/download.svg';
 import FieldItem from './field-item';
 
 export default {
-  props: [
-    'first_result_number',
-    'last_result_number',
-    'showLoading',
-    'endpoint',
-    'hitcount',
-    'page',
-    'urls',
-    'sort_field',
-  ],
   data: function () {
     return {
       full_case: false,
