@@ -1,7 +1,7 @@
 import json
 from dictdiffer import diff as dictdiff
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from labs.models import Timeline
@@ -17,6 +17,10 @@ class LabMarkdownView(MarkdownView):
 
 
 # # # # START CHRONOLAWGIC # # # #
+
+def chronolawgic_redirect(request):
+    return redirect('labs:chronolawgic-dashboard')
+
 
 def chronolawgic(request, timeline_uuid=None):
     return render(request, "lab/chronolawgic/timeline.html")
