@@ -172,9 +172,7 @@ def write_update(label, snippet_format, contents):
 
 
 def court_abbrev_list():
-    courts = []
-    for court in Court.objects.order_by('slug').all():
-        courts.append(court.name)
+    courts = [(court.slug, court.name) for court in Court.objects.order_by('slug').all()]
 
     write_update(
         "court_abbrev_list",
