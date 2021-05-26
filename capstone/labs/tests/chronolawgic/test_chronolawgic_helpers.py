@@ -3,6 +3,7 @@ from labs.helpers.chronolawgic import validate_timeline
 timeline = {
     "title": "My first timeline",
     "description": "And my very best one",
+    "author": "CAP User",
     "cases": [
         {'id': 'abc1', 'url': 'https://cite.case.law/ill/1/176/', 'name': 'Case 2', 'citation': '1 Mass. 1',
          'reporter': "Abb. Pr.- Abbott's Practice Reports", 'jurisdiction': 'California',
