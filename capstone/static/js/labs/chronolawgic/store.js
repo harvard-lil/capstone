@@ -71,6 +71,7 @@ const store = new Vuex.Store({
         description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
+        author: '', // user-added string
         categories: [],
         events: [],
         cases: [],
@@ -119,10 +120,11 @@ const store = new Vuex.Store({
         },
         setTimeline(state, json) {
             state.title = json.title;
+            state.author = json.author ? json.author : "CAP User";
             state.description = json.description;
             state.categories = json.categories;
             state.events = json.events;
-            state.cases = json.cases
+            state.cases = json.cases;
         },
         setTimelineId(state, timeline_id) {
             state.id = timeline_id

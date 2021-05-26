@@ -37,6 +37,7 @@ def chronolawgic_api_retrieve(request, timeline_uuid=None):
             'status': 'ok',
             'timelines': [{"id": tl.uuid,
                            "title": tl.timeline['title'] if 'title' in tl.timeline else "",
+                           "author": tl.timeline['author'],
                            "description": tl.timeline['description'] if 'description' in tl.timeline else "",
                            "case_count": len(tl.timeline['cases']) if 'cases' in tl.timeline else 0,
                            "event_count": len(tl.timeline['events']) if 'events' in tl.timeline else 0,
@@ -106,6 +107,7 @@ def chronolawgic_api_create(request):
         timeline = Timeline.objects.create(created_by=request.user)
         timeline.timeline = {
             "title": "Untitled Timeline",
+            "author": "CAP user",
             "cases": [],
             "events": [],
             "categories": []

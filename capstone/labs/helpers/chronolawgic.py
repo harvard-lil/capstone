@@ -1,6 +1,7 @@
 def validate_timeline(timeline):
     timeline_fields = [
         {'name': 'title', 'type': str, 'required': True},
+        {'name': 'author', 'type': str, 'required': True},
         {'name': 'description', 'type': str, 'required': False},
         {'name': 'cases', 'type': list, 'required': False},
         {'name': 'events', 'type': list, 'required': False},
