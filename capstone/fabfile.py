@@ -830,6 +830,10 @@ def update_search_snippets():
     update_snippets.search_jurisdiction_list()
 
 @task
+def update_labs_snippets():
+    update_snippets.court_abbrev_list()
+
+@task
 def ice_volumes(scope='all', dry_run='true'):
     """
     For each captar'd volume that validated OK, tag the matching objects
