@@ -48,12 +48,12 @@
               <label for="field-url">URL</label>
             </div>
             <div class="form-label-group" id="field-group-citation">
-              <input v-model="newCase.citation" id="field-citation" placeholder="CITATION" class="form-control">
-              <label for="field-citation">CITATION</label>
+              <input v-model="newCase.citation" id="field-citation" placeholder="Citation" class="form-control">
+              <label for="field-citation">Citation</label>
             </div>
             <div class="form-label-group" id="field-group-name">
-              <input v-model="newCase.name" id="field-name" placeholder="CASE NAME" required class="form-control">
-              <label for="field-name">CASE NAME</label>
+              <input v-model="newCase.name" id="field-name" placeholder="Case name" required class="form-control">
+              <label for="field-name">Case name</label>
             </div>
             <div class="form-label-group" id="field-group-short">
               <textarea v-model="newCase.short_description" id="field-short-description" placeholder="SHORT DESCRIPTION"
@@ -77,6 +77,7 @@
                       @input="chooseJurisdiction"
                       v-model="newCase.jurisdiction">
             </v-select>
+
             <v-select transition=""
                       id="field-group-court"
                       label="courtName"
@@ -84,6 +85,7 @@
                       :options="choices.courts"
                       v-model="newCase.court">
             </v-select>
+
             <v-select transition=""
                       class="color-dropdown"
                       label="color"
