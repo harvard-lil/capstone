@@ -172,8 +172,13 @@ def write_update(label, snippet_format, contents):
 
 
 def court_abbrev_list():
-    courts = [(court.slug, "({}) {}".format(court.jurisdiction.name, court.name))
-               for court in Court.objects.order_by('slug').all()]
+    courts = []
+    for court in Court.objects.order_by('slug').all():
+        if court.jurisdiction and court.jurisdiction.name:
+            courts.append("({}) {}".format(court.jurisdiction.name, court.name))
+        else:
+            courts.append(court.name)
+
     write_update(
         "court_abbrev_list",
         "application/json",
