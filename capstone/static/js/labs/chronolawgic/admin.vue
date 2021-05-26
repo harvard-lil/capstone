@@ -66,14 +66,15 @@
               </header>
               <div
                   :class="{'author': true, 'editmode': Object.prototype.hasOwnProperty.call(editMode, timeline.id)}">
-                <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
-                   v-text="timeline.author"></p>
+                <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)">
+                  Author: {{ timeline.author }}
+                </p>
                 <div class="author-edit" v-else>
                   <div class="label">Author</div>
                   <input class="author-input"
                          @keyup.esc="toggleEdit(timeline)"
                          placeholder="CAP User"
-                            v-model="editMode[timeline.id].author">
+                         v-model="editMode[timeline.id].author">
                 </div>
               </div>
               <div

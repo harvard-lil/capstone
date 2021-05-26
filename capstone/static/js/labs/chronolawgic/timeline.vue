@@ -4,6 +4,7 @@
     <div class="row top-menu">
       <header :class="{ 'header-section': true, 'title': true, 'expanded': headerExpanded}">
         <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
+        <div id="timeline-author">By {{ $store.state.author }}</div>
         <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description"
              @click="toggleHeader()"></div>
         <div class="my-timelines-link" v-if="$store.state.isAuthor">
