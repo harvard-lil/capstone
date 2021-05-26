@@ -128,8 +128,9 @@ main.admin {
           display: grid;
           grid-area: content;
           grid-template-areas: "header"
+                               "author"
                                "desc";
-          grid-template-rows: minmax(3rem, auto) 1fr;
+          grid-template-rows: auto auto 1fr;
 
           header {
             grid-area: header;
@@ -159,6 +160,21 @@ main.admin {
             }
           }
 
+          .author {
+            grid-area: author;
+            font-size: $font-size-sm;
+            color: $color-violet-gray-dark;
+            .author-edit {
+              margin-top: .5rem;
+              padding-left: .5rem;
+              padding-right: .5rem;
+            }
+            .author-input {
+              border: 1px dashed $color-medium-dark-blue;
+              padding-left: .5rem;
+            }
+          }
+
           .description {
             grid-area: desc;
             padding: .5rem .5rem .5rem 0;
@@ -166,7 +182,6 @@ main.admin {
             font-size: $font-size-sm;
             line-height: $line-height-sm;
             overflow: scroll;
-            //border: 1px solid $color-black;
 
             p {
               margin: 0;
@@ -190,7 +205,7 @@ main.admin {
               .description-input {
                 border: 1px dashed $color-medium-dark-blue;
                 width: 100%;
-                height: 100%;
+                height: 98%;
               }
 
             }
@@ -336,6 +351,7 @@ main#main-app {
     .header-section.title {
       grid-area: caselaw;
       background-color: $color-white;
+      margin-left: 10px;
 
       h4 {
         font-family: $font-serif;
@@ -344,13 +360,18 @@ main#main-app {
       }
 
       #timeline-title {
-        margin-left: 10px;
         font-size: 1.8em;
       }
 
+      #timeline-author {
+        font-size: 0.8em;
+        font-family: $font-serif;
+        font-style: italic;
+      }
+
       #timeline-description {
+        font-family: $font-serif;
         background-color: $color-white;
-        margin-left: 10px;
         font-size: $font-size-sm;
         line-height: $line-height-sm;
         width: 100%;
@@ -361,11 +382,11 @@ main#main-app {
       }
 
       .my-timelines-link {
+        margin-top: 1em;
         font-size: $font-size-sm;
 
-        svg {
-          margin-bottom: 5px;
-          stroke-width: 1.5;
+        a {
+          padding-left: 0;
         }
       }
     }

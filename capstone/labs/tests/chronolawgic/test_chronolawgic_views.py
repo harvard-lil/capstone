@@ -4,7 +4,7 @@ from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
 
-timeline = {"title": "My first timeline", "description": "And my very best one"}
+timeline = {"title": "My first timeline", "author": "CAP User", "description": "And my very best one"}
 create_url = reverse('labs:chronolawgic-api-create')
 retrieve_url = reverse('labs:chronolawgic-api-retrieve')
 cases = [
@@ -28,7 +28,7 @@ events = [
      'long_description': 'abcdefghijklmnopqrstuvwxyz',
      'short_description': 'abc'}
 ]
-complete_timeline = {"title": "My first timeline", "description": "And my very best one", 'events': events, 'cases': cases}
+complete_timeline = {"title": "My first timeline", "author": "CAP User", "description": "And my very best one", 'events': events, 'cases': cases}
 
 
 @pytest.mark.django_db(databases=['default', 'capdb'])

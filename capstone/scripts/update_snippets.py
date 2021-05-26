@@ -17,6 +17,7 @@ def update_all():
     cases_by_decision_date_tsv()
     search_reporter_list()
     search_court_list()
+    court_abbrev_list()
     search_jurisdiction_list()
 
 def cases_by_decision_date_tsv():
@@ -170,3 +171,11 @@ def write_update(label, snippet_format, contents):
     snippet.save()
 
 
+def court_abbrev_list():
+    courts = [(court.slug, "({}) {}".format(court.jurisdiction.name, court.name))
+               for court in Court.objects.order_by('slug').all()]
+    write_update(
+        "court_abbrev_list",
+        "application/json",
+        json.dumps(courts)
+    )

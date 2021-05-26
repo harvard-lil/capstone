@@ -64,7 +64,19 @@
                          class="title-input title" v-model="editMode[timeline.id].title">
                 </div>
               </header>
-
+              <div
+                  :class="{'author': true, 'editmode': Object.prototype.hasOwnProperty.call(editMode, timeline.id)}">
+                <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)">
+                  Author: {{ timeline.author }}
+                </p>
+                <div class="author-edit" v-else>
+                  <div class="label">Author</div>
+                  <input class="author-input"
+                         @keyup.esc="toggleEdit(timeline)"
+                         placeholder="CAP User"
+                         v-model="editMode[timeline.id].author">
+                </div>
+              </div>
               <div
                   :class="{'description': true, 'editmode': Object.prototype.hasOwnProperty.call(editMode, timeline.id)}">
                 <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
@@ -125,6 +137,7 @@ export default {
         this.$set(this.editMode, timeline.id, {});
         this.$set(this.editMode[timeline.id], 'id', timeline.id);
         this.$set(this.editMode[timeline.id], 'title', timeline.title);
+        this.$set(this.editMode[timeline.id], 'author', timeline.author);
         this.$set(this.editMode[timeline.id], 'description', timeline.description);
       }
     },

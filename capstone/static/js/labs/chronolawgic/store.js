@@ -71,6 +71,7 @@ const store = new Vuex.Store({
         description: "",
         createdBy: -1, // (user accts are for auth/logging purposes)
         isAuthor: false,
+        author: '', // user-added string
         categories: [],
         events: [],
         cases: [],
@@ -119,10 +120,11 @@ const store = new Vuex.Store({
         },
         setTimeline(state, json) {
             state.title = json.title;
+            state.author = json.author ? json.author : "CAP User";
             state.description = json.description;
             state.categories = json.categories;
             state.events = json.events;
-            state.cases = json.cases
+            state.cases = json.cases;
         },
         setTimelineId(state, timeline_id) {
             state.id = timeline_id
@@ -283,6 +285,7 @@ const store = new Vuex.Store({
         timeline: (state) => {
             return {
                 title: state.title,
+                author: state.author,
                 events: state.events,
                 cases: state.cases,
                 categories: state.categories
@@ -405,9 +408,11 @@ const store = new Vuex.Store({
         },
         requestUpdateAdmin: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
+            let author = data.author.trim()
             let json = JSON.stringify({
                 title: data.title,
-                subhead: data.subhead,
+                // don't allow empty strings
+                author: author ? author : "CAP User",
                 description: data.description,
             });
 
