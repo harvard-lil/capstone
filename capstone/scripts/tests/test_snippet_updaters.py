@@ -65,7 +65,7 @@ def test_court_abbrev_list(court):
     update_snippets.court_abbrev_list()
     courts = Snippet.objects.get(label='court_abbrev_list')
     parsed = json.loads(courts.contents)
-    assert parsed[0][1] == '(%s) %s' % (court.jurisdiction.name, court.name)
+    assert parsed[0][1] == court.name
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_search_reporter_list(reporter):
