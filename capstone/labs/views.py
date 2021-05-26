@@ -87,6 +87,7 @@ def chronolawgic_api_update_admin(request, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
 
     timeline_record.timeline['title'] = incoming_timeline['title']
+    timeline_record.timeline['author'] = incoming_timeline['author']
     timeline_record.timeline['description'] = incoming_timeline['description']
     timeline_record.save()
     return JsonResponse({

@@ -285,6 +285,7 @@ const store = new Vuex.Store({
         timeline: (state) => {
             return {
                 title: state.title,
+                author: state.author,
                 events: state.events,
                 cases: state.cases,
                 categories: state.categories
@@ -407,9 +408,11 @@ const store = new Vuex.Store({
         },
         requestUpdateAdmin: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
+            let author = data.author.trim()
             let json = JSON.stringify({
                 title: data.title,
-                subhead: data.subhead,
+                // don't allow empty strings
+                author: author ? author : "CAP User",
                 description: data.description,
             });
 
