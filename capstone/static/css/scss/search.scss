@@ -6,6 +6,7 @@
 @import "base.scss";
 @import "floating-labels";
 @import "search_results";
+@import "vue-select/vue-select.scss";
 
 $color-search-gray-light: #ced4da;
 .top-section {
@@ -27,7 +28,7 @@ $color-search-gray-light: #ced4da;
 .main-content {
   margin: 0 !important;
   min-width: 100%;
-  padding: 0 !important;
+  padding: 0 0 3rem 0!important;
 }
 
 input, textarea,
@@ -38,9 +39,9 @@ input, textarea,
 .form-label-group {
   font-family: $font-sans-title;
 
-  .queryfield, .dropdown-toggle {
+  .queryfield, .vs__dropdown-toggle {
     margin-bottom: 0;
-    height: 40px;
+    min-height: 40px;
   }
 }
 
@@ -56,7 +57,6 @@ label {
   padding-left: 0;
 }
 
-
 @mixin sidebar-small {
   display: block;
   font-size: 0.8em;
@@ -65,10 +65,9 @@ label {
     @include make-col(12);
     padding-bottom: 0;
     background-color: $color-tan;
-    #search-routes-dropdown {
-      border: 1px solid $color-search-gray-light;
-      background-color: $color-white;
-    }
+  }
+  input.vs__search::placeholder {
+      font-size: .9rem;
   }
   .dropdown-title, .dropdown-item {
     margin-top: 0.1em;
@@ -191,9 +190,7 @@ label {
   float: right;
 }
 
-#search-routes-dropdown {
-  margin-bottom: 4px;
-}
+
 
 .reset-field {
   font-family: $font-family-sans-serif;
@@ -207,10 +204,30 @@ label {
   position: inherit;
 }
 
-.dropdown-search-routes,
-.dropdown-field {
-  width: 100%;
+label.dropdown-label {
+  display: none;
+}
 
+.v-select {
+  width: 100%;
+  padding: 0;
+  min-height: 2rem;
+  .vs__selected + .vs__search {
+    display: none;
+  }
+  .vs__dropdown-toggle {
+    background-color: $color-white;
+    border: 1px solid $color-search-gray-light;
+    color: $color-black;
+    text-transform: none;
+    border-radius: 0;
+  }
+  input.vs__search::placeholder {
+      color: $color-black;
+      font-family: $font-sans-title;
+      opacity: .85;
+      font-size: 1.2rem;
+  }
   > .dropdown-title {
     @extend h6;
     font-size: 1em;
@@ -222,7 +239,7 @@ label {
     display: inline-block;
     font-family: $font-sans-title;
     font-weight: 400;
-    background-color: $color-tan;
+
     text-align: left;
     padding-left: 10px;
     margin-bottom: 0;
@@ -275,27 +292,14 @@ label {
   }
 }
 
-.dropdown-search-routes > .dropdown-menu {
-  margin-top: -4px;
-}
 
-.dropdown-search-routes > .dropdown-toggle {
-  text-transform: uppercase;
-  color: $color-medium-blue;
-}
-
-.dropdown-field > .dropdown-toggle {
-  background-color: $color-white;
-  border: 1px solid $color-search-gray-light;
-  color: $color-black;
-  text-transform: none;
-}
 
 .main-content {
+  padding-bottom: 3rem;
   #searchform {
     margin-top: 3rem;
+    margin-bottom: 3rem;
   }
-
 }
 
 .close-icon {
@@ -398,6 +402,10 @@ label {
   }
 }
 
+.results-loading-container {
+  flex: 0 0 75%
+}
+
 // search disclaimer
 .search-disclaimer {
   font-size: 0.8em;
@@ -487,6 +495,17 @@ label {
     text-decoration: underline;
     font-size: $font-size-sm;
     color: $color-violet-gray-dark;
+  }
+
+  .api_url_segment {
+    padding-left: .2rem;
+    padding-right: .2rem;
+  }
+  .text-break > .api_url_segment:before {
+    content: '?';
+  }
+  .text-break > .api_url_segment ~ .api_url_segment:before {
+    content: '&';
   }
 
   .api_url_segment:hover {

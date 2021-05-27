@@ -7,7 +7,8 @@
       </div>
     </div>
   </div>
-  <div v-else-if="$store.getters.resultsShown" class="results-list-container">
+  <div v-else-if="$store.getters.resultsShown"
+       :class="['results-list-container', { 'results-shown': $store.getters.resultsShown}]">
     <div class="row">
       <div class="col-11 col-centered">
         <!-- show selected fields --->
@@ -89,13 +90,13 @@
             <span class="results-count" v-if="!$store.getters.resultsShown">No results</span>
             <span class="results-count" v-else>
                 {{
-                $store.getters.first_result_number !== $store.getters.last_result_number ? `Results ${$store.getters.first_result_number} to ${$store.getters.last_result_number}` : `Result ${$store.getters.first_result_number}`
+                first_result_number !== last_result_number ? `Results ${first_result_number} to ${last_result_number}` : `Result ${first_result_number}`
               }}
                 of {{ $store.getters.hitcount }}
             </span>
           </div>
           <div class="col-6 text-right" v-if="$store.getters.resultsShown">
-            <field-item :field="$store.getters.sort_field"></field-item>
+            <field-item :field="$store.getters.getField('ordering')" :search_on_change="true"></field-item>
           </div>
         </div>
         <ul class="results-list">
@@ -107,13 +108,13 @@
         <div class="row page-navigation-buttons" v-if="$store.getters.resultsShown">
           <div class="col-6">
             <button class="btn-secondary btn btn-sm" v-if="$store.getters.page > 1" @click="$store.dispatch('pageBackward')">
-              Prev: {{ $store.getters.page - 1 }} of {{ $store.getters.total_pages }}
+              Prev: {{ $store.getters.page - 1 }} of {{ total_pages }}
             </button>
             <button class="btn-secondary btn btn-sm disabled" v-else disabled>Back</button>
           </div>
           <div class="col-6 text-right">
             <button class="btn-secondary btn btn-sm" v-if="$store.getters.next_page_url" @click="$store.dispatch('pageForward')">
-              Next: {{ $store.getters.page + 1 }} of {{ $store.getters.total_pages }}
+              Next: {{ $store.getters.page + 1 }} of {{ total_pages }}
             </button>
             <button class="btn-secondary btn btn-sm disabled" v-else disabled>Next</button>
           </div>
@@ -144,10 +145,16 @@ export default {
     DownloadIcon,
     FieldItem,
   },
-  methods: {
-    updateOrdering: function () {
-      //TODO start a fresh search
-    }
+  computed: {
+    first_result_number: function () {
+      return this.$store.getters.page_size * (this.$store.getters.page - 1) + 1
+    },
+    last_result_number: function () {
+      return this.$store.getters.page_size * this.$store.getters.page
+    },
+    total_pages: function () {
+      return  Math.ceil(this.$store.getters.hitcount/this.$store.getters.page_size)
+    },
   }
 }
 </script>

@@ -16,18 +16,3 @@
   export default {
   }
 </script>
-
-<style>
-
-  .api_url_segment {
-    padding-left: .2rem;
-    padding-right: .2rem;
-  }
-  .text-break > .api_url_segment:before {
-    content: '?';
-  }
-  .text-break > .api_url_segment ~ .api_url_segment:before {
-    content: '&';
-  }
-
-</style>

@@ -17,12 +17,10 @@ export default {
   components: {SearchForm, ResultList},
   watch: {
     '$route': function () {
-      console.log("watch route searchFromParams")
       this.$store.dispatch('searchFromParams');
     },
   },
   mounted() {
-    console.log("mounted searchFromParams")
     this.$store.dispatch('searchFromParams');
   }
 }

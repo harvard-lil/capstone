@@ -5,9 +5,6 @@
         <div class="col-md-2 empty-push-div"></div>
         <div class="col-md-10 title-container">
           <h3 class="page-title">
-            <img alt="" aria-hidden="true"
-                 src="{% static 'img/arrows/violet-arrow-right.svg' %}"
-                 class="decorative-arrow"/>
             Search
           </h3>
         </div>
@@ -25,98 +22,111 @@
              class="alert alert-danger">
           <p>Please correct the following {{ $store.getters.erroredFieldList.length }} error(s):</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following {{ $store.getters.erroredFieldList.length }} error(s)</h2>
+            Please correct the following
+            <template v-if="$store.getters.erroredFieldList.length > 1">{{ $store.getters.erroredFieldList.length }} errors:</template>
+            <template>error:</template>
+          </h2>
           <ul class="bullets">
             <li v-for="field in $store.getters.erroredFieldList"
                 :key="'error' + field">
-              <a :href="'#'+name">{{ $store.getters.getField(field).label }}:</a> {{ $store.getters.getField(field).label }}
+              <a :href="'#'+field">{{ $store.getters.getField(field).label }}:</a> {{ $store.getters.getField(field).error }}
             </li>
           </ul>
         </div>
 
         <div class="search-fields row">
-          <field-item :field="$store.getters.getField('search')"></field-item>
-          <div v-if="$store.getters.fieldHasError('search')" class="invalid-feedback">
-            {{ $store.getters.getField('search').error }}
-          </div>
-          <small :id="`help-text-search`" class="form-text text-muted">
-            {{ $store.getters.getField('search').info }}
-          </small>
-
-
-          <div v-show="$store.getters.advanced_fields_shown">
-
-            <field-item :field="$store.getters.getField('decision_date_min')"></field-item>
-            <div v-if="$store.getters.fieldHasError('decision_date_min')" class="invalid-feedback">
-              {{ $store.getters.getField('decision_date_min').error }}
+          <div class="search-field default-field">
+            <field-item :field="$store.getters.getField('search')"></field-item>
+            <div v-if="$store.getters.fieldHasError('search')" class="invalid-feedback">
+              {{ $store.getters.getField('search').error }}
             </div>
-            <small :id="`help-text-decision_date_min`" class="form-text text-muted">
-              {{ $store.getters.getField('decision_date_min').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('decision_date_max')"></field-item>
-            <div v-if="$store.getters.fieldHasError('decision_date_max')" class="invalid-feedback">
-              {{ $store.getters.getField('decision_date_max').error }}
-            </div>
-            <small :id="`help-text-decision_date_max`" class="form-text text-muted">
-              {{ $store.getters.getField('decision_date_max').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('name_abbreviation')"></field-item>
-            <div v-if="$store.getters.fieldHasError('name_abbreviation')" class="invalid-feedback">
-              {{ $store.getters.getField('name_abbreviation').error }}
-            </div>
-            <small :id="`help-text-name_abbreviation`" class="form-text text-muted">
-              {{ $store.getters.getField('name_abbreviation').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('docket_number')"></field-item>
-            <div v-if="$store.getters.fieldHasError('docket_number')" class="invalid-feedback">
-              {{ $store.getters.getField('docket_number').error }}
-            </div>
-            <small :id="`help-text-docket_number`" class="form-text text-muted">
-              {{ $store.getters.getField('docket_number').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('reporter')"></field-item>
-            <div v-if="$store.getters.fieldHasError('reporter')" class="invalid-feedback">
-              {{ $store.getters.getField('reporter').error }}
-            </div>
-            <small :id="`help-text-reporter`" class="form-text text-muted">
-              {{ $store.getters.getField('reporter').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('jurisdiction')"></field-item>
-            <div v-if="$store.getters.fieldHasError('jurisdiction')" class="invalid-feedback">
-              {{ $store.getters.getField('jurisdiction').error }}
-            </div>
-            <small :id="`help-text-jurisdiction`" class="form-text text-muted">
-              {{ $store.getters.getField('jurisdiction').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('cite')"></field-item>
-            <div v-if="$store.getters.fieldHasError('cite')" class="invalid-feedback">
-              {{ $store.getters.getField('cite').error }}
-            </div>
-            <small :id="`help-text-cite`" class="form-text text-muted">
-              {{ $store.getters.getField('cite').info }}
-            </small>
-
-
-            <field-item :field="$store.getters.getField('court')"></field-item>
-            <div v-if="$store.getters.fieldHasError('court')" class="invalid-feedback">
-              {{ $store.getters.getField('court').error }}
-            </div>
-            <small :id="`help-text-court`" class="form-text text-muted">
-              {{ $store.getters.getField('court').info }}
+            <small :id="`help-text-search`" class="form-text text-muted">
+              {{ $store.getters.getField('search').info }}
             </small>
           </div>
+
+
+          <template v-if="$store.getters.advanced_fields_shown">
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('decision_date_min')"></field-item>
+              <div v-if="$store.getters.fieldHasError('decision_date_min')" class="invalid-feedback">
+                {{ $store.getters.getField('decision_date_min').error }}
+              </div>
+              <small :id="`help-text-decision_date_min`" class="form-text text-muted">
+                {{ $store.getters.getField('decision_date_min').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('decision_date_max')"></field-item>
+              <div v-if="$store.getters.fieldHasError('decision_date_max')" class="invalid-feedback">
+                {{ $store.getters.getField('decision_date_max').error }}
+              </div>
+              <small :id="`help-text-decision_date_max`" class="form-text text-muted">
+                {{ $store.getters.getField('decision_date_max').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('name_abbreviation')"></field-item>
+              <div v-if="$store.getters.fieldHasError('name_abbreviation')" class="invalid-feedback">
+                {{ $store.getters.getField('name_abbreviation').error }}
+              </div>
+              <small :id="`help-text-name_abbreviation`" class="form-text text-muted">
+                {{ $store.getters.getField('name_abbreviation').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('docket_number')"></field-item>
+              <div v-if="$store.getters.fieldHasError('docket_number')" class="invalid-feedback">
+                {{ $store.getters.getField('docket_number').error }}
+              </div>
+              <small :id="`help-text-docket_number`" class="form-text text-muted">
+                {{ $store.getters.getField('docket_number').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('reporter')"></field-item>
+              <div v-if="$store.getters.fieldHasError('reporter')" class="invalid-feedback">
+                {{ $store.getters.getField('reporter').error }}
+              </div>
+              <small :id="`help-text-reporter`" class="form-text text-muted">
+                {{ $store.getters.getField('reporter').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('jurisdiction')"></field-item>
+              <div v-if="$store.getters.fieldHasError('jurisdiction')" class="invalid-feedback">
+                {{ $store.getters.getField('jurisdiction').error }}
+              </div>
+              <small :id="`help-text-jurisdiction`" class="form-text text-muted">
+                {{ $store.getters.getField('jurisdiction').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('cite')"></field-item>
+              <div v-if="$store.getters.fieldHasError('cite')" class="invalid-feedback">
+                {{ $store.getters.getField('cite').error }}
+              </div>
+              <small :id="`help-text-cite`" class="form-text text-muted">
+                {{ $store.getters.getField('cite').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('court')"></field-item>
+              <div v-if="$store.getters.fieldHasError('court')" class="invalid-feedback">
+                {{ $store.getters.getField('court').error }}
+              </div>
+              <small :id="`help-text-court`" class="form-text text-muted">
+                {{ $store.getters.getField('court').info }}
+              </small>
+            </div>
+          </template>
         </div>
         <button class="btn btn-tertiary show-advanced-options"
            aria-label="Show or hide advanced filters"
