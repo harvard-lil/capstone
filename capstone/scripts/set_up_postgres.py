@@ -87,6 +87,13 @@ def update_postgres_env(db='capdb'):
                     'normalized_cite',
                     'target_cases',
                     'rdb_normalized_cite',
+                    'groups',
+                    'metadata',
+                    'pin_cites',
+                    'weight',
+                    'year',
+                    'category',
+                    'reporter',
                 ],
             },
             {

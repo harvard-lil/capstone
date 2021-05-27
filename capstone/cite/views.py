@@ -506,17 +506,31 @@ def redact_case(request, case_id):
 
 
 def case_cited_by(request, case_id):
-    case = get_object_or_404(CaseMetadata, pk=case_id)
+    """Temporary redirect to new citations view."""
+    return HttpResponseRedirect(reverse('citations')+f"?q={case_id}")
+
+
+def citations(request):
+    """View for listing citations to a case or citation string."""
+    cite = request.GET.get('q', '')
 
     # get citation data from API
-    params = {'cites_to': str(case.id)}
+    params = {'cites_to': request.GET.get('q', '')}
     if 'cursor' in request.GET:
         params['cursor'] = request.GET['cursor']
     data = api_request(request, CaseDocumentViewSet, 'list', get_params=params).data
 
-    return render(request, 'cite/case_cited_by.html', {
+    # look up case if ID is passed
+    case = None
+    full_citation = cite
+    if cite.isdigit():
+        case = CaseMetadata.objects.in_scope().filter(pk=cite).first()
+        full_citation = case.elide_obj(case.full_cite(), strip=True)
+
+    return render(request, 'cite/citations.html', {
+        'cite': cite,
         'case': case,
-        'full_citation': case.full_cite(),
+        'full_citation': full_citation,
         'next': data['next'].split('?')[1] if data['next'] else None,
         'previous': data['previous'].split('?')[1] if data['previous'] else None,
         'results': data['results'],

@@ -106,7 +106,14 @@ class CaseDocument(Document):
         "cite": fields.KeywordField(),
         "normalized_cite": fields.KeywordField(),
         "rdb_normalized_cite": fields.KeywordField(),
-        "target_cases": fields.KeywordField(multi=True)
+        "reporter": fields.KeywordField(),
+        "category": fields.KeywordField(),
+        "target_cases": fields.KeywordField(multi=True),
+        "groups": fields.ObjectField(),
+        "metadata": fields.ObjectField(),
+        "pin_cites": fields.ObjectField(),
+        "weight": fields.IntegerField(),
+        "year": fields.IntegerField(),
     })
 
     jurisdiction = fields.ObjectField(properties={

@@ -97,8 +97,11 @@ def check_timestamps_unchanged(case, timestamp):
     assert get_timestamp(case) == timestamp
 
 
-def set_case_text(case, text, text2=""):
+def set_case_text(case, text, text2="", text3=None):
+    """Set text of blocks defined in PageStructureFactory."""
     page = case.structure.pages.first()
     page.blocks[1]["tokens"][3] = text
     page.blocks[2]["tokens"][3] = text2
+    if text3 is not None:
+        page.blocks[3]["tokens"][3] = text3
     page.save()

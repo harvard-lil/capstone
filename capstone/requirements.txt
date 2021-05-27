@@ -334,9 +334,9 @@ django-elasticsearch-dsl-drf==0.20.8 \
     --hash=sha256:90bf300fb96ebac5cb0b3fa21601e37f1b1231a57aac4b5a001a11c52db59d74 \
     --hash=sha256:9effbd541bb25becb39454b694de20d0f5a2c9e5bf7b629fcd8f9c9505b9320a
     # via -r requirements.in
-django-elasticsearch-dsl==7.1.4 \
-    --hash=sha256:5bbd49a9acb51c08fbbb7fba9beee7c9ce73b481af718cc57e4c8ac3d561888f \
-    --hash=sha256:e733ccfd0e8b83ad6896d812a2c15ccbd563caf4ebf30fd31640538ad2de8e26
+django-elasticsearch-dsl==7.2.0 \
+    --hash=sha256:865f9f0d6aa24c923c2cc791b35f608c85cfe766edc8920d00854ced452c326a \
+    --hash=sha256:f9163ffe314a0562f00789d34cc923332e1d51236bf7d5a38bfa8ea72399ceac
     # via
     #   -r requirements.in
     #   django-elasticsearch-dsl-drf
@@ -428,9 +428,9 @@ ecdsa==0.13.3 \
     # via
     #   python-jose
     #   sshpubkeys
-elasticsearch-dsl==7.2.1 \
-    --hash=sha256:1e345535164cb684de4b825e1d0daf81b75554b30d3905446584a9e4af0cc3e7 \
-    --hash=sha256:593c01822a03e3e84b87753c78edb833f4b2bfafcd52089841bd8f99b7e74ccd
+elasticsearch-dsl==7.3.0 \
+    --hash=sha256:0ed75f6ff037e36b2397a8e92cae0ddde79b83adc70a154b8946064cb62f7301 \
+    --hash=sha256:9390d8e5cf82ebad3505e7f656e407259cf703f5a4035f211cef454127672572
     # via
     #   -r requirements.in
     #   django-elasticsearch-dsl
@@ -448,8 +448,8 @@ execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83
     # via pytest-xdist
-https://github.com/jcushman/eyecite/archive/bb2b58e88ac54e12311112f87ac469e96ec2768a.zip#egg=eyecite \
-    --hash=sha256:dd59c044566583105856ae307a02004fff6675e292d9cc77d60ac8484f75e254
+https://github.com/jcushman/eyecite/archive/3e6b33c211e5413170ee2bdf066461486caa0d6c.zip#egg=eyecite \
+    --hash=sha256:9cace69b9e2777d71ac823674d8c0323a62f287de74478ffd94580208d6ee1c5
     # via -r requirements.in
 fabric3==1.14.post1 \
     --hash=sha256:647e485ec83f30b587862f92374d6affc217f3d79819d1d7f512e42e7ae51e81 \
@@ -1167,10 +1167,12 @@ regex==2020.7.14 \
     --hash=sha256:d0a5095d52b90ff38592bbdc2644f17c6d495762edf47d876049cfd2968fbccf \
     --hash=sha256:d6cff2276e502b86a25fd10c2a96973fdb45c7a977dca2138d661417f3728341 \
     --hash=sha256:e46d13f38cfcbb79bfdb2964b0fe12561fe633caf964a77a5f8d4e45fe5d2ef7
-    # via nltk
-reporters-db==3.0.0 \
-    --hash=sha256:a217611a799f2a8aded48dd63e06108ede0acaabe5c426dc814767a62ace7d4c \
-    --hash=sha256:bf7392857169d4464a4e8ff20b50e84b2b01c6a9aa17c4825d468a210c8eb8ad
+    # via
+    #   eyecite
+    #   nltk
+reporters-db==3.2.0 \
+    --hash=sha256:0ebd9c0233154b511e57723a992243ea0f430d36c89fa53fa5c03905e7a3a999 \
+    --hash=sha256:b79b50a3e9f4a3ac82b86053cbf02de38002cb3330e2e35964638035ef10008e
     # via eyecite
 reportlab==3.5.13 \
     --hash=sha256:069f684cd0aaa518a27dc9124aed29cee8998e21ddf19604e53214ec8462bdd7 \

@@ -384,7 +384,7 @@ def test_case_editor(reset_sequences, admin_client, auth_client, unrestricted_ca
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_case_cited_by(client, case_factory, elasticsearch):
+def test_citations_page(client, case_factory, elasticsearch):
     dest_case = case_factory()
     dest_cite = dest_case.citations.first()
     source_cases = [case_factory() for _ in range(2)]
@@ -394,7 +394,7 @@ def test_case_cited_by(client, case_factory, elasticsearch):
     non_citing_case = case_factory()
     update_elasticsearch_from_queue()
 
-    response = client.get(reverse('case_cited_by', args=[dest_case.pk], host='cite'))
+    response = client.get(reverse('citations', host='cite')+f'?q={dest_case.pk}')
     check_response(
         response,
         content_includes=[c.name_abbreviation for c in source_cases],

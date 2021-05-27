@@ -30,7 +30,7 @@ from capdb.storages import bulk_export_storage, case_image_storage, download_fil
 from capdb.versioning import TemporalHistoricalRecords, TemporalQuerySet
 from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
-from scripts.extract_cites import extract_citations, extract_whole_cite, canonicalize_cite
+from scripts.extract_cites import extract_citations, extract_whole_cite
 from scripts.extract_images import extract_images
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
@@ -1468,13 +1468,16 @@ class CaseMetadata(models.Model):
         replacements = sorted(self.no_index_redacted.items(), reverse=True, key=lambda i: len(i[0]))
         return apply_replacements(text, replacements)
 
-    def elide_obj(self, text):
+    def elide_obj(self, text, strip=False):
         text = self.redact_obj(text)
         if not self.no_index_elided:
             return text
-        elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='%s'>%s</span>"
+        if strip:
+            elision_span = "{elided}"
+        else:
+            elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='{original}}'>{elided}</span>"
         replacements = sorted(self.no_index_elided.items(), reverse=True, key=lambda i: len(i[0]))
-        return mark_safe(apply_replacements(text, [(k, elision_span % (k, v)) for k, v in replacements], "", ""))
+        return mark_safe(apply_replacements(text, [(k, elision_span.format(original=k, elided=v)) for k, v in replacements], "", ""))
 
 
 class CaseXML(BaseXMLModel):
@@ -1917,7 +1920,7 @@ class Citation(models.Model):
         self.normalized_cite = normalize_cite(self.cite)
         eyecite_cite = extract_whole_cite(self.cite)
         if eyecite_cite:
-            self.rdb_cite = canonicalize_cite(eyecite_cite)[1]
+            self.rdb_cite = eyecite_cite.corrected_citation()
             self.rdb_normalized_cite = normalize_cite(self.rdb_cite)
         else:
             self.rdb_cite = None
@@ -1938,7 +1941,7 @@ class Citation(models.Model):
         """
         eyecite_cite = extract_whole_cite(cite)
         if eyecite_cite:
-            return eyecite_cite.volume, eyecite_cite.reporter_found, eyecite_cite.page
+            return eyecite_cite.groups.get('volume', ''), eyecite_cite.groups['reporter'], eyecite_cite.groups.get('page', '')
         return None, None, None
 
     def parsed(self):
@@ -2029,15 +2032,21 @@ class PageXML(BaseXMLModel):
 
 class ExtractedCitation(models.Model):
     cite = models.CharField(max_length=10000)
+    reporter = models.CharField(max_length=10000, null=True, help_text="Standardized reporter string from reporters-db")
+    normalized_cite = models.CharField(max_length=10000, null=True)
+    rdb_cite = models.CharField(max_length=10000, null=True, help_text="Citation in standard reporters-db format")
+    rdb_normalized_cite = models.CharField(max_length=10000, null=True)
+
     cited_by = models.ForeignKey(CaseMetadata, related_name='extracted_citations', on_delete=models.DO_NOTHING)
     target_case = models.ForeignKey(CaseMetadata, related_name='cited_by', blank=True, null=True, on_delete=models.DO_NOTHING)
     target_cases = ArrayField(models.IntegerField(), blank=True, null=True, help_text="If cite is ambiguous, list of possible IDs.")
-    reporter_name_original = models.CharField(max_length=200)
-    volume_number_original = models.CharField(max_length=64, blank=True, null=True)
-    page_number_original = models.CharField(max_length=64, null=True, blank=True)
-    normalized_cite = models.CharField(max_length=10000, null=True, db_index=True)
-    rdb_cite = models.CharField(max_length=10000, null=True, help_text="Citation in standard reporters-db format")
-    rdb_normalized_cite = models.CharField(max_length=10000, null=True)
+
+    groups = models.JSONField(blank=True, null=True, help_text="Dict of groups from eyecite cite.")
+    metadata = models.JSONField(blank=True, null=True, help_text="Dict of metadata from eyecite cite.")
+    pin_cites = models.JSONField(blank=True, null=True, help_text="List of pin cites and parentheticals from this cite cluster.")
+    category = models.CharField(max_length=255, blank=True, null=True, help_text="Source and cite_type from reporters-db, e.g. 'laws:leg_statute'")
+    weight = models.SmallIntegerField(default=1, help_text="Number of citations in cited_by, counting short cites.")
+    year = models.SmallIntegerField(null=True, help_text="Year included in citation.")
 
     def __str__(self):
         return self.cite

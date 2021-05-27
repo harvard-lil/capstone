@@ -18,8 +18,8 @@
         search: "{% url "search" %}#/cases",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         api: "{% api_url "api-root" %}v1/",
-        citedBy: "{% url "case_cited_by" db_case.id host 'cite' %}",
-        static: "{% static "" %}",
+        citedBy: "{% url "citations" host 'cite' %}?q={{ db_case.id }}",
+        static: "{% static "" %}"
       },
       fullCite: "{{ full_citation|redact:db_case }}",
       isStaff: {% if request.user.is_staff %}true{% else %}false{% endif %},
