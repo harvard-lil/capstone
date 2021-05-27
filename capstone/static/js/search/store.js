@@ -8,7 +8,6 @@ import router from './router'
 const importUrls = urls; // eslint-disable-line
 const importChoices = choices; // eslint-disable-line
 
-
 Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
@@ -29,7 +28,7 @@ const store = new Vuex.Store({
     display_class: '',
     urls: importUrls,
     download_size: 10000,
-    download_full_case: false,
+    download_full_case: true,
     show_explainer: false,
     advanced_fields_shown: false,
     fields: {
@@ -151,6 +150,12 @@ const store = new Vuex.Store({
     search_error(state, value) {
       state.search_error= value;
     },
+    download_size(state, value) {
+      state.download_size= value;
+    },
+    download_full_case(state, value) {
+      state.download_full_case= value;
+    },
     toggleExplainer(state) {
       state.show_explainer = !state.show_explainer;
     },
@@ -172,7 +177,7 @@ const store = new Vuex.Store({
       Object.keys(state.fields).forEach(field => {
         state.fields[field].error = state.fields[field].value = null;
       });
-      dispatch('updateQueryParameters', {})
+      dispatch('pushUrlUpdate', {})
     },
     clearField(state, field_name) {
       if (name === 'ordering') {
@@ -180,6 +185,10 @@ const store = new Vuex.Store({
         state.ordering.value = 'relevance';
       }
       state.fields[field_name].value = state.fields[field_name].error = null;
+    },
+    clearFieldandSearch(state, field_name) {
+      state.fields[field_name].value = state.fields[field_name].error = null;
+      this.dispatch('searchFromForm')
     },
     clearFieldErrors(state) {
       state.ordering.error = null;
@@ -242,10 +251,12 @@ const store = new Vuex.Store({
     ordering: state => state.ordering,
     urls: state => state.urls,
     api_root: state => state.urls.api_root,
+    download_size: state => state.download_size,
+    download_full_case: state => state.download_size,
     show_explainer: state => state.show_explainer,
     advanced_fields_shown: state => state.advanced_fields_shown,
     populated_fields(state) {
-      let populated = [];
+      let populated = {};
       Object.keys(state.fields).forEach(name => {
         if (state.fields[name]['value']) {
           populated[name] = { ...state.fields[name], ...{'name': name}};
@@ -273,8 +284,22 @@ const store = new Vuex.Store({
 
       return `${state.urls.api_root}cases/?${encodeQueryData(params)}`;
     },
-    download_url: (state, getters) => (download_format) => {
-      return getters.new_query_url + "&format=" + download_format + (state.download_full_case ? "&full_case=true" : '');
+    download_url: (state) => (download_format) => {
+      /* assembles and returns URL */
+      const params = {};
+
+      // build the query parameters using the form fields
+      Object.keys(state.fields).forEach(key => {
+        if (state.fields[key]['value']) {
+          params[key] = state.fields[key]['value'];
+        }
+      });
+
+      params['format'] = download_format;
+      params['full_case'] = state.download_full_case ? 'true' : 'false';
+      params['download_size'] = state.download_size;
+
+      return `${state.urls.api_root}cases/?${encodeQueryData(params)}`;
     },
     erroredFieldList: (state) => {
       let fields_with_errors = []
@@ -313,16 +338,20 @@ const store = new Vuex.Store({
     },
   },
   actions: {
-    resetSearchResults: function ({commit}) {
-      commit('hitcount', null);
+    clearSearchMeta: function({commit}) {
       commit('page', 1);
-      commit('results', []);
       commit('first_result_number', null);
       commit('last_result_number', null);
+      commit('cursor', null);
+    },
+    resetSearchResults: function ({commit}) {
+      commit('hitcount', null);
+      commit('results', []);
       commit('clearFieldErrors')
     },
     searchFromParams: function ({dispatch}) {
       dispatch('ingestDataFromQuery', router.currentRoute.query).then(()=> {
+        dispatch('clearSearchMeta', {});
         dispatch('executeSearch', {doNotUpdateUrl: true});
       }).catch((error)=>{
         if (error !== "no change") {
@@ -331,11 +360,12 @@ const store = new Vuex.Store({
       });
     },
     searchFromForm: function ({dispatch}) {
+      dispatch('clearSearchMeta', {});
       dispatch('executeSearch', {});
     },
     executeSearch: function ({commit, dispatch}, {url=null, doNotUpdateUrl=null}) {
       commit('showLoading', true);
-      dispatch('resetSearchResults')
+      dispatch('resetSearchResults');
 
       if (!url) {
         url = this.getters.new_query_url
@@ -346,56 +376,56 @@ const store = new Vuex.Store({
         }
       });
       axios
-          .get(url)
-          .then(response => {
-            return response.data
-          })
-          .then(results_json => {
+        .get(url)
+        .then(response => {
+          return response.data
 
-          if(!doNotUpdateUrl) {
-              dispatch('updateQueryParameters', this.getters.getNewParams)
-          }
-            commit('hitcount', results_json.count);
-            commit('cursor', new URL(url).searchParams.get("cursor"));
+        })
+        .then(results_json => {
+          commit('hitcount', results_json.count);
 
-            if (results_json.next) {
-              commit('next_page_url', results_json.next);
-            } else {
-              commit('next_page_url', null)
-            }
+          commit('cursor', new URL(url).searchParams.get("cursor"));
 
-            if (results_json.previous) {
-              commit('previous_page_url', results_json.previous)
-            } else {
-              commit('previous_page_url', null)
-            }
-            commit('results', results_json.results)
-      }).then(() => {
-
-      }).then(() => {
-            commit('showLoading', false);
-      }).catch(error => {
-        commit('showLoading', false);
-        if (error.response) { // if we got an error response from the server
-          if (error.response.status === 400) {
-            // handle field errors
-            Object.keys(error.response.data).forEach(field => {
-              commit('setFieldError', { 'name': field, 'error': error.response.data[field].join(', ')} )
-            });
-            return false
+          if (results_json.next) {
+            commit('next_page_url', results_json.next);
           } else {
-            commit('search_error', "Error " + error.response.status + "- query failed: " + url);
+            commit('next_page_url', null)
+          }
+
+          if (results_json.previous) {
+            commit('previous_page_url', results_json.previous)
+          } else {
+            commit('previous_page_url', null)
+          }
+          commit('results', results_json.results)
+        }).then(() => {
+          if(!doNotUpdateUrl) {
+              dispatch('pushUrlUpdate', this.getters.getNewParams)
+          }
+        }).then(() => {
+              commit('showLoading', false);
+        }).catch(error => {
+          commit('showLoading', false);
+          if (error.response) { // if we got an error response from the server
+            if (error.response.status === 400) {
+              // handle field errors
+              Object.keys(error.response.data).forEach(field => {
+                commit('setFieldError', { 'name': field, 'error': error.response.data[field].join(', ')} )
+              });
+              return false
+            } else {
+              commit('search_error', "Error " + error.response.status + "- query failed: " + url);
+              return false
+            }
+          } else if (error.request) { // if the request itself failed
+            commit('search_error', "Search error: request failed" + url + " " + error.request);
             return false
           }
-        } else if (error.request) { // if the request itself failed
-          commit('search_error', "Search error: request failed" + url + " " + error.request);
-          return false
-        }
 
-        // if something else went wrong
-        commit('search_error', "Search error: " + error);
-        throw error;
-      })
+          // if something else went wrong
+          commit('search_error', "Search error: " + error);
+          throw error;
+        })
     },
     pageForward: function ({commit, dispatch}) {
       if (this.getters.next_page_url) {
@@ -440,7 +470,7 @@ const store = new Vuex.Store({
         reject("no change");
       })
     },
-    updateQueryParameters: function (commit, params) {
+    pushUrlUpdate: function (commit, params) {
       router.push({name: 'search', query: params}).catch(err => {
         if (err.name !== 'NavigationDuplicated') {
           throw err
