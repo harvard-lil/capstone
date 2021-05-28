@@ -130,10 +130,23 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         s = self.s_from_instance(instance)
 
         # get extracted_citations list, removing duplicate c["cite"] values
-        extracted_citations = list({
-            c["cite"]: {"cite": c["cite"], "case_ids": as_dict(c).get("target_cases", [])}
-            for c in s["extracted_citations"]
-        }.values())
+        extracted_citations = []
+        for c in s["extracted_citations"]:
+            c = as_dict(c)
+            extracted_cite = {
+                "cite": c["cite"],
+                "category": c.get('category'),
+                "reporter": c.get('reporter'),
+            }
+            if c.get("target_cases"):
+                extracted_cite["case_ids"] = c["target_cases"]
+            if c.get('weight', 1) > 1:
+                extracted_cite['weight'] = c['weight']
+            if c.get('year'):
+                extracted_cite['year'] = c['year']
+            if c.get('pin_cites'):
+                extracted_cite['pin_cites'] = c['pin_cites']
+            extracted_citations.append(extracted_cite)
 
         preview = []
         if "_source" in instance:

@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('cite_original', models.CharField(db_index=True, max_length=10000)),
-                ('reporter_name_original', models.CharField(max_length=200)),
+                ('reporter_name_original', models.CharField(max_length=200, default='reporter')),
                 ('volume_number_original', models.CharField(blank=True, max_length=64, null=True)),
                 ('page_number_original', models.SmallIntegerField(blank=True, null=True)),
                 ('cited_by', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='extractedcitations', to='capdb.CaseMetadata')),

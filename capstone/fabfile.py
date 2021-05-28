@@ -302,11 +302,14 @@ def migrate(*args):
     update_postgres_env()
 
 @task
-def populate_search_index(last_run_before=None):
+def populate_search_index(last_run_before=None, volume=None):
     print("Scheduling tasks to reindex volumes")
+    volumes = VolumeMetadata.objects.exclude(out_of_scope=True)
+    if volume:
+        volumes = volumes.filter(pk=volume)
     tasks.run_task_for_volumes(
         tasks.update_elasticsearch_for_vol,
-        VolumeMetadata.objects.exclude(out_of_scope=True),
+        volumes,
         last_run_before=last_run_before)
 
 

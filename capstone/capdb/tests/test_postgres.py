@@ -76,7 +76,7 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
     for obj, change_field, no_change_field in (
             (case.citations.first(), 'cite', 'normalized_cite'),
             (case.body_cache, 'html', 'text'),
-            (extracted_cite, 'cite', 'reporter_name_original'),
+            (extracted_cite, 'cite', 'rdb_cite'),
     ):
         # updating tracked field
         setattr(obj, change_field, 'foo')

@@ -12,9 +12,8 @@ from datetime import datetime, date
 from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
 
-from capapi.documents import CaseDocument
+from capapi import api_reverse
 from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
-from scripts.helpers import normalize_cite
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
     update_elasticsearch_from_queue, run_text_analysis_for_vol
@@ -259,53 +258,95 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_extract_citations(case_factory, elasticsearch):
-    legitimate_cites = [
-        "225 F. Supp. 552",                         # correct
-        ["1 F Supp 1", "1 F. Supp. 1"],             # normalized
-        ["2 F.-'Supp.- 2", "2 F. Supp. 2"],         # extra cruft matched by get_cite_extractor
-        ["125 Yt. 152", "125 Vt. 152"],             # custom reporters added by patch_reporters_db
-        ["125 Burnett (Wis.) 152", "125 Bur. 152"], # normalized
-        ["1 F. 2d 2", "1 F.2d 2"],                  # not matched as "1 F. 2"
-        "2000 WL 12345",                            # vendor cite
-        ["3 F Supp, at 3", "3 F. Supp. 3"],         # short cite
-    ]
-    legitimate_cites_normalized = set(normalize_cite(c if type(c) is str else c[1]) for c in legitimate_cites)
-    legitimate_cites = [c if type(c) is str else c[0] for c in legitimate_cites]
-    illegitimate_cites = [
-        "2 Dogs 3",             # unrecognized reporter
-        "3 Dogs 4",             # duplicate unrecognized reporter
-        "1 or 2",               # not matched as 1 Or. 2
-        "125 f. supp.-' 152",   # limit on how much cruft matched by get_cite_extractor -- only 2 at end
-        "1 A. M",               # patching-out of roman numeral page numbers works
-    ]
+def test_extract_citations(reset_sequences, case_factory, elasticsearch, client):
+    paragraph_1 = """
+        correct: Foo v. Bar, 1 U.S. 1, 12 (2000) (overruling).
+        extra cruft matched: 2 F.-'Supp.- 2
+        custom reporters: 125 Yt. 152
+        statutes: Ala. Code § 92.979
+        law journals: 1 Minn. L. Rev. 1
+    """
+    paragraph_2 = """
+        normalized: 2 US 2
+        short cites: id. 1 U.S. at 153.
+        ignored, too much cruft: 125 f. supp.-' 152
+    """
+    case_factory(citations__cite="1 U.S. 1", decision_date=datetime(1900, 1, 1))
+    case_factory(citations__cite="2 U.S. 2", decision_date=datetime(1900, 1, 1))
+    case_factory(citations__cite="2 U.S. 2", decision_date=datetime(1900, 1, 1))
+
     case = case_factory(decision_date=datetime(2000, 1, 1))
-    case_text = ", some text, ".join(legitimate_cites+illegitimate_cites)
-    set_case_text(case, case_text)
+    set_case_text(case, paragraph_1, text3=paragraph_2)
     case.sync_case_body_cache()
     update_elasticsearch_from_queue()
 
-    # check extracted cites
-    cites = list(ExtractedCitation.objects.all())
-    cite_set = set(c.cite for c in cites)
-    normalized_cite_set = set(c.rdb_normalized_cite for c in cites)
-    assert cite_set == set(legitimate_cites)
-    assert normalized_cite_set == legitimate_cites_normalized
-    assert all(c.cited_by_id == case.pk for c in cites)
-    assert set(c['cite'] for c in CaseDocument.get(id=case.pk).extracted_citations) == cite_set
-    assert set(c['rdb_normalized_cite'] for c in CaseDocument.get(id=case.pk).extracted_citations) == normalized_cite_set
+    # check html
+    assert """
+    <p id="b83-6">
+        correct: Foo v. Bar, <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="0" data-case-ids="1">1 U.S. 1</a>, 12 (2000) (overruling).
+        extra cruft matched: <a href="http://cite.case.test:8000/citations/?q=2%20F.%20Supp.%202" class="citation" data-index="1">2 F.-'Supp.- 2</a>
+        custom reporters: <a href="http://cite.case.test:8000/citations/?q=125%20Vt.%20152" class="citation" data-index="2">125 Yt. 152</a>
+        statutes: <a href="http://cite.case.test:8000/citations/?q=Ala.%20Code%20%C2%A7%2092.979" class="citation" data-index="3">Ala. Code § 92.979</a>
+        law journals: <a href="http://cite.case.test:8000/citations/?q=1%20Minn.%20L.%20Rev.%201" class="citation" data-index="4">1 Minn. L. Rev. 1</a>
+    </p>
+    <aside data-label="1" class="footnote" id="footnote_1_1">
+      <a href="#ref_footnote_1_1">1</a>
+      <p id="b83-11">
+        normalized: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="5" data-case-ids="2,3">2 US 2</a>
+        short cites: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="6" data-case-ids="2,3">id.</a> <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="7" data-case-ids="1">1 U.S. at 153</a>.
+        ignored, too much cruft: 125 f. supp.-' 152
+    </p>
+    </aside>
+    """.strip() in case.body_cache.html
 
-    # remove a cite and add a cite --
+    # check ExtractedCites entries
+    extracted_cites_fields = [
+        'cite', 'reporter', 'normalized_cite', 'rdb_cite', 'rdb_normalized_cite', 'cited_by_id', 'target_case_id',
+        'target_cases', 'groups', 'metadata', 'pin_cites', 'category', 'weight', 'year',
+    ]
+    extracted_cites = [{f: getattr(e, f) for f in extracted_cites_fields} for e in case.extracted_citations.order_by('id').filter(cite__in=['1 U.S. 1', '2 US 2'])]
+    expected_extracted_cites = [
+        {
+            'cite': '1 U.S. 1', 'reporter': 'U.S.', 'normalized_cite': '1us1', 'rdb_cite': '1 U.S. 1',
+            'rdb_normalized_cite': '1us1', 'cited_by_id': 4, 'target_case_id': 1, 'target_cases': [1],
+            'category': 'reporters:federal', 'weight': 2, 'year': 2000,
+            'groups': {'page': '1', 'volume': '1', 'reporter': 'U.S.'},
+            'metadata': {'year': '2000', 'court': 'scotus', 'pin_cite': '12', 'defendant': 'Bar', 'plaintiff': 'Foo', 'parenthetical': 'overruling'},
+            'pin_cites': [{'page': '12', 'parenthetical': 'overruling'}, {'page': '153'}],
+        },
+        {
+            'cite': '2 US 2', 'reporter': 'U.S.', 'normalized_cite': '2us2', 'rdb_cite': '2 U.S. 2',
+            'rdb_normalized_cite': '2us2', 'cited_by_id': 4, 'target_case_id': None, 'target_cases': [2, 3],
+            'category': 'reporters:federal', 'weight': 2, 'year': None,
+            'groups': {'page': '2', 'volume': '2', 'reporter': 'US'},
+            'metadata': {'court': 'scotus'},
+            'pin_cites': [],
+        }]
+    assert extracted_cites == expected_extracted_cites
+
+    # check API response
+    case_json = client.get(api_reverse("cases-detail", args=[case.id])).json()
+    assert case_json['cites_to'] == [
+        {'cite': '1 U.S. 1', 'category': 'reporters:federal', 'reporter': 'U.S.', 'case_ids': [1], 'weight': 2,
+         'year': 2000, 'pin_cites': [{'page': '12', 'parenthetical': 'overruling'}, {'page': '153'}]},
+        {'cite': "2 F.-'Supp.- 2", 'category': 'reporters:federal', 'reporter': 'F. Supp.'},
+        {'cite': '125 Yt. 152', 'category': 'reporters:state', 'reporter': 'Vt.'},
+        {'cite': 'Ala. Code § 92.979', 'category': 'laws:leg_statute', 'reporter': 'Ala. Code'},
+        {'cite': '1 Minn. L. Rev. 1', 'category': 'journals:journal', 'reporter': 'Minn. L. Rev.'},
+        {'cite': '2 US 2', 'category': 'reporters:federal', 'reporter': 'U.S.', 'case_ids': [2, 3], 'weight': 2}
+    ]
+
+    # modify a cite --
     # make sure IDs of unchanged cites are still the same
-    removed_cite_str = legitimate_cites[0]
-    added_cite_str = '123 F. Supp. 456'
-    case_text = case_text.replace(removed_cite_str, '') + ', some text, ' + added_cite_str
-    set_case_text(case, case_text)
+    paragraph_1 = paragraph_1.replace("1 Minn. L. Rev. 1", "1 Minn. L. Rev. 1 (parenthetical)")
+    old_id = ExtractedCitation.objects.get(cite="1 Minn. L. Rev. 1").id
+    old_ids = ExtractedCitation.objects.values_list('id', flat=True)
+    set_case_text(case, paragraph_1)
     case.sync_case_body_cache()
-    new_cites = list(ExtractedCitation.objects.all())
-    removed_cite = next(c for c in cites if c.cite == removed_cite_str)
-    added_cite = next(c for c in new_cites if c.cite == added_cite_str)
-    assert {(c.id, c.cite) for c in new_cites} == ({(c.id, c.cite) for c in cites} | {(added_cite.id, added_cite.cite)}) - {(removed_cite.id, removed_cite.cite)}
+    new_id = ExtractedCitation.objects.get(cite="1 Minn. L. Rev. 1").id
+    new_ids = ExtractedCitation.objects.values_list('id', flat=True)
+    assert new_id != old_id
+    assert set(new_ids) == (set(old_ids) | {new_id}) - {old_id}
 
 
 @pytest.mark.django_db(databases=['capdb'])
@@ -407,7 +448,7 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
     # all cites found
     extracted = case_from.extracted_citations.all()
     assert set(e.cite for e in extracted) == {
-        cite_to, cite_to_aka, another_cite_to,
+        cite_to, another_cite_to,
         duplicate_cite, cite_not_in_cap, future_cite
     }
 

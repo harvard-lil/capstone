@@ -113,6 +113,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'cite': 'citations.normalized_cite',
         'cites_to': 'extracted_citations.normalized_cite',
         'cites_to_id': 'extracted_citations.target_cases',
+        'cites_to.reporter': 'extracted_citations.reporter',
+        'cites_to.category': 'extracted_citations.category',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
