@@ -1,115 +1,159 @@
 <template>
-  <div class="search-form" id="sidebar-menu">
-    <form @submit.prevent="$emit('new-search', fields, endpoint)"
-          class="row">
+  <div class="search-form" id="sidebar-menu" v-bind:class="{ 'results-shown': $store.getters.resultsShown }">
+    <div class="row">
       <div class="col-centered col-11">
         <div class="col-md-2 empty-push-div"></div>
         <div class="col-md-10 title-container">
           <h3 class="page-title">
-            <img alt="" aria-hidden="true"
-                 src="{% static 'img/arrows/violet-arrow-right.svg' %}"
-                 class="decorative-arrow"/>
             Search
           </h3>
         </div>
-        <div class="row">
-          <div class="dropdown dropdown-search-routes">
-            <button class="btn dropdown-toggle dropdown-title"
-                    type="button"
-                    id="search-routes-dropdown"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    :aria-describedby="endpoint">
-              {{ endpoint }}
-            </button>
-
-            <div class="dropdown-menu" aria-labelledby="search-routes-dropdown">
-              <a v-for="current_endpoint in Object.keys($parent.endpoints)" :key="current_endpoint"
-                 @click="changeEndpoint(current_endpoint)"
-                 :class="['dropdown-item', 'search-tab', current_endpoint===endpoint ? 'active' : '']">
-                {{ current_endpoint }}
-              </a>
-            </div>
-          </div>
-        </div>
-
         <!-- Table showing search fields. Also includes add field and search buttons. -->
-        <div v-if="search_error"
+        <div v-if="$store.getters.search_error"
              role="alert"
              class="alert alert-danger">
-          <p>{{ search_error }}</p>
+          <p>{{ $store.getters.search_error }}</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            {{ search_error }}
+            {{ $store.getters.search_error }}
           </h2>
         </div>
-        <div v-if="Object.keys(field_errors).length"
+        <div v-if="$store.getters.erroredFieldList.length"
              role="alert"
              class="alert alert-danger">
-          <!--<p>Please correct the following <strong>2 error(s)</strong>: </p>-->
-          <p>Please correct the following {{ Object.keys(field_errors).length }} error(s):</p>
+          <p>Please correct the following {{ $store.getters.erroredFieldList.length }} error(s):</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following {{ Object.keys(field_errors).length }} error(s)</h2>
+            Please correct the following error{{ $store.getters.erroredFieldList.length > 1 ? 's' : '' }}:
+          </h2>
           <ul class="bullets">
-            <li v-for="(error, name) in field_errors"
-                :key="'error' + name">
-              <a :href="'#'+name">{{ getFieldByName(name).label }}:</a> {{ error }}
+            <li v-for="field in $store.getters.erroredFieldList"
+                :key="'error' + field">
+              <a :href="'#'+field">{{ $store.getters.getField(field).label }}:</a> {{ $store.getters.getField(field).error }}
             </li>
           </ul>
         </div>
 
         <div class="search-fields row">
-          <div v-for="field in fields"
-               class="search-field"
-               v-bind:class="{'default-field': field.default, 'shown': advanced_fields_shown && !field.default}"
-               :key="field.name">
-            <!--Fields default-->
-            <template v-if="field.default">
-              <field-item :field="field" :choices="choices[field.choices]"></field-item>
-              <div v-if="field.default && field_errors[field.name]" class="invalid-feedback">
-                {{ field_errors[field.name] }}
-              </div>
-              <small v-if="field.default && field.info"
-                     :id="`help-text-${field.name}`"
-                     class="form-text text-muted">
-                {{ field.info }}
-              </small>
-            </template>
-            <!--Other fields-->
-            <template v-else>
-              <template v-if="advanced_fields_shown">
-                <field-item v-if="!field.default"
-                            :field="field"
-                            :choices="choices[field.choices]"
-                            :key="field.name"></field-item>
-                <div v-if="!field.default && field_errors[field.name]" class="invalid-feedback">
-                  {{ field_errors[field.name] }}
-                </div>
-                <small v-if="!field.default && field.info"
-                       :id="`help-text-${field.name}`"
-                       class="form-text text-muted">
-                  {{ field.info }}
-                </small>
-              </template>
-            </template>
+          <div class="search-field default-field">
+            <field-item :field="$store.getters.getField('search')"></field-item>
+            <div v-if="$store.getters.fieldHasError('search')" class="invalid-feedback">
+              {{ $store.getters.getField('search').error }}
+            </div>
+            <small :id="`help-text-search`" class="form-text text-muted">
+              {{ $store.getters.getField('search').info }}
+            </small>
           </div>
+
+
+          <template v-if="$store.getters.advanced_fields_shown">
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('decision_date_min')"></field-item>
+              <div v-if="$store.getters.fieldHasError('decision_date_min')" class="invalid-feedback">
+                {{ $store.getters.getField('decision_date_min').error }}
+              </div>
+              <small :id="`help-text-decision_date_min`" class="form-text text-muted">
+                {{ $store.getters.getField('decision_date_min').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('decision_date_max')"></field-item>
+              <div v-if="$store.getters.fieldHasError('decision_date_max')" class="invalid-feedback">
+                {{ $store.getters.getField('decision_date_max').error }}
+              </div>
+              <small :id="`help-text-decision_date_max`" class="form-text text-muted">
+                {{ $store.getters.getField('decision_date_max').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('name_abbreviation')"></field-item>
+              <div v-if="$store.getters.fieldHasError('name_abbreviation')" class="invalid-feedback">
+                {{ $store.getters.getField('name_abbreviation').error }}
+              </div>
+              <small :id="`help-text-name_abbreviation`" class="form-text text-muted">
+                {{ $store.getters.getField('name_abbreviation').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('docket_number')"></field-item>
+              <div v-if="$store.getters.fieldHasError('docket_number')" class="invalid-feedback">
+                {{ $store.getters.getField('docket_number').error }}
+              </div>
+              <small :id="`help-text-docket_number`" class="form-text text-muted">
+                {{ $store.getters.getField('docket_number').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :clearable="true" :field="$store.getters.getField('reporter')"></field-item>
+              <div v-if="$store.getters.fieldHasError('reporter')" class="invalid-feedback">
+                {{ $store.getters.getField('reporter').error }}
+              </div>
+              <small :id="`help-text-reporter`" class="form-text text-muted">
+                {{ $store.getters.getField('reporter').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :clearable="true" :field="$store.getters.getField('jurisdiction')"></field-item>
+              <div v-if="$store.getters.fieldHasError('jurisdiction')" class="invalid-feedback">
+                {{ $store.getters.getField('jurisdiction').error }}
+              </div>
+              <small :id="`help-text-jurisdiction`" class="form-text text-muted">
+                {{ $store.getters.getField('jurisdiction').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :field="$store.getters.getField('cite')"></field-item>
+              <div v-if="$store.getters.fieldHasError('cite')" class="invalid-feedback">
+                {{ $store.getters.getField('cite').error }}
+              </div>
+              <small :id="`help-text-cite`" class="form-text text-muted">
+                {{ $store.getters.getField('cite').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown">
+              <field-item :clearable="true" :field="$store.getters.getField('court')"></field-item>
+              <div v-if="$store.getters.fieldHasError('court')" class="invalid-feedback">
+                {{ $store.getters.getField('court').error }}
+              </div>
+              <small :id="`help-text-court`" class="form-text text-muted">
+                {{ $store.getters.getField('court').info }}
+              </small>
+            </div>
+          </template>
         </div>
-        <a href="#" class="btn btn-tertiary show-advanced-options"
+        <button class="btn btn-tertiary show-advanced-options"
            aria-label="Show or hide advanced filters"
-           @click="advanced_fields_shown = !advanced_fields_shown">
-          <span v-if="advanced_fields_shown">Hide advanced filters</span>
+           @click="$store.commit('toggleAdvanced')">
+          <span v-if="$store.getters.advanced_fields_shown">Hide advanced filters</span>
           <span v-else>Show advanced filters</span>
-        </a>
+        </button>
 
         <!--Buttons row-->
         <div class="submit-button-group">
-          <search-button :showLoading="showLoading" :endpoint="endpoint"></search-button>
-          <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer"
-             v-if="show_explainer">HIDE API CALL
-          </a>
-          <a href="#" id="query-explainer-button" class="mt-0" @click="toggleExplainer" v-else>SHOW API CALL</a>
+          <div class="submit-btn-container">
+            <button @click="$store.dispatch('searchFromForm')" class="btn btn-primary d-flex align-items-center">
+              Search
+              <span v-if="$store.getters.showLoading"
+                    class="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden="true"></span>
+            </button>
+            <span v-if="$store.getters.showLoading"
+                  id="loading-focus"
+                  class="sr-only"
+                  tabindex="-1">Loading</span>
+          </div>
+          <button id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')"
+             v-if="$store.getters.show_explainer">HIDE API CALL
+          </button>
+          <button id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')" v-else>SHOW API CALL</button>
         </div>
-        <div class="query-explainer" v-show="show_explainer">
+        <div class="query-explainer" v-show="$store.getters.show_explainer">
           <div class="row">
             <div class="col-12">
               <small id="help-text-search" class="form-text text-muted">
@@ -119,73 +163,32 @@
           </div>
           <div class="row">
             <div class="col-12 url-block">
-              <query-explainer :query_url="query_url"></query-explainer>
+              <query-explainer :query_url="$store.getters.query_url"></query-explainer>
             </div>
           </div>
         </div>
         <div class="search-disclaimer">
           <p>
-            Searching U.S. caselaw published through mid-2018. <a :href="urls.search_docs">Documentation</a>.<br>
+            Searching U.S. caselaw published through mid-2018. <a
+              :href="$store.getters.urls.search_docs">Documentation</a>.<br>
           </p>
           <p>
             <span class="bold">Need legal advice?</span> This is not your best option! Read about
-            <a :href="urls.search_docs + '#research'">our limitations and alternatives</a>.
+            <a :href="$store.getters.urls.search_docs + '#research'">our limitations and alternatives</a>.
           </p>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 </template>
 <script>
-import SearchButton from '../vue-shared/search-button';
-import QueryExplainer from './query-explainer';
-import FieldItem from './field-item';
+  import QueryExplainer from './query-explainer';
+  import FieldItem from './field-item';
 
-export default {
-  components: {
-    FieldItem,
-    SearchButton,
-    QueryExplainer,
-  },
-  data: function () {
-    return {
-      query: [],
-      show_explainer: false,
-      advanced_fields_shown: false,
-      defaultFields: [],
-      otherFields: []
-    }
-  },
-  props: [
-    'search_error',
-    'field_errors',
-    'urls',
-    'showLoading',
-    'endpoint',
-    'fields',
-    'query_url',
-    'choices',
-  ],
-  methods: {
-    valueUpdated() {
-      this.$parent.updateQueryURL();
+  export default {
+    components: {
+      QueryExplainer,
+      FieldItem
     },
-    getFieldByName(field_name) {
-      return this.$parent.endpoints[this.endpoint].find(field => field.name === field_name);
-    },
-    changeEndpoint: function (new_endpoint) {
-      this.$emit('update:endpoint', new_endpoint)
-      this.valueUpdated();
-    },
-    toggleExplainer() {
-      this.show_explainer = !this.show_explainer;
-    },
-    downloadResults: function (format) {
-      return this.$parent.assembleUrl() + "&format=" + format;
-    },
-  },
-  mounted() {
-    this.valueUpdated();
   }
-}
 </script>
