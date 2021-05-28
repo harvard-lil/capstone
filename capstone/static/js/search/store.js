@@ -40,6 +40,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       decision_date_min: {
         label: "Date from YYYY-MM-DD",
@@ -48,6 +49,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       decision_date_max: {
         value: null,
@@ -56,6 +58,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       name_abbreviation: {
         label: "Case name abbreviation",
@@ -64,6 +67,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       docket_number: {
         value: null,
@@ -72,6 +76,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       reporter: {
         value: null,
@@ -80,6 +85,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       jurisdiction: {
         value: null,
@@ -88,6 +94,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       cite: {
         value: null,
@@ -96,6 +103,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
       court: {
         value: null,
@@ -104,6 +112,7 @@ const store = new Vuex.Store({
         highlight_field: false,
         highlight_explainer: false,
         error: null,
+        value_when_searched: null
       },
     },
     ordering: {
@@ -202,6 +211,11 @@ const store = new Vuex.Store({
       }
       state.fields[update.name].value = update.value;
     },
+    setFieldValueWhenSearched(state, update) {
+      if (update.name === 'ordering')
+        return
+      state.fields[update.name].value_when_searched = update.value;
+    },
     setFieldError(state, update) {
       if (name === 'ordering') {
         return state.ordering.error = update.error;
@@ -264,6 +278,15 @@ const store = new Vuex.Store({
       });
       return populated
     },
+    populated_fields_during_search(state) {
+      let populated = {};
+      Object.keys(state.fields).forEach(name => {
+        if (state.fields[name]['value_when_searched']) {
+          populated[name] = { ...state.fields[name], ...{'name': name}};
+        }
+      });
+      return populated
+    },
     field_name_list(state) {
       return Object.keys(state.fields)
     },
@@ -297,7 +320,7 @@ const store = new Vuex.Store({
 
       params['format'] = download_format;
       params['full_case'] = state.download_full_case ? 'true' : 'false';
-      params['download_size'] = state.download_size;
+      params['page_size'] = state.download_size;
 
       return `${state.urls.api_root}cases/?${encodeQueryData(params)}`;
     },
@@ -363,28 +386,32 @@ const store = new Vuex.Store({
       dispatch('clearSearchMeta', {});
       dispatch('executeSearch', {});
     },
-    executeSearch: function ({commit, dispatch}, {url=null, doNotUpdateUrl=null}) {
+    executeSearch: function ({commit, dispatch, getters}, {url=null, doNotUpdateUrl=null}) {
       commit('showLoading', true);
       dispatch('resetSearchResults');
 
       if (!url) {
         url = this.getters.new_query_url
       }
-      Object.keys(this.getters.populated_fields).forEach(field => {
+
+      for (let field in getters.populated_fields) {
         if (field !== 'search') {
           commit('showAdvanced');
         }
-      });
+      }
+
       axios
         .get(url)
         .then(response => {
           return response.data
-
         })
         .then(results_json => {
           commit('hitcount', results_json.count);
-
           commit('cursor', new URL(url).searchParams.get("cursor"));
+
+          for (let field in getters.fields) {
+            commit('setFieldValueWhenSearched', getters.getField(field))
+          }
 
           if (results_json.next) {
             commit('next_page_url', results_json.next);

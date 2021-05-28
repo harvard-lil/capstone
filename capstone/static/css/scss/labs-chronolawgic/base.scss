@@ -51,6 +51,7 @@ div.flash {
   color: $color-white;
   font-family: $font-family-sans-serif;
   font-weight: $font-weight-black;
+  z-index: 2000000000;
 }
 
 div#success_msg {

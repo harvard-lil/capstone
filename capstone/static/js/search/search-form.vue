@@ -22,9 +22,7 @@
              class="alert alert-danger">
           <p>Please correct the following {{ $store.getters.erroredFieldList.length }} error(s):</p>
           <h2 id="form-errors-heading" tabindex="-1" class="sr-only">
-            Please correct the following
-            <template v-if="$store.getters.erroredFieldList.length > 1">{{ $store.getters.erroredFieldList.length }} errors:</template>
-            <template>error:</template>
+            Please correct the following error{{ $store.getters.erroredFieldList.length > 1 ? 's' : '' }}:
           </h2>
           <ul class="bullets">
             <li v-for="field in $store.getters.erroredFieldList"
@@ -88,7 +86,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :field="$store.getters.getField('reporter')"></field-item>
+              <field-item :clearable="true" :field="$store.getters.getField('reporter')"></field-item>
               <div v-if="$store.getters.fieldHasError('reporter')" class="invalid-feedback">
                 {{ $store.getters.getField('reporter').error }}
               </div>
@@ -98,7 +96,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :field="$store.getters.getField('jurisdiction')"></field-item>
+              <field-item :clearable="true" :field="$store.getters.getField('jurisdiction')"></field-item>
               <div v-if="$store.getters.fieldHasError('jurisdiction')" class="invalid-feedback">
                 {{ $store.getters.getField('jurisdiction').error }}
               </div>
@@ -118,7 +116,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :field="$store.getters.getField('court')"></field-item>
+              <field-item :clearable="true" :field="$store.getters.getField('court')"></field-item>
               <div v-if="$store.getters.fieldHasError('court')" class="invalid-feedback">
                 {{ $store.getters.getField('court').error }}
               </div>
@@ -138,8 +136,7 @@
         <!--Buttons row-->
         <div class="submit-button-group">
           <div class="submit-btn-container">
-            <button @click="$store.dispatch('searchFromForm')"
-                    class="btn btn-primary d-flex align-items-center">
+            <button @click="$store.dispatch('searchFromForm')" class="btn btn-primary d-flex align-items-center">
               Search
               <span v-if="$store.getters.showLoading"
                     class="spinner-border spinner-border-sm"

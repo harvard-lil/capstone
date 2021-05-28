@@ -5,16 +5,16 @@
         @blur="$store.commit('unhighlightExplainer', field.name)"
         v-model="value"
         :aria-label="field.name"
-        :clearable="true"
         :placeholder="field.label"
         label="label"
         :searchable="false"
+        :clearable="clearable"
         value="value"
         :id="field.name"
         :reduce="option => option.value"
         :class="['dropdown-field', 'col-12',
            {'is-invalid': $store.getters.fieldHasError(field.name)},
-           { 'queryfield_highlighted': field.highlight_explainer || field.highlight_field} ]">
+           { 'queryfield_highlighted': field.highlight_field} ]">
         <template #selected-option-container="{ option }">
           <div class="vs__selected">{{ option.label }}</div>
         </template>
@@ -26,7 +26,7 @@
            :aria-label="field.name"
            :class="['queryfield', 'col-12',
            {'is-invalid': $store.getters.fieldHasError(field.name)},
-           { 'queryfield_highlighted': field.highlight_explainer || field.highlight_field} ]"
+           { 'queryfield_highlighted': field.highlight_field} ]"
            type='text'
            :placeholder="field.label"
            :id="field.name"
@@ -47,7 +47,7 @@ import vSelect from 'vue-select';
 export default {
   components: {vSelect},
   name: "field-item",
-  props: [ 'field', 'search_on_change' ],
+  props: [ 'field', 'search_on_change', 'clearable' ],
   data() {
     return {
       display_value: this.getFormattedDisplayValue()
