@@ -1475,7 +1475,7 @@ class CaseMetadata(models.Model):
         if strip:
             elision_span = "{elided}"
         else:
-            elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='{original}}'>{elided}</span>"
+            elision_span = "<span class='elided-text' role='button' tabindex='0' data-hidden-text='{original}'>{elided}</span>"
         replacements = sorted(self.no_index_elided.items(), reverse=True, key=lambda i: len(i[0]))
         return mark_safe(apply_replacements(text, [(k, elision_span.format(original=k, elided=v)) for k, v in replacements], "", ""))
 
