@@ -3,9 +3,7 @@ from copy import deepcopy
 import pytest
 from django.db import transaction
 
-from capapi.documents import CaseDocument
 from capdb.models import CaseMetadata
-from capdb.tasks import update_elasticsearch_from_queue
 from scripts.helpers import parse_xml, serialize_xml
 from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
 
@@ -108,11 +106,3 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
         setattr(obj, no_change_field, 'foo')
         obj.save()
         check_timestamps_unchanged(case, timestamp)
-
-    # case gets removed when in_scope changes
-    update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)
-    case.duplicative = True
-    case.save()
-    update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)
