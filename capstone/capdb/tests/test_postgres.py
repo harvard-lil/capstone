@@ -108,11 +108,3 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
         setattr(obj, no_change_field, 'foo')
         obj.save()
         check_timestamps_unchanged(case, timestamp)
-
-    # case gets removed when in_scope changes
-    update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)
-    case.duplicative = True
-    case.save()
-    update_elasticsearch_from_queue()
-    CaseDocument.get(case.pk)

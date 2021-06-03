@@ -945,14 +945,13 @@ class CaseMetadataQuerySet(TemporalQuerySet):
         return self.update(
             in_scope=Q(duplicative=False, duplicate=False) & ~Q(jurisdiction_id=None) & ~Q(court_id=None))
 
-    def for_indexing(self, require_body_cache=True):
+    def for_indexing(self):
         """
-            Fetch only cases that are appropriate for Elasticsearch indexing, with associated data.
+            Fetch associated data for cases that are going to be indexed by elasticsearch.
         """
-        out = self.select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update').prefetch_related('extracted_citations', 'citations', 'analysis')
-        if require_body_cache:
-            out = out.exclude(body_cache=None)
-        return out
+        return self\
+            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update')\
+            .prefetch_related('extracted_citations', 'citations', 'analysis')
 
 
 class CaseMetadata(models.Model):
