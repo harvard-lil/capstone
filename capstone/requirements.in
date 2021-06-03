@@ -70,6 +70,7 @@ flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working
 pathlib2           # to keep --require-hashes happy; from pytest
 beautifulsoup4
+mock
 
 # SCSS
 libsasscompiler     # for compiling scss in pipeline
