@@ -3,9 +3,7 @@ from copy import deepcopy
 import pytest
 from django.db import transaction
 
-from capapi.documents import CaseDocument
 from capdb.models import CaseMetadata
-from capdb.tasks import update_elasticsearch_from_queue
 from scripts.helpers import parse_xml, serialize_xml
 from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
 
