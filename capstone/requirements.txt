@@ -408,8 +408,8 @@ execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83
     # via pytest-xdist
-https://github.com/jcushman/eyecite/archive/3e6b33c211e5413170ee2bdf066461486caa0d6c.zip#egg=eyecite \
-    --hash=sha256:9cace69b9e2777d71ac823674d8c0323a62f287de74478ffd94580208d6ee1c5
+https://github.com/jcushman/eyecite/archive/6c1837020670328ea8ab8cef168ccabdbad1fe64.zip#egg=eyecite \
+    --hash=sha256:d5b1e0271595c3ffdfba6041de05a1637c8680f8906e5d77a5b75b1494fd6668
     # via -r requirements.in
 fabric3==1.14.post1 \
     --hash=sha256:647e485ec83f30b587862f92374d6affc217f3d79819d1d7f512e42e7ae51e81 \
