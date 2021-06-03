@@ -21,7 +21,7 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, **kwargs):
         the task has not succeeded after that time.
     """
     if volumes is None:
-        volumes = VolumeMetadata.objects.filter(out_of_scope=False, duplicate=False)
+        volumes = VolumeMetadata.objects.filter(out_of_scope=False)
     if last_run_before:
         # find volumes where task has never run, or had an error, or had a success before last_run_before date
         volumes = volumes.filter(
