@@ -104,6 +104,6 @@ django-elasticsearch-dsl-drf
 
 # citation extraction
 # eyecite
-https://github.com/jcushman/eyecite/archive/6c1837020670328ea8ab8cef168ccabdbad1fe64.zip#egg=eyecite  # until > 2.1.0
+https://github.com/jcushman/eyecite/archive/3a1ff2ac3c910f48ee6f8af3a5947156647c7084.zip#egg=eyecite  # until > 2.2.0
 hyperscan
 networkx
