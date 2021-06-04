@@ -189,9 +189,9 @@ coreschema==0.0.4 \
     # via
     #   coreapi
     #   drf-yasg
-courts-db==0.9.11 \
-    --hash=sha256:5c1b626893d644052c2307904f5b73f274932a5f101dd637a7a6d883d25d6aac \
-    --hash=sha256:b3ebfcae196dd332e725fa7ec7ba80dabd8e555968abae56cc874b9198674ee2
+courts-db==0.9.13 \
+    --hash=sha256:8c2a46300b3b2b744975f289c5a633c6b455da00832361299474fba5381022fe \
+    --hash=sha256:a952e1918adae239a3e56f0798f96dba0844c9d57e1b018507f289c6a44c7281
     # via eyecite
 coverage==4.5.2 \
     --hash=sha256:09e47c529ff77bf042ecfe858fb55c3e3eb97aac2c87f0349ab5a7efd6b3939f \
@@ -408,8 +408,8 @@ execnet==1.5.0 \
     --hash=sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a \
     --hash=sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83
     # via pytest-xdist
-https://github.com/jcushman/eyecite/archive/6c1837020670328ea8ab8cef168ccabdbad1fe64.zip#egg=eyecite \
-    --hash=sha256:d5b1e0271595c3ffdfba6041de05a1637c8680f8906e5d77a5b75b1494fd6668
+https://github.com/jcushman/eyecite/archive/3a1ff2ac3c910f48ee6f8af3a5947156647c7084.zip#egg=eyecite \
+    --hash=sha256:ff9f9f8130fbf1250f0e7b28936b1d6aa050cd4b82080bd45bcc427765b89797
     # via -r requirements.in
 fabric3==1.14.post1 \
     --hash=sha256:647e485ec83f30b587862f92374d6affc217f3d79819d1d7f512e42e7ae51e81 \
@@ -1070,9 +1070,9 @@ regex==2020.7.14 \
     # via
     #   eyecite
     #   nltk
-reporters-db==3.2.0 \
-    --hash=sha256:0ebd9c0233154b511e57723a992243ea0f430d36c89fa53fa5c03905e7a3a999 \
-    --hash=sha256:b79b50a3e9f4a3ac82b86053cbf02de38002cb3330e2e35964638035ef10008e
+reporters-db==3.2.1 \
+    --hash=sha256:5b095da3489a17d71a7328d22df3b1f0b8f176a2bc7b20b7a5254a7a809f10a7 \
+    --hash=sha256:cc8f0d0a6333190ff7f93d2d3a0c7cd47349eca842aed693a79c7562645b312f
     # via eyecite
 reportlab==3.5.13 \
     --hash=sha256:069f684cd0aaa518a27dc9124aed29cee8998e21ddf19604e53214ec8462bdd7 \
