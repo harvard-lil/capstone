@@ -169,6 +169,8 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
         for item in queryset._sort:
             if type(item) == str:
                 item = {item: {"order": "asc" if item == "_score" else "desc"}}
+            elif type(item) == dict and '_score' in item:
+                item = {'_score': {'order': 'asc'}}
             elif type(item) == dict  and item:
                 k = next(iter(item))
                 v = dict(item[k])
@@ -176,6 +178,7 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
                 item = {k: v}
             else:
                 raise TypeError("Unrecognized sort order: %s" % item)
+
             new_sort.append(item)
         return queryset.sort(*new_sort)
 
