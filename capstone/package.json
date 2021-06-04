@@ -89,6 +89,7 @@
     "**/autoprefixer": "^10.2.5",
     "**/cssnano": "^5.0.2",
     "**/browserslist": "^4.16.5",
-    "**/dns-packet": "^5.2.2"
+    "**/dns-packet": "^5.2.2",
+    "**/ws": "^6.2.2"
   }
 }
