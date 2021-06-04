@@ -74,9 +74,8 @@
     }
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
+    "defaults",
+    "not ie 11"
   ],
   "resolutions": {
     "vue-svg-loader/svg-to-vue": "0.6.0",
