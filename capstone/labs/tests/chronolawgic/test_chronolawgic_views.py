@@ -4,6 +4,7 @@ from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
 
+
 timeline = {"title": "My first timeline", "author": "CAP User", "description": "And my very best one"}
 create_url = reverse('labs:chronolawgic-api-create')
 retrieve_url = reverse('labs:chronolawgic-api-retrieve')
@@ -180,85 +181,55 @@ def test_timeline_update(client, auth_client):
 
 @pytest.mark.django_db(databases=['default'])
 def test_timeline_update_validation(client, auth_client):
-    tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
+    tl = Timeline()
+    tl.created_by = auth_client.auth_user
+    tl.timeline = complete_timeline
+    tl.save()
+
+    tl.timeline['description'] = "And my very best on"
     update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
-    response = auth_client.post(update_url, {"timeline": {
-        "description": "And my very best one"
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes="Timeline Missing")
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, content_type="application/json")
+    tl.refresh_from_db()
 
-    # missing timeline value
-    response = auth_client.post(update_url, {"timeline": {
-        "title": []
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Wrong Data Type for title")
+    tl.timeline['description'] = "And my very best"
+    tl.timeline['author'] = "And my very bet"
+    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=500, content_type="application/json", content_includes="More than one change or remove detected")
+    tl.refresh_from_db()
 
-    # wrong timeline value data type
-    response = auth_client.post(update_url, {"timeline": {
-        "title": []
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Wrong Data Type for title")
+    # wrong data type will get replaced with default 'untitled timeline'
+    tl.timeline['title'] = [1,2,3,4]
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=200, content_type="application/json", content_includes='"title": "Untitled Timeline"')
+    tl.refresh_from_db()
+
+    # wrong data type for whole object will not get replaced
+    tl.timeline['events'][0] = [1,2,3,4]
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type for event entry')
+    tl.refresh_from_db()
+
+    # wrong data type for whole object will not get replaced
+    tl.timeline['events'][0]['id'] = [1,2,3,4]
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type')
+    tl.refresh_from_db()
 
     # missing required case value
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "cases": [{'What even is': 'this?'}]
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes="Case Missing: name")
-
-    # wrong case data type
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "cases": [{'name': ['what', 'crazy', 'data', 'you', 'have']}]
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Case Has Wrong Data Type for name")
-
-    # missing require event value
-    response = auth_client.post(update_url, {
-        "timeline": {
-            "title": "Rad",
-            "events": [{'name': 'wow', 'start_date': '1975-12-16'}]
-        }
-    }, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Event Missing: end_date")
-
-    # wrong event data type
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "events": [{'name': 'wow', 'start_date': '1975-12-16', 'end_date': '1975-12-16',
-                    'short_description': {'guess': 'who'}}]
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Event Has Wrong Data Type for short_description")
+    del tl.timeline['cases'][0]['id']
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Missing case field id")
+    tl.refresh_from_db()
 
     # extraneous timeline field
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "events": [],
-        "helloooooo": "badata"
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Unexpected timeline field(s)")
+    tl.timeline["helloooooo"] = "badata"
+    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected timeline field(s)")
+    tl.refresh_from_db()
+    assert "helloooooo" not in tl.timeline
 
-    # extraneous event field
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "events": [{'name': 'wow', 'start_date': '1975-12-16', 'end_date': '1975-12-16', 'DOESNOTBELONG': 'here'}],
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Unexpected event field(s)")
-
-    # extraneous case field
-    response = auth_client.post(update_url, {"timeline": {
-        "title": "Rad",
-        "cases": [{'name': 'joe v volcano', "herring_color": 'purple'}],
-    }}, format='json')
-    check_response(response, status_code=400, content_type="application/json",
-                   content_includes="Unexpected case field(s)")
 
 
 @pytest.mark.django_db(databases=['default'])
