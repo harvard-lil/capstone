@@ -46,6 +46,18 @@ for (let i = 0; i < importChoices.courts.length; i++) {
 }
 importChoices.courts = courts;
 
+function getBestError(error) {
+    if (error && Object.prototype.hasOwnProperty.call(error, "response") &&
+        Object.prototype.hasOwnProperty.call(error.response, "data") &&
+        Object.prototype.hasOwnProperty.call(error.response.data, "reason")) {
+        if (Object.prototype.hasOwnProperty.call(error.response.data, "details")) {
+            return error.response.data.reason + ": " + error.response.data.details
+        }
+        return error.response.data.reason
+    }
+    return error
+}
+
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
@@ -318,7 +330,7 @@ const store = new Vuex.Store({
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
+                commit('setNotificationMessage', "error creating timeline: " + getBestError(error))
             })
         },
         requestDeleteTimeline: function ({commit}, timelineId) {
@@ -337,7 +349,7 @@ const store = new Vuex.Store({
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
+                commit('setNotificationMessage', "error deleting timeline: " + getBestError(error))
             })
         },
         requestUpdateTimeline: function ({commit}) {
@@ -358,7 +370,7 @@ const store = new Vuex.Store({
                     }
                 ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
             })
         },
         requestTimeline: function ({commit}, timelineId) {
@@ -385,7 +397,7 @@ const store = new Vuex.Store({
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
+                commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
             })
         },
         requestTimelineList: function ({commit}) {
@@ -403,7 +415,7 @@ const store = new Vuex.Store({
                 }
             ).catch(error => {
                 commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', error)
+                commit('setNotificationMessage', "error retrieving timeline list: " + getBestError(error))
             })
         },
         requestUpdateAdmin: function ({commit}, data) {
@@ -431,7 +443,7 @@ const store = new Vuex.Store({
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', error)
+                    commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
                 })
         },
     }
