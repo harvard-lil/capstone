@@ -86,7 +86,7 @@ def validate_and_normalize_timeline(timeline):
                     local_bad.append("Wrong Data Type for {}. Should be {}. Value: {}".format(
                     field['name'], field['type'], input_list[field['name']]))
             elif input_list[field['name']] == '' and 'default' in field:
-                    input_list[field['name']] = field['default']
+                input_list[field['name']] = field['default']
         return [input_list, local_bad]
 
     timeline, timeline_bad = validate_list_entry(root_fields, timeline, 'timeline')

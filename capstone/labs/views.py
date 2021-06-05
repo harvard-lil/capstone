@@ -131,7 +131,7 @@ def chronolawgic_api_create(request):
         return JsonResponse(
             {'status': 'err',
              'reason': 'data_validation',
-             'details': "Problem creating timeline— update internal template".format(e)
+             'details': "Problem creating timeline— update internal template {}".format(e)
              }, status=400)
     except Exception as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
