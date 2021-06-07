@@ -57,8 +57,9 @@ jobs:
         run: |
           set -x
           docker-compose exec web pytest \
-            -n 2                                           `# run tests in parallel for speed` \
-            --junitxml=junit/pytest/test-results.xml       `# write junit test results so they can be displayed somewhere later?` \
+            `# disabling these in case it helps with intermittent test timeouts:` \
+            `#-n 2                                           # run tests in parallel for speed` \
+            `#--junitxml=junit/pytest/test-results.xml       # write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
             -v
 
