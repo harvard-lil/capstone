@@ -127,7 +127,17 @@ class TrackingToolLogAdmin(admin.ModelAdmin):
 
 @admin.register(Reporter)
 class ReporterAdmin(admin.ModelAdmin):
-    pass
+    fields = ['full_name', 'short_name', 'is_nominative', 'nominative_for', 'jurisdictions', 'start_year', 'end_year', 'notes', 'hollis']
+    list_display = ['short_name', 'full_name', 'is_nominative', 'jurisdiction', 'start_year', 'end_year']
+    search_fields = ['short_name', 'full_name']
+    list_filter = ['jurisdictions', 'is_nominative']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('jurisdictions')
+
+    def jurisdiction(self, obj):
+        return ", ".join(j.name for j in obj.jurisdictions.all())
+
     # to inline volumes:
     # inlines = [new_class('VolumeInline', admin.TabularInline, model=VolumeMetadata)]
 
