@@ -15,12 +15,28 @@
         <div class="row">
 
           <ul class="col-9 list-inline field-choices">
-            <li v-for="field in $store.getters.populated_fields_during_search" :key="'chosen' + field.name" class="list-inline-item field chosen-field">
-              {{ field.label }}: {{ field.value_when_searched }}
-              <span class="reset-field" @click="$store.commit('clearFieldandSearch', field.name)">
-                <close-icon class="close-icon"></close-icon>
+            <template v-for="field in $store.getters.populated_fields_during_search">
+              <span :key="'chosen' + field.name">
+                <template v-if="Array.isArray(field.value)">
+                  <li v-for="field_instance in field.value" :key="'chosen_field_instance' + field.name + field_instance"
+                      class="list-inline-item field chosen-field">
+                    {{ field.label }}: {{ field_instance }}
+                    <span class="reset-field"
+                          @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
+                      <close-icon class="close-icon"></close-icon>
+                    </span>
+                  </li>
+                </template>
+                <template v-else>
+                  <li class="list-inline-item field chosen-field">
+                    {{ field.label }}: {{ field.value_when_searched }}
+                    <span class="reset-field" @click="$store.commit('clearFieldandSearch', field.name)">
+                      <close-icon class="close-icon"></close-icon>
+                    </span>
+                  </li>
+                </template>
               </span>
-            </li>
+            </template>
           </ul>
 
           <template v-if="this.$store.getters.hitcount >= 1">
@@ -127,7 +143,6 @@ import FieldItem from './field-item';
 export default {
   data: function () {
     return {
-      selected_fields: [],
       toggle_download_options: false,
     }
   },

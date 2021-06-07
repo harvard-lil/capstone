@@ -208,13 +208,15 @@ label.dropdown-label {
   display: none;
 }
 
+.v-select:not(.vs--open) .vs__dropdown-toggle .vs__selected-options .vs__selected + input {
+  position: absolute;
+}
+
 .v-select {
   width: 100%;
   padding: 0;
   min-height: 2rem;
-  .vs__selected + .vs__search {
-    display: none;
-  }
+
   .vs__dropdown-toggle {
     background-color: $color-white;
     border: 1px solid $color-search-gray-light;
@@ -335,7 +337,6 @@ label.dropdown-label {
     padding-right: 0;
     margin-bottom: 20px;
   }
-
   .download-options-container {
     @extend .bg-tan;
     border-radius: 0.5em;
@@ -505,6 +506,14 @@ label.dropdown-label {
     content: '?';
   }
   .text-break > .api_url_segment ~ .api_url_segment:before {
+    content: '&';
+  }
+
+  .api_url_segment > .api_url_instance_segment {
+    content: '';
+  }
+
+  .api_url_segment > .api_url_instance_segment ~ .api_url_instance_segment:before {
     content: '&';
   }
 

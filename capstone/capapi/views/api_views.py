@@ -247,6 +247,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         if request.accepted_renderer.format == 'csv':
             response = self.bundle_csv_response(response)
 
+        if request.accepted_renderer.format == 'json': #shouldn't affect the browsable API
+            response['Content-Disposition'] = 'attachment; filename="CAP_{}.json"'.format(str(datetime.now()))
+
         return response
 
     @staticmethod

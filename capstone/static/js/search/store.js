@@ -7,6 +7,7 @@ import router from './router'
 // defined in template
 const importUrls = urls; // eslint-disable-line
 const importChoices = choices; // eslint-disable-line
+const temp_court_list = require("./temp_court_list");
 
 Vue.use(Vuex);
 const store = new Vuex.Store({
@@ -109,6 +110,7 @@ const store = new Vuex.Store({
         value: null,
         label: "Court",
         placeholder: "e.g. ill-app-ct",
+        choices: temp_court_list,
         highlight_field: false,
         highlight_explainer: false,
         error: null,
@@ -197,6 +199,10 @@ const store = new Vuex.Store({
     },
     clearFieldandSearch(state, field_name) {
       state.fields[field_name].value = state.fields[field_name].error = null;
+      this.dispatch('searchFromForm')
+    },
+    trimFieldValueArrayandSearch(state, [field_name, value]) {
+      state.fields[field_name].value = state.fields[field_name].value.filter(item => item !== value);
       this.dispatch('searchFromForm')
     },
     clearFieldErrors(state) {
@@ -305,7 +311,7 @@ const store = new Vuex.Store({
 
       params['ordering'] = state.ordering['value'];
 
-      return `${state.urls.api_root}cases/?${encodeQueryData(params)}`;
+      return `${state.urls.api_root}cases/?${encodeQueryData(params, true)}`;
     },
     download_url: (state) => (download_format) => {
       /* assembles and returns URL */
@@ -322,7 +328,7 @@ const store = new Vuex.Store({
       params['full_case'] = state.download_full_case ? 'true' : 'false';
       params['page_size'] = state.download_size;
 
-      return `${state.urls.api_root}cases/?${encodeQueryData(params)}`;
+      return `${state.urls.api_root}cases/?${encodeQueryData(params, true)}`;
     },
     erroredFieldList: (state) => {
       let fields_with_errors = []
