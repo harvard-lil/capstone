@@ -43,7 +43,7 @@ def extract_citations(case, html, xml):
     xml_pq = parse_xml(xml)
     xml_els = {el.attr('id'): el for el in xml_pq('[id]').items()}
     clean_html_pq = parse_html(clean_text(html))
-    clean_html_pq('.page-label').remove()
+    clean_html_pq('a').remove()
 
     # Extract cites from each paragraph:
     for el in clean_html_pq('p[id], blockquote[id]').items():

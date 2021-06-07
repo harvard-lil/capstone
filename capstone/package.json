@@ -74,9 +74,8 @@
     }
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
+    "defaults",
+    "not ie 11"
   ],
   "resolutions": {
     "vue-svg-loader/svg-to-vue": "0.6.0",
@@ -89,6 +88,7 @@
     "**/autoprefixer": "^10.2.5",
     "**/cssnano": "^5.0.2",
     "**/browserslist": "^4.16.5",
-    "**/dns-packet": "^5.2.2"
+    "**/dns-packet": "^5.2.2",
+    "**/ws": "^6.2.2"
   }
 }

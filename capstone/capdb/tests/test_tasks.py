@@ -11,9 +11,11 @@ from datetime import datetime, date
 
 from django.core.files.storage import FileSystemStorage
 from django.db import connections, utils
+from elasticsearch import NotFoundError
 
 from capapi import api_reverse
-from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache
+from capapi.documents import CaseDocument
+from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, CaseLastUpdate
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
     update_elasticsearch_from_queue, run_text_analysis_for_vol
@@ -527,3 +529,20 @@ def test_pagerank(tmp_path, reset_sequences, three_cases):
     assert three_cases[0].analysis.get(key='pagerank').value['raw'] == pageranks[three_cases[0].id][0]
     check_timestamps_unchanged(three_cases[1], timestamps[1])
     check_timestamps_unchanged(three_cases[2], timestamps[2])
+
+
+@pytest.mark.django_db(databases=['capdb'])
+def test_update_elasticsearch_from_queue(case, elasticsearch):
+    case.name_abbreviation = 'New Name'
+    case.save()
+    assert list(CaseLastUpdate.objects.values_list('case_id', 'indexed')) == [(case.id, False)]
+    update_elasticsearch_from_queue()
+    assert list(CaseLastUpdate.objects.values_list('case_id', 'indexed')) == [(case.id, True)]
+    assert CaseDocument.get(case.pk).name_abbreviation == 'New Name'
+
+    # case gets removed when in_scope changes
+    case.duplicative = True
+    case.save()
+    update_elasticsearch_from_queue()
+    with pytest.raises(NotFoundError):
+        CaseDocument.get(case.pk)

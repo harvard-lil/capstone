@@ -424,3 +424,21 @@ def test_random_case(client, case_factory, elasticsearch):
             break
     else:
         raise Exception(f'Failed to redirect to {cases-found} after 20 tries.')
+
+
+@pytest.mark.django_db(databases=['capdb', 'default', 'user_data'])
+def test_redact_case_tool(admin_client, case, elasticsearch):
+    case.sync_case_body_cache()
+    update_elasticsearch_from_queue()
+    response = admin_client.post(reverse('redact_case', args=[case.pk]), {'kind': 'redact', 'text': 'Case'})
+    check_response(response)
+    response = admin_client.post(reverse('redact_case', args=[case.pk]), {'kind': 'elide', 'text': 'text'})
+    check_response(response)
+    case.refresh_from_db()
+    assert case.no_index_redacted == {"Case": "redacted"}
+    assert case.no_index_elided == {"text": "..."}
+    response = admin_client.get(case.get_full_frontend_url())
+    check_response(response, content_includes=[
+        "[ redacted ]",
+        "<span class='elided-text' role='button' tabindex='0' data-hidden-text='text'>...</span>"
+   ])

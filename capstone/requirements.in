@@ -70,6 +70,7 @@ flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working
 pathlib2           # to keep --require-hashes happy; from pytest
 beautifulsoup4
+mock
 
 # SCSS
 libsasscompiler     # for compiling scss in pipeline
@@ -103,6 +104,6 @@ django-elasticsearch-dsl-drf
 
 # citation extraction
 # eyecite
-https://github.com/jcushman/eyecite/archive/3e6b33c211e5413170ee2bdf066461486caa0d6c.zip#egg=eyecite  # until > 2.1.0
+https://github.com/jcushman/eyecite/archive/3a1ff2ac3c910f48ee6f8af3a5947156647c7084.zip#egg=eyecite  # until > 2.2.0
 hyperscan
 networkx

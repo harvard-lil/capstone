@@ -21,7 +21,7 @@ def run_task_for_volumes(task, volumes=None, last_run_before=None, **kwargs):
         the task has not succeeded after that time.
     """
     if volumes is None:
-        volumes = VolumeMetadata.objects.filter(out_of_scope=False, duplicate=False)
+        volumes = VolumeMetadata.objects.filter(out_of_scope=False)
     if last_run_before:
         # find volumes where task has never run, or had an error, or had a success before last_run_before date
         volumes = volumes.filter(
@@ -142,12 +142,12 @@ def update_elasticsearch_from_queue():
         return
     while True:
         with transaction.atomic(using='capdb'):
-            case_ids = CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:100].values_list('case_id', flat=True)
+            case_ids = list(CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:100].values_list('case_id', flat=True))
             if not case_ids:
                 break
-            cases = CaseMetadata.objects.filter(id__in=case_ids).for_indexing()
+            cases = list(CaseMetadata.objects.filter(id__in=case_ids).for_indexing())
             CaseMetadata.reindex_cases(cases)
-            CaseLastUpdate.objects.filter(case_id__in=case_ids).update(indexed=True)
+            CaseLastUpdate.objects.filter(case__in=cases).update(indexed=True)
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail

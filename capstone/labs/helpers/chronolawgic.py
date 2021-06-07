@@ -1,7 +1,11 @@
-def validate_timeline(timeline):
-    timeline_fields = [
-        {'name': 'title', 'type': str, 'required': True},
-        {'name': 'author', 'type': str, 'required': True},
+class TimelineValidationException(Exception):
+    pass
+
+
+def validate_and_normalize_timeline(timeline):
+    root_fields = [
+        {'name': 'title', 'type': str, 'required': True, 'default': 'Untitled Timeline'},
+        {'name': 'author', 'type': str, 'required': True, 'default': 'CAP user'},
         {'name': 'description', 'type': str, 'required': False},
         {'name': 'cases', 'type': list, 'required': False},
         {'name': 'events', 'type': list, 'required': False},
@@ -42,79 +46,69 @@ def validate_timeline(timeline):
         {'name': 'shape', 'type': str, 'required': True},
     ]
 
-    bad = []
+    def validate_list_entry(fields, input_list, name):
+        local_bad = []
 
-    # make sure there are no extraneous fields
-    known_field_names = [field['name'] for field in timeline_fields]
-    extraneous = set(timeline.keys()) - set(known_field_names)
-    if extraneous:
-        bad.append("Unexpected timeline field(s): {}. Expecting {}".format(
-            extraneous,
-            known_field_names
-        ))
+        # is this even the right thing?
+        if type(input_list) != dict:
+            return [input_list, ["Wrong Data Type for {} entry: {} instead of dict".format( name, type(input_list))]]
 
-    for field in timeline_fields:
-        if field['name'] not in timeline:
-            if field['required']:
-                bad.append("Timeline Missing: {}".format(field['name']))
-            break
-        if type(timeline[field['name']]) != field['type']:
-            bad.append("Wrong Data Type for {}. Should be {}. Value: {}".format(
-                field['name'], field['type'], timeline[field['name']]))
+        # do we have extra fields?
+        known_field_names = [field['name'] for field in fields]
+        extraneous = set(input_list.keys()) - set(known_field_names)
+        for extraneous_field in extraneous:
+            if not input_list[extraneous_field]:  # if the field is empty, just remove it
+                del input_list[extraneous_field]
+                input_list.remove(extraneous_field)
 
-    if 'events' in timeline:
-        known_event_field_names = [field['name'] for field in event_fields]
-        for field in event_fields:
-            for event in timeline['events']:
-                event_extraneous = set(event.keys()) - set(known_event_field_names)
-                if event_extraneous:
-                    bad.append("Unexpected event field(s): {}. Expecting {}".format(
-                        event_extraneous,
-                        known_event_field_names
-                    ))
-                if field['name'] not in event:
-                    if field['required']:
-                        bad.append("Event Missing: {}".format(field['name']))
-                    break
-                if type(event[field['name']]) != field['type']:
-                    bad.append("Event Has Wrong Data Type for {}. Should be {}. Value: {}".format(
-                        field['name'], field['type'], event[field['name']]))
+        if extraneous:
+            local_bad.append("Unexpected {} field(s): {}. Expecting {}".format(
+                name,
+                extraneous,
+                known_field_names
+            ))
 
-    if 'cases' in timeline:
-        known_case_field_names = [field['name'] for field in case_fields]
-        for field in case_fields:
-            for case in timeline['cases']:
-                case_extraneous = set(case.keys()) - set(known_case_field_names)
-                if case_extraneous:
-                    bad.append("Unexpected case field(s): {}. Expecting {}".format(
-                        case_extraneous,
-                        known_case_field_names
-                    ))
-                if field['name'] not in case:
-                    if field['required']:
-                        bad.append("Case Missing: {}".format(field['name']))
-                    break
-                if type(case[field['name']]) != field['type']:
-                    bad.append("Case Has Wrong Data Type for {}. Should be {}. Value: {}".format(
-                        field['name'], field['type'], case[field['name']]))
+        # do we have every field, and are they the correct data type?
+        for field in fields:
+            if field['name'] not in input_list:
+                if 'default' in field:
+                    input_list[field['name']] = field['default']
+                elif not field['required']:
+                    input_list[field['name']] = field['type']()
+                else: # definitely need this
+                    local_bad.append("Missing {} field {}".format(name, field['name']))
+            elif type(input_list[field['name']]) != field['type']:
+                if 'default' in field:
+                    input_list[field['name']] = field['default']
+                elif not field['required'] or not input_list[field['name']]:
+                    input_list[field['name']] = field['type']()
+                else:  # definitely need this
+                    local_bad.append("Wrong Data Type for {}. Should be {}. Value: {}".format(
+                    field['name'], field['type'], input_list[field['name']]))
+            elif input_list[field['name']] == '' and 'default' in field:
+                input_list[field['name']] = field['default']
+        return [input_list, local_bad]
 
-    if 'categories' in timeline:
-        known_category_field_names = [field['name'] for field in category_fields]
-        for field in category_fields:
-            for category in timeline['categories']:
-                category_extraneous = set(category.keys()) - set(known_category_field_names)
-                if category_extraneous:
-                    bad.append("Unexpected category field(s): {}. Expecting {}".format(
-                        category_extraneous,
-                        known_category_field_names
-                    ))
+    timeline, timeline_bad = validate_list_entry(root_fields, timeline, 'timeline')
 
-                if field['name'] not in category:
-                    if field['required']:
-                        bad.append("Case Missing: {}".format(field['name']))
-                    break
-                if type(category[field['name']]) != field['type']:
-                    bad.append("Case Has Wrong Data Type for {}. Should be {}. Value: {}".format(
-                        field['name'], field['type'], category[field['name']]))
+    events_bad = []
+    for index, event in enumerate(timeline['events']):
+        timeline['events'][index], event_bad = validate_list_entry(event_fields, event, 'event')
+        events_bad = events_bad + event_bad
 
-    return bad
+    cases_bad = []
+    for index, case in enumerate(timeline['cases']):
+        timeline['cases'][index], case_bad = validate_list_entry(case_fields, case, 'case')
+        cases_bad = cases_bad + case_bad
+
+    categories_bad = []
+    for index, category in enumerate(timeline['categories']):
+        timeline['categories'][index], category_bad = validate_list_entry(category_fields, category, 'category')
+        categories_bad = categories_bad + category_bad
+
+    bad = timeline_bad + events_bad + cases_bad + categories_bad
+
+    if bad:
+        raise TimelineValidationException(bad)
+    
+    return timeline

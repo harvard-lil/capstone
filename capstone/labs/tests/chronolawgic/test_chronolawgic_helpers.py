@@ -1,4 +1,6 @@
-from labs.helpers.chronolawgic import validate_timeline
+from labs.helpers.chronolawgic import validate_and_normalize_timeline, TimelineValidationException
+from pytest import raises
+from copy import deepcopy
 
 timeline = {
     "title": "My first timeline",
@@ -29,16 +31,16 @@ timeline = {
 
 def test_validate_timeline():
     # assert no bad values
-    assert validate_timeline(timeline) == []
+    assert validate_and_normalize_timeline(timeline) == timeline
 
     # assert bad value in cases
-    bad_timeline = timeline
-    bad_timeline["cases"][0]["bad"] = "value"
-    validated = validate_timeline(timeline)
-    assert "Unexpected case field(s): {'bad'}" in validated[0]
+    bad_timeline_1 = deepcopy(validate_and_normalize_timeline(timeline))
+    bad_timeline_1["cases"][0]["bad"] = "value"
+    with raises(TimelineValidationException, match=r".*Unexpected case field\(s\): \{'bad'\}.*"):
+        validate_and_normalize_timeline(bad_timeline_1)
 
     # assert bad value in events
-    bad_timeline = timeline
-    bad_timeline["events"][0]["bad"] = "value"
-    validated = validate_timeline(timeline)
-    assert "Unexpected event field(s): {'bad'}" in validated[0]
+    bad_timeline_2 = deepcopy(validate_and_normalize_timeline(timeline))
+    bad_timeline_2["events"][0]["bad"] = "value"
+    with raises(TimelineValidationException, match=r".*Unexpected event field\(s\): \{'bad'\}.*"):
+        validate_and_normalize_timeline(bad_timeline_2)
