@@ -560,8 +560,10 @@ main#main-app {
       transform: rotate(90deg);
       transform-origin: 0 100% 0;
       z-index: 1;
-      position: relative;
-      top: -1.25rem;
+      position: absolute;
+      top: 0;
+      text-align: left;
+      text-transform: none;
       left: 0;
       margin: 0;
       font-weight: $font-weight-semibold;
@@ -569,7 +571,6 @@ main#main-app {
       color: $color-white;
       height: 1.25rem;
       line-height: 1.25rem;
-      padding-left: 1rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

@@ -28,7 +28,6 @@
       <div class="simple-mobile-year-label">{{year_value}}</div>
     </div>
     <TimeLineSlice :event_list="year_data.event_list" :year_value="year_value"></TimeLineSlice>
-    <event-preview :event="event"></event-preview>
   </div>
   <div class="year placeholder"
        v-else-if="year_data.firstYearNoNewItems && !year_data.involvesAnyItem && $store.getters.minimized">
@@ -44,8 +43,6 @@
 <script>
 import TimeLineSlice from './timeline-slice';
 import Case from './case';
-import EventPreview from "./event-preview";
-import {EventBus} from "./event-bus";
 import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
 import MoreHorizontal from '../../../../static/img/icons/more-horizontal.svg';
 import YearLabel from './year-label'
@@ -55,7 +52,6 @@ export default {
   components: {
     TimeLineSlice,
     Case,
-    EventPreview,
     MoreVertical,
     MoreHorizontal,
     YearLabel
@@ -89,17 +85,6 @@ export default {
     clearPreviewEvent() {
       this.event = null;
     },
-    previewEvent(event_data) {
-      this.event = event_data;
-      EventBus.$emit('closePreview', this.year_value);
-    },
   },
-  mounted() {
-    EventBus.$on('closePreview', (year_value) => {
-      if (this.year_value !== year_value) {
-        this.event = null;
-      }
-    })
-  }
 }
 </script>

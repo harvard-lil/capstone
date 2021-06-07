@@ -220,7 +220,6 @@ export default {
       this.keyShown = !this.keyShown;
     },
     handleEscape() {
-      EventBus.$emit('closePreview')
       this.closeModal();
     },
     repopulateTimeline() {
