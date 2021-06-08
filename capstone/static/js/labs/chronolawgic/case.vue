@@ -1,7 +1,6 @@
 <template>
   <button class="case-button"
           type="button"
-          @focus="handleFocus"
           @click="openModal(case_data)"
           data-toggle="modal"
           :data-target="dataTarget"
@@ -82,9 +81,6 @@ export default {
     },
     closeModal() {
       EventBus.$emit('closeModal')
-    },
-    handleFocus() {
-      EventBus.$emit('closePreview')
     },
     repopulateTimeline() {
       this.$parent.repopulateTimeline();
