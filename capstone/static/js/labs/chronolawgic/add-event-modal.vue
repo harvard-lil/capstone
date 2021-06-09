@@ -136,6 +136,13 @@ export default {
       if (new Date(this.newEvent.end_date) - new Date(this.newEvent.start_date) < 0) {
         this.errors.push('Start date must be earlier than end date.')
       }
+      if (this.newEvent.url && !this.checkUrl(this.newEvent.url)) {
+        if (!/^https?:\/\//i.test(this.newEvent.url) && this.checkUrl('https://' + this.newEvent.url)) {
+            this.newEvent.url = 'https://' + this.newEvent.url;
+        } else {
+          this.errors.push('URL is not valid.')
+        }
+      }
     },
     closeModal() {
       this.$parent.closeModal();
@@ -171,6 +178,14 @@ export default {
       this.newEvent.color = color
       // seems to be necessary because sometimes color is not updated when event exists
       this.newEvent = this.unbind(this.newEvent)
+    },
+    checkUrl(url) {
+        try {
+          new URL(url);
+        } catch (e) {
+          return false;
+        }
+        return url.includes('.');
     }
   },
   watch: {
