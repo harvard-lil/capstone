@@ -237,7 +237,7 @@ textarea::placeholder {
     grid-area: long;
 
     textarea {
-      min-height: 10em;
+      min-height: 14em;
     }
   }
 
@@ -517,6 +517,7 @@ textarea::placeholder {
   .shape-name {
     grid-area: input;
     font-family: $font-serif;
+    padding: 0 .5em;
   }
 
   .shape-color {
