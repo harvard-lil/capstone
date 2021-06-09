@@ -180,12 +180,12 @@ export default {
       this.newEvent = this.unbind(this.newEvent)
     },
     checkUrl(url) {
-        try {
-          new URL(url);
-        } catch (e) {
-          return false;
-        }
-        return url.includes('.');
+      try {
+        new URL(url);
+      } catch (e) {
+        return false;
+      }
+      return url.includes('.');
     }
   },
   watch: {
