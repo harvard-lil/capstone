@@ -134,6 +134,7 @@ const store = new Vuex.Store({
             state.title = json.title;
             state.author = json.author ? json.author : "CAP User";
             state.description = json.description;
+            console.log(json);
             state.categories = json.categories;
             state.events = json.events;
             state.cases = json.cases;
@@ -145,6 +146,9 @@ const store = new Vuex.Store({
             state.createdBy = createdBy;
         },
         setAuthor(state, isAuthor) {
+            state.isAuthor = isAuthor;
+        },
+        setDescription(state, isAuthor) {
             state.isAuthor = isAuthor;
         },
         setCategories(state, categories) {
@@ -247,6 +251,13 @@ const store = new Vuex.Store({
         empty: (state) => {
             if (state.requestStatus == 'pending') {
                 return 'pending'
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
+                !Object.prototype.hasOwnProperty.call(state, 'events') ) {
+                return 'empty'
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'events')) {
+                return state.cases.length === 0 ? 'empty' : 'populated'
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases') ) {
+                return state.events.length === 0 ? 'empty' : 'populated'
             }
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
         },
@@ -300,7 +311,8 @@ const store = new Vuex.Store({
                 author: state.author,
                 events: state.events,
                 cases: state.cases,
-                categories: state.categories
+                categories: state.categories,
+                description: state.description
             }
         },
         categories: (state) => {
@@ -354,7 +366,7 @@ const store = new Vuex.Store({
         },
         requestUpdateTimeline: function ({commit}) {
             commit('setRequestStatus', 'pending');
-            let json = JSON.stringify({timeline: this.getters.timeline})
+            let json = JSON.stringify({timeline: this.getters.timeline});
             axios
                 .post(this.state.urls.chronolawgic_api_update + this.state.id, json, {
                     headers: {
@@ -390,6 +402,7 @@ const store = new Vuex.Store({
                         commit('setTimeline', timeline['timeline'])
                         commit('setCreatedBy', timeline['created_by'])
                         commit('setAuthor', timeline['is_owner'])
+                        //commit('setDescription', timeline['is_owner'])
                     }
                 }).then(
                 () => {
