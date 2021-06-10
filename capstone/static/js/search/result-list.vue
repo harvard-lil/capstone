@@ -15,28 +15,31 @@
         <div class="row">
 
           <ul class="col-9 list-inline field-choices">
-            <template v-for="field in $store.getters.populated_fields_during_search">
-              <span :key="'chosen' + field.name">
-                <template v-if="Array.isArray(field.value)">
-                  <li v-for="field_instance in field.value" :key="'chosen_field_instance' + field.name + field_instance"
-                      class="list-inline-item field chosen-field">
-                    {{ field.label }}: {{ field_instance }}
-                    <span class="reset-field"
-                          @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
+            <li class="list-inline-item field chosen-field" v-for="field in $store.getters.populated_fields_during_search" :key="'chosen' + field.name" :class="{'multiselect' : 'Array.isArray(field.value)'}">
+              <span class="chosen_field_label">{{ field.label }}:</span>
+              <template v-if="Array.isArray(field.value)">
+                  <div v-for="field_instance in field.value" :key="'chosen_field_instance' + field.name + field_instance"
+                  class="list-inline-item field chosen-field-instance row">
+                    <div class="chosen-field-instance-value">
+                      {{  $store.getters.getLabelForChoice(field.name, field_instance) }}
+                    </div>
+                    <div class="reset-field-instance"
+                      @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
                       <close-icon class="close-icon"></close-icon>
-                    </span>
-                  </li>
-                </template>
-                <template v-else>
-                  <li class="list-inline-item field chosen-field">
-                    {{ field.label }}: {{ field.value_when_searched }}
-                    <span class="reset-field" @click="$store.commit('clearFieldandSearch', field.name)">
-                      <close-icon class="close-icon"></close-icon>
-                    </span>
-                  </li>
-                </template>
-              </span>
-            </template>
+                    </div>
+                  </div>
+              </template>
+              <template v-else>
+                <div class="list-inline-item field chosen-field-instance row">
+                  <div class="chosen-field-instance-value">
+                    {{ field.value_when_searched }}
+                  </div>
+                  <div class="reset-field-instance" @click="$store.commit('clearFieldandSearch', field.name)">
+                    <close-icon class="close-icon"></close-icon>
+                  </div>
+                </div>
+              </template>
+            </li>
           </ul>
 
           <template v-if="this.$store.getters.hitcount >= 1">

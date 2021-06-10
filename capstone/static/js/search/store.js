@@ -80,18 +80,18 @@ const store = new Vuex.Store({
         value_when_searched: null
       },
       reporter: {
-        value: null,
+        value: [],
         label: "Reporter",
-        choices: importChoices.reporter,
+        choices: importChoices.reporter.map((element) => { return  {'label': element[1], 'value': element[0].toString() } }),
         highlight_field: false,
         highlight_explainer: false,
         error: null,
         value_when_searched: null
       },
       jurisdiction: {
-        value: null,
+        value: [],
         label: "Jurisdiction",
-        choices: importChoices.jurisdiction,
+        choices: importChoices.jurisdiction.map((element) => { return  {'label': element[1], 'value': element[0] } }),
         highlight_field: false,
         highlight_explainer: false,
         error: null,
@@ -107,10 +107,10 @@ const store = new Vuex.Store({
         value_when_searched: null
       },
       court: {
-        value: null,
+        value: [],
         label: "Court",
         placeholder: "e.g. ill-app-ct",
-        choices: temp_court_list,
+        choices: temp_court_list.map((element) => { return  {'label': element[1], 'value': element[0] } }),
         highlight_field: false,
         highlight_explainer: false,
         error: null,
@@ -194,8 +194,12 @@ const store = new Vuex.Store({
       if (name === 'ordering') {
         state.ordering.error = null;
         state.ordering.value = 'relevance';
+      } else if (Object.prototype.hasOwnProperty.call(state.fields[field_name], 'choices') ) {
+        state.fields[field_name].value = [];
+        state.fields[field_name].error = null;
+      } else {
+        state.fields[field_name].value = state.fields[field_name].error = null;
       }
-      state.fields[field_name].value = state.fields[field_name].error = null;
     },
     clearFieldandSearch(state, field_name) {
       state.fields[field_name].value = state.fields[field_name].error = null;
@@ -287,7 +291,7 @@ const store = new Vuex.Store({
     populated_fields_during_search(state) {
       let populated = {};
       Object.keys(state.fields).forEach(name => {
-        if (state.fields[name]['value_when_searched']) {
+        if (state.fields[name]['value_when_searched'] && state.fields[name]['value_when_searched'].length > 0) {
           populated[name] = { ...state.fields[name], ...{'name': name}};
         }
       });
@@ -352,7 +356,7 @@ const store = new Vuex.Store({
       return { ...state.fields[name], ...{'name': name}};
     },
     getNewParams: function (state, getters) {
-      let new_params = {}
+      let new_params = {};
       if (state.cursor) {
         new_params['cursor'] = state.cursor
       }
@@ -364,6 +368,11 @@ const store = new Vuex.Store({
           new_params[key] = getters.getField(key).value
       });
       return new_params
+    },
+    getLabelForChoice: (state, getters) => (field_name, value) => {
+      console.log(field_name);
+      let field = getters.getField(field_name);
+      return field.choices.filter(item => item.value === value)[0].label;
     },
   },
   actions: {
@@ -472,7 +481,7 @@ const store = new Vuex.Store({
         dispatch('executeSearch', {url: this.getters.previous_page_url});
       }
     },
-    ingestDataFromQuery: function ({commit}, query) {
+    ingestDataFromQuery: function ({commit, getters}, query) {
       return new Promise((resolve, reject) => {
         let change_flag = false;
 
@@ -486,16 +495,17 @@ const store = new Vuex.Store({
           commit('page', query['page'])
         }
 
-        Object.keys(this.state.fields).forEach(key => {
-          if (!query[key] && this.state.fields[key].value) {
+        Object.keys(this.state.fields).forEach(field_name => {
+          let field = getters.getField(field_name);
+          if (!query[field.name] && field.value) {
             change_flag = true;
-            commit('clearField', key)
-          } else if (query[key] && this.state.fields[key].value !== query[key]) {
+            commit('clearField', field.name)
+          } else if (query[field.name] && field.value !== query[field.name]) {
             change_flag = true;
-            commit('setFieldValue', {'name': key, 'value': query[key]})
+            let val = query[field.name];
+            commit('setFieldValue', {'name': field.name, 'value': val})
           }
         });
-
         if (change_flag) {
           resolve("updated")
         }

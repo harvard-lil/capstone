@@ -1,22 +1,19 @@
 <template>
   <div v-if="field['choices']" class="form-label-group">
-      <v-select multiple :options="choices"
+      <v-select :options="field['choices']"
         @focus="$store.commit('highlightExplainer', field.name)"
         @blur="$store.commit('unhighlightExplainer', field.name)"
         v-model="value"
+        :multiple="multiple"
         :aria-label="field.name"
         :placeholder="field.label"
-        label="label"
         :clearable="clearable"
-        value="value"
         :id="field.name"
         :reduce="option => option.value"
         :class="['dropdown-field', 'col-12',
            {'is-invalid': $store.getters.fieldHasError(field.name)},
            { 'queryfield_highlighted': field.highlight_field} ]">
-        <template #selected-option-container="{ option }">
-          <div class="vs__selected">{{ option.label }}</div>
-        </template>
+
       </v-select>
   </div>
   <!-- for text, numbers, and everything else (that we presume is text) -->
@@ -46,7 +43,7 @@ import vSelect from 'vue-select';
 export default {
   components: {vSelect},
   name: "field-item",
-  props: [ 'field', 'search_on_change', 'clearable' ],
+  props: [ 'field', 'search_on_change', 'clearable', 'multiple' ],
   computed: {
     value: {
       get () {
@@ -59,9 +56,6 @@ export default {
         }
       }
     },
-    choices: function () {
-      return this.field['choices'].map((element) => { return  {'label': element[1], 'value': element[0] } })
-    }
   },
 
 }

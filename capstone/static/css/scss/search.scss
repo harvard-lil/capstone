@@ -192,12 +192,18 @@ label {
 
 
 
-.reset-field {
+.reset-field, .reset-field-instance {
   font-family: $font-family-sans-serif;
   text-align: right;
   padding-right: 0;
   color: $color-medium-blue;
   background-color: transparent;
+}
+
+.reset-field-instance {
+  svg {
+    transform: scale(.7);
+  }
 }
 
 .dropdown {
@@ -337,6 +343,7 @@ label.dropdown-label {
     padding-right: 0;
     margin-bottom: 20px;
   }
+
   .download-options-container {
     @extend .bg-tan;
     border-radius: 0.5em;
@@ -380,27 +387,74 @@ label.dropdown-label {
       background-color: transparent;
     }
   }
+  .field-choices {
+    display: flex;
+    .chosen-field {
+      background-color: $color-search-gray-light;
+      color: $color-violet-gray-dark;
+      border-radius: .1em;
+      padding: 0.2em 0.5em;
+      font-size: 0.7em;
+      font-weight: $font-weight-normal;
+      cursor: pointer;
+      margin-bottom: 0.5em;
+      flex-wrap: wrap;
 
-  .chosen-field {
-    background-color: $color-search-gray-light;
-    color: $color-violet-gray-dark;
-    border-radius: 2em;
-    padding: 0.1em 0.4em;
-    font-size: 0.7em;
-    font-weight: $font-weight-semibold;
-    cursor: pointer;
-    margin-bottom: 0.5em;
+      .chosen_field_label {
+        font-weight: $font-weight-black;
+        padding-right: .4em;
+        white-space: nowrap;
+      }
 
+      display: flex;
+      .chosen-field-instance {
+        background-color: $color-light-gray;
+        border-radius: 1em;
+        padding: 0 .5em 0 .5em;
+        line-height: unset;
+        display: grid;
+        grid-template-areas: "value reset";
+        grid-template-columns: max-content 15px;
+        max-height: 2em;
 
-    &:hover, &:active, &:focus {
-      color: $color-search-gray-light;
-      background-color: $color-violet-gray-dark;
+        .chosen-field-instance-value {
+          flex-wrap: wrap;
+          flex-direction: row;
+          max-width: 7rem;
+          grid-area: value;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          transition: width 2s;
+          white-space: nowrap;
+          &.expanded {
+            max-width: unset;
+          }
+        }
 
-      .close-icon {
-        fill: $color-white;
+        .reset-field-instance {
+          grid-area: reset;
+          display: grid;
+          align-content: center;
+        }
+
+        &:hover, &:active, &:focus {
+          color: $color-search-gray-light;
+          background-color: $color-violet-gray-dark;
+
+          .close-icon {
+            fill: $color-white;
+          }
+        }
+      }
+
+      .chosen-field-instance.expanded {
+        .chosen-field-instance-value {
+          max-width: unset;
+        }
       }
     }
   }
+
 }
 
 .results-loading-container {
