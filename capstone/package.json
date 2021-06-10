@@ -91,6 +91,8 @@
     "**/dns-packet": "^5.2.2",
     "**/ws": "^6.2.2",
     "**/trim-newlines": "^3.0.1",
-    "**/css-what": "^5.0.1"
+    "**/css-what": "^5.0.1",
+    "**/normalize-url": "^4.5.1",
+    "**/glob-parent": "^5.1.2"
   }
 }
