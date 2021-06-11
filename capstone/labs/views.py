@@ -1,5 +1,10 @@
 import json
+import os
+import requests
+import uuid
 from dictdiffer import diff as dictdiff
+from multiprocessing.pool import ThreadPool
+from urllib.parse import urlparse
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -9,6 +14,7 @@ from labs.models import Timeline
 from capweb.views import MarkdownView
 
 from .helpers.chronolawgic import validate_and_normalize_timeline, TimelineValidationException
+
 
 # Labs-specific views
 class LabMarkdownView(MarkdownView):
@@ -42,7 +48,7 @@ def chronolawgic_api_retrieve(request, timeline_uuid=None):
                            "case_count": len(tl.timeline['cases']) if 'cases' in tl.timeline else 0,
                            "event_count": len(tl.timeline['events']) if 'events' in tl.timeline else 0,
                            }
-                           for tl in timelines],
+                          for tl in timelines],
         })
 
     if not timeline_uuid:
@@ -108,6 +114,7 @@ def chronolawgic_api_update_admin(request, timeline_uuid):
         'is_owner': True if request.user == timeline_record.created_by else False
     })
 
+
 def chronolawgic_api_create(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
@@ -145,7 +152,6 @@ def chronolawgic_api_create(request):
 
 
 def chronolawgic_api_update(request, timeline_uuid):
-
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
@@ -178,16 +184,16 @@ def chronolawgic_api_update(request, timeline_uuid):
     number_of_items_modified = len(
         set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(existing_timeline, incoming_timeline)
              if thing[0] != 'remove']
-    ))
+            ))
 
     number_of_items_removed = len([thing[0] for thing in dictdiff(existing_timeline, incoming_timeline)
-                             if thing[0] == 'remove'])
+                                   if thing[0] == 'remove'])
 
     if number_of_items_modified > 1 or number_of_items_removed > 1:
         return JsonResponse({'status': 'err', 'reason': "Timeline out of sync. More than one change or remove detected—"
                                                         " aborted change protect timeline. Please refresh "
                                                         "Chronolawgic. Did we mention this app is beta?😬 {}".format(
-                                                        [ thing for thing in dictdiff(existing_timeline, incoming_timeline)])}, status=500)
+            [thing for thing in dictdiff(existing_timeline, incoming_timeline)])}, status=500)
 
     timeline_record.timeline = incoming_timeline
     timeline_record.save()
@@ -223,5 +229,91 @@ def chronolawgic_api_delete(request, timeline_uuid):
         'id': timeline.uuid,
         'is_owner': True if request.user == timeline.created_by else False
     })
+
+def get_case(case):
+    api_url = "https://api.case.law/v1/cases/?cite=%s" % case['citations'][0]
+    case_found = requests.get(api_url)
+    if case_found.status_code == 200:
+        case_json = case_found.json()['results']
+        if len(case_json):
+            return {
+                "id": str(uuid.uuid4()),
+                "url": case_json[0]["url"],
+                "citation": case,
+                "name": case_json[0]["name_abbreviation"],
+                "decision_date": case_json[0]["decision_date"],
+                "jurisdiction": case_json[0]["jurisdiction"]["name_long"],
+                "court": case_json[0]["court"]["name"]
+            }
+def h2o_import(request):
+    import time
+    print('START', time.ctime())
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+    h2o_url = json.loads(request.body.decode('utf-8'))['url']
+    parsed_url = urlparse(h2o_url)
+    if parsed_url.netloc != 'opencasebook.org':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=403)
+
+    h2o_url = os.path.join('https://opencasebook.org' + parsed_url.path.replace('casebooks', 'casebook'), 'toc')
+
+    try:
+        resp = requests.get(h2o_url)
+        if resp.status_code == 200:
+            casebook = resp.json()
+            cases = get_citation(casebook, [])
+
+            pool = ThreadPool(20)
+            mapper = pool.map
+
+            def file_map(func, files, *args, **kwargs):
+                return list(mapper((lambda f: func(f)), files))
+            timeline_cases = file_map(get_case, cases)
+            # missing_cases = []
+            timeline_cases = [case for case in timeline_cases if case]
+
+            # import pdb; pdb.set_trace()
+            timeline = Timeline.objects.create(
+                created_by=request.user,
+                timeline=validate_and_normalize_timeline({
+                    "title": "",
+                    "author": "",
+                    "cases": timeline_cases,
+                    "events": [],
+                    "categories": []
+                })
+            )
+            timeline.save()
+            print('AAAANnnndd were DONE',  time.ctime())
+            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline,'missing_cases': []})
+        else:
+            return JsonResponse({'status': 'err', 'reason': ''}, status=resp.status_code)
+    except Exception as e:
+        return JsonResponse({'status': 'err', 'reason': e}, status=404)
+
+# @shared_task
+def get_citation(obj, cases=None):
+    if cases is None:
+        cases = []
+
+
+    # print('getting into get_citation','children' in obj)
+    if 'children' in obj:
+        for case in obj['children']:
+            # print('getting case?', case['title'])
+            if case['resource_type'] == 'Case' and case['citation']:
+                if case['citation']:
+                    citations = case['citation'].split(', ') if 'citation' in case else []
+                    found_case = {
+                        'name': case['title'],
+                        'citations': citations
+                    }
+
+                    cases.append(found_case)
+            if 'children' in case:
+                get_citation(case, cases)
+
+    return cases
+
 
 # # # # END CHRONOLAWGIC # # # #

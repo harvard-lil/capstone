@@ -14,12 +14,16 @@
           on the <span class="inline-icon"><edit-icon></edit-icon></span> symbol to set a title and description.
         </p>
       </template>
-      <div class="timeline-assembly add-timeline">
-        <div class="timeline-card">
-          <button type="button" class="btn btn-tertiary" @click="$store.dispatch('requestCreateTimeline')">
-            <add-icon></add-icon>
-          </button>
-        </div>
+      <div class=" add-timeline">
+        <button type="button" class="btn btn-primary btn-highlight" @click="$store.dispatch('requestCreateTimeline')">
+          CREATE A BLANK TIMELINE
+        </button>
+
+        Or prepopulate a timeline from H2O
+        <input v-model="h2oURL" placeholder="Copy paste casebook.org URL here">
+        <button type="submit" class="btn btn-primary btn-highlight" @click.stop="addH2OTimeline">
+          ADD
+        </button>
       </div>
       <template v-if="this.$store.getters.availableTimelines.length">
         <div class="timeline-assembly" v-for="timeline in this.$store.getters.availableTimelines"
@@ -114,19 +118,20 @@
 </template>
 
 <script>
-import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import EditIcon from '../../../../static/img/icons/edit.svg';
 import SaveIcon from '../../../../static/img/icons/save.svg';
 import CancelIcon from '../../../../static/img/icons/cancel.svg';
 import DeleteIcon from '../../../../static/img/icons/trash-2.svg';
+import store from "./store";
 
 export default {
   name: 'Admin',
-  components: {AddIcon, EditIcon, SaveIcon, CancelIcon, DeleteIcon},
+  components: {EditIcon, SaveIcon, CancelIcon, DeleteIcon},
   data() {
     return {
       editMode: {},
-      timelines: {}
+      timelines: {},
+      h2oURL: ''
     }
   },
   methods: {
@@ -149,6 +154,9 @@ export default {
             }
         )
       }
+    },
+    addH2OTimeline() {
+      store.dispatch('requestCreateH2OTimeline', this.h2oURL);
     }
   },
 };

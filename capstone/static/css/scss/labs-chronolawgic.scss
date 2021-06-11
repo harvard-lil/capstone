@@ -238,16 +238,14 @@ main.admin {
       }
     }
 
-    .timeline-assembly.add-timeline {
-      padding-top: 2rem;
-
+    .add-timeline {
+      //display: flex;
       .timeline-card {
-        border-radius: 0;
-        background-color: $color-light-gray;
-        border: 1px dashed $color-medium-gray;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        //border-radius: 0;
+        //background-color: $color-light-gray;
+        //border: 1px dashed $color-medium-gray;
+        //align-items: center;
+        //justify-content: center;
 
         button {
           padding: 0;
