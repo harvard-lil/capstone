@@ -157,6 +157,7 @@ export default {
     },
     addH2OTimeline() {
       store.dispatch('requestCreateH2OTimeline', this.h2oURL);
+      this.h2oURL = ""
     }
   },
 };

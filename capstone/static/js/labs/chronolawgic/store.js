@@ -453,12 +453,14 @@ const store = new Vuex.Store({
             let json = JSON.stringify({url: url})
             return axios.post(this.state.urls.chronolawgic_api_create_h2o, json, {
                 headers: {
-                    // Overwrite Axios's automatically set Content-Type
                     'Content-Type': 'application/json'
                 }
             }).then(response => response.data)
                 .then(
-                    () => {
+                    (new_tl) => {
+                        if (new_tl.status === "ok") {
+                            this.dispatch('requestTimelineList');
+                        }
                         commit('setRequestStatusTerminal', 'success');
                         commit('setNotificationMessage', "Change Saved")
                     }
