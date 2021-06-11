@@ -370,7 +370,6 @@ const store = new Vuex.Store({
       return new_params
     },
     getLabelForChoice: (state, getters) => (field_name, value) => {
-      console.log(field_name);
       let field = getters.getField(field_name);
       return field.choices.filter(item => item.value === value)[0].label;
     },
@@ -503,6 +502,9 @@ const store = new Vuex.Store({
           } else if (query[field.name] && field.value !== query[field.name]) {
             change_flag = true;
             let val = query[field.name];
+            if (Object.prototype.hasOwnProperty.call(field, 'choices') && !Array.isArray(val)) {
+              val = [val];
+            }
             commit('setFieldValue', {'name': field.name, 'value': val})
           }
         });

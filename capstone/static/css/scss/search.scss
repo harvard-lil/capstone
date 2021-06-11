@@ -389,70 +389,85 @@ label.dropdown-label {
   }
   .field-choices {
     display: flex;
+    flex-wrap: wrap;
     .chosen-field {
-      background-color: $color-search-gray-light;
-      color: $color-violet-gray-dark;
-      border-radius: .1em;
-      padding: 0.2em 0.5em;
-      font-size: 0.7em;
-      font-weight: $font-weight-normal;
-      cursor: pointer;
-      margin-bottom: 0.5em;
-      flex-wrap: wrap;
-
-      .chosen_field_label {
-        font-weight: $font-weight-black;
-        padding-right: .4em;
-        white-space: nowrap;
-      }
-
       display: flex;
-      .chosen-field-instance {
-        background-color: $color-light-gray;
-        border-radius: 1em;
-        padding: 0 .5em 0 .5em;
-        line-height: unset;
-        display: grid;
-        grid-template-areas: "value reset";
-        grid-template-columns: max-content 15px;
-        max-height: 2em;
-
-        .chosen-field-instance-value {
-          flex-wrap: wrap;
-          flex-direction: row;
-          max-width: 7rem;
-          grid-area: value;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          transition: width 2s;
-          white-space: nowrap;
-          &.expanded {
-            max-width: unset;
+      flex-wrap: nowrap;
+      height: 2em;
+      &:hover, &:active, &:focus {
+        height: unset;
+        min-height: 2em;
+        .chosen-field-instance {
+          .reset-field-instance {
+            padding-top: .2rem;
+            display: flex;
+            align-items: start;
+            cursor: pointer;
           }
         }
+      }
 
-        .reset-field-instance {
-          grid-area: reset;
-          display: grid;
-          align-content: center;
+      .chosen_field_label, .chosen-field-instance {
+        display: flex;
+        flex-wrap: nowrap;
+
+        color: $color-violet-gray-dark;
+        padding: 0.1em 0.4em;
+        font-size: 0.7em;
+        font-weight: $font-weight-black;
+        margin-bottom: 0.5em;
+      }
+      .chosen_field_label {
+        background-color: $color-search-gray-light;
+        border-radius: 1em 0 0 1em;
+        justify-content: right;
+      }
+      .chosen-field-instance:last-of-type {
+        border-radius: 0 1em 1em 0;
+        border: 0;
+      }
+      .chosen-field-instance {
+        background-color: $color-search-gray-light;
+        margin-right: 0;
+        border-right: .125em solid $color-white;
+        .chosen-field-instance-value {
+          font-weight: $font-weight-normal;
+          max-width: 7rem;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
         }
-
+        .chosen-field-instance-value.expanded {
+          max-width: unset;
+        }
+        .reset-field-instance {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+        }
         &:hover, &:active, &:focus {
-          color: $color-search-gray-light;
+          color: $color-light-gray;
           background-color: $color-violet-gray-dark;
-
+          .chosen-field-instance-value {
+            max-width: 30rem;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+          }
           .close-icon {
             fill: $color-white;
           }
+          .reset-field-instance {
+            cursor: pointer;
+          }
         }
       }
-
-      .chosen-field-instance.expanded {
-        .chosen-field-instance-value {
-          max-width: unset;
-        }
+      .firstMulti {
+        border-left: .125em solid $color-white;
       }
     }
+
+
   }
 
 }

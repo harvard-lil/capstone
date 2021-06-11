@@ -16,10 +16,10 @@
 
           <ul class="col-9 list-inline field-choices">
             <li class="list-inline-item field chosen-field" v-for="field in $store.getters.populated_fields_during_search" :key="'chosen' + field.name" :class="{'multiselect' : 'Array.isArray(field.value)'}">
-              <span class="chosen_field_label">{{ field.label }}:</span>
+              <div class="chosen_field_label">{{ field.label }}:</div>
               <template v-if="Array.isArray(field.value)">
-                  <div v-for="field_instance in field.value" :key="'chosen_field_instance' + field.name + field_instance"
-                  class="list-inline-item field chosen-field-instance row">
+                  <div v-for="(field_instance, index)  in field.value" :key="'chosen_field_instance' + field.name + field_instance"
+                  class="list-inline-item field chosen-field-instance" :class="{'firstMulti': index === 0}">
                     <div class="chosen-field-instance-value">
                       {{  $store.getters.getLabelForChoice(field.name, field_instance) }}
                     </div>
@@ -30,7 +30,7 @@
                   </div>
               </template>
               <template v-else>
-                <div class="list-inline-item field chosen-field-instance row">
+                <div class="list-inline-item field chosen-field-instance">
                   <div class="chosen-field-instance-value">
                     {{ field.value_when_searched }}
                   </div>
