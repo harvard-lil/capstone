@@ -245,17 +245,22 @@ def get_case(case):
                 "jurisdiction": case_json[0]["jurisdiction"]["name_long"],
                 "court": case_json[0]["court"]["name"]
             }
+        else:
+            return case
+
 def h2o_import(request):
+    h2o_domain = 'opencasebook.org'
     import time
     print('START', time.ctime())
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
     h2o_url = json.loads(request.body.decode('utf-8'))['url']
     parsed_url = urlparse(h2o_url)
-    if parsed_url.netloc != 'opencasebook.org':
+
+    if parsed_url.netloc != h2o_domain:
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=403)
 
-    h2o_url = os.path.join('https://opencasebook.org' + parsed_url.path.replace('casebooks', 'casebook'), 'toc')
+    h2o_url = os.path.join('https://' + h2o_domain + parsed_url.path.replace('casebooks', 'casebook'), 'toc')
 
     try:
         resp = requests.get(h2o_url)
@@ -268,11 +273,16 @@ def h2o_import(request):
 
             def file_map(func, files, *args, **kwargs):
                 return list(mapper((lambda f: func(f)), files))
-            timeline_cases = file_map(get_case, cases)
-            # missing_cases = []
-            timeline_cases = [case for case in timeline_cases if case]
 
-            # import pdb; pdb.set_trace()
+            possible_cases = file_map(get_case, cases)
+            missing_cases = []
+            timeline_cases = []
+            for case in possible_cases:
+                if 'id' in case:
+                    timeline_cases.append(case)
+                else:
+                    missing_cases.append(case)
+
             timeline = Timeline.objects.create(
                 created_by=request.user,
                 timeline=validate_and_normalize_timeline({
@@ -285,34 +295,29 @@ def h2o_import(request):
             )
             timeline.save()
             print('AAAANnnndd were DONE',  time.ctime())
-            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline,'missing_cases': []})
+            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline,'missing_cases': missing_cases})
         else:
             return JsonResponse({'status': 'err', 'reason': ''}, status=resp.status_code)
     except Exception as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=404)
 
-# @shared_task
 def get_citation(obj, cases=None):
+    # it's possible for h2o cases to be nested so we're
+    # calling this recursively, creating a flat list
     if cases is None:
         cases = []
 
-
-    # print('getting into get_citation','children' in obj)
     if 'children' in obj:
         for case in obj['children']:
-            # print('getting case?', case['title'])
             if case['resource_type'] == 'Case' and case['citation']:
                 if case['citation']:
                     citations = case['citation'].split(', ') if 'citation' in case else []
                     found_case = {
                         'name': case['title'],
-                        'citations': citations
-                    }
-
+                        'citations': citations}
                     cases.append(found_case)
             if 'children' in case:
                 get_citation(case, cases)
-
     return cases
 
 
