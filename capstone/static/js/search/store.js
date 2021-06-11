@@ -496,7 +496,7 @@ const store = new Vuex.Store({
 
         Object.keys(this.state.fields).forEach(field_name => {
           let field = getters.getField(field_name);
-          if (!query[field.name] && field.value) {
+          if (!query[field.name] && field.value && field.value.length !== 0) {
             change_flag = true;
             commit('clearField', field.name)
           } else if (query[field.name] && field.value !== query[field.name]) {
