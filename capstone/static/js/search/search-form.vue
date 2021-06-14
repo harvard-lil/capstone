@@ -86,7 +86,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :clearable="true" :field="$store.getters.getField('reporter')"></field-item>
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('reporter')"></field-item>
               <div v-if="$store.getters.fieldHasError('reporter')" class="invalid-feedback">
                 {{ $store.getters.getField('reporter').error }}
               </div>
@@ -96,7 +96,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :clearable="true" :field="$store.getters.getField('jurisdiction')"></field-item>
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('jurisdiction')"></field-item>
               <div v-if="$store.getters.fieldHasError('jurisdiction')" class="invalid-feedback">
                 {{ $store.getters.getField('jurisdiction').error }}
               </div>
@@ -116,7 +116,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :clearable="true" :field="$store.getters.getField('court')"></field-item>
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('court')"></field-item>
               <div v-if="$store.getters.fieldHasError('court')" class="invalid-feedback">
                 {{ $store.getters.getField('court').error }}
               </div>
