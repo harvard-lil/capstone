@@ -1,6 +1,7 @@
 <template>
   <div class="spans row" @click="$store.commit('expandMobileEvents')">
     <div v-for="(event_data, index) in event_list" v-bind:key="year_value + index"
+         :title="event_data.name"
          :class="[ 'event_col', 'ec_' + (index + 1), 'col-1', 'e' + year_value, ]">
       <template v-if="$store.getters.isMobile && !$store.getters.mobileEventsExpanded">
 
@@ -20,7 +21,7 @@
 
       </template>
       <template v-else>
-        <div :class="{
+        <button :class="{
           'fill': true,
           'first-event-year': parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear(),
           'last-event-year': parseInt(year_value) === new Date(event_data.end_date).getUTCFullYear(),
@@ -34,9 +35,7 @@
                       'min-height': '1rem'
                   }"
              @click="openModal(event_data)"
-             @blur="handleFocus(event_data)"
-             @focus="handleFocus(event_data)"
-             :data-toggle="dataToggle"
+             data-toggle="modal"
              :data-target="dataTarget"
              :data-event-fill="event_data.id"
              :ref="fillRefGenerator(event_data, year_value)">
@@ -46,8 +45,7 @@
                v-text="event_data.name"
                :ref="'event-label' + event_data.id">
           </div>
-
-        </div>
+        </button>
       </template>
     </div>
   </div>
@@ -60,53 +58,21 @@ export default {
   name: "TimelineSlice",
   props: ['year_value', 'event_list'],
   computed: {
-    dataToggle: () => {
-      // attribute for showing either modal or event preview
-      if (store.getters.isMobile || (store.state.isAuthor && !store.getters.isMobile)) {
-        return 'modal'
-      } else {
-        return ''
-      }
-    },
     dataTarget: () => {
-      // attribute for showing what kind of modal or event preview
-      if (store.getters.isMobile) {
+      // show readonly or event modal
+      if (store.getters.isMobile || !store.state.isAuthor) {
         return '#readonly-modal'
-      } else if (store.state.isAuthor && !store.getters.isMobile) {
-        return '#add-event-modal'
       } else {
-        // keeping blank will show event preview
-        return ''
+        return '#add-event-modal'
       }
     },
-    showPreview: () => {
-      // showing preview or showing modal
-      return !store.state.isAuthor && !store.getters.isMobile
-    }
   },
   methods: {
     closeModal() {
       this.$emit('closeModal')
     },
     openModal(event_data) {
-      if (this.showPreview) {
-        this.toggleEventPreview(event_data, true)
-      } else {
-        this.$parent.$parent.openModal(event_data, 'event')
-      }
-    },
-    handleFocus(event_data) {
-      this.toggleEventPreview(event_data, true)
-    },
-    handleBlur(event_data) {
-      this.toggleEventPreview(event_data, false)
-    },
-    toggleEventPreview(event_data, open) {
-      if (!this.showPreview) return;
-      if (open)
-        this.$parent.previewEvent(event_data);
-      else
-        this.$parent.clearPreviewEvent()
+      this.$parent.$parent.openModal(event_data, 'event')
     },
     fillRefGenerator(event_data, year_value) {
       const firstEventYear = parseInt(year_value) === new Date(event_data.start_date).getUTCFullYear();

@@ -208,6 +208,13 @@ export default {
       if (!this.newCase.decision_date) {
         this.errors.push('Decision date is required.');
       }
+      if (this.newCase.url && !this.checkUrl(this.newCase.url)) {
+        if (!/^https?:\/\//i.test(this.newCase.url) && this.checkUrl('https://' + this.newCase.url)) {
+            this.newCase.url = 'https://' + this.newCase.url;
+        } else {
+          this.errors.push('URL is not valid.')
+        }
+      }
     },
     closeModal() {
       this.$parent.closeModal();
@@ -326,6 +333,14 @@ export default {
         this.newCase.court = court.courtName
       this.newCase = this.unbind(this.newCase)
     },
+    checkUrl(url) {
+      try {
+        new URL(url);
+      } catch (e) {
+        return false;
+      }
+      return url.includes('.');
+    }
   },
   watch: {
     case(existingCase) {
