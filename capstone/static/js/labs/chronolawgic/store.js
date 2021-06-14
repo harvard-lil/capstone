@@ -134,7 +134,6 @@ const store = new Vuex.Store({
             state.title = json.title;
             state.author = json.author ? json.author : "CAP User";
             state.description = json.description;
-            console.log(json);
             state.categories = json.categories;
             state.events = json.events;
             state.cases = json.cases;
@@ -146,9 +145,6 @@ const store = new Vuex.Store({
             state.createdBy = createdBy;
         },
         setAuthor(state, isAuthor) {
-            state.isAuthor = isAuthor;
-        },
-        setDescription(state, isAuthor) {
             state.isAuthor = isAuthor;
         },
         setCategories(state, categories) {
@@ -387,8 +383,8 @@ const store = new Vuex.Store({
         },
         requestTimeline: function ({commit}, timelineId) {
             // clear timeline if it exists
-            commit('setTimelineId', '')
-            commit('setTimeline', {title: ''})
+            commit('setTimelineId', '');
+            commit('setTimeline', {title: ''});
 
             commit('setRequestStatus', 'pending');
             axios
@@ -398,11 +394,10 @@ const store = new Vuex.Store({
                 })
                 .then(timeline => {
                     if (timeline.status === "ok") {
-                        commit('setTimelineId', timeline['id'])
-                        commit('setTimeline', timeline['timeline'])
-                        commit('setCreatedBy', timeline['created_by'])
+                        commit('setTimelineId', timeline['id']);
+                        commit('setTimeline', timeline['timeline']);
+                        commit('setCreatedBy', timeline['created_by']);
                         commit('setAuthor', timeline['is_owner'])
-                        //commit('setDescription', timeline['is_owner'])
                     }
                 }).then(
                 () => {
