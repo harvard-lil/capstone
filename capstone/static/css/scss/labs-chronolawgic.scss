@@ -69,7 +69,6 @@ main.admin {
         margin-top: -.40rem;
       }
     }
-
     .timeline-assembly {
       display: grid;
       grid-template-areas: "nav"
@@ -112,7 +111,6 @@ main.admin {
       }
 
       .timeline-card {
-
         height: 25rem;
         grid-area: card;
         display: grid;
@@ -164,11 +162,13 @@ main.admin {
             grid-area: author;
             font-size: $font-size-sm;
             color: $color-violet-gray-dark;
+
             .author-edit {
               margin-top: .5rem;
               padding-left: .5rem;
               padding-right: .5rem;
             }
+
             .author-input {
               border: 1px dashed $color-medium-dark-blue;
               padding-left: .5rem;
@@ -236,17 +236,30 @@ main.admin {
           }
         }
       }
+      .timeline-card.new {
+        background-color: $highlight;
+      }
     }
 
     .add-timeline {
-      //display: flex;
-      .timeline-card {
-        //border-radius: 0;
-        //background-color: $color-light-gray;
-        //border: 1px dashed $color-medium-gray;
-        //align-items: center;
-        //justify-content: center;
+      padding-top: 2em;
+      margin: 0 1rem 1rem 0.5rem;
+      width: 20rem;
 
+      * {
+        margin-bottom: 0.5em;
+      }
+
+      .create-blank {
+        margin-bottom: 1em;
+      }
+
+      span, label {
+        font-family: $font-monospace;
+        font-size: 0.6em;
+      }
+
+      .timeline-card {
         button {
           padding: 0;
 
@@ -257,9 +270,16 @@ main.admin {
         }
       }
     }
+
+    .h2o-error-container {
+      height: 11.5rem;
+      overflow-y: scroll;
+      border: 1px solid black;
+      padding: 0.5em;
+      font-size: 0.8em;
+    }
   }
 }
-
 
 main#main-app {
   .top-menu {

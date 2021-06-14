@@ -449,8 +449,8 @@ const store = new Vuex.Store({
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
                 })
         },
-        requestCreateH2OTimeline: function ({commit}, url) {
-            let json = JSON.stringify({url: url})
+        requestCreateH2OTimeline: function ({commit}, data) {
+            let json = JSON.stringify(data)
             return axios.post(this.state.urls.chronolawgic_api_create_h2o, json, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -462,11 +462,13 @@ const store = new Vuex.Store({
                             this.dispatch('requestTimelineList');
                         }
                         commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Change Saved")
+                        commit('setNotificationMessage', "Timeline Created")
+                        return new_tl
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+                    commit('setNotificationMessage', "error creating timeline: " + getBestError(error))
+                    return error
                 })
 
         }

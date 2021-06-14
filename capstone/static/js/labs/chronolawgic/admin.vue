@@ -6,7 +6,7 @@
     </div>
 
     <section id="timeline" v-if="this.$store.state.user.is_authenticated === 'True'">
-      <h6 class="timelines-title" v-if="this.$store.state.user.is_authenticated === 'True'" >Your timelines</h6>
+      <h6 class="timelines-title">Add a new timeline</h6>
       <template v-if="!this.$store.getters.availableTimelines.length">
         <p class="welcome">
           Welcome to Chronolawgic, the Caselaw Access Project tool for creating caselaw-focused timelines. To
@@ -14,20 +14,45 @@
           on the <span class="inline-icon"><edit-icon></edit-icon></span> symbol to set a title and description.
         </p>
       </template>
-      <div class=" add-timeline">
-        <button type="button" class="btn btn-primary btn-highlight" @click="$store.dispatch('requestCreateTimeline')">
-          CREATE A BLANK TIMELINE
+      <div class="add-timeline">
+        <button type="button" class="create-blank btn btn-primary btn-highlight"
+                @click="$store.dispatch('requestCreateTimeline')">
+          CREATE A TIMELINE
         </button>
+        <br/>
+        <div class="h2o-import-container">
+          <span>Or pre-populate a timeline from <a href="https://opencasebook.org">H2O</a></span>
+          <input v-model="h2oURL" class="form-control" placeholder="Copy paste casebook.org URL here">
 
-        Or prepopulate a timeline from H2O
-        <input v-model="h2oURL" placeholder="Copy paste casebook.org URL here">
-        <button type="submit" class="btn btn-primary btn-highlight" @click.stop="addH2OTimeline">
-          ADD
-        </button>
+          <label for="useOriginalUrls"> Use original H2O URLs</label>&nbsp;
+          <input v-model="useOriginalURLs" type="checkbox" id="useOriginalUrls" name="useOriginalUrls"
+                 value="Use Original URLs">
+          <br/>
+          <button type="submit" class="btn btn-primary" @click.stop="addH2OTimeline">
+            CREATE FROM H2O
+            <span v-if="showLoading"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"></span>
+          </button>
+          <span v-if="showLoading"
+                id="loading-focus"
+                class="sr-only"
+                tabindex="-1">Loading</span>
+          <div class='h2o-error-container' v-if="this.missingCases.length">
+            Timeline created successfully (see first timeline in the list).<br/>However, there were some cases we could not locate:<br/>
+            <ul>
+              <li v-for="(c, idx) in this.missingCases" v-bind:key="idx">
+                <a :href="'https://opencasebook.org' + c.original_url"><b>{{ c.name }}</b></a>&nbsp;
+                <i>{{ c.citations[0] }}</i>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
       <template v-if="this.$store.getters.availableTimelines.length">
-        <div class="timeline-assembly" v-for="timeline in this.$store.getters.availableTimelines"
-             v-bind:key="timeline.id">
+        <div class="timeline-assembly" v-for="(timeline, idx) in this.$store.getters.availableTimelines"
+             v-bind:key="idx">
           <nav>
             <div class="editcancel" title="edit">
               <button v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
@@ -122,6 +147,7 @@ import EditIcon from '../../../../static/img/icons/edit.svg';
 import SaveIcon from '../../../../static/img/icons/save.svg';
 import CancelIcon from '../../../../static/img/icons/cancel.svg';
 import DeleteIcon from '../../../../static/img/icons/trash-2.svg';
+
 import store from "./store";
 
 export default {
@@ -131,7 +157,10 @@ export default {
     return {
       editMode: {},
       timelines: {},
-      h2oURL: ''
+      h2oURL: '',
+      useOriginalURLs: false,
+      showLoading: false,
+      missingCases: [],
     }
   },
   methods: {
@@ -156,8 +185,18 @@ export default {
       }
     },
     addH2OTimeline() {
-      store.dispatch('requestCreateH2OTimeline', this.h2oURL);
-      this.h2oURL = ""
+      this.missingCases = [];
+      let h2oData = {
+        url: this.h2oURL,
+        use_original_urls: this.useOriginalURLs
+      }
+      this.showLoading = true;
+      store.dispatch('requestCreateH2OTimeline', h2oData).then((response) => {
+        this.showLoading = false
+        if (response.status === 'ok') {
+          this.missingCases = response.missing_cases;
+        }
+      });
     }
   },
 };
