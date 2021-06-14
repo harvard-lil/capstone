@@ -27,7 +27,7 @@ importChoices.colors = [
     "#3e667a",
     "#00b7db",
     "#c4c4c4",
-]
+];
 
 // jurisdictions
 const jurisdictions = [];
@@ -139,7 +139,7 @@ const store = new Vuex.Store({
             state.cases = json.cases;
         },
         setTimelineId(state, timeline_id) {
-            state.id = timeline_id
+            state.id = timeline_id;
         },
         setCreatedBy(state, createdBy) {
             state.createdBy = createdBy;
@@ -169,20 +169,20 @@ const store = new Vuex.Store({
         addEvent(state, event) {
             // assign id to event
             event.id = this.generateUUID();
-            state.events.push(event)
+            state.events.push(event);
             this.dispatch('requestUpdateTimeline')
         },
         addCase(state, caselaw) {
             // assign id to caselaw
             caselaw.id = this.generateUUID();
-            state.cases.push(caselaw)
+            state.cases.push(caselaw);
             this.dispatch('requestUpdateTimeline')
         },
         updateEvent(state, event) {
             for (let i = 0; i < state.events.length; i++) {
                 if (state.events[i].id === event.id) {
                     state.events[i] = event;
-                    this.dispatch('requestUpdateTimeline')
+                    this.dispatch('requestUpdateTimeline');
                     break;
                 }
             }
@@ -191,7 +191,7 @@ const store = new Vuex.Store({
             for (let i = 0; i < state.cases.length; i++) {
                 if (state.cases[i].id === caselaw.id) {
                     state.cases[i] = caselaw;
-                    this.dispatch('requestUpdateTimeline')
+                    this.dispatch('requestUpdateTimeline');
                     break;
                 }
             }
@@ -245,7 +245,7 @@ const store = new Vuex.Store({
         templateCase: state => state.templateCase,
         templateCategory: state => state.templateCategory,
         empty: (state) => {
-            if (state.requestStatus == 'pending') {
+            if (state.requestStatus === 'pending') {
                 return 'pending'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
                 !Object.prototype.hasOwnProperty.call(state, 'events') ) {
@@ -276,8 +276,8 @@ const store = new Vuex.Store({
             if (state.cases.length === 0 && state.events.length === 0) {
                 return 0
             }
-            let last_event_year = 0
-            let last_case_year = 0
+            let last_event_year = 0;
+            let last_case_year = 0;
             if (state.events.length) {
                 last_event_year = state.events.reduce((max, e) =>
                     new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
@@ -428,7 +428,7 @@ const store = new Vuex.Store({
         },
         requestUpdateAdmin: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
-            let author = data.author.trim()
+            let author = data.author.trim();
             let json = JSON.stringify({
                 title: data.title,
                 // don't allow empty strings
@@ -463,6 +463,6 @@ store.generateUUID = () => {
                 let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
-        }
+        };
 
 export default store;
