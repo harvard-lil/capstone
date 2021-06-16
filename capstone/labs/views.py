@@ -238,16 +238,18 @@ def h2o_import(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
     data = json.loads(request.body.decode('utf-8'))
-    h2o_url = data['url']
     use_original_urls = data['use_original_urls']
+
+    h2o_url = data['url']
     parsed_url = urlparse(h2o_url)
 
     # expecting an H2O URL, no shenanigans
     if parsed_url.netloc != h2o_domain:
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=403)
 
-    # getting casebook's API URL
+    # getting casebook's H2O API URL
     h2o_url = os.path.join('https://' + h2o_domain + parsed_url.path.replace('casebooks', 'casebook'), 'toc')
+    original_casebook_url = os.path.join('https://' + h2o_domain + parsed_url.path.replace('casebook/', 'casebooks/'))
 
     try:
         resp = requests.get(h2o_url)
@@ -273,7 +275,7 @@ def h2o_import(request):
                 timeline=validate_and_normalize_timeline({
                     "title": "",
                     "author": "Imported from H2O",
-                    "description": "Original H2O textbook can be found at this URL: " + h2o_url,
+                    "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
                     "cases": timeline_cases,
                     "events": [],
                     "categories": []
