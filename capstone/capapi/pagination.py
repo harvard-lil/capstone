@@ -15,7 +15,6 @@ from rest_framework import serializers
 
 from capapi.resources import CachedCountQuerySet
 
-
 class CapPagination(CursorPagination):
     # This should be larger than the max number of records that share the same ordering field, such as decision_date,
     # but not too much larger to avoid allowing needlessly expensive queries.
@@ -164,19 +163,19 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
         super(ESCursorPagination, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def reverse_sort(queryset):
+    def reverse_sort(queryset, request):
         new_sort = []
-        for item in queryset._sort:
-            if type(item) == str:
-                item = {item: {"order": "asc" if item == "_score" else "desc"}}
-            elif type(item) == dict  and item:
-                k = next(iter(item))
-                v = dict(item[k])
-                v["order"] = "desc" if v.get("order", "desc" if k == "_score" else "asc") == "asc" else "desc"
-                item = {k: v}
-            else:
-                raise TypeError("Unrecognized sort order: %s" % item)
-            new_sort.append(item)
+        for field in request.parser_context['view'].ordering_fields:
+            name = request.parser_context['view'].ordering_fields[field]
+            field_ordering = [hit for hit in queryset._sort if (type(hit) == dict and hit.get(name))]
+            if field_ordering and name == '_score':
+                new_sort.append({"_score": {"order": "asc"}})
+                new_sort.append({"id": {"order": "desc"}})
+            elif field_ordering:
+                new_sort.append({name: {"order": "asc" if field_ordering[0][name]['order'] == "desc" else "desc"}})
+                new_sort.append({"id": {"order": "asc" if field_ordering[0][name]['order'] == "desc" else "desc"}})
+        if len(new_sort) != len(queryset._sort):
+            raise TypeError("Unrecognized sort order. Got {} parsed {}".format(str(queryset._sort), str(new_sort)))
         return queryset.sort(*new_sort)
 
     def _paginate_queryset(self, queryset, request, view):
@@ -192,11 +191,11 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
         # ensure sort order includes fallback_sort_field
         if not any(k == self.fallback_sort_field or self.fallback_sort_field in k.keys() for k in queryset._sort):
             queryset = queryset.sort(*(queryset._sort + [self.fallback_sort_field]))
-
         if self.reversed:
-            queryset = self.reverse_sort(queryset)
+            queryset = self.reverse_sort(queryset, request)
         if self.search_after:
             queryset = queryset.extra(search_after=self.search_after)
+        print(queryset._sort)
 
         resp = queryset[:self.page_size+1].execute()
         hits = resp['hits']
