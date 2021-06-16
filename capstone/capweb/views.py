@@ -33,7 +33,7 @@ from capweb.forms import ContactForm
 from capweb.helpers import get_data_from_lil_site, reverse, send_contact_email, render_markdown, is_browser_request, \
     page_image_url, safe_domains, get_toc_by_url
 from capweb.models import GallerySection, GalleryEntry
-from capdb.models import Snippet, Court, Reporter, Jurisdiction, CaseMetadata
+from capdb.models import Court, Reporter, Jurisdiction, CaseMetadata
 from capdb.storages import download_files_storage
 from capapi.resources import form_for_request, api_request
 from capweb.templatetags.docs_url import docs_url
@@ -162,11 +162,6 @@ def limericks(request):
         'page_image': 'img/og_image/limericks.png',
         'meta_description': 'Generate rhymes using caselaw!'
     })
-
-
-def snippet(request, label):
-    snippet = get_object_or_404(Snippet, label=label).contents
-    return HttpResponse(snippet, content_type=snippet.format)
 
 
 def legacy_docs_redirect(request):

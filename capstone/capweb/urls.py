@@ -67,7 +67,6 @@ urlpatterns = [
 
     ### admin stuff ###
     path('maintenance/', views.maintenance_mode, name='maintenance_mode'),
-    path('data/<str:label>', views.snippet, name='data_snippet'),
     re_path(r'^cms_files/', include('db_file_storage.urls')),
     path('screenshot/', views.screenshot, name='screenshot'),
 

@@ -42,7 +42,7 @@ from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Cit
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
-    validate_private_volumes as validate_private_volumes_script, export, update_snippets
+    validate_private_volumes as validate_private_volumes_script, export
 from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
 
 
@@ -141,7 +141,7 @@ def validate_private_volumes():
 
 fixtures = [
     ('default', 'capweb', ('galleryentry', 'cmspicture', 'gallerysection')),
-    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'snippet', 'casefont')),
+    ('capdb', 'capdb', ('jurisdiction', 'reporter', 'casefont')),
 ]
 
 @task
@@ -821,20 +821,6 @@ def run_edit_script(script=None, dry_run='true', **kwargs):
         print("Script not found. Attempted to import %s" % import_path)
     else:
         method(dry_run=dry_run, **kwargs)
-
-@task
-def update_all_snippets():
-    update_snippets.update_all()
-
-@task
-def update_search_snippets():
-    update_snippets.search_reporter_list()
-    update_snippets.search_court_list()
-    update_snippets.search_jurisdiction_list()
-
-@task
-def update_labs_snippets():
-    update_snippets.court_abbrev_list()
 
 @task
 def ice_volumes(scope='all', dry_run='true'):
