@@ -2,7 +2,7 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
-{% load snippet %}
+{% load cached_json_object %}
 {% load render_bundle from webpack_loader %}
 {% block row_style %}bg-tan{% endblock %}
 
@@ -28,8 +28,8 @@
     docs_page: "{% url "trends-docs" %}"
   };
 
-  const snippets = {
-    jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %}
+  const cached_json_objects = {
+    jurisdictions: {% cached_json_object 'search_jurisdiction_list' '[]' %}
   };
 </script>
 <noscript>

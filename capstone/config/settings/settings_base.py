@@ -382,6 +382,7 @@ CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached fo
 CACHED_LIL_DATA_TIMEOUT = 60*60*24  # news and contributor data from LIL site is cached once a day
 LIVE_COUNT_TIME_LIMIT = 2  # number of seconds to try to generate a count while preparing an API response
 TASK_COUNT_TIME_LIMIT = 120  # number of seconds to try to generate a count in background task
+CACHED_JSON_OBJECT_TIMEOUT = None  # won't expire cached json objects automatically
 
 # DATA VISUALIZATION
 DATA_COUNT_DIR = '/tmp/count-data'

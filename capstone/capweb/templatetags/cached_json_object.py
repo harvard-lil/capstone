@@ -4,28 +4,35 @@ from django.utils.safestring import mark_safe
 from django import template
 from django.db import connections
 from django.core.cache import cache
+from django.conf import settings
 
 from capdb.models import Reporter, Jurisdiction, Court
 
 register = template.Library()
 
 @register.simple_tag()
-def snippet(label, default=""):
+def cached_json_object(label, default=""):
     """
-        Return contents of named Snippet, from cache if possible. If Snippet is not found, return default.
+        Return contents of named cached_json_object, from cache if possible. If cached_json_object is not found, return default.
     """
-    snippet_router = {
+    cached_json_object_router = {
         'map_numbers': map_numbers,
         'search_jurisdiction_list': search_jurisdiction_list,
         'search_court_list': search_court_list,
         'search_reporter_list': search_reporter_list,
         'court_abbrev_list': court_abbrev_list,
     }
-    return mark_safe(snippet_router[label]() if label in snippet_router else default)
+    key = 'cached_json_object:{}'.format(label)
+    cached_json_object = cache.get(key)
+
+    if not cached_json_object and label in cached_json_object_router:
+        cache.set(key, cached_json_object_router[label](), settings.CACHED_JSON_OBJECT_TIMEOUT)
+        cached_json_object = cache.get(key)
+
+    return mark_safe(cached_json_object if cached_json_object else default)
 
 
 def map_numbers():
-    """ Write map_numbers snippet. """
     cursor = connections['capdb'].cursor()
     cursor.execute(r"""
         SELECT 
@@ -47,25 +54,27 @@ def map_numbers():
     return json.dumps(output)
 
 
-# label search_jurisdiction_list
 def search_jurisdiction_list():
     jurisdictions = [ (jurisdiction.slug, jurisdiction.name_long)
             for jurisdiction in Jurisdiction.objects.order_by('slug').all()
             if jurisdiction.slug != 'regional']
     return json.dumps(jurisdictions)
 
-# label search_court_list
 def search_court_list():
-    courts = [ (court.slug, "{}: {}".format(court.jurisdiction, court.name))
-               for court in Court.objects.order_by('slug').all()]
-    return json.dumps(courts)
+    output = []
+    for court in Court.objects.order_by('slug').all():
+        try:
+            output.append((court.slug, "{}: {}".format(court.jurisdiction, court.name)))
+        except Jurisdiction.DoesNotExist:
+            output.append({court.slug: court.name})
+    return json.dumps(output)
 
-#label search_reporter_list
 def search_reporter_list():
     reporters = [ (reporter.id, "{}- {}".format(reporter.short_name, reporter.full_name))
                for reporter in Reporter.objects.order_by('full_name').all()]
     return json.dumps(reporters)
 
-#label court_abbrev_list
 def court_abbrev_list():
     return json.dumps([(court.slug, court.name) for court in Court.objects.order_by('slug').all()])
+
+

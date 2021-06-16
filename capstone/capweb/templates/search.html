@@ -2,7 +2,7 @@
 {% load static %}
 {% load pipeline %}
 {% load api_url %}
-{% load snippet %}
+{% load cached_json_object %}
 {% load render_bundle from webpack_loader %}
 {% block base_css %}{% stylesheet 'search' %}{% endblock %}
 
@@ -28,8 +28,9 @@
     };
 
     const choices = {
-      "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
-      "reporter": {% snippet 'search_reporter_list' '[]' %},
+      "jurisdiction": {% cached_json_object 'search_jurisdiction_list' '[]' %},
+      "reporter": {% cached_json_object 'search_reporter_list' '[]' %},
+      "courts": {% cached_json_object 'search_court_list' '[]' %},
       "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]],
     };
 

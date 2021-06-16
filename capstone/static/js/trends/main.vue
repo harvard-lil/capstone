@@ -403,7 +403,7 @@
       }),
     },
     beforeMount() {
-      this.jurisdictions = [["*", "Wildcard"]].concat(snippets.jurisdictions);  // eslint-disable-line
+      this.jurisdictions = [["*", "Wildcard"]].concat(cached_json_object.jurisdictions);  // eslint-disable-line
       for (const[k, v] of this.jurisdictions)
         this.jurisdictionLookup[k] = v;
       this.urls = urls;  // eslint-disable-line

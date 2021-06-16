@@ -5,7 +5,7 @@
 {% load format_number %}
 {% load render_bundle from webpack_loader %}
 {% load bootstrap4 %}
-{% load snippet %}
+{% load cached_json_object %}
 
 {% block base_css %}{% stylesheet 'index' %}{% endblock %}
 {% block extra_footer %}
@@ -14,7 +14,7 @@
       static: "{% static "" %}",
       jurisdiction: "{% url "cite_home" host "cite" %}#JURISDICTION"
     };
-    const jurData = {% snippet 'map_numbers' '{}' %};
+    const jurData = {% cached_json_object 'map_numbers' '{}' %};
   </script>
   {% render_bundle 'map' %}
 {% endblock %}
