@@ -198,7 +198,7 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
             queryset = self.reverse_sort(queryset, request)
         if self.search_after:
             queryset = queryset.extra(search_after=self.search_after)
-        print(queryset._sort)
+
 
         resp = queryset[:self.page_size+1].execute()
         hits = resp['hits']
