@@ -11,7 +11,7 @@ from capdb.models import Reporter, Jurisdiction, Court
 register = template.Library()
 
 @register.simple_tag()
-def cached_json_object(label, default=""):
+def cached_json_object(label, default="", force_clear=False):
     """
         Return contents of named cached_json_object, from cache if possible. If cached_json_object is not found, return default.
     """
@@ -25,7 +25,7 @@ def cached_json_object(label, default=""):
     key = 'cached_json_object:{}'.format(label)
     cached_json_object = cache.get(key)
 
-    if not cached_json_object and label in cached_json_object_router:
+    if force_clear or (not cached_json_object and label in cached_json_object_router):
         cache.set(key, cached_json_object_router[label](), settings.CACHED_JSON_OBJECT_TIMEOUT)
         cached_json_object = cache.get(key)
 
