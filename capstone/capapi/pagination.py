@@ -165,17 +165,20 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
     @staticmethod
     def reverse_sort(queryset, request):
         new_sort = []
+        # loop through all sort fields to see if they're present in the current sort
         for field in request.parser_context['view'].ordering_fields:
             name = request.parser_context['view'].ordering_fields[field]
-            field_ordering = [hit for hit in queryset._sort if (type(hit) == dict and hit.get(name))]
-            if field_ordering and name == '_score':
+            current_ordering_fields = [field for field in queryset._sort if (type(field) == dict and field.get(name))]
+
+            # '_score' (relevance) is specialized
+            if current_ordering_fields and name == '_score':
                 new_sort.append({"_score": {"order": "asc"}})
                 new_sort.append({"id": {"order": "desc"}})
-            elif field_ordering:
-                new_sort.append({name: {"order": "asc" if field_ordering[0][name]['order'] == "desc" else "desc"}})
-                new_sort.append({"id": {"order": "asc" if field_ordering[0][name]['order'] == "desc" else "desc"}})
-        if len(new_sort) != len(queryset._sort):
-            raise TypeError("Unrecognized sort order. Got {} parsed {}".format(str(queryset._sort), str(new_sort)))
+            # flip sort for other fields
+            elif current_ordering_fields:
+                new_sort.append({name: {"order": "asc" if current_ordering_fields[0][name]['order'] == "desc" else "desc"}})
+                new_sort.append({"id": {"order": "asc" if current_ordering_fields[0][name]['order'] == "desc" else "desc"}})
+
         return queryset.sort(*new_sort)
 
     def _paginate_queryset(self, queryset, request, view):
