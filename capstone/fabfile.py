@@ -38,7 +38,7 @@ from fabric.decorators import task
 
 from capapi.models import CapUser, EmailBlocklist
 from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Citation, CaseMetadata, \
-    Court, Reporter, PageStructure, CaseAnalysis
+    Court, Reporter, PageStructure, CaseAnalysis, EditLog
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
@@ -1687,6 +1687,42 @@ def celery_remove_jobs(task_name, queue='celery'):
     """
     import scripts.celery_queues
     scripts.celery_queues.remove_jobs(task_name, queue)
+
+
+@task
+def normalize_unicode(dry_run='true'):
+    """Normalize characters in case fields."""
+    fields = ['name', 'name_abbreviation']
+    replacements = [
+        [r'[\s\u00a0\u180e\u2007\u200b-\u200f\u202f\u2060\ufeff]+', ' '],
+        [r'[‘’ʼ]', "'"],
+        [r'[“”]', '"'],
+        [r'[—]', '-'],
+    ]
+    def normalize(s):
+        for regex, replacement in replacements:
+            s = re.sub(regex, replacement, s)
+        return s
+
+    to_update = []
+    for case in tqdm(CaseMetadata.objects.only(*fields).iterator()):
+        changed = False
+        for f in fields:
+            old_val = getattr(case, f)
+            new_val = normalize(old_val)
+            if new_val != old_val:
+                if dry_run == 'true':
+                    print(f"Would update {case.id} from {repr(old_val)} to {repr(new_val)}")
+                setattr(case, f, new_val)
+                changed = True
+        if changed:
+            to_update.append(case)
+
+    if to_update and dry_run == 'false':
+        with EditLog(description=f'Normalize unicode for {fields}').record():
+            CaseMetadata.objects.bulk_update(to_update, fields, batch_size=1000)
+
+    print(f"Updated {len(to_update)} cases.")
 
 
 if __name__ == "__main__":
