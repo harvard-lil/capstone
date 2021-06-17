@@ -47,6 +47,8 @@ for (let i = 0; i < importChoices.courts.length; i++) {
 importChoices.courts = courts;
 
 function getBestError(error) {
+    // eslint-disable-next-line
+    // debugger;
     if (error && Object.prototype.hasOwnProperty.call(error, "response") &&
         Object.prototype.hasOwnProperty.call(error.response, "data") &&
         Object.prototype.hasOwnProperty.call(error.response.data, "reason")) {
@@ -73,6 +75,7 @@ const store = new Vuex.Store({
             chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
             chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
+            chronolawgic_api_create_h2o: importUrls.chronolawgic_api_create_h2o,
             static: importUrls.static,
             api_root: importUrls.api_root,
         },
@@ -315,7 +318,7 @@ const store = new Vuex.Store({
             return state.categories
         },
         category: (state) => (id) => {
-          return state.categories.find(cat => cat.id === id)
+            return state.categories.find(cat => cat.id === id)
         },
         randomColor: (state) => {
             return state.colors[Math.floor(Math.random() * state.colors.length)]
@@ -454,15 +457,39 @@ const store = new Vuex.Store({
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
                 })
         },
+        requestCreateH2OTimeline: function ({commit}, data) {
+            let json = JSON.stringify(data)
+            return axios.post(this.state.urls.chronolawgic_api_create_h2o, json, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.data)
+                .then(
+                    (new_tl) => {
+                        if (new_tl.status === "ok") {
+                            this.dispatch('requestTimelineList');
+                        }
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Timeline Created")
+                        return new_tl
+                    }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error creating timeline: " + getBestError(error))
+                    return error
+                })
+
+        }
     }
 });
 
 store.generateUUID = () => {
-            // https://stackoverflow.com/a/2117523/2247227
-            return 'xxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        };
+    // https://stackoverflow.com/a/2117523/2247227
+    return 'xxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 
 export default store;
