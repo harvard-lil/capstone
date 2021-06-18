@@ -68,9 +68,14 @@ def chronolawgic_api_retrieve(request, timeline_uuid=None):
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
+    first_year, last_year, case_stats, event_stats = get_timeline_stats(timeline.timeline)
+
     return JsonResponse({
         'status': 'ok',
         'timeline': timeline.timeline,
+        'stats': [case_stats, event_stats],
+        'first_year': first_year,
+        'last_year': last_year,
         'id': timeline.uuid,
         'created_by': timeline.created_by.id,
         'is_owner': True if request.user == timeline.created_by else False
@@ -198,10 +203,14 @@ def chronolawgic_api_update(request, timeline_uuid):
 
     timeline_record.timeline = incoming_timeline
     timeline_record.save()
+    first_year, last_year, case_stats, event_stats = get_timeline_stats(timeline_record.timeline)
 
     return JsonResponse({
         'status': 'ok',
         'timeline': timeline_record.timeline,
+        'stats': [case_stats, event_stats],
+        'first_year': first_year,
+        'last_year': last_year,
         'id': timeline_record.uuid,
         'is_owner': True if request.user == timeline_record.created_by else False
     })
@@ -269,13 +278,16 @@ def h2o_import(request):
                     timeline_cases.append(case)
                 else:
                     missing_cases.append(case)
-
+            first_year, last_year, case_stats, event_stats = get_timeline_stats({'cases': timeline_cases, 'events': []})
             timeline = Timeline.objects.create(
                 created_by=request.user,
                 timeline=validate_and_normalize_timeline({
                     "title": "",
                     "author": "Imported from H2O",
                     "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
+                    "stats": [case_stats, event_stats],
+                    "first_year": first_year,
+                    "last_year": last_year,
                     "cases": timeline_cases,
                     "events": [],
                     "categories": []
@@ -313,6 +325,7 @@ def get_citation(obj, cases=None):
 def get_case(case, use_original_urls=False):
     # getting cases from CAP because we need to find dates
     capapi_url = api_url('cases-list') + "?cite=%s" % case['citations'][0]
+    capapi_url = "https://api.case.law/v1/cases" + "?cite=%s" % case['citations'][0]
     case_found = requests.get(capapi_url)
     if case_found.status_code == 200:
         case_json = case_found.json()['results']
@@ -330,5 +343,56 @@ def get_case(case, use_original_urls=False):
             # didn't find case, returning H2O case object for
             # error reporting on the frontend
             return case
+
+
+def get_timeline_stats(timeline):
+    # need matrix, essentially
+    # start with two rows, cases and events
+    # start by displaying all cases and events
+    event_stats = []
+    case_stats = []
+    first_year = 9999999
+    last_year = 0
+    gathered_case_dates = {}
+    gathered_event_dates = {}
+
+    for case in timeline['cases']:
+        year = int(case['decision_date'].split('-')[0])
+        if year < first_year:
+            first_year = year
+        if year > last_year:
+            last_year = year
+
+        if year in gathered_case_dates:
+            gathered_case_dates[year] += 1
+        else:
+            gathered_case_dates[year] = 1
+
+    for event in timeline['events']:
+        start_year = int(event['start_date'].split('-')[0])
+        end_year = int(event['end_date'].split('-')[0])
+        first_year = start_year if start_year < first_year else first_year
+        last_year = end_year if end_year > last_year else last_year
+        year = start_year
+        while year < end_year + 1:
+            if year in gathered_event_dates:
+                gathered_event_dates[year] += 1
+            else:
+                gathered_event_dates[year] = 1
+            year += 1
+
+    year = first_year
+    while year < last_year + 1:
+        if year in gathered_case_dates:
+            case_stats.append(gathered_case_dates[year])
+        else:
+            case_stats.append(0)
+        if year in gathered_event_dates:
+            event_stats.append(gathered_event_dates[year])
+        else:
+            event_stats.append(0)
+        year += 1
+
+    return first_year, last_year, case_stats, event_stats
 
 # # # # END CHRONOLAWGIC # # # #

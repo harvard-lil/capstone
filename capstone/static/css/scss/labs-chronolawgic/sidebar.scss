@@ -1,0 +1,13 @@
+.sidebar {
+  position: fixed;
+  left: -25rem;
+  height: 100%;
+  border-right: 1px solid $color-black;
+  transition: all 0.5s;
+  background-color: $color-white;
+  &.expanded {
+    left: 0;
+    transition: all 0.5s;
+    width: 25rem;
+  }
+}

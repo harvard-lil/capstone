@@ -90,6 +90,9 @@ const store = new Vuex.Store({
         categories: [],
         events: [],
         cases: [],
+        stats: [],
+        firstYear: 1900,
+        lastYear: 2000,
         templateEvent: {
             name: "",
             short_description: "",
@@ -152,6 +155,18 @@ const store = new Vuex.Store({
         },
         setCategories(state, categories) {
             state.categories = categories;
+        },
+        setStats(state, stats) {
+            console.log('setting stats:', stats)
+            state.stats = stats;
+        },
+        setFirstYear(state, year) {
+            state.firstYear = year;
+            console.log('setting firstyear', state.firstYear)
+        },
+        setLastYear(state, year) {
+            state.lastYear = year;
+            console.log('setting lastyear', state.lastYear)
         },
         setRequestStatus(state, status) {
             state.requestStatus = status;
@@ -254,35 +269,11 @@ const store = new Vuex.Store({
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
         },
         firstYear: (state) => {
-            if (state.cases.length === 0 && state.events.length === 0) {
-                return 0
-            }
-            let first_case_year = 9999999;
-            let first_event_year = 9999999;
-            if (state.events.length) {
-                first_event_year = state.events.reduce((min, e) =>
-                    new Date(e.start_date).getUTCFullYear() < min ? new Date(e.start_date).getUTCFullYear() : min, new Date(state.events[0].start_date).getUTCFullYear());
-            }
-            if (state.cases.length) {
-                first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getUTCFullYear() < min ? new Date(c.decision_date).getUTCFullYear() : min, new Date(state.cases[0].decision_date).getUTCFullYear());
-            }
-            return first_case_year < first_event_year ? first_case_year : first_event_year;
+            return state.firstYear;
         },
+
         lastYear: (state) => {
-            if (state.cases.length === 0 && state.events.length === 0) {
-                return 0
-            }
-            let last_event_year = 0
-            let last_case_year = 0
-            if (state.events.length) {
-                last_event_year = state.events.reduce((max, e) =>
-                    new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
-            }
-            if (state.cases.length) {
-                last_case_year = state.cases.reduce((max, e) =>
-                    new Date(e.decision_date).getUTCFullYear() > max ? new Date(e.decision_date).getUTCFullYear() : max, new Date(state.cases[0].decision_date).getUTCFullYear());
-            }
-            return last_case_year > last_event_year ? last_case_year : last_event_year;
+            return state.lastYear;
         },
         events: (state) => {
             return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
@@ -315,6 +306,9 @@ const store = new Vuex.Store({
         randomColor: (state) => {
             return state.colors[Math.floor(Math.random() * state.colors.length)]
         },
+        stats: (state) => {
+            return state.stats;
+        }
     },
     actions: {
         requestCreateTimeline: function ({commit}) {
@@ -393,6 +387,9 @@ const store = new Vuex.Store({
                         commit('setTimeline', timeline['timeline'])
                         commit('setCreatedBy', timeline['created_by'])
                         commit('setAuthor', timeline['is_owner'])
+                        commit('setStats', timeline['stats'])
+                        commit('setFirstYear', timeline['first_year'])
+                        commit('setLastYear', timeline['last_year'])
                     }
                 }).then(
                 () => {
