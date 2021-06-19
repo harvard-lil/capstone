@@ -296,25 +296,27 @@ main#main-app {
     min-height: 2rem;
     background-color: $color-white;
 
+    // button to toggle sidebar
     .sidebar-toggle {
       grid-area: sidebar-toggle;
       z-index: 9999;
-      position: absolute;
+      position: fixed;
       transition: all 0.5s;
-      left: 0;
       height: 2em;
       padding: 0;
       margin-top: 1em;
       background-color: $color-white;
       border: 1px solid $color-black;
       border-left: 0;
+      left: 0;
 
       &:hover, &:focus, &:active {
         background-color: $highlight;
       }
-
+      // sidebar shown
       &.sidebar {
         transition: all 0.5s;
+        left: 25rem;
 
         svg {
           transition: all 0.5s;
