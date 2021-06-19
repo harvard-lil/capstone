@@ -180,19 +180,15 @@ export default {
         use_original_urls: this.useOriginalURLs
       }
       this.showLoading = true;
-      store.dispatch('requestCreateH2OTimeline', h2oData).then((response) => {
-        this.showLoading = false
-        if (response.status === 'ok') {
-          console.log('committing missing cases\n', response.missing_cases)
-          this.$store.commit('setMissingCases', response.missing_cases);
-        }
-      });
+      store.dispatch('requestCreateH2OTimeline', h2oData)
+          .then((response) => {
+            this.showLoading = false
+            if (response.status === 'ok') {
+              this.$store.commit('setMissingCases', response.missing_cases);
+            }
+          });
     }
   },
-  mounted() {
-    // clear missing cases on each dashboard viewing
-    this.$store.commit('setMissingCases', []);
-  }
 };
 </script>
 

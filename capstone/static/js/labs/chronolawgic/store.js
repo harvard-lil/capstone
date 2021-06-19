@@ -158,16 +158,13 @@ const store = new Vuex.Store({
             state.categories = categories;
         },
         setStats(state, stats) {
-            console.log('setting stats:', stats)
             state.stats = stats;
         },
         setFirstYear(state, year) {
             state.firstYear = year;
-            console.log('setting firstyear', state.firstYear)
         },
         setLastYear(state, year) {
             state.lastYear = year;
-            console.log('setting lastyear', state.lastYear)
         },
         setRequestStatus(state, status) {
             state.requestStatus = status;

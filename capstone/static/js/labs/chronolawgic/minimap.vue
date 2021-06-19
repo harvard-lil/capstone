@@ -52,7 +52,6 @@ export default {
     fillChartData() {
       let firstYear = this.$store.getters.firstYear ? this.$store.getters.firstYear : 1900
       let lastYear = this.$store.getters.lastYear ? this.$store.getters.lastYear : 2000;
-      console.log('fillChartData', firstYear, lastYear)
       this.chartData = {
         labels: Array.from(new Array(lastYear + 1 - firstYear), (x, i) => firstYear + i),
         datasets: [
@@ -74,18 +73,10 @@ export default {
           },
         ]
       }
-      console.log('bar-chart::::chartData', this.chartData)
     }
   },
   mounted() {
     this.fillChartData();
   },
-  beforeMount() {
-    console.log(this.$store.getters.stats)
-    // let lastYear = this.$store.getters.stats[0]
-    // let firstYear = this.$store.getters.stats[1]
-
-    console.log(this.chartData)
-  }
 }
 </script>
