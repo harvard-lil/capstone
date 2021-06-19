@@ -192,12 +192,18 @@ label {
 
 
 
-.reset-field {
+.reset-field, .reset-field-instance {
   font-family: $font-family-sans-serif;
   text-align: right;
   padding-right: 0;
   color: $color-medium-blue;
   background-color: transparent;
+}
+
+.reset-field-instance {
+  svg {
+    transform: scale(.7);
+  }
 }
 
 .dropdown {
@@ -208,13 +214,15 @@ label.dropdown-label {
   display: none;
 }
 
+.v-select:not(.vs--open) .vs__dropdown-toggle .vs__selected-options .vs__selected + input {
+  position: absolute;
+}
+
 .v-select {
   width: 100%;
   padding: 0;
   min-height: 2rem;
-  .vs__selected + .vs__search {
-    display: none;
-  }
+
   .vs__dropdown-toggle {
     background-color: $color-white;
     border: 1px solid $color-search-gray-light;
@@ -379,27 +387,89 @@ label.dropdown-label {
       background-color: transparent;
     }
   }
+  .field-choices {
+    display: flex;
+    flex-wrap: wrap;
+    .chosen-field {
+      display: flex;
+      flex-wrap: nowrap;
+      height: 2em;
+      &:hover, &:active, &:focus {
+        height: unset;
+        min-height: 2em;
+        .chosen-field-instance {
+          .reset-field-instance {
+            padding-top: .2rem;
+            display: flex;
+            align-items: start;
+            cursor: pointer;
+          }
+        }
+      }
 
-  .chosen-field {
-    background-color: $color-search-gray-light;
-    color: $color-violet-gray-dark;
-    border-radius: 2em;
-    padding: 0.1em 0.4em;
-    font-size: 0.7em;
-    font-weight: $font-weight-semibold;
-    cursor: pointer;
-    margin-bottom: 0.5em;
+      .chosen_field_label, .chosen-field-instance {
+        display: flex;
+        flex-wrap: nowrap;
 
-
-    &:hover, &:active, &:focus {
-      color: $color-search-gray-light;
-      background-color: $color-violet-gray-dark;
-
-      .close-icon {
-        fill: $color-white;
+        color: $color-violet-gray-dark;
+        padding: 0.1em 0.4em;
+        font-size: 0.7em;
+        font-weight: $font-weight-black;
+        margin-bottom: 0.5em;
+      }
+      .chosen_field_label {
+        background-color: $color-search-gray-light;
+        border-radius: 1em 0 0 1em;
+        justify-content: right;
+      }
+      .chosen-field-instance:last-of-type {
+        border-radius: 0 1em 1em 0;
+        border: 0;
+      }
+      .chosen-field-instance {
+        background-color: $color-search-gray-light;
+        margin-right: 0;
+        border-right: .125em solid $color-white;
+        .chosen-field-instance-value {
+          font-weight: $font-weight-normal;
+          max-width: 7rem;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        .chosen-field-instance-value.expanded {
+          max-width: unset;
+        }
+        .reset-field-instance {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+        }
+        &:hover, &:active, &:focus {
+          color: $color-light-gray;
+          background-color: $color-violet-gray-dark;
+          .chosen-field-instance-value {
+            max-width: 30rem;
+            text-overflow: ellipsis;
+            overflow: visible;
+            white-space: normal;
+          }
+          .close-icon {
+            fill: $color-white;
+          }
+          .reset-field-instance {
+            cursor: pointer;
+          }
+        }
+      }
+      .firstMulti {
+        border-left: .125em solid $color-white;
       }
     }
+
+
   }
+
 }
 
 .results-loading-container {
@@ -505,6 +575,14 @@ label.dropdown-label {
     content: '?';
   }
   .text-break > .api_url_segment ~ .api_url_segment:before {
+    content: '&';
+  }
+
+  .api_url_segment > .api_url_instance_segment {
+    content: '';
+  }
+
+  .api_url_segment > .api_url_instance_segment ~ .api_url_instance_segment:before {
     content: '&';
   }
 

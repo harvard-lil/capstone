@@ -12,9 +12,17 @@ export function isScrolledIntoView(elem) {
   return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
 }
 
-export function encodeQueryData(data) {
+export function encodeQueryData(data, split_arrays=false) {
   /* encodes data as a query parameter string */
   const searchParams = new URLSearchParams();
-  Object.keys(data).forEach(key => searchParams.append(key, data[key]));
+  Object.keys(data).forEach(key => {
+    if (split_arrays && Array.isArray(data[key])) {
+       data[key].forEach(value => {
+         searchParams.append(key, value)
+       })
+    } else {
+      searchParams.append(key, data[key])
+    }
+  });
   return searchParams.toString();
 }

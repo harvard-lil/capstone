@@ -15,11 +15,30 @@
         <div class="row">
 
           <ul class="col-9 list-inline field-choices">
-            <li v-for="field in $store.getters.populated_fields_during_search" :key="'chosen' + field.name" class="list-inline-item field chosen-field">
-              {{ field.label }}: {{ field.value_when_searched }}
-              <span class="reset-field" @click="$store.commit('clearFieldandSearch', field.name)">
-                <close-icon class="close-icon"></close-icon>
-              </span>
+            <li class="list-inline-item field chosen-field" v-for="field in $store.getters.populated_fields_during_search" :key="'chosen' + field.name" :class="{'multiselect' : 'Array.isArray(field.value)'}">
+              <div class="chosen_field_label">{{ field.label }}:</div>
+              <template v-if="Array.isArray(field.value)">
+                  <div v-for="(field_instance, index)  in field.value" :key="'chosen_field_instance' + field.name + field_instance"
+                  class="list-inline-item field chosen-field-instance" :class="{'firstMulti': index === 0}">
+                    <div class="chosen-field-instance-value">
+                      {{  $store.getters.getLabelForChoice(field.name, field_instance) }}
+                    </div>
+                    <div class="reset-field-instance"
+                      @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
+                      <close-icon class="close-icon"></close-icon>
+                    </div>
+                  </div>
+              </template>
+              <template v-else>
+                <div class="list-inline-item field chosen-field-instance">
+                  <div class="chosen-field-instance-value">
+                    {{ field.value_when_searched }}
+                  </div>
+                  <div class="reset-field-instance" @click="$store.commit('clearFieldandSearch', field.name)">
+                    <close-icon class="close-icon"></close-icon>
+                  </div>
+                </div>
+              </template>
             </li>
           </ul>
 
@@ -127,7 +146,6 @@ import FieldItem from './field-item';
 export default {
   data: function () {
     return {
-      selected_fields: [],
       toggle_download_options: false,
     }
   },

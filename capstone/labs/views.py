@@ -134,6 +134,7 @@ def chronolawgic_api_create(request):
             timeline=validate_and_normalize_timeline({
                 "title": "",
                 "author": "",
+                "description": "",
                 "cases": [],
                 "events": [],
                 "categories": []
