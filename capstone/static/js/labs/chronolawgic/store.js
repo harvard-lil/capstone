@@ -119,7 +119,7 @@ const store = new Vuex.Store({
             shape: "",
             color: ""
         },
-        missingCases: []
+        missingCases: {}
     },
     mutations: {
         expandMobileEvents(state) {
@@ -267,11 +267,11 @@ const store = new Vuex.Store({
             if (state.requestStatus === 'pending') {
                 return 'pending'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
-                !Object.prototype.hasOwnProperty.call(state, 'events') ) {
+                !Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return 'empty'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return state.cases.length === 0 ? 'empty' : 'populated'
-            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases') ) {
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases')) {
                 return state.events.length === 0 ? 'empty' : 'populated'
             }
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';

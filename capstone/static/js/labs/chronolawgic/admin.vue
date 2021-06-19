@@ -184,7 +184,10 @@ export default {
           .then((response) => {
             this.showLoading = false
             if (response.status === 'ok') {
-              this.$store.commit('setMissingCases', response.missing_cases);
+              this.$store.commit('setMissingCases', {
+                cases: response.missing_cases,
+                id: response.id
+              });
             }
           });
     }

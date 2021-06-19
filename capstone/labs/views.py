@@ -295,7 +295,7 @@ def h2o_import(request):
                 })
             )
             timeline.save()
-            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline, 'missing_cases': missing_cases})
+            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline, 'id': timeline.uuid, 'missing_cases': missing_cases})
         else:
             return JsonResponse({'status': 'err', 'reason': ''}, status=resp.status_code)
     except Exception as e:
