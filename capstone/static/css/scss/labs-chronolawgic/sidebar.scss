@@ -15,6 +15,17 @@
     width: 25rem;
   }
 
+  .sidebar-content {
+    .h2o-error-container {
+      height: 11.5rem;
+      overflow-y: scroll;
+      border: 1px solid black;
+      padding: 0.5em;
+      font-size: 0.7em;
+      line-height: 1.5em;
+    }
+  }
+
   svg {
     margin-top: -0.5em;
   }
@@ -40,6 +51,8 @@
       border: 1px solid lightgray;
     }
   }
+
+
 }
 
 @include media-breakpoint-down(sm) {

@@ -346,9 +346,6 @@ def get_case(case, use_original_urls=False):
 
 
 def get_timeline_stats(timeline):
-    # need matrix, essentially
-    # start with two rows, cases and events
-    # start by displaying all cases and events
     event_stats = []
     case_stats = []
     first_year = 9999999

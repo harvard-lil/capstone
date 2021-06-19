@@ -119,6 +119,7 @@ const store = new Vuex.Store({
             shape: "",
             color: ""
         },
+        missingCases: []
     },
     mutations: {
         expandMobileEvents(state) {
@@ -245,6 +246,9 @@ const store = new Vuex.Store({
             }
             this.dispatch('requestUpdateTimeline');
         },
+        setMissingCases(state, missingCases) {
+            state.missingCases = missingCases;
+        }
     },
     getters: {
         breakPoint: state => state.breakPoint,
@@ -316,6 +320,9 @@ const store = new Vuex.Store({
         },
         stats: (state) => {
             return state.stats;
+        },
+        missingCases: (state) => {
+            return state.missingCases;
         }
     },
     actions: {
