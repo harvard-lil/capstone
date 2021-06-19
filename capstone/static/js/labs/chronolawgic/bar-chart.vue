@@ -1,6 +1,6 @@
 <script>
 import {Bar, mixins} from 'vue-chartjs'
-
+import { EventBus } from "./event-bus";
 
 export default {
   name: "BarChart",
@@ -8,27 +8,20 @@ export default {
   mixins: [mixins.reactiveProp],
   watch: {
     firstYear() {
-      console.log('watch, firstYear', this.firstYear)
       this.$parent.fillChartData();
-      // return this.firstYear;
     },
     lastYear() {
-      console.log('watch, lastyear', this.lastYear)
       this.$parent.fillChartData();
-      // return this.lastYear;
     },
     chartData: function () {
-      console.log('bar-chart.vue, watching chartData')
       this.renderChart(this.chartData, this.options);
     }
   },
   computed: {
     firstYear() {
-      // console.log('computed', this.$store.getters.firstYear)
       return this.$store.getters.firstYear;
     },
     lastYear() {
-      // console.log('computed', this.$store.getters.lastYear)
       return this.$store.getters.lastYear;
     }
   },
@@ -39,6 +32,17 @@ export default {
         legend: {
           position: 'bottom',
         },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Custom Chart Title',
+            padding: {
+              top: 10,
+              bottom: 30
+            }
+          }
+        },
+        onClick: this.handleClick,
         animation: {
           duration: 0 // disable animation
         },
@@ -53,6 +57,7 @@ export default {
               display: true,
               stacked: true,
               ticks: {
+                autoSkipPadding: 2,
                 beginAtZero: true,
               },
               barThickness: 2,
@@ -91,41 +96,16 @@ export default {
   },
 
   methods: {
-    createMapSegments() {
-      let segments = 8;
-      if (this.lastYear > this.firstYear) {
-        let difference = this.lastYear - this.firstYear;
-        let segmentsLength = difference / segments;
-        console.log(segmentsLength)
-        this.minimapSegments = Array(segments).fill({size: 0})
-        // console.log('this.minimapSegments', this.minimapSegments)
-
-      }
-    },
-    getRandomInt() {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5
-    },
-
-    // fillData() {
-    //
-    // }
-
-  },
-  beforeMount() {
-    // this.addPlugin(horizonalLinePlugin)
+    handleClick(evt, array) {
+       if (array.length) {
+            let position = array[0]._index;
+            let activeElement = this.chartData.labels[position]
+            EventBus.$emit('goToYear', activeElement)
+       }
+    }
   },
   afterMount() {
     this.renderChart(this.chartData, this.options)
-    // this.fillChartData();
-    // console.log('mounted')
-    // const firstYear = this.$store.getters.firstYear;
-    // const finalYear = this.$store.getters.lastYear;
-    //
-    // this.fillData()
-    // setInterval(() => {
-    //   this.fillData()
-    // }, 5000)
-    //   console.log("mounted", this.firstYear, this.lastYear)
   }
 }
 </script>

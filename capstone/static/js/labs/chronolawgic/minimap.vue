@@ -1,6 +1,7 @@
 <template>
-  <div class="container">
-    <div class="Chart">
+  <div class="chart-container">
+    <h6>Timeline overview</h6>
+    <div class="chart">
       <bar-chart :chartData="chartData" options="options" :width="100" :height="150"/>
     </div>
   </div>
@@ -65,7 +66,7 @@ export default {
           {
             label: 'Events',
             pointRadius: 0,
-            backgroundColor: '#3D5B96',
+            backgroundColor: '#000000',
             tension: 0.1,
             borderWidth: 0,
             data: this.$store.getters.stats[1]
@@ -75,7 +76,9 @@ export default {
       console.log('bar-chart::::chartData', this.chartData)
     }
   },
-
+  mounted() {
+    this.fillChartData();
+  },
   beforeMount() {
     console.log(this.$store.getters.stats)
     // let lastYear = this.$store.getters.stats[0]
@@ -85,16 +88,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.Chart {
-  padding: 20px;
-  margin: 50px 0;
-  border: 1px solid gray;
-}
-</style>
