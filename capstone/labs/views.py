@@ -325,7 +325,8 @@ def get_citation(obj, cases=None):
 
 def get_case(case, use_original_urls=False):
     # getting cases from CAP because we need to find dates
-    capapi_url = api_url('cases-list') + "?cite=%s" % case['citations'][0]
+    capapi_url = "https://api.case.law/v1/cases" + "?cite=%s" % case['citations'][0]
+    # capapi_url = api_url('cases-list') + "?cite=%s" % case['citations'][0]
     case_found = requests.get(capapi_url)
     if case_found.status_code == 200:
         case_json = case_found.json()['results']
@@ -353,12 +354,13 @@ def get_timeline_stats(timeline):
     gathered_case_dates = {}
     gathered_event_dates = {}
 
+    def get_year(datestring):
+        return int(datestring.split('-')[0])
+
     for case in timeline['cases']:
-        year = int(case['decision_date'].split('-')[0])
-        if year < first_year:
-            first_year = year
-        if year > last_year:
-            last_year = year
+        year = get_year(case['decision_date'])
+        first_year = year if year < first_year else first_year
+        last_year = year if year > last_year else last_year
 
         if year in gathered_case_dates:
             gathered_case_dates[year] += 1
@@ -366,8 +368,8 @@ def get_timeline_stats(timeline):
             gathered_case_dates[year] = 1
 
     for event in timeline['events']:
-        start_year = int(event['start_date'].split('-')[0])
-        end_year = int(event['end_date'].split('-')[0])
+        start_year = get_year(event['start_date'])
+        end_year = get_year(event['end_date'])
         first_year = start_year if start_year < first_year else first_year
         last_year = end_year if end_year > last_year else last_year
         year = start_year

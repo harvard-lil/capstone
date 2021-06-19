@@ -7,7 +7,6 @@
     <p class="small">Click on chart to travel to date</p>
   </div>
 </template>
-
 <script>
 import BarChart from './bar-chart';
 
