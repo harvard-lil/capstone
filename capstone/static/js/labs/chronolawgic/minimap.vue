@@ -4,6 +4,7 @@
     <div class="chart">
       <bar-chart :chartData="chartData" options="options" :width="100" :height="150"/>
     </div>
+    <p class="small">Click on chart to travel to date</p>
   </div>
 </template>
 

@@ -4,10 +4,46 @@
   height: 100%;
   border-right: 1px solid $color-black;
   transition: all 0.5s;
-  background-color: $color-white;
+  font-family: $font-sans-serif;
+  padding: 1em;
+  background-color: $color-light-gray;
+
+
   &.expanded {
     left: 0;
     transition: all 0.5s;
     width: 25rem;
+  }
+
+  svg {
+    margin-top: -0.5em;
+  }
+
+  .chart-container {
+    margin-top: 1em;
+
+    h6 {
+      margin: 0 1em 0.2em 1em;
+      text-align: center;
+    }
+
+    .small {
+      font-size: 0.6em;
+      margin: 0;
+      font-style: italic;
+      text-align: center;
+    }
+
+    .chart {
+      padding: 20px;
+      background-color: $color-white;
+      border: 1px solid lightgray;
+    }
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .sidebar {
+    display: none;
   }
 }

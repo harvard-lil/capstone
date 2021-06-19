@@ -4,22 +4,21 @@
     <div class="container-full">
       <div class="row">
         <sidebar :class="{'expanded': sidebarShown}"></sidebar>
-        <button class="sidebar-toggle" :class="{'sidebar': sidebarShown}" @click="sidebarShown = !sidebarShown">
-          <chevron-right></chevron-right>
-        </button>
         <div id="timeline" :class="{'expanded': !sidebarShown}">
 
           <div class="top-menu">
+            <button class="sidebar-toggle" role=”button”
+                    :class="{'sidebar': sidebarShown}"
+                    @click="sidebarShown = !sidebarShown">
+              <chevron-right/>
+            </button>
+
             <header :class="{ 'header-section': true, 'title': true, 'expanded': headerExpanded}">
               <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
               <div id="timeline-author">By {{ $store.state.author }}</div>
+
               <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description"
                    @click="toggleHeader()"></div>
-              <div class="my-timelines-link" v-if="$store.state.isAuthor">
-                <router-link to="/" class="btn btn-tertiary">
-                  BACK TO MY TIMELINES
-                </router-link>
-              </div>
             </header>
             <div class="header-section years"></div>
             <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
@@ -170,7 +169,7 @@ export default {
       years: {},
       event: null,
       windowWidth: window.innerWidth,
-      sidebarShown: false
+      sidebarShown: true
     }
   },
   watch: {
