@@ -279,7 +279,6 @@ const store = new Vuex.Store({
         firstYear: (state) => {
             return state.firstYear;
         },
-
         lastYear: (state) => {
             return state.lastYear;
         },
@@ -373,7 +372,12 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(
-                    () => {
+                    (timeline) => {
+
+                        commit('setStats', timeline['stats'])
+                        commit('setFirstYear', timeline['first_year'])
+                        commit('setLastYear', timeline['last_year'])
+
                         commit('setRequestStatusTerminal', 'success');
                         commit('setNotificationMessage', "Timeline Saved")
                     }

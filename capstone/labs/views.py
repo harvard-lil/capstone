@@ -187,7 +187,16 @@ def chronolawgic_api_update(request, timeline_uuid):
              'details': "Timeline Validation Errors: {}".format(e)
              }, status=400)
 
-    # fixing a bug where an out-of-sync timeine in the user's browser clobbered an entire timeline.
+    # removing often-changing metadata fields from differ
+    incoming_timeline.pop('first_year', None)
+    incoming_timeline.pop('last_year', None)
+    incoming_timeline.pop('stats', None)
+
+    existing_timeline.pop('first_year', None)
+    existing_timeline.pop('last_year', None)
+    existing_timeline.pop('stats', None)
+
+    # fixing a bug where an out-of-sync timeline in the user's browser clobbered an entire timeline.
     number_of_items_modified = len(
         set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(existing_timeline, incoming_timeline)
              if thing[0] != 'remove']
