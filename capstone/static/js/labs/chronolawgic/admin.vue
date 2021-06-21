@@ -124,9 +124,9 @@
     </section>
     <section class="not-logged-in" v-else>
       Welcome! To create Chronolawgic timelines, you must
-      <a href="../../../user/login">log in</a> to your Caselaw Access Project account.
+      <a :href="'../../../user/login?next='+currentLocation">log in</a> to your Caselaw Access Project account.
       For more information on Chronolawgic,
-      <a href="../">click here</a>.
+      <a href="../../">click here</a>.
     </section>
     <br/>
   </main>
@@ -151,6 +151,8 @@ export default {
       h2oURL: '',
       useOriginalURLs: false,
       showLoading: false,
+      missingCases: [],
+      currentLocation: '',
     }
   },
   methods: {
@@ -192,6 +194,9 @@ export default {
           });
     }
   },
+  beforeMount() {
+    this.currentLocation = window.location.toString();
+  }
 };
 </script>
 
