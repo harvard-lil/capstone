@@ -1,5 +1,6 @@
 import pytest
 import copy
+from bs4 import BeautifulSoup
 from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
 from labs.models import Timeline
@@ -34,9 +35,18 @@ complete_timeline = {"title": "My first timeline", "author": "CAP User", "descri
 
 @pytest.mark.django_db(databases=['default', 'capdb'])
 def test_show_timelines(client, auth_client):
-    response = client.get(reverse('labs:chronolawgic-dashboard'))
     # check to see it includes api urls since everything else is rendered in Vue
+    response = client.get(reverse('labs:chronolawgic-dashboard'))
     check_response(response, content_includes="chronolawgic_api_create")
+    soup = BeautifulSoup(response.content.decode(), 'html.parser')
+    links = soup.find_all('a')
+    login_link = None
+    for link in links:
+        if 'login/' in link.get('href'):
+            login_link = link
+            break
+    assert login_link.get('href').split('?next=')[1] == reverse('labs:chronolawgic-dashboard')
+    assert login_link and login_link.text.strip() == 'Log in'
 
 
 @pytest.mark.django_db(databases=['default'])
