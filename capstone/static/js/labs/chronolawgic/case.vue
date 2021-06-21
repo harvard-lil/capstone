@@ -82,9 +82,6 @@ export default {
     closeModal() {
       EventBus.$emit('closeModal')
     },
-    repopulateTimeline() {
-      this.$parent.repopulateTimeline();
-    },
     hydrateCategories() {
       this.categories = [];
       for (let i = 0; i < this.case_data.categories.length; i++) {

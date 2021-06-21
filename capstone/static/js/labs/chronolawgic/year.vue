@@ -82,9 +82,6 @@ export default {
     }
   },
   methods: {
-    repopulateTimeline() {
-      this.$parent.repopulateTimeline();
-    },
     clearPreviewEvent() {
       this.event = null;
     },

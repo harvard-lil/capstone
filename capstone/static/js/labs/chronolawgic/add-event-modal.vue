@@ -146,7 +146,6 @@ export default {
     },
     closeModal() {
       this.$parent.closeModal();
-      this.$parent.repopulateTimeline();
       this.setupEvent();
     },
     addEvent() {

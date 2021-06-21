@@ -187,7 +187,16 @@ def chronolawgic_api_update(request, timeline_uuid):
              'details': "Timeline Validation Errors: {}".format(e)
              }, status=400)
 
-    # fixing a bug where an out-of-sync timeine in the user's browser clobbered an entire timeline.
+    # removing often-changing metadata fields from differ
+    incoming_timeline.pop('first_year', None)
+    incoming_timeline.pop('last_year', None)
+    incoming_timeline.pop('stats', None)
+
+    existing_timeline.pop('first_year', None)
+    existing_timeline.pop('last_year', None)
+    existing_timeline.pop('stats', None)
+
+    # fixing a bug where an out-of-sync timeline in the user's browser clobbered an entire timeline.
     number_of_items_modified = len(
         set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(existing_timeline, incoming_timeline)
              if thing[0] != 'remove']
@@ -353,12 +362,13 @@ def get_timeline_stats(timeline):
     gathered_case_dates = {}
     gathered_event_dates = {}
 
+    def get_year(datestring):
+        return int(datestring.split('-')[0])
+
     for case in timeline['cases']:
-        year = int(case['decision_date'].split('-')[0])
-        if year < first_year:
-            first_year = year
-        if year > last_year:
-            last_year = year
+        year = get_year(case['decision_date'])
+        first_year = year if year < first_year else first_year
+        last_year = year if year > last_year else last_year
 
         if year in gathered_case_dates:
             gathered_case_dates[year] += 1
@@ -366,8 +376,8 @@ def get_timeline_stats(timeline):
             gathered_case_dates[year] = 1
 
     for event in timeline['events']:
-        start_year = int(event['start_date'].split('-')[0])
-        end_year = int(event['end_date'].split('-')[0])
+        start_year = get_year(event['start_date'])
+        end_year = get_year(event['end_date'])
         first_year = start_year if start_year < first_year else first_year
         last_year = end_year if end_year > last_year else last_year
         year = start_year
