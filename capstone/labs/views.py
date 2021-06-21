@@ -334,8 +334,7 @@ def get_citation(obj, cases=None):
 
 def get_case(case, use_original_urls=False):
     # getting cases from CAP because we need to find dates
-    capapi_url = "https://api.case.law/v1/cases" + "?cite=%s" % case['citations'][0]
-    # capapi_url = api_url('cases-list') + "?cite=%s" % case['citations'][0]
+    capapi_url = api_url('cases-list') + "?cite=%s" % case['citations'][0]
     case_found = requests.get(capapi_url)
     if case_found.status_code == 200:
         case_json = case_found.json()['results']
