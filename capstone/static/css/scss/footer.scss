@@ -19,7 +19,7 @@ first, and then having styling/padding/spacing/etc below it in a separate sectio
 I think this separation of concerns will make it easier to understand how our layouts work
 at a glance, promote defining a proper layout that accomplishes your broad stroke goals
 before diving into details and find adjustments, and makes it easier to see the implications
-of overly broad fine adjustments... Is it breaking the actualy layout, or do things just
+of overly broad fine adjustments... Is it breaking the actual layout, or do things just
 need to be shifted around a little? I also think it promotes more modular components rather
 than having each element be entirely in an island unto itself. I do think it will make
 hacks a little more difficult, but hopefully, it'll make them a lot less necessary.
@@ -164,6 +164,7 @@ style & fine spacing adjustments only-- grid layout above */
 
 footer {
   /* resets */
+  z-index: 1;
   section {
     padding: 0;
   }

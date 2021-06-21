@@ -12,4 +12,4 @@ A legal timeline tool, allowing CAP users to plot caselaw alongside other
 events chrono(law)gically. Plot caselaw alongside other events to understand the progression of U.S. caselaw.
 Must have an account in order to set up a timeline (create an account [here]({% url 'register' %})).
 
-[Read about Chronolawgic]({% url "labs:chronolawgic" %}) or dive in by [creating a new timeline]({% url "labs:chronolawgic-dashboard" %})!
+Dive in by [creating a new timeline]({% url "labs:chronolawgic-dashboard" %})!
