@@ -1,14 +1,19 @@
 <template>
   <div class="sidebar" id="timeline-meta">
-    <div class="sidebar-content">
-      <div class="small font-italic text-center">
+    <div class="sidebar-content text-center">
+      <div class="small font-italic">
         <router-link to="/">
           <arrow-left-circle/>
         </router-link>
         Built using Chronolawgic: a legal timeline tool
       </div>
       <minimap></minimap>
-      <div class='h2o-error-container' v-if="this.$store.state.isAuthor && this.id === this.missingCases.id && this.missingCases.cases">
+      <br/>
+      <a class="btn btn-primary btn-download" @click="download()">Download timeline JSON
+        <download-icon></download-icon>
+      </a>
+      <div class='h2o-error-container'
+           v-if="this.$store.state.isAuthor && this.id === this.missingCases.id && this.missingCases.cases">
         <b>Please be sure to double-check the imported cases for accuracy.</b><br/>
         <b>We couldn't find some cases. This can happen if the citation is wrong or is outside of the bounds of CAP
           data.</b>
@@ -28,12 +33,14 @@
 <script>
 import Minimap from './minimap';
 import ArrowLeftCircle from '../../../../static/img/icons/arrow-left-circle.svg';
+import DownloadIcon from '../../../../static/img/icons/download.svg';
 
 export default {
   name: "Sidebar",
   components: {
     Minimap,
     ArrowLeftCircle,
+    DownloadIcon,
   },
   computed: {
     missingCases() {
@@ -51,5 +58,23 @@ export default {
       this.$store.getters.id;
     }
   },
+  methods: {
+    download() {
+      // allow for json downloading
+      // todo: include CSV option
+      let timeline = this.$store.getters.timeline;
+      let filename = encodeURIComponent(timeline.title + '.json');
+      let element = document.createElement('a');
+
+      element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(timeline)));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+      document.body.removeChild(element);
+    }
+  }
 }
 </script>

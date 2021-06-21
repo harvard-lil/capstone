@@ -23,6 +23,8 @@
       padding: 0.5em;
       font-size: 0.7em;
       line-height: 1.5em;
+      margin-top: 1em;
+      text-align: left;
     }
   }
 
@@ -51,7 +53,9 @@
       border: 1px solid lightgray;
     }
   }
-
+  .btn-download {
+    font-size: 0.7em;
+  }
 
 }
 

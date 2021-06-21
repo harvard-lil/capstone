@@ -6,7 +6,7 @@
     </div>
 
     <section id="timeline" v-if="this.$store.state.user.is_authenticated === 'True'">
-      <h6 class="timelines-title">Add a new timeline</h6>
+      <h6 v-if="this.$store.getters.availableTimelines.length" class="timelines-title">Add a new timeline</h6>
       <template v-if="!this.$store.getters.availableTimelines.length">
         <p class="welcome">
           Welcome to Chronolawgic, the Caselaw Access Project tool for creating caselaw-focused timelines. To
@@ -22,7 +22,7 @@
         <br/>
         <div class="h2o-import-container">
           <span>Or pre-populate a timeline from <a href="https://opencasebook.org">H2O</a></span>
-          <input v-model="h2oURL" class="form-control" placeholder="Copy paste casebook.org URL here">
+          <input v-model="h2oURL" class="form-control" placeholder="Copy paste opencasebook.org URL here">
 
           <label for="useOriginalUrls"> Use original H2O URLs</label>&nbsp;
           <input v-model="useOriginalURLs" type="checkbox" id="useOriginalUrls" name="useOriginalUrls"
@@ -151,7 +151,6 @@ export default {
       h2oURL: '',
       useOriginalURLs: false,
       showLoading: false,
-      missingCases: [],
       currentLocation: '',
     }
   },
