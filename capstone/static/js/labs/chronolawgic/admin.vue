@@ -39,15 +39,6 @@
                 id="loading-focus"
                 class="sr-only"
                 tabindex="-1">Loading</span>
-          <div class='h2o-error-container' v-if="this.missingCases.length">
-            Timeline created successfully (see first timeline in the list).<br/>However, there were some cases we could not locate:<br/>
-            <ul>
-              <li v-for="(c, idx) in this.missingCases" v-bind:key="idx">
-                <a :href="'https://opencasebook.org' + c.original_url"><b>{{ c.name }}</b></a>&nbsp;
-                <i>{{ c.citations[0] }}</i>
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
       <template v-if="this.$store.getters.availableTimelines.length">
@@ -186,18 +177,21 @@ export default {
       }
     },
     addH2OTimeline() {
-      this.missingCases = [];
       let h2oData = {
         url: this.h2oURL,
         use_original_urls: this.useOriginalURLs
       }
       this.showLoading = true;
-      store.dispatch('requestCreateH2OTimeline', h2oData).then((response) => {
-        this.showLoading = false
-        if (response.status === 'ok') {
-          this.missingCases = response.missing_cases;
-        }
-      });
+      store.dispatch('requestCreateH2OTimeline', h2oData)
+          .then((response) => {
+            this.showLoading = false
+            if (response.status === 'ok') {
+              this.$store.commit('setMissingCases', {
+                cases: response.missing_cases,
+                id: response.id
+              });
+            }
+          });
     }
   },
   beforeMount() {

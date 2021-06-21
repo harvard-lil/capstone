@@ -10,7 +10,7 @@
 // overrides
 @import "labs-chronolawgic/base.scss";
 @import "labs-chronolawgic/modal.scss";
-
+@import "labs-chronolawgic/sidebar.scss";
 
 #main-nav {
   z-index: 9999;
@@ -57,6 +57,7 @@ main.admin {
     flex-direction: row;
     flex-wrap: wrap;
     background-color: $color-white;
+    grid-area: timeline;
 
     .welcome {
       width: 100%;
@@ -69,6 +70,7 @@ main.admin {
         margin-top: -.40rem;
       }
     }
+
     .timeline-assembly {
       display: grid;
       grid-template-areas: "nav"
@@ -236,6 +238,7 @@ main.admin {
           }
         }
       }
+
       .timeline-card.new {
         background-color: $highlight;
       }
@@ -270,28 +273,62 @@ main.admin {
         }
       }
     }
-
-    .h2o-error-container {
-      height: 11.5rem;
-      overflow-y: scroll;
-      border: 1px solid black;
-      padding: 0.5em;
-      font-size: 0.8em;
-    }
   }
 }
 
 main#main-app {
+  font-family: $font-monospace;
+  grid-template-areas: "sidebar timeline";
+  grid-template-columns: 3% 52% 30% 15%;
+
   .top-menu {
     display: grid;
-    grid-template-areas: "caselaw years other-events";
-    grid-template-columns: 55% 30% 15%;
+    grid-template-areas: "sidebar-toggle caselaw years other-events";
+    grid-template-columns: 3% 52% 30% 15%;
     min-height: 2rem;
+    background-color: $color-white;
+
+    // button to toggle sidebar
+    .sidebar-toggle {
+      grid-area: sidebar-toggle;
+      z-index: 9999;
+      position: fixed;
+      transition: all 0.5s;
+      height: 2em;
+      padding: 0;
+      margin-top: 1em;
+      background-color: $color-white;
+      border: 1px solid $color-black;
+      border-left: 0;
+      left: 0;
+
+      &:hover, &:focus, &:active {
+        background-color: $highlight;
+      }
+      // sidebar shown
+      &.sidebar {
+        transition: all 0.5s;
+        left: 25rem;
+
+        svg {
+          transition: all 0.5s;
+          transform: rotate(180deg);
+        }
+      }
+
+      svg {
+        transform: none;
+        transition: all 0.5s;
+        margin-top: -.5em;
+        stroke: $color-violet;
+      }
+
+
+    }
 
     div.years {
       grid-area: years;
-      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%);
-      background-position: center;
+      background: linear-gradient(90deg, #FFF 49.9%, #2F2F2F 49.9%, #2F2F2F 50%, #f5f5f5 50%) center;
       background-size: 1000px;
     }
 
@@ -369,7 +406,6 @@ main#main-app {
     .header-section.title {
       grid-area: caselaw;
       background-color: $color-white;
-      margin-left: 10px;
 
       h4 {
         font-family: $font-serif;
@@ -423,15 +459,19 @@ main#main-app {
   #timeline {
     background-color: $color-gray;
     padding: 0;
-    margin-top: -10em;
+    left: 25rem;
+    position: relative;
+    transition: all 0.5s;
+    width: calc(100vw - 25rem);
+    overflow-x: hidden;
+
+    &.expanded {
+      width: calc(100vw);
+      left: 0;
+      transition: all 0.5s;
+    }
   }
 
-  font-family: $font-monospace;
-
-  section#timeline {
-    grid-area: timeline;
-    padding-top: 0;
-  }
 
   div.year {
     max-width: 6fr;
@@ -468,7 +508,6 @@ main#main-app {
       border: 1px solid $color-black;
       width: 20rem;
       height: 130px;
-      //padding: 0.5rem 0.75rem;
       text-transform: none;
       display: grid;
       grid-template-areas: "border casename"
@@ -476,9 +515,6 @@ main#main-app {
                            "border categories";
       grid-template-columns: 25px 1fr;
 
-      &:hover, &:focus, &:active {
-        //border: 2px solid $color-blue;
-      }
     }
 
     .border {
@@ -820,6 +856,10 @@ main#main-app {
   }
 
   main#main-app {
+    #timeline {
+      left: 0;
+      width: 100vw;
+    }
 
     .top-menu {
 

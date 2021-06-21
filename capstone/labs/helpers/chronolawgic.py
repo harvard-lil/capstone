@@ -10,6 +10,9 @@ def validate_and_normalize_timeline(timeline):
         {'name': 'cases', 'type': list, 'required': False},
         {'name': 'events', 'type': list, 'required': False},
         {'name': 'categories', 'type': list, 'required': False},
+        {'name': 'first_year', 'type': int, 'required': False},
+        {'name': 'last_year', 'type': int, 'required': False},
+        {'name': 'stats', 'type': list, 'required': False},
     ]
 
     event_fields = [
