@@ -6,7 +6,7 @@
     </div>
 
     <section id="timeline" v-if="this.$store.state.user.is_authenticated === 'True'">
-      <h6 class="timelines-title">Add a new timeline</h6>
+      <h6 v-if="this.$store.getters.availableTimelines.length" class="timelines-title">Add a new timeline</h6>
       <template v-if="!this.$store.getters.availableTimelines.length">
         <p class="welcome">
           Welcome to Chronolawgic, the Caselaw Access Project tool for creating caselaw-focused timelines. To
