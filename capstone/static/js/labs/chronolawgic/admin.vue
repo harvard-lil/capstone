@@ -135,7 +135,7 @@
       Welcome! To create Chronolawgic timelines, you must
       <a :href="'../../../user/login?next='+currentLocation">log in</a> to your Caselaw Access Project account.
       For more information on Chronolawgic,
-      <a href="../">click here</a>.
+      <a href="../../">click here</a>.
     </section>
     <br/>
   </main>
