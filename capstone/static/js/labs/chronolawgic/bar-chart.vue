@@ -7,10 +7,7 @@ export default {
   extends: Bar,
   mixins: [mixins.reactiveProp],
   watch: {
-    firstYear() {
-      this.$parent.fillChartData();
-    },
-    lastYear() {
+    stats() {
       this.$parent.fillChartData();
     },
     chartData: function () {
@@ -18,11 +15,8 @@ export default {
     }
   },
   computed: {
-    firstYear() {
-      return this.$store.getters.firstYear;
-    },
-    lastYear() {
-      return this.$store.getters.lastYear;
+    stats() {
+      return this.$store.getters.stats;
     }
   },
 
