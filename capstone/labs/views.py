@@ -158,63 +158,217 @@ def chronolawgic_api_create(request):
     })
 
 
-def chronolawgic_api_update(request, timeline_uuid):
+def chronolawgic_delete_case(request, timeline_uuid, case_uuid):
+    if request.method != 'DELETE':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+        timeline = timeline_record.timeline
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    new_cases_list = [case for case in timeline['cases'] if case_uuid and case['id'] != case_uuid]
+
+    if len(timeline['cases']) - len(new_cases_list) == 1:
+        timeline.cases = new_cases_list
+        timeline.save()
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'case_not_found'}, status=404)
+
+    return JsonResponse({
+        'status': 'ok',
+    })
+
+
+def chronolawgic_add_update_case(request, timeline_uuid):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
         timeline_record = Timeline.objects.get(uuid=timeline_uuid)
-        existing_timeline = timeline_record.timeline
+        timeline = timeline_record.timeline
     except Timeline.DoesNotExist:
-        return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
 
     if not request.user.is_authenticated or request.user != timeline_record.created_by:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
-    try:
-        incoming_timeline = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
-
-    except json.decoder.JSONDecodeError as e:
-        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+    def validate_case(case):
+        return case
 
     try:
-        incoming_timeline = validate_and_normalize_timeline(incoming_timeline)
-        existing_timeline = validate_and_normalize_timeline(existing_timeline)
+        new_case = validate_case(json.loads(request.body.decode()))
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
              'reason': 'data_validation',
-             'details': "Timeline Validation Errors: {}".format(e)
+             'details': "Problem creating timeline— update internal template {}".format(e)
              }, status=400)
 
-    # fixing a bug where an out-of-sync timeine in the user's browser clobbered an entire timeline.
-    number_of_items_modified = len(
-        set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(existing_timeline, incoming_timeline)
-             if thing[0] != 'remove']
-            ))
+    new_cases_list = [case for case in timeline['cases'] if new_case['id'] and case['id'] != new_case['id']] + [new_case]
 
-    number_of_items_removed = len([thing[0] for thing in dictdiff(existing_timeline, incoming_timeline)
-                                   if thing[0] == 'remove'])
+    message = ''
+    if len(timeline['cases']) == len(new_cases_list): # add validation
+        message = 'case updated'
+    elif len(timeline['cases']) == len(new_cases_list):
+        message = 'case added'
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'case_update_error'}, status=500)
+    
+    timeline['cases'].append(new_case)
+    timeline.save()
+    
+    return JsonResponse({
+        'status': 'ok',
+        'message': message
+    })
 
-    if number_of_items_modified > 1 or number_of_items_removed > 1:
-        return JsonResponse({'status': 'err', 'reason': "Timeline out of sync. More than one change or remove detected—"
-                                                        " aborted change protect timeline. Please refresh "
-                                                        "Chronolawgic. Did we mention this app is beta?😬 {}".format(
-            [thing for thing in dictdiff(existing_timeline, incoming_timeline)])}, status=500)
 
-    timeline_record.timeline = incoming_timeline
-    timeline_record.save()
-    first_year, last_year, case_stats, event_stats = get_timeline_stats(timeline_record.timeline)
+def chronolawgic_delete_event(request, timeline_uuid, event_uuid):
+    if request.method != 'DELETE':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+        timeline = timeline_record.timeline
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    new_events_list = [event for event in timeline['events'] if event_uuid and event['id'] != event_uuid]
+
+    if len(timeline['events']) - len(new_events_list) == 1:
+        timeline.events = new_events_list
+        timeline.save()
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'case_not_found'}, status=404)
 
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline_record.timeline,
-        'stats': [case_stats, event_stats],
-        'first_year': first_year,
-        'last_year': last_year,
-        'id': timeline_record.uuid,
-        'is_owner': True if request.user == timeline_record.created_by else False
     })
+
+
+def chronolawgic_add_update_event(request, timeline_uuid):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+        timeline = timeline_record.timeline
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    def validate_event(event):
+        return event
+
+    try:
+        new_event = validate_event(json.loads(request.body.decode()))
+    except TimelineValidationException as e:
+        return JsonResponse(
+            {'status': 'err',
+             'reason': 'data_validation',
+             'details': "Problem creating timeline— update internal template {}".format(e)
+             }, status=400)
+
+    new_events_list = [event for event in timeline['events'] if new_event['id'] and event['id'] != new_event['id']] + [
+        new_event]
+
+    message = ''
+    if len(timeline['events']) == len(new_events_list):  # add validation
+        message = 'event updated'
+    elif len(timeline['events']) == len(new_events_list):
+        message = 'event added'
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'event_update_error'}, status=500)
+
+    timeline['events'].append(new_event)
+    timeline.save()
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': message
+    })
+
+
+def chronolawgic_delete_category(request, timeline_uuid, category_uuid):
+    if request.method != 'DELETE':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+        timeline = timeline_record.timeline
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    new_categories_list = [category for category in timeline['categories'] if category_uuid and category['id'] != category_uuid]
+
+    if len(timeline['categories']) - len(new_categories_list) == 1:
+        timeline.categories = new_categories_list
+        timeline.save()
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'category_not_found'}, status=404)
+
+    return JsonResponse({
+        'status': 'ok',
+    })
+
+
+def chronolawgic_add_update_category(request, timeline_uuid):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+        timeline = timeline_record.timeline
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    def validate_category(category):
+        return category
+
+    try:
+        new_category = validate_category(json.loads(request.body.decode()))
+    except TimelineValidationException as e:
+        return JsonResponse(
+            {'status': 'err',
+             'reason': 'data_validation',
+             'details': "Problem creating timeline— update internal template {}".format(e)
+             }, status=400)
+
+    new_categories_list = [category for category in timeline['categories'] if new_category['id'] and category['id'] != new_category['id']] + [
+        new_category]
+
+    message = ''
+    if len(timeline['categories']) == len(new_categories_list):  # add validation
+        message = 'category updated'
+    elif len(timeline['categories']) == len(new_categories_list):
+        message = 'category added'
+    else:
+        return JsonResponse({'status': 'err', 'reason': 'category_update_error'}, status=500)
+
+    timeline['categories'].append(new_category)
+    timeline.save()
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': message
+    })
+
 
 
 def chronolawgic_api_delete(request, timeline_uuid):

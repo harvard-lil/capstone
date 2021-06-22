@@ -22,7 +22,21 @@ if 'chronolawgic' not in settings.LABS_HIDDEN:
         path('chronolawgic/api/create/h2o', views.h2o_import, name='chronolawgic-api-create-h2o'),
         path('chronolawgic/api/retrieve/', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
         path('chronolawgic/api/retrieve/<str:timeline_uuid>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
-        path('chronolawgic/api/update/<str:timeline_uuid>', views.chronolawgic_api_update, name='chronolawgic-api-update'),
-        path('chronolawgic/api/update_admin/<str:timeline_uuid>', views.chronolawgic_api_update_admin, name='chronolawgic-api-update-admin'),
+
+        path('chronolawgic/api/case/add-update/<str:timeline_uuid>', views.chronolawgic_add_update_case, name='chronolawgic-api-add-update-case'),
+        path('chronolawgic/api/case/delete/<str:timeline_uuid>/<str:case_uuid>', views.chronolawgic_delete_case, name='chronolawgic-api-delete-case'),
+
+        path('chronolawgic/api/event/delete/<str:timeline_uuid>', views.chronolawgic_add_update_event, name='chronolawgic-api-add-update-event'),
+        path('chronolawgic/api/event/delete/<str:timeline_uuid>/<str:event_uuid>', views.chronolawgic_delete_event, name='chronolawgic-api-delete-event'),
+
+        path('chronolawgic/api/category/add-update/<str:timeline_uuid>', views.chronolawgic_add_update_category, name='chronolawgic-api-add-update-category'),
+        path('chronolawgic/api/category/delete/<str:timeline_uuid>/<str:category_uuid>', views.chronolawgic_delete_category, name='chronolawgic-api-delete-category'),
+
+
         path('chronolawgic/api/delete/<str:timeline_uuid>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
+
+        path('chronolawgic/api/update/<str:timeline_uuid>', views.legacy_please_refresh,
+             name='chronolawgic-api-update'),
+        path('chronolawgic/api/update_admin/<str:timeline_uuid>', views.legacy_please_refresh,
+             name='chronolawgic-api-update-admin'),
     ]

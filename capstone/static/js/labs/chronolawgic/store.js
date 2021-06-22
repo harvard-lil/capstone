@@ -76,6 +76,17 @@ const store = new Vuex.Store({
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
             chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
             chronolawgic_api_create_h2o: importUrls.chronolawgic_api_create_h2o,
+
+            api_delete_category: importUrls.api_delete_category,
+            api_add_category: importUrls.api_add_category,
+            api_update_category: importUrls.api_update_category,
+            api_delete_case: importUrls.api_delete_case,
+            api_add_case: importUrls.api_add_case,
+            api_update_case: importUrls.api_update_case,
+            api_delete_event: importUrls.api_delete_event,
+            api_add_event: importUrls.api_add_event,
+            api_update_event: importUrls.api_update_event,
+
             static: importUrls.static,
             api_root: importUrls.api_root,
         },
@@ -267,21 +278,45 @@ const store = new Vuex.Store({
             if (state.requestStatus === 'pending') {
                 return 'pending'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
-                !Object.prototype.hasOwnProperty.call(state, 'events')) {
+                !Object.prototype.hasOwnProperty.call(state, 'events') ) {
                 return 'empty'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return state.cases.length === 0 ? 'empty' : 'populated'
-            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases')) {
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases') ) {
                 return state.events.length === 0 ? 'empty' : 'populated'
             }
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
         },
         firstYear: (state) => {
-            return state.firstYear;
+            if (state.cases.length === 0 && state.events.length === 0) {
+                return 0
+            }
+            let first_case_year = 9999999;
+            let first_event_year = 9999999;
+            if (state.events.length) {
+                first_event_year = state.events.reduce((min, e) =>
+                    new Date(e.start_date).getUTCFullYear() < min ? new Date(e.start_date).getUTCFullYear() : min, new Date(state.events[0].start_date).getUTCFullYear());
+            }
+            if (state.cases.length) {
+                first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getUTCFullYear() < min ? new Date(c.decision_date).getUTCFullYear() : min, new Date(state.cases[0].decision_date).getUTCFullYear());
+            }
+            return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
-
         lastYear: (state) => {
-            return state.lastYear;
+            if (state.cases.length === 0 && state.events.length === 0) {
+                return 0
+            }
+            let last_event_year = 0;
+            let last_case_year = 0;
+            if (state.events.length) {
+                last_event_year = state.events.reduce((max, e) =>
+                    new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
+            }
+            if (state.cases.length) {
+                last_case_year = state.cases.reduce((max, e) =>
+                    new Date(e.decision_date).getUTCFullYear() > max ? new Date(e.decision_date).getUTCFullYear() : max, new Date(state.cases[0].decision_date).getUTCFullYear());
+            }
+            return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
         events: (state) => {
             return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
@@ -382,6 +417,144 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
             })
         },
+        requestDeleteCase: function ({commit}, caseId) {
+            commit('setRequestStatus', 'pending');
+            let case_delete_url = this.state.urls.api_delete_case.replace('__TIMELINE_ID__', this.state.id).replace('__CASE_ID__', caseId)
+            console.log(case_delete_url);
+            return axios
+                .delete(case_delete_url, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        this.dispatch('requestRefreshTimeline', "Deleted Case").then(() => {
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', "Deleted Timeline")
+                        })
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestAddUpdateCase: function ({commit}, case_object) {
+            commit('setRequestStatus', 'pending');
+            let case_update_url = this.state.urls.api_add_update_case.replace('__TIMELINE_ID__', this.state.id);
+            let case_update_payload = JSON.stringify(case_object);
+            return axios
+                .post(case_update_url, case_update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Case Added")
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestDeleteEvent: function ({commit}, eventId) {
+            commit('setRequestStatus', 'pending');
+            let event_delete_url = this.state.urls.api_delete_event.replace('__TIMELINE_ID__', this.state.id).replace('__CASE_ID__', eventId)
+            console.log(event_delete_url);
+            return axios
+                .delete(event_delete_url, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        this.dispatch('requestRefreshTimeline', "Deleted Event").then(() => {
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', "Deleted Timeline")
+                        })
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestAddUpdateEvent: function ({commit}, event_object) {
+            commit('setRequestStatus', 'pending');
+            let event_update_url = this.state.urls.api_add_update_event.replace('__TIMELINE_ID__', this.state.id);
+            let event_update_payload = JSON.stringify(event_object);
+            return axios
+                .post(event_update_url, event_update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Event Added")
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestDeleteCategory: function ({commit}, categoryId) {
+            commit('setRequestStatus', 'pending');
+            let category_delete_url = this.state.urls.api_delete_category.replace('__TIMELINE_ID__', this.state.id).replace('__CASE_ID__', categoryId)
+            console.log(category_delete_url);
+            return axios
+                .delete(category_delete_url, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        this.dispatch('requestRefreshTimeline', "Deleted Category").then(() => {
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', "Deleted Timeline")
+                        })
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestAddUpdateCategory: function ({commit}, category_object) {
+            commit('setRequestStatus', 'pending');
+            let category_update_url = this.state.urls.api_add_update_category.replace('__TIMELINE_ID__', this.state.id);
+            let category_update_payload = JSON.stringify(category_object);
+            return axios
+                .post(category_update_url, category_update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(
+                    () => {
+                        commit('setRequestStatusTerminal', 'success');
+                        commit('setNotificationMessage', "Category Added")
+                    }
+                ).catch(error => {
+                commit('setRequestStatusTerminal', 'error');
+                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
         requestTimeline: function ({commit}, timelineId) {
             // clear timeline if it exists
             commit('setTimelineId', '');
@@ -411,6 +584,23 @@ const store = new Vuex.Store({
                 commit('setRequestStatusTerminal', 'error');
                 commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
             })
+        },
+        requestRefreshTimeline: function ({commit, getters}) {
+            // clear timeline if it exists
+            return axios
+                .get(this.state.urls.chronolawgic_api_retrieve + getters.id)
+                .then(response => {
+                    return response.data
+                })
+                .then(timeline => {
+                    if (timeline.status === "ok") {
+                        commit('setTimeline', timeline['timeline']);
+                    }
+                }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
+                })
         },
         requestTimelineList: function ({commit}) {
             commit('setRequestStatus', 'pending');
