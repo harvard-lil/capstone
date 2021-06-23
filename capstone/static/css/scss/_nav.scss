@@ -69,10 +69,19 @@
   .user-account-img {
     background: url("../../img/icons/user-white.svg") no-repeat center;
     height: 24px;
+    width: 42px;
   }
 
   @include media-breakpoint-down(lg) {
     font-size: 1.2rem;
+  }
+  @include media-breakpoint-down(sm) {
+    .x-small {
+      display: none;
+    }
+    .user-account-img {
+      width: 24px;
+    }
   }
 
   &.small-nav, &.force-small-nav {
@@ -90,6 +99,7 @@
         margin-top: 10px;
         width: 20px;
       }
+
       .x-small {
         display: none;
       }
