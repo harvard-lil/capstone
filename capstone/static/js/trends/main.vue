@@ -26,8 +26,8 @@
       </div>
 
       <div class="form-row query-row">
-        <div class="col-sm pr-0">
-          <input class="text-to-graph"
+        <div class="col-sm pr-0 mr-2 mb-2">
+          <input class="text-to-graph mr-5"
                  :value="textToGraph"
                  ref="textToGraph"
                  aria-label="terms to graph">
