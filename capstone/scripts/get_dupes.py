@@ -1,14 +1,7 @@
 import argparse
 import json
-import itertools
-import math
-import sys
-import threading
 
 from simhash import Simhash, SimhashIndex
-
-# f1 = open('allsimhashesscasesnottexascompressed.json','r')
-# f1 = open('test.json','r')
 
 def process_hashes(input_file):
     """
