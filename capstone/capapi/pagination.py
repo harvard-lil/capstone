@@ -16,6 +16,44 @@ from rest_framework import serializers
 from capapi.resources import CachedCountQuerySet
 
 
+## helpers ##
+
+def _reverse_elastic_sort(current_sort, valid_field_names):
+    """
+        Reverse each item in current_sort, which is an elasticsearch sort order list.
+        (See https://www.elastic.co/guide/en/elasticsearch/reference/current/sort-search-results.html for format.)
+        This currently strips all sorting options except for "order". Otherwise we'd need an allowlist or signature on the cursor, since it's user-submitted data.
+
+        Example: 'asc' becomes 'desc', 'desc' becomes 'asc', plain 'id' becomes {'id': {'order': 'desc'}}:
+        >>> assert _reverse_elastic_sort([{'_score': {'order': 'desc'}}, {'date': {'order': 'asc'}}, 'id'], ['_score', 'date', 'id']) == \
+                [{'_score': {'order': 'asc'}}, {'date': {'order': 'desc'}}, {'id': {'order': 'desc'}}]
+
+        valid_field_names makes sure that invalid fields aren't passed in:
+        >>> assert _reverse_elastic_sort([{'date': {'order': 'asc'}}, {'bad': {'order': 'asc'}}], ['date']) == \
+                [{'date': {'order': 'desc'}}]
+    """
+    new_sort = []
+    for item in current_sort:
+        if isinstance(item, str):
+            # inflate str-only fields like 'id' to dicts like {'id': {'order': 'asc'}}
+            item = {item: {"order": "asc"}}
+        try:
+            # get 'id' from {'id': {'order': 'asc'}}
+            field_name = next(iter(item))
+            # this would only happen if cursor was manually edited
+            if field_name not in valid_field_names:
+                continue
+            # update order
+            new_order = "desc" if item[field_name]["order"] == "asc" else "asc"
+            item = {field_name: {"order": new_order}}
+        except Exception:
+            raise TypeError("Unrecognized sort order: %s" % item)
+        new_sort.append(item)
+    return new_sort
+
+
+## paginators ##
+
 class CapPagination(CursorPagination):
     # This should be larger than the max number of records that share the same ordering field, such as decision_date,
     # but not too much larger to avoid allowing needlessly expensive queries.
@@ -163,20 +201,13 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
                 "See https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-search-after.html")
         super(ESCursorPagination, self).__init__(*args, **kwargs)
 
-    @staticmethod
-    def reverse_sort(queryset):
-        new_sort = []
-        for item in queryset._sort:
-            if type(item) == str:
-                item = {item: {"order": "asc" if item == "_score" else "desc"}}
-            elif type(item) == dict  and item:
-                k = next(iter(item))
-                v = dict(item[k])
-                v["order"] = "desc" if v.get("order", "desc" if k == "_score" else "asc") == "asc" else "desc"
-                item = {k: v}
-            else:
-                raise TypeError("Unrecognized sort order: %s" % item)
-            new_sort.append(item)
+    @classmethod
+    def reverse_sort(cls, queryset, view):
+        """
+            Reverse each item in queryset._sort, so we get the same results in the opposite order.
+        """
+        valid_field_names = list(view.ordering_fields.values()) + [cls.fallback_sort_field]
+        new_sort = _reverse_elastic_sort(queryset._sort, valid_field_names)
         return queryset.sort(*new_sort)
 
     def _paginate_queryset(self, queryset, request, view):
@@ -192,11 +223,11 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
         # ensure sort order includes fallback_sort_field
         if not any(k == self.fallback_sort_field or self.fallback_sort_field in k.keys() for k in queryset._sort):
             queryset = queryset.sort(*(queryset._sort + [self.fallback_sort_field]))
-
         if self.reversed:
-            queryset = self.reverse_sort(queryset)
+            queryset = self.reverse_sort(queryset, view)
         if self.search_after:
             queryset = queryset.extra(search_after=self.search_after)
+
 
         resp = queryset[:self.page_size+1].execute()
         hits = resp['hits']
