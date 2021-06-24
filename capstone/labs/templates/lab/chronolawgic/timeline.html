@@ -19,19 +19,18 @@
     // eslint-disable-next-line
     const urls = {
 
-      api_delete_category: "{% url 'labs:chronolawgic-api-delete-category' 2147483627 2147483627%}".replace('2147483627', "__TIMELINE_ID__").replace('2147483627', "__CATEGORY_ID__"),
-      api_add_update_category: "{% url 'labs:chronolawgic-api-add-update-category' 2147483627%}".replace('2147483627', "__TIMELINE_ID__"),
-
-      api_delete_case: "{% url 'labs:chronolawgic-api-delete-case' 2147483627 2147483627%}".replace('2147483627', "__TIMELINE_ID__").replace('2147483627', "__CASE_ID__"),
-      api_add_update_case: "{% url 'labs:chronolawgic-api-add-update-case' 2147483627%}".replace('2147483627', "__TIMELINE_ID__"),
-
-      api_delete_event: "{% url 'labs:chronolawgic-api-delete-event' 2147483627 2147483627%}".replace('2147483627', "__TIMELINE_ID__").replace('2147483627', "__EVENT_ID__"),
-      api_add_update_event: "{% url 'labs:chronolawgic-api-add-update-event' 2147483627%}".replace('2147483627', "__TIMELINE_ID__"),
+      api_delete_subobject: "{% url 'labs:chronolawgic_delete_subobject' 2147483625 2147483626 2147483627%}"
+          .replace('2147483625', "__TIMELINE_ID__")
+          .replace('2147483626', "__SUBOBJECT_TYPE__")
+          .replace('2147483627', "__SUBOBJECT_ID__"),
+      api_add_update_subobject: "{% url 'labs:chronolawgic-api-add-update-subobject' 2147483625 2147483626 2147483627%}"
+          .replace('2147483625', "__TIMELINE_ID__")
+          .replace('2147483626', "__SUBOBJECT_TYPE__")
+          .replace('2147483627', "__SUBOBJECT_ID__"),
 
       chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}",
       chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
 
-      chronolawgic_api_update: "{% url 'labs:chronolawgic-api-update' 2147483627%}".replace('2147483627', ""),
       chronolawgic_api_update_admin: "{% url 'labs:chronolawgic-api-update-admin' 2147483627%}".replace('2147483627', ""),
 
       chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' 2147483627%}".replace('2147483627', ""),
@@ -42,8 +41,8 @@
 
     // eslint-disable-next-line
     const choices = {
-      jurisdictions: {% cached_json_object 'search_jurisdiction_list' '[]' %},
-      courts: {% cached_json_object 'court_abbrev_list' '[]' %}
+      jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %},
+      courts: {% snippet 'court_abbrev_list' '[]' %}
     }
 
     const user = {

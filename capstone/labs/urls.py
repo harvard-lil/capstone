@@ -23,15 +23,10 @@ if 'chronolawgic' not in settings.LABS_HIDDEN:
         path('chronolawgic/api/retrieve/', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
         path('chronolawgic/api/retrieve/<str:timeline_uuid>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
 
-        path('chronolawgic/api/case/add-update/<str:timeline_uuid>', views.chronolawgic_add_update_case, name='chronolawgic-api-add-update-case'),
-        path('chronolawgic/api/case/delete/<str:timeline_uuid>/<str:case_uuid>', views.chronolawgic_delete_case, name='chronolawgic-api-delete-case'),
-
-        path('chronolawgic/api/event/delete/<str:timeline_uuid>', views.chronolawgic_add_update_event, name='chronolawgic-api-add-update-event'),
-        path('chronolawgic/api/event/delete/<str:timeline_uuid>/<str:event_uuid>', views.chronolawgic_delete_event, name='chronolawgic-api-delete-event'),
-
-        path('chronolawgic/api/category/add-update/<str:timeline_uuid>', views.chronolawgic_add_update_category, name='chronolawgic-api-add-update-category'),
-        path('chronolawgic/api/category/delete/<str:timeline_uuid>/<str:category_uuid>', views.chronolawgic_delete_category, name='chronolawgic-api-delete-category'),
-
+        path('chronolawgic/api/add-update/<str:timeline_uuid>/<str:type>/<str:subobject_uuid>',
+             views.chronolawgic_add_update_subobject, name='chronolawgic-api-add-update-subobject'),
+        path('chronolawgic/api/delete/<str:timeline_uuid>/<str:type>/<str:subobject_uuid>',
+             views.chronolawgic_delete_subobject, name='chronolawgic-api-add-update-subobject'),
 
         path('chronolawgic/api/delete/<str:timeline_uuid>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
 
