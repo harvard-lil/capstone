@@ -609,22 +609,30 @@ def test_redoc(client):
 def test_pagination(client, case_factory, elasticsearch):
     cases = [case_factory() for _ in range(3)]
 
+    orderings = ['relevance', 'decision_date', '-decision_date']
     ids = []
+    for ordering in orderings:
+        content = client.get(api_reverse("cases-list"), {"page_size": 1, "ordering": ordering}).json()
+        assert len(content['results']) == 1
+        ids.append(content['results'][0]['id'])
 
-    response = client.get(api_reverse("cases-list"), {"page_size": 1})
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
+        content = client.get(content['next']).json()
+        assert len(content['results']) == 1
+        ids.append(content['results'][0]['id'])
 
-    response = client.get(content['next'])
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
+        content = client.get(content['next']).json()
+        assert len(content['results']) == 1
+        ids.append(content['results'][0]['id'])
+        assert content['next'] is None
 
-    response = client.get(content['next'])
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
-    assert content['next'] is None
+        content = client.get(content['previous']).json()
+        assert len(content['results']) == 1
+        ids.append(content['results'][0]['id'])
+
+        content = client.get(content['previous']).json()
+        assert len(content['results']) == 1
+        ids.append(content['results'][0]['id'])
+        assert content['previous'] is None
+
 
     assert set(ids) == set(case.id for case in cases)
