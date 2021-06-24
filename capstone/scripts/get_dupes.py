@@ -26,6 +26,8 @@ def process_hashes(input_file):
         Then, output all ids for which there are less than 13 bits of difference.
         The Python `simhash` library leverages a linear-time algorithm for comparing 
         one entry against all others efficiently: http://benwhitmore.altervista.org/simhash-and-solving-the-hamming-distance-problem-explained
+
+        To generate input file, download all `data.ljson` files from the CAP corpus and massage with the following command: cat data/data.jsonl | jq '. | {id: .id, hash: .analysis.simhash}' | jq -s | less. Watch for memory usage during jq slurp!
     """
     f1 = open(input_file,'r')
 
