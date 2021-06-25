@@ -27,11 +27,8 @@ class Timeline(models.Model):
                 self.uuid = new_uuid
                 collision = Timeline.objects.filter(uuid=self.uuid).count() > 0
         with transaction.atomic():
-            valid, errors = self.normalize_and_validate_timeline()
-            if not valid:
-                raise TimelineValidationException(errors)
+            self.normalize_and_validate_timeline() #throws TimelineValidationException if not valid
             return super(Timeline, self).save(*args, **kwargs)
-
     #
     #
     # Use these add_update/update_/delete methods to modify the timeline validated and saved
@@ -39,18 +36,15 @@ class Timeline(models.Model):
     #
 
     def update_timeline_metadata(self, updated_timeline):
+        normalized_timeline = Timeline.normalize_and_validate_single_object('timeline', updated_timeline)
         for field in self.timeline_metadata_fields():
-            self.timeline[field] = updated_timeline[field]
+            self.timeline[field] = normalized_timeline[field]
         return self.save()
 
-    def update_categories(self, new_categories):
-        self.timeline['categories'] = new_categories
-        return self.save()
-
-    # subobject is the actual new/updated case or whatever. 
+    # subobject is the actual new/updated case or whatever.
     # type is the key in the schemas variable
     def add_update_subobject(self, subobject, subobject_type):
-        print(subobject, subobject_type)
+        subobject = Timeline.normalize_and_validate_single_object(subobject_type, subobject)
         if subobject['id'] not in self.subobject_ids(subobject_type):
             self.timeline[subobject_type].append(subobject)
         else:
@@ -64,11 +58,11 @@ class Timeline(models.Model):
         return self.save()
 
     def case_years(self):
-        return [int(case['decision_date'].split('-')[0]) for case in self.timeline['cases']]
+        return sorted(set([int(case['decision_date'].split('-')[0]) for case in self.timeline['cases']]))
 
     def event_years(self):
-        return [year for event in self.timeline['events'] for year in
-                       range(int(event['start_date'].split('-')[0]), int(event['end_date'].split('-')[0]) + 1)]
+        return sorted(set([year for event in self.timeline['events'] for year in
+                       range(int(event['start_date'].split('-')[0]), int(event['end_date'].split('-')[0]) + 1)]))
 
     @staticmethod
     def first_year(case_years, event_years):
@@ -149,7 +143,7 @@ class Timeline(models.Model):
     }
 
     @staticmethod
-    def generate_empty_timeline(starter):
+    def generate_empty_timeline(starter={}):
         timeline = {}
         for field in Timeline.schemas['timeline']:
             if field['name'] in starter:
@@ -176,40 +170,49 @@ class Timeline(models.Model):
             Timeline.generate_empty_timeline()
             return [True, []]
         bad = {}
-        results =  self.normalize_and_validate_single_object('timeline', self.timeline)
-        if results[1]: # errors
-            bad['timeline'] = results[1]
+        try:
+            self.timeline = Timeline.normalize_and_validate_single_object('timeline', self.timeline)
+        except TimelineValidationException as e:
+            bad['timeline'] = e
 
         for subobject_type in Timeline.subobject_types():
-            bad[subobject_type] = []
             for index, entry in enumerate(self.timeline[subobject_type]):
-                self.timeline[subobject_type][index], err = self.normalize_and_validate_single_object(
-                    subobject_type, entry)
-                if err:
-                    bad[subobject_type].append(err)
-            if bad[subobject_type] == []:
-                del bad[subobject_type]
-        return [False if bad else True, bad]
+                try:
+                    self.timeline[subobject_type][index] = Timeline.normalize_and_validate_single_object(
+                        subobject_type, entry)
+                except TimelineValidationException as e:
+                    if subobject_type not in bad:
+                        bad[subobject_type] = []
+                    bad[subobject_type].append(e)
+        if bad:
+            text_error = ", ".join(["{}: {}".format(stype, serror) for (stype, serror) in bad.items()])
+            raise TimelineValidationException(text_error)
+
+        return True
 
     # also validates the MD fields in the timeline itself
-    def normalize_and_validate_single_object(self, subobj_type, entry, normalize=True):
+    @classmethod
+    def normalize_and_validate_single_object(cls, subobj_type, entry, normalize=True):
         local_bad = []
-
-        if subobj_type == 'timeline':
-            fields = self.schemas['timeline']
-        else:
-            fields = self.schemas['subobjects'][subobj_type]
 
         # is this even the right thing?
         if type(entry) != dict:
-            return [entry, ["Wrong Data Type for {} entry: {} instead of dict".format(subobj_type, type(entry))]]
+            raise TimelineValidationException(
+                "Wrong Data Type for {} entry: {} instead of dict".format(subobj_type, type(entry)))
+
+        if subobj_type == 'timeline':
+            fields = cls.schemas['timeline']
+        else:
+            fields = cls.schemas['subobjects'][subobj_type]
+
+
 
         # do we have extra fields?
         resolved = []
         known_field_names = [field['name'] for field in fields]
         extraneous = set(entry.keys()) - set(known_field_names)
         for extraneous_field in extraneous:
-            if (not entry[extraneous_field] or extraneous_field in self.schemas['ignore']) and normalize:  # if the field is empty, just remove it
+            if (not entry[extraneous_field] or extraneous_field in cls.schemas['ignore']) and normalize:  # if the field is empty, just remove it
                 del entry[extraneous_field]
                 resolved.append(extraneous_field)
 
@@ -242,7 +245,10 @@ class Timeline(models.Model):
             elif entry[field['name']] == '' and 'default' in field and normalize:
                 entry[field['name']] = field['default']
 
-        return [entry, local_bad]
+        if local_bad:
+            raise TimelineValidationException("failed validation: {}".format(", ".join(local_bad)))
+
+        return entry
 
 
 

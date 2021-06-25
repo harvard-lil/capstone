@@ -207,7 +207,13 @@ const store = new Vuex.Store({
             this.dispatch('requestDeleteSubobject', {'subobject_type':'events', 'subobject_id': id});
         },
         updateCategories(state, categories_list) {
-            this.dispatch('requestUpdateCategories', { 'categories': categories_list});
+            categories_list = categories_list.map((category) => {
+                    if (!Object.prototype.hasOwnProperty.call(category, 'id')) {
+                        category.id = this.generateUUID();
+                    }
+                    return category
+            });
+            this.dispatch('requestUpdateCategories', categories_list);
         },
 
 
@@ -414,7 +420,6 @@ const store = new Vuex.Store({
             commit('setRequestStatus', 'pending');
             let url = this.state.urls.api_update_categories
                 .replace('__TIMELINE_ID__', this.state.id);
-
             let update_payload = JSON.stringify(category_list);
             return axios
                 .post(url, update_payload, {

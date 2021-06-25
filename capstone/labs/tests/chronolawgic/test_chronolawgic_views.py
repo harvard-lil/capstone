@@ -1,5 +1,4 @@
 import pytest
-import copy
 from bs4 import BeautifulSoup
 from capweb.helpers import reverse
 from capapi.tests.helpers import check_response
@@ -30,7 +29,18 @@ events = [
      'long_description': 'abcdefghijklmnopqrstuvwxyz',
      'short_description': 'abc'}
 ]
-complete_timeline = {"title": "My first timeline", "author": "CAP User", "description": "And my very best one", 'events': events, 'cases': cases}
+categories = [
+    {'name': 'tesstcat', 'shape': 'polygon1', 'color': '#ff736c', 'id': 'arbitrary_string1'},
+    {'name': 'tesstcat2', 'shape': 'polygon2', 'color': '#ff736c', 'id': 'arbitrary_string2'},
+    {'name': 'tesstcat3', 'shape': 'polygon3', 'color': '#ff736c', 'id': 'arbitrary_string3'}
+]
+complete_timeline = {"title": "My first timeline",
+                     "author": "CAP User",
+                     "description": "And my very best one",
+                     'events': events,
+                     'cases': cases,
+                     'categories': categories
+                     }
 
 
 @pytest.mark.django_db(databases=['default', 'capdb'])
@@ -61,74 +71,6 @@ def test_create_timeline(client, auth_client):
     assert Timeline.objects.count() == 1
     # assert categories exist
     assert Timeline.objects.first().timeline['categories'] == []
-
-
-@pytest.mark.django_db(databases=['default'])
-def test_clobber_stopper(auth_client):
-    # should not allow editing more than 1 case or event per request
-    tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=complete_timeline)
-
-    # modify one event field
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['events'][0]['name'] = 'another name'
-
-    # one field in one event different from the DB version— no problem
-    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, content_type="application/json")
-
-    # last test modified timeline, so change it back
-    tl.timeline = complete_timeline
-    tl.save()
-
-    # modify three event fields – no problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['events'][0]['name'] = 'another name'
-    modified_timeline['events'][0]['end_date'] = '1848-12-31'
-    modified_timeline['events'][0]['short_description'] = '1999-12-31'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, content_type="application/json")
-    tl.timeline = complete_timeline
-    tl.save()
-
-    #modify one case field – no problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['cases'][0]['name'] = 'another name'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, content_type="application/json")
-    tl.timeline = complete_timeline
-    tl.save()
-
-    # modify three case fields - no problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['cases'][0]['name'] = 'another name'
-    modified_timeline['cases'][0]['decision_date'] = '1848-12-31'
-    modified_timeline['cases'][0]['short_description'] = '1999-12-31'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, content_type="application/json")
-    tl.timeline = complete_timeline
-    tl.save()
-
-    #modify two cases - problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['cases'][0]['name'] = 'another name'
-    modified_timeline['cases'][1]['short_description'] = '1999-12-31'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, status_code=500, content_type="application/json")
-
-    # modify two events - problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['events'][0]['name'] = 'another name'
-    modified_timeline['events'][1]['end_date'] = '1848-12-31'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, status_code=500, content_type="application/json")
-
-    # modify case and event - problem
-    modified_timeline = copy.deepcopy(complete_timeline)
-    modified_timeline['events'][0]['name'] = 'another name'
-    modified_timeline['cases'][1]['short_description'] = '1999-12-31'
-    response = auth_client.post(update_url, {"timeline": modified_timeline}, format='json')
-    check_response(response, status_code=500, content_type="application/json")
 
 
 @pytest.mark.django_db(databases=['default'])
@@ -171,8 +113,8 @@ def test_timeline_update(client, auth_client):
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
-    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
-    response = auth_client.post(update_url, {"timeline": timeline}, format='json')
+    update_url = reverse('labs:chronolawgic-update-timeline-metadata', args=[tl.uuid])
+    response = auth_client.post(update_url, timeline, format='json')
     check_response(response, content_type="application/json")
     assert response.json()["timeline"]["title"] == new_title
 
@@ -182,7 +124,7 @@ def test_timeline_update(client, auth_client):
     update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
 
     # don't allow unauthenticated users
-    response = client.post(update_url, {"timeline": timeline}, format='json')
+    response = client.post(update_url, timeline, format='json')
     check_response(response, status_code=403, content_type="application/json")
 
     response = auth_client.get(retrieve_url + tl.uuid)
@@ -197,46 +139,43 @@ def test_timeline_update_validation(client, auth_client):
     tl.save()
 
     tl.timeline['description'] = "And my very best on"
-    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    update_url = reverse('labs:chronolawgic-update-timeline-metadata', args=[tl.uuid])
+    response = auth_client.post(update_url, tl.timeline, format='json')
     check_response(response, content_type="application/json")
-    tl.refresh_from_db()
-
-    tl.timeline['description'] = "And my very best"
-    tl.timeline['author'] = "And my very bet"
-    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
-    check_response(response, status_code=500, content_type="application/json", content_includes="More than one change or remove detected")
     tl.refresh_from_db()
 
     # wrong data type will get replaced with default 'untitled timeline'
     tl.timeline['title'] = [1,2,3,4]
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
+    tl.update_timeline_metadata(tl.timeline)
+    response = auth_client.post(update_url, tl.timeline, format='json')
     check_response(response, status_code=200, content_type="application/json", content_includes='"title": "Untitled Timeline"')
     tl.refresh_from_db()
 
     # wrong data type for whole object will not get replaced
-    tl.timeline['events'][0] = [1,2,3,4]
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type for event entry')
+    update_url = reverse('labs:chronolawgic-api-add-update-subobject', args=[tl.uuid, 'events'])
+    response = auth_client.post(update_url, [1, 2, 3, 4], format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type for events entry')
     tl.refresh_from_db()
 
-    # wrong data type for whole object will not get replaced
+
+    # wrong data type for field object will not get replaced
     tl.timeline['events'][0]['id'] = [1,2,3,4]
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type')
+    response = auth_client.post(update_url, tl.timeline['events'][0], format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes='Wrong Data Type for id')
     tl.refresh_from_db()
 
     # missing required case value
     del tl.timeline['cases'][0]['id']
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes="Missing case field id")
+    update_url = reverse('labs:chronolawgic-api-add-update-subobject', args=[tl.uuid, 'cases'])
+    response = auth_client.post(update_url, tl.timeline['cases'][0], format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Missing cases field id")
     tl.refresh_from_db()
 
     # extraneous timeline field
     tl.timeline["helloooooo"] = "badata"
-    response = auth_client.post(update_url, {"timeline": tl.timeline}, format='json')
-    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected timeline field(s)")
+    update_url = reverse('labs:chronolawgic-update-timeline-metadata', args=[tl.uuid])
+    response = auth_client.post(update_url, tl.timeline, format='json')
+    check_response(response, status_code=400, content_type="application/json", content_includes="Unexpected timeline field")
     tl.refresh_from_db()
     assert "helloooooo" not in tl.timeline
 
@@ -261,3 +200,35 @@ def test_timeline_delete(client, auth_client):
     response = auth_client.delete(delete_url)
     check_response(response, content_type="application/json")
     assert Timeline.objects.filter(created_by=auth_client.auth_user).count() == 0
+
+@pytest.mark.django_db(databases=['default', 'capdb'])
+def test_update_categories(client, auth_client):
+    tl = Timeline(
+        created_by=auth_client.auth_user,
+        timeline=Timeline.generate_empty_timeline(complete_timeline)
+    )
+    tl.save()
+
+    categories_update = [
+        {'name': 'tesstcat', 'shape': 'polygon1', 'color': '#ff736c', 'id': 'arbitrary_string1'},
+        {'name': 'tesstcat9', 'shape': 'polygon2', 'color': '#ff736c', 'id': 'arbitrary_string2'},
+        {'name': 'tesstcat3', 'shape': 'polygon3', 'color': '#ff736c', 'id': 'arbitrary_string3'}
+    ]
+
+    update_url = reverse('labs:chronolawgic-api-update-categories', args=[tl.uuid])
+    response = auth_client.post(update_url, categories_update, format='json')
+    check_response(response, content_type="application/json")
+    tl.refresh_from_db()
+
+    assert tl.timeline['categories'] == categories_update
+
+    categories_update = [
+        {'name': 'test', 'shape': 'polgon1', 'color': '#ff736c', 'id': 'arbitrary_string1'},
+        {'name': 'tesstcat3', 'shape': 'polygon3', 'color': '#ff73c', 'id': 'arbitrary_string3'}
+    ]
+
+    response = auth_client.post(update_url, categories_update, format='json')
+    check_response(response, content_type="application/json")
+    tl.refresh_from_db()
+
+    assert tl.timeline['categories'] == categories_update

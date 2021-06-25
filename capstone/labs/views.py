@@ -93,11 +93,9 @@ def chronolawgic_update_timeline_metadata(request, timeline_uuid):
 
     try:
         incoming_timeline = json.loads(request.body.decode())
+        timeline_record.update_timeline_metadata(incoming_timeline)
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    try:
-        timeline_record.update_timeline_metadata(incoming_timeline)
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
@@ -144,17 +142,17 @@ def chronolawgic_update_categories(request, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        categories = json.loads(request.body.decode())['categories']
+        categories = [Timeline.normalize_and_validate_single_object('categories', category) for category in
+                                                                   json.loads(request.body.decode())]
+        timeline_record.timeline['categories'] = categories
+        timeline_record.save()
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    try:
-        timeline_record.timeline['categories'] = categories
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
              'reason': 'data_validation',
-             'details': "Problem creating timeline— update internal template {}".format(e)
+             'details': str(e)
              }, status=400)
 
     return JsonResponse({
@@ -177,17 +175,15 @@ def chronolawgic_add_update_subobject(request, subobject_type, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        subobject = json.loads(request.body.decode())
+        subobject = Timeline.normalize_and_validate_single_object(subobject_type, json.loads(request.body.decode()))
+        timeline_record.add_update_subobject(subobject, subobject_type)
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    try:
-        timeline_record.add_update_subobject(subobject, subobject_type)
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
              'reason': 'data_validation',
-             'details': "Problem creating timeline— update internal template {}".format(e)
+             'details': str(e)
              }, status=400)
 
     return JsonResponse({
@@ -208,14 +204,7 @@ def chronolawgic_delete_subobject(request, timeline_uuid, subobject_type, subobj
     if not request.user.is_authenticated or request.user != timeline_record.created_by:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
-    try:
-        timeline_record.delete_subobject(subobject_type, subobject_uuid)
-    except TimelineValidationException as e:
-        return JsonResponse(
-            {'status': 'err',
-             'reason': 'data_validation',
-             'details': "Problem creating timeline— update internal template {}".format(e)
-             }, status=400)
+    timeline_record.delete_subobject(subobject_type, subobject_uuid)
 
     return JsonResponse({
         'status': 'ok',
