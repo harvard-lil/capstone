@@ -56,11 +56,17 @@
                 <edit-icon></edit-icon>
               </button>
             </div>
+
             <div class="delete" title="delete timeline">
               <button class="btn btn-edit"
-                      v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id)"
-                      @click="$store.dispatch('requestDeleteTimeline', timeline.id)">
+                      v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id) && !deletePromptMode"
+                      @click="deletePromptMode = true">
                 <delete-icon></delete-icon>
+              </button>
+              <button class="btn btn-edit confirm"
+                      v-if="Object.prototype.hasOwnProperty.call(editMode, timeline.id) && deletePromptMode"
+                      @click="$store.dispatch('requestDeleteTimeline', timeline.id)">
+                Really Delete?
               </button>
             </div>
             <div class="save" title="save changes">
@@ -152,6 +158,7 @@ export default {
       useOriginalURLs: false,
       showLoading: false,
       currentLocation: '',
+      deletePromptMode: false,
     }
   },
   methods: {
@@ -165,12 +172,14 @@ export default {
         this.$set(this.editMode[timeline.id], 'author', timeline.author);
         this.$set(this.editMode[timeline.id], 'description', timeline.description);
       }
+      this.deletePromptMode = false
     },
     saveEdit(id) {
       if (Object.prototype.hasOwnProperty.call(this.editMode, id)) {
         this.$store.dispatch('requestUpdateTimelineMetadata', this.editMode[id]).then(() => {
               this.$delete(this.editMode, id);
               this.$store.dispatch('requestTimelineList');
+              this.deletePromptMode = false
             }
         )
       }

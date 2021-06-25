@@ -107,6 +107,14 @@ main.admin {
           grid-area: delete;
         }
 
+        .confirm {
+            color: $color-red;
+            border: thin solid $color-red;
+            width: 8em;
+            background-color: $color-light-gray;
+            height: 2.5em;
+        }
+
         .save {
           grid-area: save;
         }
