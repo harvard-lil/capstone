@@ -334,32 +334,7 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error deleting timeline: " + getBestError(error))
             })
         },
-        requestUpdateTimeline: function ({commit}) {
-            commit('setRequestStatus', 'pending');
-            let json = JSON.stringify({timeline: this.getters.timeline});
-            axios
-                .post(this.state.urls.chronolawgic_api_update + this.state.id, json, {
-                    headers: {
-                        // Overwrite Axios's automatically set Content-Type
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.data)
-                .then(
-                    (timeline) => {
 
-                        commit('setStats', timeline['stats'])
-                        commit('setFirstYear', timeline['first_year'])
-                        commit('setLastYear', timeline['last_year'])
-
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Saved")
-                    }
-                ).catch(error => {
-                commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
-            })
-        },
 
          requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
             commit('setRequestStatus', 'pending');
