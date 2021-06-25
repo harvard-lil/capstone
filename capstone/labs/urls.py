@@ -23,12 +23,14 @@ if 'chronolawgic' not in settings.LABS_HIDDEN:
         path('chronolawgic/api/retrieve/', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
         path('chronolawgic/api/retrieve/<str:timeline_uuid>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
 
-        path('chronolawgic/api/add-update/<str:timeline_uuid>/<str:type>/<str:subobject_uuid>',
+        path('chronolawgic/api/add-update/<str:timeline_uuid>/<str:subobject_type>',
              views.chronolawgic_add_update_subobject, name='chronolawgic-api-add-update-subobject'),
-        path('chronolawgic/api/delete/<str:timeline_uuid>/<str:type>/<str:subobject_uuid>',
-             views.chronolawgic_delete_subobject, name='chronolawgic-api-add-update-subobject'),
-
+        path('chronolawgic/api/delete/<str:timeline_uuid>/<str:subobject_type>/<str:subobject_uuid>',
+             views.chronolawgic_delete_subobject, name='chronolawgic-delete-subobject'),
         path('chronolawgic/api/delete/<str:timeline_uuid>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
+
+        path('chronolawgic/api/update/<str:timeline_uuid>', views.chronolawgic_update_timeline_metadata,
+             name='chronolawgic-update-timeline-metadata'),
 
         path('chronolawgic/api/update/<str:timeline_uuid>', views.legacy_please_refresh,
              name='chronolawgic-api-update'),

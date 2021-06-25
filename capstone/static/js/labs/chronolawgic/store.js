@@ -72,17 +72,12 @@ const store = new Vuex.Store({
         urls: { // Doing this the long way to make it a little easier to see what's going on.
             chronolawgic_api_create: importUrls.chronolawgic_api_create,
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
-            chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
-            chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
+            chronolawgic_update_timeline_metadata: importUrls.chronolawgic_update_timeline_metadata,
             chronolawgic_api_create_h2o: importUrls.chronolawgic_api_create_h2o,
 
-            api_delete_category: importUrls.api_delete_category,
-            api_add_update_category: importUrls.api_add_update_category,
-            api_delete_case: importUrls.api_delete_case,
-            api_add_update_case: importUrls.api_add_update_case,
-            api_delete_event: importUrls.api_delete_event,
-            api_add_update_event: importUrls.api_add_update_event,
+            api_delete_subobject: importUrls.api_delete_subobject,
+            api_add_update_subobject: importUrls.api_add_update_subobject,
 
             static: importUrls.static,
             api_root: importUrls.api_root,
@@ -192,29 +187,29 @@ const store = new Vuex.Store({
         },
         addCase(state, case_object) {
             case_object.id = this.generateUUID();
-            this.dispatch('requestAddUpdateSubobject', 'cases', case_object);
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'cases', 'subobject': case_object});
         },
         updateCase(state, case_object) {
-            this.dispatch('requestAddUpdateSubobject', 'cases', case_object);
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'cases', 'subobject': case_object});
         },
         deleteCase(state, id) {
-            this.dispatch('requestDeleteSubobject', 'cases', id);
-        },
-        updateEvent(state, event_object) {
-            this.dispatch('requestAddUpdateSubobject', 'events', event_object);
+            this.dispatch('requestDeleteSubobject', {'subobject_type':'cases', 'subobject_id': id});
         },
         addEvent(state, event_object) {
             event_object.id = this.generateUUID();
-            this.dispatch('requestAddUpdateSubobject', 'events', event_object);
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
+        },
+        updateEvent(state, event_object) {
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
         },
         deleteEvent(state, id) {
-            this.dispatch('requestDeleteSubobject', 'events', id);
+            this.dispatch('requestDeleteSubobject', {'subobject_type':'events', 'subobject_id': id});
         },
         addUpdateCategory(state, category_object) {
-            this.dispatch('requestAddUpdateSubobject', 'categories', category_object);
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'categories', 'subobject': category_object});
         },
         deleteCategory(state, id) {
-            this.dispatch('requestDeleteSubobject', 'categories', id);
+            this.dispatch('requestDeleteSubobject', {'subobject_type':'categories', 'subobject_id': id});
         },
 
         setMissingCases(state, missingCases) {
@@ -252,36 +247,9 @@ const store = new Vuex.Store({
         },
         firstYear: (state) => {
             return state.firstYear;
-            // if (state.cases.length === 0 && state.events.length === 0) {
-            //     return 0
-            // }
-            // let first_case_year = 9999999;
-            // let first_event_year = 9999999;
-            // if (state.events.length) {
-            //     first_event_year = state.events.reduce((min, e) =>
-            //         new Date(e.start_date).getUTCFullYear() < min ? new Date(e.start_date).getUTCFullYear() : min, new Date(state.events[0].start_date).getUTCFullYear());
-            // }
-            // if (state.cases.length) {
-            //     first_case_year = state.cases.reduce((min, c) => new Date(c.decision_date).getUTCFullYear() < min ? new Date(c.decision_date).getUTCFullYear() : min, new Date(state.cases[0].decision_date).getUTCFullYear());
-            // }
-            // return first_case_year < first_event_year ? first_case_year : first_event_year;
         },
         lastYear: (state) => {
             return state.lastYear;
-            // if (state.cases.length === 0 && state.events.length === 0) {
-            //     return 0
-            // }
-            // let last_event_year = 0;
-            // let last_case_year = 0;
-            // if (state.events.length) {
-            //     last_event_year = state.events.reduce((max, e) =>
-            //         new Date(e.end_date).getUTCFullYear() > max ? new Date(e.end_date).getUTCFullYear() : max, new Date(state.events[0].end_date).getUTCFullYear());
-            // }
-            // if (state.cases.length) {
-            //     last_case_year = state.cases.reduce((max, e) =>
-            //         new Date(e.decision_date).getUTCFullYear() > max ? new Date(e.decision_date).getUTCFullYear() : max, new Date(state.cases[0].decision_date).getUTCFullYear());
-            // }
-            // return last_case_year > last_event_year ? last_case_year : last_event_year;
         },
         events: (state) => {
             return state.events.sort((a, b) => (a.start_date > b.start_date) ? 1 : -1)
@@ -324,13 +292,17 @@ const store = new Vuex.Store({
     },
     actions: {
         saveCategories: function ({commit}, incoming_categories) {
+            // This is a little more complicated with individual object mutation
+
             let new_or_updated_categories = incoming_categories.map((incoming_item) => {
 
                 if (!Object.prototype.hasOwnProperty.call(incoming_item, 'id')) {
+                    // If it doesn't have an ID, it's new. Return it with an ID
                     return {...incoming_item, 'id': store.generateUUID()}
                 }
 
                 let update = this.getters.categories.filter((state_item) => {
+                    // If it has the same ID but different values, that's an update
                     return incoming_item.id === state_item.id && (incoming_item.name !== state_item.name || incoming_item.color !== state_item.color || incoming_item.shape !== state_item.shape);
                 }).length > 0;
 
@@ -411,12 +383,13 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
             })
         },
-         requestDeleteSubobject: function ({commit}, type, id) {
+         requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
             commit('setRequestStatus', 'pending');
+
             let url = this.state.urls.api_delete_subobject
                 .replace('__TIMELINE_ID__', this.state.id)
-                .replace('__SUBOBJECT_ID__', id)
-                .replace('__SUBOBJECT_TYPE__', type);
+                .replace('__SUBOBJECT_ID__', subobject_id)
+                .replace('__SUBOBJECT_TYPE__', subobject_type);
 
             return axios
                 .delete(url, {
@@ -427,22 +400,22 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(status => {
-                        this.dispatch('requestRefreshTimeline').then(() => {
-                            commit('setRequestStatusTerminal', status.status);
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
                             commit('setNotificationMessage', status.message)
-                        })
+                        }
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
             })
         },
-        requestAddUpdateSubobject: function ({commit}, type, subobject) {
+        requestAddUpdateSubobject: function ({commit}, {subobject_type, subobject}) {
             commit('setRequestStatus', 'pending');
-            let url = this.state.urls.api_delete_subobject
+            let url = this.state.urls.api_add_update_subobject
                 .replace('__TIMELINE_ID__', this.state.id)
-                .replace('__SUBOBJECT_ID__', subobject.id)
-                .replace('__SUBOBJECT_TYPE__', type);
+                .replace('__SUBOBJECT_TYPE__', subobject_type);
 
             let case_update_payload = JSON.stringify(subobject);
             return axios
@@ -454,10 +427,11 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(status => {
-                        this.dispatch('requestRefreshTimeline').then(() => {
-                            commit('setRequestStatusTerminal', status.status);
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
                             commit('setNotificationMessage', status.message)
-                        })
+                        }
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
@@ -494,23 +468,9 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
             })
         },
-        requestRefreshTimeline: function ({commit, getters}) {
-            // clear timeline if it exists
-            return axios
-                .get(this.state.urls.chronolawgic_api_retrieve + getters.id)
-                .then(response => {
-                    return response.data
-                })
-                .then(timeline => {
-                    if (timeline.status === "ok") {
-                        commit('setTimeline', timeline['timeline']);
-                    }
-                }
-                ).catch(error => {
-                    commit('setRequestStatusTerminal', 'error');
-                    commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
-                })
-        },
+
+
+
         requestTimelineList: function ({commit}) {
             commit('setRequestStatus', 'pending');
             axios
@@ -529,18 +489,17 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error retrieving timeline list: " + getBestError(error))
             })
         },
-        requestUpdateAdmin: function ({commit}, data) {
+        requestUpdateTimelineMetadata: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
             let author = data.author.trim();
             let json = JSON.stringify({
                 title: data.title,
-                // don't allow empty strings
-                author: author ? author : "CAP User",
+                author: author,
                 description: data.description,
             });
 
             return axios
-                .post(this.state.urls.chronolawgic_api_update_admin + data.id, json, {
+                .post(this.state.urls.chronolawgic_update_timeline_metadata + data.id, json, {
                     headers: {
                         // Overwrite Axios's automatically set Content-Type
                         'Content-Type': 'application/json'

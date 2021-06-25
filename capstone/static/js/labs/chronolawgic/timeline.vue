@@ -173,9 +173,10 @@ export default {
     }
   },
   watch: {
-    title() {
-      this.repopulateTimeline();
-    },
+    '$store.state.title': function() { this.repopulateTimeline(); },
+    '$store.state.events': function() { this.repopulateTimeline(); },
+    '$store.state.cases': function() { this.repopulateTimeline(); },
+
     windowWidth(newWidth, oldWidth) {
       if (this.widthToBreakpoint(newWidth) !== this.widthToBreakpoint(oldWidth)) {
         this.$store.commit('setBreakPoint', this.widthToBreakpoint(newWidth));

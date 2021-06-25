@@ -19,19 +19,19 @@
     // eslint-disable-next-line
     const urls = {
 
-      api_delete_subobject: "{% url 'labs:chronolawgic_delete_subobject' 2147483625 2147483626 2147483627%}"
+      api_delete_subobject: "{% url 'labs:chronolawgic-delete-subobject' 2147483625 2147483626 2147483627%}"
           .replace('2147483625', "__TIMELINE_ID__")
           .replace('2147483626', "__SUBOBJECT_TYPE__")
           .replace('2147483627', "__SUBOBJECT_ID__"),
-      api_add_update_subobject: "{% url 'labs:chronolawgic-api-add-update-subobject' 2147483625 2147483626 2147483627%}"
+      api_add_update_subobject: "{% url 'labs:chronolawgic-api-add-update-subobject' 2147483625 2147483626%}"
           .replace('2147483625', "__TIMELINE_ID__")
-          .replace('2147483626', "__SUBOBJECT_TYPE__")
-          .replace('2147483627', "__SUBOBJECT_ID__"),
+          .replace('2147483626', "__SUBOBJECT_TYPE__"),
 
       chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}",
       chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
 
-      chronolawgic_api_update_admin: "{% url 'labs:chronolawgic-api-update-admin' 2147483627%}".replace('2147483627', ""),
+      chronolawgic_update_timeline_metadata: "{% url 'labs:chronolawgic-update-timeline-metadata' 2147483627%}"
+          .replace('2147483627', ""),
 
       chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' 2147483627%}".replace('2147483627', ""),
       chronolawgic_api_create_h2o: "{% url 'labs:chronolawgic-api-create-h2o' %}",

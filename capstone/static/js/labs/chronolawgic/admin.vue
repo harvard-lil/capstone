@@ -167,7 +167,7 @@ export default {
     },
     saveEdit(id) {
       if (Object.prototype.hasOwnProperty.call(this.editMode, id)) {
-        this.$store.dispatch('requestUpdateAdmin', this.editMode[id]).then(() => {
+        this.$store.dispatch('requestUpdateTimelineMetadata', this.editMode[id]).then(() => {
               this.$delete(this.editMode, id);
               this.$store.dispatch('requestTimelineList');
             }

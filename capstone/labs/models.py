@@ -45,17 +45,57 @@ class Timeline(models.Model):
 
     # subobject is the actual new/updated case or whatever. 
     # type is the key in the schemas variable
-    def add_update_subobject(self, subobject, type):
-        if subobject['id'] in self.subobject_ids(type):
-            self.timeline[type].append(subobject)
+    def add_update_subobject(self, subobject, subobject_type):
+        if subobject['id'] not in self.subobject_ids(subobject_type):
+            self.timeline[subobject_type].append(subobject)
         else:
-            self.timeline[type] = [existing if existing['id'] != subobject['id'] else subobject
-                                   for existing in self.timeline[type]]
+            self.timeline[subobject_type] = [existing if existing['id'] != subobject['id'] else subobject
+                                   for existing in self.timeline[subobject_type]]
         return self.save()
     
-    def delete_subobject(self, type, subobject_id):
-        self.timeline[type] = [existing for existing in self.timeline[type] if existing['id'] != subobject_id]
+    def delete_subobject(self, subobject_type, subobject_id):
+        self.timeline[subobject_type] = [existing for existing in self.timeline[subobject_type] if existing['id'] != subobject_id]
         return self.save()
+
+    def case_years(self):
+        return [int(case['decision_date'].split('-')[0]) for case in self.timeline['cases']]
+
+    def event_years(self):
+        return [year for event in self.timeline['events'] for year in
+                       range(int(event['start_date'].split('-')[0]), int(event['end_date'].split('-')[0]) + 1)]
+
+    @staticmethod
+    def first_year(case_years, event_years):
+        if case_years and event_years:
+            return min([min(case_years), min(event_years)])
+        elif case_years:
+            return min(case_years)
+        elif event_years:
+            return min(case_years)
+        return None
+
+    @staticmethod
+    def last_year(case_years, event_years):
+        if case_years and event_years:
+            return max([max(case_years), max(event_years)])
+        elif case_years:
+            return max(case_years)
+        elif event_years:
+            return max(event_years)
+        return None
+
+
+    @staticmethod
+    def case_stats(case_years, first_year, last_year):
+        if first_year:
+            return [case_years.count(year) for year in range(first_year, last_year + 1)]
+        return None
+
+    @staticmethod
+    def event_stats(event_years, first_year, last_year):
+        if first_year:
+            return [event_years.count(year) for year in range(first_year, last_year + 1)]
+        return None
 
     schemas = {
         'timeline': [
@@ -64,10 +104,7 @@ class Timeline(models.Model):
             {'name': 'description', 'type': str, 'required': False},
             {'name': 'cases', 'type': list, 'required': False},
             {'name': 'events', 'type': list, 'required': False},
-            {'name': 'categories', 'type': list, 'required': False},
-            {'name': 'first_year', 'type': int, 'required': False},
-            {'name': 'last_year', 'type': int, 'required': False},
-            {'name': 'stats', 'type': list, 'required': False},
+            {'name': 'categories', 'type': list, 'required': False}
         ],
         'subobjects': {
             'events': [
@@ -101,16 +138,21 @@ class Timeline(models.Model):
                 {'name': 'color', 'type': str, 'required': True},
                 {'name': 'shape', 'type': str, 'required': True},
             ]
-        }
+        },
+        'ignore': ['stats', 'first_year', 'last_year']
     }
 
-    def case_stats(self):
-        return
-
     @staticmethod
-    def generate_empty_timeline():
-        return { field['name']: (field['default'] if 'default' in field else field['type']())
-                 for field in Timeline.schemas['timeline']}
+    def generate_empty_timeline(starter):
+        timeline = {}
+        for field in Timeline.schemas['timeline']:
+            if field['name'] in starter:
+                timeline[field['name']] = starter[field['name']]
+            elif 'default' in field:
+                timeline[field['name']] = field['default']
+            else:
+                timeline[field['name']] = field['type']()
+        return timeline
 
     @staticmethod
     def subobject_types():
@@ -120,49 +162,56 @@ class Timeline(models.Model):
     def timeline_metadata_fields():
         return [field['name'] for field in Timeline.schemas['timeline'] if field['type'] != list]
 
-    def subobject_ids(self, type):
-        return [subobj['id'] for subobj in self.timeline[type]]
+    def subobject_ids(self, subobject_type):
+        return [subobj['id'] for subobj in self.timeline[subobject_type]]
 
     def normalize_and_validate_timeline(self):
         if not self.timeline:
             Timeline.generate_empty_timeline()
             return [True, []]
-        bad = {
-            'timeline': self.normalize_and_validate_single_object('timeline', self.timeline)
-        }
+        bad = {}
+        results =  self.normalize_and_validate_single_object('timeline', self.timeline)
+        if results[1]: # errors
+            bad['timeline'] = results[1]
+
         for subobject_type in Timeline.subobject_types():
-            bad[type] = []
+            bad[subobject_type] = []
             for index, entry in enumerate(self.timeline[subobject_type]):
-                self.timeline[subobject_type][index], bad[type][index] = self.normalize_and_validate_single_object(
+                self.timeline[subobject_type][index], err = self.normalize_and_validate_single_object(
                     subobject_type, entry)
-            if bad[type] == []:
-                del bad[type]
+                if err:
+                    bad[subobject_type].append(err)
+            if bad[subobject_type] == []:
+                del bad[subobject_type]
         return [False if bad else True, bad]
 
     # also validates the MD fields in the timeline itself
-    def normalize_and_validate_single_object(self, type, entry, name, normalize=True):
+    def normalize_and_validate_single_object(self, subobj_type, entry, normalize=True):
         local_bad = []
 
-        if type == 'timeline':
+        if subobj_type == 'timeline':
             fields = self.schemas['timeline']
         else:
-            fields = self.schemas['subobjects'][type]
+            fields = self.schemas['subobjects'][subobj_type]
 
         # is this even the right thing?
         if type(entry) != dict:
-            return [entry, ["Wrong Data Type for {} entry: {} instead of dict".format(name, type(entry))]]
+            return [entry, ["Wrong Data Type for {} entry: {} instead of dict".format(subobj_type, type(entry))]]
 
         # do we have extra fields?
+        resolved = []
         known_field_names = [field['name'] for field in fields]
         extraneous = set(entry.keys()) - set(known_field_names)
         for extraneous_field in extraneous:
-            if not entry[extraneous_field] and normalize:  # if the field is empty, just remove it
+            if (not entry[extraneous_field] or extraneous_field in self.schemas['ignore']) and normalize:  # if the field is empty, just remove it
                 del entry[extraneous_field]
-                entry.remove(extraneous_field)
+                resolved.append(extraneous_field)
+
+        extraneous = list(set(extraneous) - set(resolved))
 
         if extraneous:
             local_bad.append("Unexpected {} field(s): {}. Expecting {}".format(
-                name,
+                subobj_type,
                 extraneous,
                 known_field_names
             ))
@@ -175,7 +224,7 @@ class Timeline(models.Model):
                 elif not field['required'] and normalize:
                     entry[field['name']] = field['type']()
                 else: # definitely need this
-                    local_bad.append("Missing {} field {}".format(name, field['name']))
+                    local_bad.append("Missing {} field {}".format(subobj_type, field['name']))
             elif type(entry[field['name']]) != field['type']:
                 if 'default' in field and normalize:
                     entry[field['name']] = field['default']
@@ -186,6 +235,7 @@ class Timeline(models.Model):
                     field['name'], field['type'], entry[field['name']]))
             elif entry[field['name']] == '' and 'default' in field and normalize:
                 entry[field['name']] = field['default']
+
         return [entry, local_bad]
 
 
