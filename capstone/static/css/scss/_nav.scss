@@ -69,10 +69,19 @@
   .user-account-img {
     background: url("../../img/icons/user-white.svg") no-repeat center;
     height: 24px;
+    width: 42px;
   }
 
   @include media-breakpoint-down(lg) {
     font-size: 1.2rem;
+  }
+  @include media-breakpoint-down(sm) {
+    .x-small {
+      display: none;
+    }
+    .user-account-img {
+      width: 24px;
+    }
   }
 
   &.small-nav, &.force-small-nav {
@@ -90,6 +99,7 @@
         margin-top: 10px;
         width: 20px;
       }
+
       .x-small {
         display: none;
       }
@@ -292,19 +302,11 @@ li.nav-item.dropdown {
 #burger-icon {
   z-index: 9999;
   border: 0;
-  display: inline-block;
   cursor: pointer;
-  position: relative;
-  right: 10px;
   background-color: $color-black;
-  width: 34px;
-  height: 30px;
-  padding-left: 4px;
-  float: right;
-  padding-top: 0;
 
   &:focus, &:active {
-    outline: 1px solid $color-yellow;
+    outline: none;
   }
 
   @include media-breakpoint-up(lg) {
@@ -319,6 +321,9 @@ li.nav-item.dropdown {
   margin: 6px 0;
   transition: 0.4s;
   border-radius: 3px;
+  left: -3px;
+  position: relative;
+  top: 1px;
 }
 
 body.hamburger-menu-open {
@@ -358,6 +363,9 @@ body.hamburger-menu-open {
       a {
         pointer-events: none;
         cursor: default;
+      }
+      .burger-item {
+        left: 0;
       }
     }
   }

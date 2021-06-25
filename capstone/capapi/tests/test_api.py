@@ -607,24 +607,41 @@ def test_redoc(client):
 # PAGINATION
 @pytest.mark.django_db(databases=['capdb'])
 def test_pagination(client, case_factory, elasticsearch):
-    cases = [case_factory() for _ in range(3)]
+    cases = [case_factory(decision_date_original=f'2000-01-0{i+1}') for i in range(3)]
 
-    ids = []
+    # set case name so relevance will be predictable
+    for i, case in enumerate(cases):
+        case.name_abbreviation = "library " * (i+1)
+        case.save()
+    update_elasticsearch_from_queue()
 
-    response = client.get(api_reverse("cases-list"), {"page_size": 1})
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
+    orderings = [
+        [{}, cases],
+        [{"ordering": "decision_date"}, cases],
+        [{"ordering": "-decision_date"}, reversed(cases)],
+        [{"search": "library"}, reversed(cases)],
+    ]
 
-    response = client.get(content['next'])
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
+    # test that we see expected ordering when navigating forward to end, back to beginning, and forward again
+    for query, expected_cases in orderings:
+        expected_ids = [c.id for c in expected_cases]
 
-    response = client.get(content['next'])
-    content = response.json()
-    assert len(content['results']) == 1
-    ids.append(content['results'][0]['id'])
-    assert content['next'] is None
+        content = client.get(api_reverse("cases-list"), {"page_size": 1, **query}).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[0]]
 
-    assert set(ids) == set(case.id for case in cases)
+        content = client.get(content['next']).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[1]]
+
+        content = client.get(content['next']).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[2]]
+        assert content['next'] is None
+
+        content = client.get(content['previous']).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[1]]
+
+        content = client.get(content['previous']).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[0]]
+        assert content['previous'] is None
+
+        content = client.get(content['next']).json()
+        assert [r['id'] for r in content['results']] == [expected_ids[1]]

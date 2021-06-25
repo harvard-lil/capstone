@@ -157,6 +157,9 @@ export default {
     title() {
       return this.$store.state.title
     },
+    stats() {
+      return this.$store.getters.stats;
+    }
   },
   data() {
     return {
@@ -247,7 +250,6 @@ export default {
       this.years = {}
       const firstYear = this.$store.getters.firstYear;
       const finalYear = this.$store.getters.lastYear;
-
       // clear years
       this.years = {};
 

@@ -7,7 +7,6 @@
     <p class="small">Click on chart to travel to date</p>
   </div>
 </template>
-
 <script>
 import BarChart from './bar-chart';
 
@@ -37,18 +36,6 @@ export default {
     }
   },
   methods: {
-    createMapSegments() {
-      let segments = 8;
-      if (this.lastYear > this.firstYear) {
-        let difference = this.lastYear - this.firstYear;
-        let segmentsLength = difference / segments;
-        console.log(segmentsLength)
-        this.minimapSegments = Array(segments).fill({size: 0})
-        // console.log('this.minimapSegments', this.minimapSegments)
-
-      }
-
-    },
     fillChartData() {
       let firstYear = this.$store.getters.firstYear ? this.$store.getters.firstYear : 1900
       let lastYear = this.$store.getters.lastYear ? this.$store.getters.lastYear : 2000;

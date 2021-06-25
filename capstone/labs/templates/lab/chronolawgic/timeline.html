@@ -27,6 +27,9 @@
           .replace('2147483625', "__TIMELINE_ID__")
           .replace('2147483626', "__SUBOBJECT_TYPE__"),
 
+      api_update_categories: "{% url 'labs:chronolawgic-api-update-categories' 2147483625 %}"
+          .replace('2147483625', "__TIMELINE_ID__"),
+
       chronolawgic_api_create: "{% url 'labs:chronolawgic-api-create' %}",
       chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
 

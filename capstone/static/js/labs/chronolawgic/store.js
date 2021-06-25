@@ -78,6 +78,7 @@ const store = new Vuex.Store({
 
             api_delete_subobject: importUrls.api_delete_subobject,
             api_add_update_subobject: importUrls.api_add_update_subobject,
+            api_update_categories: importUrls.api_update_categories,
 
             static: importUrls.static,
             api_root: importUrls.api_root,
@@ -205,12 +206,10 @@ const store = new Vuex.Store({
         deleteEvent(state, id) {
             this.dispatch('requestDeleteSubobject', {'subobject_type':'events', 'subobject_id': id});
         },
-        addUpdateCategory(state, category_object) {
-            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'categories', 'subobject': category_object});
+        updateCategories(state, categories_list) {
+            this.dispatch('requestUpdateCategories', { 'categories': categories_list});
         },
-        deleteCategory(state, id) {
-            this.dispatch('requestDeleteSubobject', {'subobject_type':'categories', 'subobject_id': id});
-        },
+
 
         setMissingCases(state, missingCases) {
             state.missingCases = missingCases;
@@ -291,39 +290,6 @@ const store = new Vuex.Store({
         }
     },
     actions: {
-        saveCategories: function ({commit}, incoming_categories) {
-            // This is a little more complicated with individual object mutation
-
-            let new_or_updated_categories = incoming_categories.map((incoming_item) => {
-
-                if (!Object.prototype.hasOwnProperty.call(incoming_item, 'id')) {
-                    // If it doesn't have an ID, it's new. Return it with an ID
-                    return {...incoming_item, 'id': store.generateUUID()}
-                }
-
-                let update = this.getters.categories.filter((state_item) => {
-                    // If it has the same ID but different values, that's an update
-                    return incoming_item.id === state_item.id && (incoming_item.name !== state_item.name || incoming_item.color !== state_item.color || incoming_item.shape !== state_item.shape);
-                }).length > 0;
-
-                return update ? incoming_item : null
-
-            }).filter((cat) => {
-                return cat
-            });
-
-            let deleted_categories = this.getters.categories.filter((state_item) => {
-                return incoming_categories.filter((incoming_item) => {
-                    return incoming_item.id === state_item.id
-                }) < 1
-            });
-            deleted_categories.forEach( function (dc) {
-               commit('deleteCategory', dc.id);
-            } );
-            new_or_updated_categories.forEach( function (uc) {
-                commit('addUpdateCategory', uc);
-            } );
-        },
         requestCreateTimeline: function ({commit}) {
             commit('setRequestStatus', 'pending');
             axios
@@ -374,7 +340,12 @@ const store = new Vuex.Store({
                 })
                 .then(response => response.data)
                 .then(
-                    () => {
+                    (timeline) => {
+
+                        commit('setStats', timeline['stats'])
+                        commit('setFirstYear', timeline['first_year'])
+                        commit('setLastYear', timeline['last_year'])
+
                         commit('setRequestStatusTerminal', 'success');
                         commit('setNotificationMessage', "Timeline Saved")
                     }
@@ -383,6 +354,7 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
             })
         },
+
          requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
             commit('setRequestStatus', 'pending');
 
@@ -417,9 +389,9 @@ const store = new Vuex.Store({
                 .replace('__TIMELINE_ID__', this.state.id)
                 .replace('__SUBOBJECT_TYPE__', subobject_type);
 
-            let case_update_payload = JSON.stringify(subobject);
+            let update_payload = JSON.stringify(subobject);
             return axios
-                .post(url, case_update_payload, {
+                .post(url, update_payload, {
                     headers: {
                         // Overwrite Axios's automatically set Content-Type
                         'Content-Type': 'application/json'
@@ -436,6 +408,32 @@ const store = new Vuex.Store({
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestUpdateCategories: function ({commit}, category_list) {
+            commit('setRequestStatus', 'pending');
+            let url = this.state.urls.api_update_categories
+                .replace('__TIMELINE_ID__', this.state.id);
+
+            let update_payload = JSON.stringify(category_list);
+            return axios
+                .post(url, update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(status => {
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', status.message)
+                        }
+                    }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error updating categories: " + getBestError(error))
             })
         },
         requestTimeline: function ({commit}, timelineId) {

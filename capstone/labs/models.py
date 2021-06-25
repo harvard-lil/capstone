@@ -43,9 +43,14 @@ class Timeline(models.Model):
             self.timeline[field] = updated_timeline[field]
         return self.save()
 
+    def update_categories(self, new_categories):
+        self.timeline['categories'] = new_categories
+        return self.save()
+
     # subobject is the actual new/updated case or whatever. 
     # type is the key in the schemas variable
     def add_update_subobject(self, subobject, subobject_type):
+        print(subobject, subobject_type)
         if subobject['id'] not in self.subobject_ids(subobject_type):
             self.timeline[subobject_type].append(subobject)
         else:
@@ -54,6 +59,7 @@ class Timeline(models.Model):
         return self.save()
     
     def delete_subobject(self, subobject_type, subobject_id):
+        print(subobject_id, subobject_type)
         self.timeline[subobject_type] = [existing for existing in self.timeline[subobject_type] if existing['id'] != subobject_id]
         return self.save()
 

@@ -23,6 +23,8 @@ if 'chronolawgic' not in settings.LABS_HIDDEN:
         path('chronolawgic/api/retrieve/', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
         path('chronolawgic/api/retrieve/<str:timeline_uuid>', views.chronolawgic_api_retrieve, name='chronolawgic-api-retrieve'),
 
+        path('chronolawgic/api/add-update/<str:timeline_uuid>/categories',
+             views.chronolawgic_update_categories, name='chronolawgic-api-update-categories'),
         path('chronolawgic/api/add-update/<str:timeline_uuid>/<str:subobject_type>',
              views.chronolawgic_add_update_subobject, name='chronolawgic-api-add-update-subobject'),
         path('chronolawgic/api/delete/<str:timeline_uuid>/<str:subobject_type>/<str:subobject_uuid>',

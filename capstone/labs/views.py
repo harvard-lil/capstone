@@ -131,6 +131,38 @@ def chronolawgic_api_create(request):
         'is_owner': request.user == timeline_record.created_by
     })
 
+def chronolawgic_update_categories(request, timeline_uuid):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    try:
+        categories = json.loads(request.body.decode())['categories']
+    except json.decoder.JSONDecodeError as e:
+        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+
+    try:
+        timeline_record.timeline['categories'] = categories
+    except TimelineValidationException as e:
+        return JsonResponse(
+            {'status': 'err',
+             'reason': 'data_validation',
+             'details': "Problem creating timeline— update internal template {}".format(e)
+             }, status=400)
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'updated categories',
+        'timeline': timeline_record.timeline
+    })
+
 
 def chronolawgic_add_update_subobject(request, subobject_type, timeline_uuid):
     if request.method != 'POST':
@@ -168,7 +200,6 @@ def chronolawgic_add_update_subobject(request, subobject_type, timeline_uuid):
 def chronolawgic_delete_subobject(request, timeline_uuid, subobject_type, subobject_uuid):
     if request.method != 'DELETE':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
-
     try:
         timeline_record = Timeline.objects.get(uuid=timeline_uuid)
     except Timeline.DoesNotExist:
@@ -226,6 +257,9 @@ def h2o_import(request):
 
     h2o_url = data['url']
     parsed_url = urlparse(h2o_url)
+
+    if not parsed_url:
+        return JsonResponse({'status': 'err', 'reason': 'no_h2o_url'}, status=403)
 
     # expecting an H2O URL, no shenanigans
     if parsed_url.netloc != h2o_domain:
