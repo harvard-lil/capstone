@@ -72,10 +72,14 @@ const store = new Vuex.Store({
         urls: { // Doing this the long way to make it a little easier to see what's going on.
             chronolawgic_api_create: importUrls.chronolawgic_api_create,
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
-            chronolawgic_api_update: importUrls.chronolawgic_api_update,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
-            chronolawgic_api_update_admin: importUrls.chronolawgic_api_update_admin,
+            chronolawgic_update_timeline_metadata: importUrls.chronolawgic_update_timeline_metadata,
             chronolawgic_api_create_h2o: importUrls.chronolawgic_api_create_h2o,
+
+            api_delete_subobject: importUrls.api_delete_subobject,
+            api_add_update_subobject: importUrls.api_add_update_subobject,
+            api_update_categories: importUrls.api_update_categories,
+
             static: importUrls.static,
             api_root: importUrls.api_root,
         },
@@ -182,67 +186,37 @@ const store = new Vuex.Store({
                 state.notificationMessage = null;
             }, 5000);
         },
-        addEvent(state, event) {
-            // assign id to event
-            event.id = this.generateUUID();
-            state.events.push(event);
-            this.dispatch('requestUpdateTimeline')
+        addCase(state, case_object) {
+            case_object.id = this.generateUUID();
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'cases', 'subobject': case_object});
         },
-        addCase(state, caselaw) {
-            // assign id to caselaw
-            caselaw.id = this.generateUUID();
-            state.cases.push(caselaw);
-            this.dispatch('requestUpdateTimeline')
-        },
-        updateEvent(state, event) {
-            for (let i = 0; i < state.events.length; i++) {
-                if (state.events[i].id === event.id) {
-                    state.events[i] = event;
-                    this.dispatch('requestUpdateTimeline');
-                    break;
-                }
-            }
-        },
-        updateCase(state, caselaw) {
-            for (let i = 0; i < state.cases.length; i++) {
-                if (state.cases[i].id === caselaw.id) {
-                    state.cases[i] = caselaw;
-                    this.dispatch('requestUpdateTimeline');
-                    break;
-                }
-            }
-        },
-        deleteEvent(state, id) {
-            let event_index = -1;
-            for (let i = 0; i < state.events.length; i++) {
-                if (state.events[i].id === id) {
-                    event_index = i;
-                    break;
-                }
-            }
-            state.events.splice(event_index, 1);
-            this.dispatch('requestUpdateTimeline');
+        updateCase(state, case_object) {
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'cases', 'subobject': case_object});
         },
         deleteCase(state, id) {
-            let caselaw_index = -1;
-            for (let i = 0; i < state.cases.length; i++) {
-                if (state.cases[i].id === id) {
-                    caselaw_index = i;
-                    break;
-                }
-            }
-            state.cases.splice(caselaw_index, 1);
-            this.dispatch('requestUpdateTimeline');
+            this.dispatch('requestDeleteSubobject', {'subobject_type':'cases', 'subobject_id': id});
         },
-        saveCategories(state, categories) {
-            state.categories = categories;
-            for (let i = 0; i < state.categories.length; i++) {
-                if (!(state.categories[i].id)) {
-                    state.categories[i].id = store.generateUUID()
-                }
-            }
-            this.dispatch('requestUpdateTimeline');
+        addEvent(state, event_object) {
+            event_object.id = this.generateUUID();
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
         },
+        updateEvent(state, event_object) {
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
+        },
+        deleteEvent(state, id) {
+            this.dispatch('requestDeleteSubobject', {'subobject_type':'events', 'subobject_id': id});
+        },
+        updateCategories(state, categories_list) {
+            categories_list = categories_list.map((category) => {
+                    if (!Object.prototype.hasOwnProperty.call(category, 'id')) {
+                        category.id = this.generateUUID();
+                    }
+                    return category
+            });
+            this.dispatch('requestUpdateCategories', categories_list);
+        },
+
+
         setMissingCases(state, missingCases) {
             state.missingCases = missingCases;
         }
@@ -267,11 +241,11 @@ const store = new Vuex.Store({
             if (state.requestStatus === 'pending') {
                 return 'pending'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
-                !Object.prototype.hasOwnProperty.call(state, 'events')) {
+                !Object.prototype.hasOwnProperty.call(state, 'events') ) {
                 return 'empty'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return state.cases.length === 0 ? 'empty' : 'populated'
-            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases')) {
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases') ) {
                 return state.events.length === 0 ? 'empty' : 'populated'
             }
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
@@ -360,30 +334,86 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error deleting timeline: " + getBestError(error))
             })
         },
-        requestUpdateTimeline: function ({commit}) {
+
+
+         requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
             commit('setRequestStatus', 'pending');
-            let json = JSON.stringify({timeline: this.getters.timeline});
-            axios
-                .post(this.state.urls.chronolawgic_api_update + this.state.id, json, {
+
+            let url = this.state.urls.api_delete_subobject
+                .replace('__TIMELINE_ID__', this.state.id)
+                .replace('__SUBOBJECT_ID__', subobject_id)
+                .replace('__SUBOBJECT_TYPE__', subobject_type);
+
+            return axios
+                .delete(url, {
                     headers: {
                         // Overwrite Axios's automatically set Content-Type
                         'Content-Type': 'application/json'
                     }
                 })
                 .then(response => response.data)
-                .then(
-                    (timeline) => {
-
-                        commit('setStats', timeline['stats'])
-                        commit('setFirstYear', timeline['first_year'])
-                        commit('setLastYear', timeline['last_year'])
-
-                        commit('setRequestStatusTerminal', 'success');
-                        commit('setNotificationMessage', "Timeline Saved")
+                .then(status => {
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', status.message)
+                        }
                     }
                 ).catch(error => {
-                commit('setRequestStatusTerminal', 'error');
-                commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestAddUpdateSubobject: function ({commit}, {subobject_type, subobject}) {
+            commit('setRequestStatus', 'pending');
+            let url = this.state.urls.api_add_update_subobject
+                .replace('__TIMELINE_ID__', this.state.id)
+                .replace('__SUBOBJECT_TYPE__', subobject_type);
+
+            let update_payload = JSON.stringify(subobject);
+            return axios
+                .post(url, update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(status => {
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', status.message)
+                        }
+                    }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
+            })
+        },
+        requestUpdateCategories: function ({commit}, category_list) {
+            commit('setRequestStatus', 'pending');
+            let url = this.state.urls.api_update_categories
+                .replace('__TIMELINE_ID__', this.state.id);
+            let update_payload = JSON.stringify(category_list);
+            return axios
+                .post(url, update_payload, {
+                    headers: {
+                        // Overwrite Axios's automatically set Content-Type
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.data)
+                .then(status => {
+                        if (status.status == "ok") {
+                            commit('setTimeline', status.timeline);
+                            commit('setRequestStatusTerminal', 'success');
+                            commit('setNotificationMessage', status.message)
+                        }
+                    }
+                ).catch(error => {
+                    commit('setRequestStatusTerminal', 'error');
+                    commit('setNotificationMessage', "error updating categories: " + getBestError(error))
             })
         },
         requestTimeline: function ({commit}, timelineId) {
@@ -416,6 +446,9 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
             })
         },
+
+
+
         requestTimelineList: function ({commit}) {
             commit('setRequestStatus', 'pending');
             axios
@@ -434,18 +467,17 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error retrieving timeline list: " + getBestError(error))
             })
         },
-        requestUpdateAdmin: function ({commit}, data) {
+        requestUpdateTimelineMetadata: function ({commit}, data) {
             commit('setRequestStatus', 'pending');
             let author = data.author.trim();
             let json = JSON.stringify({
                 title: data.title,
-                // don't allow empty strings
-                author: author ? author : "CAP User",
+                author: author,
                 description: data.description,
             });
 
             return axios
-                .post(this.state.urls.chronolawgic_api_update_admin + data.id, json, {
+                .post(this.state.urls.chronolawgic_update_timeline_metadata + data.id, json, {
                     headers: {
                         // Overwrite Axios's automatically set Content-Type
                         'Content-Type': 'application/json'

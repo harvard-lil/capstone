@@ -107,8 +107,8 @@ export default {
     saveCategories() {
       this.checkForm();
       if (this.errors.length) return;
-      EventBus.$emit('updateCategories', this.categoryList)
-      store.commit('saveCategories', this.categoryList)
+      EventBus.$emit('updateCategories', this.categoryList);
+      store.commit('updateCategories', this.categoryList);
       // close "modal"
       this.$parent.toggleKey();
     },

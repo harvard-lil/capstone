@@ -2,19 +2,17 @@ import json
 import os
 import requests
 import uuid
-from dictdiffer import diff as dictdiff
+
 from multiprocessing.pool import ThreadPool
 from urllib.parse import urlparse
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
-from labs.models import Timeline
+from labs.models import Timeline, TimelineValidationException
 
 from capweb.views import MarkdownView
 from capweb.templatetags.api_url import api_url
-
-from .helpers.chronolawgic import validate_and_normalize_timeline, TimelineValidationException
 
 
 # Labs-specific views
@@ -56,33 +54,33 @@ def chronolawgic_api_retrieve(request, timeline_uuid=None):
         return JsonResponse({
             'status': 'ok',
             'timelines': []})
-
     try:
-        timeline = Timeline.objects.get(uuid=timeline_uuid)
-        if 'cases' not in timeline.timeline:
-            timeline.timeline['cases'] = []
-        if 'events' not in timeline.timeline:
-            timeline.timeline['events'] = []
-        timeline.save()
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
 
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
-    first_year, last_year, case_stats, event_stats = get_timeline_stats(timeline.timeline)
+    case_years = timeline_record.case_years()
+    event_years = timeline_record.event_years()
+
+    first_year = Timeline.first_year(case_years, event_years)
+    last_year = Timeline.last_year(case_years, event_years)
+    event_stats = Timeline.event_stats(event_years, first_year, last_year)
+    case_stats = Timeline.case_stats(case_years, first_year, last_year)
 
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline.timeline,
+        'timeline': timeline_record.timeline,
         'stats': [case_stats, event_stats],
         'first_year': first_year,
         'last_year': last_year,
-        'id': timeline.uuid,
-        'created_by': timeline.created_by.id,
-        'is_owner': True if request.user == timeline.created_by else False
+        'id': timeline_record.uuid,
+        'created_by': timeline_record.created_by.id,
+        'is_owner': True if request.user == timeline_record.created_by else False
     })
 
 
-def chronolawgic_api_update_admin(request, timeline_uuid):
+def chronolawgic_update_timeline_metadata(request, timeline_uuid):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
@@ -95,15 +93,9 @@ def chronolawgic_api_update_admin(request, timeline_uuid):
 
     try:
         incoming_timeline = json.loads(request.body.decode())
+        timeline_record.update_timeline_metadata(incoming_timeline)
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    timeline_record.timeline['title'] = incoming_timeline['title']
-    timeline_record.timeline['author'] = incoming_timeline['author'] if 'author' in incoming_timeline else None
-    timeline_record.timeline['description'] = incoming_timeline['description']
-
-    try:
-        timeline_record.timeline = validate_and_normalize_timeline(timeline_record.timeline)
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
@@ -111,13 +103,9 @@ def chronolawgic_api_update_admin(request, timeline_uuid):
              'details': "Timeline Validation Errors: {}".format(e)
              }, status=400)
 
-    timeline_record.save()
-
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline_record.timeline,
-        'id': timeline_record.uuid,
-        'is_owner': True if request.user == timeline_record.created_by else False
+        'timeline': timeline_record.timeline
     })
 
 
@@ -128,101 +116,100 @@ def chronolawgic_api_create(request):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
-    try:
-        timeline = Timeline.objects.create(
-            created_by=request.user,
-            timeline=validate_and_normalize_timeline({
-                "title": "",
-                "author": "",
-                "description": "",
-                "cases": [],
-                "events": [],
-                "categories": []
-            })
-        )
-        timeline.save()
-    except TimelineValidationException as e:
-        return JsonResponse(
-            {'status': 'err',
-             'reason': 'data_validation',
-             'details': "Problem creating timeline— update internal template {}".format(e)
-             }, status=400)
-    except Exception as e:
-        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+    timeline_record = Timeline(
+        timeline=Timeline.generate_empty_timeline(),
+        created_by=request.user
+    )
+    timeline_record.save()
 
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline.timeline,
-        'id': timeline.uuid,
-        'is_owner': request.user == timeline.created_by
+        'timeline': timeline_record.timeline,
+        'id': timeline_record.uuid,
+        'is_owner': request.user == timeline_record.created_by
     })
 
-
-def chronolawgic_api_update(request, timeline_uuid):
+def chronolawgic_update_categories(request, timeline_uuid):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
         timeline_record = Timeline.objects.get(uuid=timeline_uuid)
-        existing_timeline = timeline_record.timeline
     except Timeline.DoesNotExist:
-        return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
 
     if not request.user.is_authenticated or request.user != timeline_record.created_by:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        incoming_timeline = json.loads(request.body.decode())['timeline']  # The JSON model field does not validate json
-
+        categories = [Timeline.normalize_and_validate_single_object('categories', category) for category in
+                                                                   json.loads(request.body.decode())]
+        timeline_record.timeline['categories'] = categories
+        timeline_record.save()
     except json.decoder.JSONDecodeError as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
-
-    try:
-        incoming_timeline = validate_and_normalize_timeline(incoming_timeline)
-        existing_timeline = validate_and_normalize_timeline(existing_timeline)
     except TimelineValidationException as e:
         return JsonResponse(
             {'status': 'err',
              'reason': 'data_validation',
-             'details': "Timeline Validation Errors: {}".format(e)
+             'details': str(e)
              }, status=400)
-
-    # removing often-changing metadata fields from differ
-    incoming_timeline.pop('first_year', None)
-    incoming_timeline.pop('last_year', None)
-    incoming_timeline.pop('stats', None)
-
-    existing_timeline.pop('first_year', None)
-    existing_timeline.pop('last_year', None)
-    existing_timeline.pop('stats', None)
-
-    # fixing a bug where an out-of-sync timeline in the user's browser clobbered an entire timeline.
-    number_of_items_modified = len(
-        set(["{}{}".format(thing[1][0], thing[1][1]) for thing in dictdiff(existing_timeline, incoming_timeline)
-             if thing[0] != 'remove']
-            ))
-
-    number_of_items_removed = len([thing[0] for thing in dictdiff(existing_timeline, incoming_timeline)
-                                   if thing[0] == 'remove'])
-
-    if number_of_items_modified > 1 or number_of_items_removed > 1:
-        return JsonResponse({'status': 'err', 'reason': "Timeline out of sync. More than one change or remove detected—"
-                                                        " aborted change protect timeline. Please refresh "
-                                                        "Chronolawgic. Did we mention this app is beta?😬 {}".format(
-            [thing for thing in dictdiff(existing_timeline, incoming_timeline)])}, status=500)
-
-    timeline_record.timeline = incoming_timeline
-    timeline_record.save()
-    first_year, last_year, case_stats, event_stats = get_timeline_stats(timeline_record.timeline)
 
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline_record.timeline,
-        'stats': [case_stats, event_stats],
-        'first_year': first_year,
-        'last_year': last_year,
-        'id': timeline_record.uuid,
-        'is_owner': True if request.user == timeline_record.created_by else False
+        'message': 'updated categories',
+        'timeline': timeline_record.timeline
+    })
+
+
+def chronolawgic_add_update_subobject(request, subobject_type, timeline_uuid):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    try:
+        subobject = Timeline.normalize_and_validate_single_object(subobject_type, json.loads(request.body.decode()))
+        timeline_record.add_update_subobject(subobject, subobject_type)
+    except json.decoder.JSONDecodeError as e:
+        return JsonResponse({'status': 'err', 'reason': e}, status=500)
+    except TimelineValidationException as e:
+        return JsonResponse(
+            {'status': 'err',
+             'reason': 'data_validation',
+             'details': str(e)
+             }, status=400)
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'updated {} list'.format(subobject_type),
+        'timeline': timeline_record.timeline
+    })
+
+
+def chronolawgic_delete_subobject(request, timeline_uuid, subobject_type, subobject_uuid):
+    if request.method != 'DELETE':
+        return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
+    try:
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
+    except Timeline.DoesNotExist:
+        return JsonResponse({'status': 'err', 'reason': 'timeline_not_found'}, status=404)
+
+    if not request.user.is_authenticated or request.user != timeline_record.created_by:
+        return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
+
+    timeline_record.delete_subobject(subobject_type, subobject_uuid)
+
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'deleted {}'.format(subobject_type),
+        'timeline': timeline_record.timeline
     })
 
 
@@ -231,23 +218,21 @@ def chronolawgic_api_delete(request, timeline_uuid):
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
 
     try:
-        timeline = Timeline.objects.get(uuid=timeline_uuid)
+        timeline_record = Timeline.objects.get(uuid=timeline_uuid)
     except Timeline.DoesNotExist:
         return JsonResponse({'status': 'err', 'reason': 'not_found'}, status=404)
 
-    if not request.user.is_authenticated or timeline.created_by.pk != request.user.pk:
+    if not request.user.is_authenticated or timeline_record.created_by.pk != request.user.pk:
         return JsonResponse({'status': 'err', 'reason': 'auth'}, status=403)
 
     try:
-        timeline.delete()
+        timeline_record.delete()
     except Exception as e:
         return JsonResponse({'status': 'err', 'reason': e}, status=500)
 
     return JsonResponse({
         'status': 'ok',
-        'timeline': timeline.timeline,
-        'id': timeline.uuid,
-        'is_owner': True if request.user == timeline.created_by else False
+        'id': timeline_uuid,
     })
 
 
@@ -261,6 +246,9 @@ def h2o_import(request):
 
     h2o_url = data['url']
     parsed_url = urlparse(h2o_url)
+
+    if not parsed_url:
+        return JsonResponse({'status': 'err', 'reason': 'no_h2o_url'}, status=403)
 
     # expecting an H2O URL, no shenanigans
     if parsed_url.netloc != h2o_domain:
@@ -288,23 +276,32 @@ def h2o_import(request):
                     timeline_cases.append(case)
                 else:
                     missing_cases.append(case)
-            first_year, last_year, case_stats, event_stats = get_timeline_stats({'cases': timeline_cases, 'events': []})
-            timeline = Timeline.objects.create(
-                created_by=request.user,
-                timeline=validate_and_normalize_timeline({
-                    "title": "",
-                    "author": "Imported from H2O",
+
+            timeline_record = Timeline(
+                timeline=Timeline.generate_empty_timeline(
+                    {"author": "Imported from H2O",
                     "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
-                    "stats": [case_stats, event_stats],
-                    "first_year": first_year,
-                    "last_year": last_year,
-                    "cases": timeline_cases,
-                    "events": [],
-                    "categories": []
-                })
+                    "cases": timeline_cases}
+                ),
+                created_by=request.user,
             )
-            timeline.save()
-            return JsonResponse({'status': 'ok', 'timeline': timeline.timeline, 'id': timeline.uuid, 'missing_cases': missing_cases})
+            timeline_record.save()
+
+            # case_years and event_years must be generated after there are cases in the TL
+            case_years = timeline_record.case_years()
+            event_years = timeline_record.event_years()
+
+            first_year = Timeline.first_year(case_years, event_years)
+            last_year = Timeline.last_year(case_years, event_years)
+            case_stats = Timeline.case_stats(case_years, first_year, last_year)
+            event_stats = Timeline.event_stats(event_years, first_year, last_year)
+
+            # no need to save these changes, just return them
+            timeline_record.timeline['first_year'] = Timeline.first_year(case_years, event_years)
+            timeline_record.timeline['last_year'] = Timeline.last_year(case_years, event_years)
+            timeline_record.timeline['stats'] = [case_stats, event_stats]
+
+            return JsonResponse({'status': 'ok', 'timeline': timeline_record.timeline, 'id': timeline_record.uuid, 'missing_cases': missing_cases})
         else:
             return JsonResponse({'status': 'err', 'reason': ''}, status=resp.status_code)
     except Exception as e:
@@ -354,52 +351,12 @@ def get_case(case, use_original_urls=False):
             return case
 
 
-def get_timeline_stats(timeline):
-    event_stats = []
-    case_stats = []
-    first_year = 9999999
-    last_year = 0
-    gathered_case_dates = {}
-    gathered_event_dates = {}
-
-    def get_year(datestring):
-        return int(datestring.split('-')[0])
-
-    for case in timeline['cases']:
-        year = get_year(case['decision_date'])
-        first_year = year if year < first_year else first_year
-        last_year = year if year > last_year else last_year
-
-        if year in gathered_case_dates:
-            gathered_case_dates[year] += 1
-        else:
-            gathered_case_dates[year] = 1
-
-    for event in timeline['events']:
-        start_year = get_year(event['start_date'])
-        end_year = get_year(event['end_date'])
-        first_year = start_year if start_year < first_year else first_year
-        last_year = end_year if end_year > last_year else last_year
-        year = start_year
-        while year < end_year + 1:
-            if year in gathered_event_dates:
-                gathered_event_dates[year] += 1
-            else:
-                gathered_event_dates[year] = 1
-            year += 1
-
-    year = first_year
-    while year < last_year + 1:
-        if year in gathered_case_dates:
-            case_stats.append(gathered_case_dates[year])
-        else:
-            case_stats.append(0)
-        if year in gathered_event_dates:
-            event_stats.append(gathered_event_dates[year])
-        else:
-            event_stats.append(0)
-        year += 1
-
-    return first_year, last_year, case_stats, event_stats
+def legacy_please_refresh(request, timeline_uuid):
+    return JsonResponse({
+        'status': 'err',
+        'reason': 'legacy_api_call',
+        'details': "Command Failed: Refresh Page: {}".format(timeline_uuid),
+        "uuid": timeline_uuid
+    }, status=400)
 
 # # # # END CHRONOLAWGIC # # # #
