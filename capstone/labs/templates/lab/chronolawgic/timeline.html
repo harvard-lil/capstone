@@ -18,7 +18,7 @@
     // This is essentially each endpoint with its API interface
     // eslint-disable-next-line
     const urls = {
-
+      chronolawgic: "{% url 'labs:chronolawgic' %}",
       api_delete_subobject: "{% url 'labs:chronolawgic-delete-subobject' 2147483625 2147483626 2147483627%}"
           .replace('2147483625', "__TIMELINE_ID__")
           .replace('2147483626', "__SUBOBJECT_TYPE__")
@@ -40,6 +40,7 @@
       chronolawgic_api_create_h2o: "{% url 'labs:chronolawgic-api-create-h2o' %}",
       static: "{% static '' %}",
       api_root: "{% api_url 'api-root' %}v1/",
+      contact: "{% url 'contact' %}",
     };
 
     // eslint-disable-next-line

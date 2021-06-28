@@ -100,7 +100,7 @@ class Timeline(models.Model):
     schemas = {
         'timeline': [
             {'name': 'title', 'type': str, 'required': True, 'default': 'Untitled Timeline'},
-            {'name': 'author', 'type': str, 'required': True, 'default': 'CAP user'},
+            {'name': 'author', 'type': str, 'required': True, 'default': ''},
             {'name': 'description', 'type': str, 'required': False},
             {'name': 'cases', 'type': list, 'required': False},
             {'name': 'events', 'type': list, 'required': False},

@@ -27,6 +27,13 @@
           </li>
         </ul>
       </div>
+      <div v-if="!this.$store.state.isAuthor" class="disclaimer mt-4 pl-2 pr-2">
+        Note: timelines are user generated and are not reviewed by the Caselaw Access Project. <br/><a
+          :href="this.$store.state.urls.chronolawgic">Create your
+        own timeline! </a><br/><br/>
+        To let us know about inappropriate content,
+        <a :href="this.$store.state.urls.contact">click here</a>.
+      </div>
     </div>
   </div>
 </template>

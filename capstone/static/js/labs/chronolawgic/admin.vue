@@ -93,7 +93,7 @@
               <div
                   :class="{'author': true, 'editmode': Object.prototype.hasOwnProperty.call(editMode, timeline.id)}">
                 <p v-if="!Object.prototype.hasOwnProperty.call(editMode, timeline.id)">
-                  Author: {{ timeline.author }}
+                  Author: <span class="cap-user">CAP User</span> {{ timeline.author }}
                 </p>
                 <div class="author-edit" v-else>
                   <div class="label">Author</div>

@@ -5,7 +5,7 @@ from capapi.tests.helpers import check_response
 from labs.models import Timeline
 
 
-timeline = {"title": "My first timeline", "author": "CAP User", "description": "And my very best one"}
+timeline = {"title": "My first timeline", "author": "Caselaw Bob", "description": "And my very best one"}
 create_url = reverse('labs:chronolawgic-api-create')
 retrieve_url = reverse('labs:chronolawgic-api-retrieve')
 cases = [
@@ -35,7 +35,7 @@ categories = [
     {'name': 'tesstcat3', 'shape': 'polygon3', 'color': '#ff736c', 'id': 'arbitrary_string3'}
 ]
 complete_timeline = {"title": "My first timeline",
-                     "author": "CAP User",
+                     "author": "Caselaw Bob",
                      "description": "And my very best one",
                      'events': events,
                      'cases': cases,

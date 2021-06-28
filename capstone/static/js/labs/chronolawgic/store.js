@@ -70,6 +70,8 @@ const store = new Vuex.Store({
         requestStatus: 'nominal', // can be nominal, success, error, or pending. Prone to race conditions, so use only for user feedback until its improved
         notificationMessage: null,
         urls: { // Doing this the long way to make it a little easier to see what's going on.
+            chronolawgic: importUrls.chronolawgic,
+
             chronolawgic_api_create: importUrls.chronolawgic_api_create,
             chronolawgic_api_retrieve: importUrls.chronolawgic_api_retrieve,
             chronolawgic_api_delete: importUrls.chronolawgic_api_delete,
@@ -82,6 +84,7 @@ const store = new Vuex.Store({
 
             static: importUrls.static,
             api_root: importUrls.api_root,
+            contact: importUrls.contact,
         },
         availableTimelines: [],
         minimized: true,
@@ -143,7 +146,7 @@ const store = new Vuex.Store({
         },
         setTimeline(state, json) {
             state.title = json.title;
-            state.author = json.author ? json.author : "CAP User";
+            state.author = json.author;
             state.description = json.description;
             state.categories = json.categories;
             state.events = json.events;
