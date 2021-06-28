@@ -9,11 +9,11 @@ row_style: bg-white
 ###[Chronolawgic]({% url "labs:chronolawgic" %})
 
 A legal timeline tool that allows CAP users to plot caselaw alongside other
-events chrono(law)gically. 
+events chronologically. 
 
-You must have an account in order to set up a timeline ([create an account]({% url 'register' %})).
+You must have an account in order to set up a timeline ([create an account]({% url "register" %})).
 Check out [_The Legal History of Banana Peels_ 🍌](https://case.law/labs/chronolawgic/timeline/K9T3GisHsC) for inspiration.
 
-Have you built a timeline? We would love to see it! Please [get in touch]({% url 'contact' %).
+Have you built a timeline? We would love to see it! Please [get in touch]({% url 'contact' %}).
 
 Dive in by [creating a new timeline]({% url "labs:chronolawgic-dashboard" %})!
