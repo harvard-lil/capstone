@@ -43,6 +43,9 @@
           <a class="dropdown-item" href="{% url 'search' %}">Search</a>
           <a class="dropdown-item" href="{% url 'trends' %}">Trends</a>
           <a class="dropdown-item" href="{% api_url 'api-root' %}v1/">API</a>
+          <a class="dropdown-item" href="{% url 'labs:labs' %}#chronolawgic">
+            Timeline
+            <span class="beaker"></span></a>
           <a class="dropdown-item" href="{% url 'cite_home' host 'cite' %}">Cases by Jurisdiction</a>
           <a class="dropdown-item" href="{% url 'download-files' '' %}">Bulk Data</a>
           <a class="dropdown-item" href="{% url 'fetch' %}">Fetch PDFs From Text</a>
@@ -139,6 +142,7 @@
         }, 0);
         return false
     }
+
     const form = document.getElementById('capsearch');
     const icon = document.getElementById('capsearchclick');
     form.addEventListener('submit', searchCAP);

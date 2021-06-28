@@ -280,6 +280,16 @@ li.nav-item.dropdown {
     display: inline-block;
     cursor: pointer;
   }
+  .beaker {
+    padding: 0;
+    background: url("../../img/labs/beaker.svg") no-repeat center;
+    height: 14px;
+    width: 18px;
+    margin-left: 0.2em;
+    margin-bottom: -0.1em;
+    display: inline-block;
+    cursor: pointer;
+  }
 }
 
 .nav-link {
