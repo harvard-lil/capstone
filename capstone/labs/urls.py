@@ -31,7 +31,7 @@ if 'chronolawgic' not in settings.LABS_HIDDEN:
              views.chronolawgic_delete_subobject, name='chronolawgic-delete-subobject'),
         path('chronolawgic/api/delete/<str:timeline_uuid>', views.chronolawgic_api_delete, name='chronolawgic-api-delete'),
 
-        path('chronolawgic/api/update/<str:timeline_uuid>', views.chronolawgic_update_timeline_metadata,
+        path('chronolawgic/api/update/<str:timeline_uuid>/metadata', views.chronolawgic_update_timeline_metadata,
              name='chronolawgic-update-timeline-metadata'),
 
         path('chronolawgic/api/update/<str:timeline_uuid>', views.legacy_please_refresh,

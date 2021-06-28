@@ -108,20 +108,20 @@ def test_timeline_retrieve(client, auth_client):
 def test_timeline_update(client, auth_client):
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     response = auth_client.get(retrieve_url + tl.uuid)
-    check_response(response, content_type="application/json")
+    check_response(response, content_type="application/json", content_includes='"title": "My first timeline"')
     assert response.json()["timeline"]["title"] == timeline["title"]
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
     update_url = reverse('labs:chronolawgic-update-timeline-metadata', args=[tl.uuid])
     response = auth_client.post(update_url, timeline, format='json')
-    check_response(response, content_type="application/json")
+    check_response(response, content_type="application/json", content_includes='"title": "My second timeline attempt"')
     assert response.json()["timeline"]["title"] == new_title
 
     new_title = "My third timeline attempt"
     timeline["title"] = new_title
 
-    update_url = reverse('labs:chronolawgic-api-update', args=[tl.uuid])
+    update_url = reverse('labs:chronolawgic-update-timeline-metadata', args=[tl.uuid])
 
     # don't allow unauthenticated users
     response = client.post(update_url, timeline, format='json')
