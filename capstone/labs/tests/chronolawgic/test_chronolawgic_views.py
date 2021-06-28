@@ -106,13 +106,10 @@ def test_timeline_retrieve(client, auth_client):
 
 @pytest.mark.django_db(databases=['default'])
 def test_timeline_update(client, auth_client):
-
     tl = Timeline.objects.create(created_by=auth_client.auth_user, timeline=timeline)
     response = auth_client.get(retrieve_url + tl.uuid)
     check_response(response, content_type="application/json", content_includes='"title": "My first timeline"')
     assert response.json()["timeline"]["title"] == timeline["title"]
-
-
 
     new_title = "My second timeline attempt"
     timeline["title"] = new_title
