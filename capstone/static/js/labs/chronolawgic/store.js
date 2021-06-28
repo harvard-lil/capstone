@@ -477,7 +477,7 @@ const store = new Vuex.Store({
             });
 
             return axios
-                .post(this.state.urls.chronolawgic_update_timeline_metadata + data.id, json, {
+                .post(this.state.urls.chronolawgic_update_timeline_metadata.replace('__TIMELINE_ID__', data.id), json, {
                     headers: {
                         // Overwrite Axios's automatically set Content-Type
                         'Content-Type': 'application/json'

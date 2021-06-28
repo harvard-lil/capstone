@@ -34,7 +34,7 @@
       chronolawgic_api_retrieve: "{% url 'labs:chronolawgic-api-retrieve' %}",
 
       chronolawgic_update_timeline_metadata: "{% url 'labs:chronolawgic-update-timeline-metadata' 2147483627%}"
-          .replace('2147483627', ""),
+          .replace('2147483627', "__TIMELINE_ID__"),
 
       chronolawgic_api_delete: "{% url 'labs:chronolawgic-api-delete' 2147483627%}".replace('2147483627', ""),
       chronolawgic_api_create_h2o: "{% url 'labs:chronolawgic-api-create-h2o' %}",
