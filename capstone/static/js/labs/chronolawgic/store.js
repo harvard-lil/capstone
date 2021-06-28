@@ -146,7 +146,7 @@ const store = new Vuex.Store({
         },
         setTimeline(state, json) {
             state.title = json.title;
-            state.author = json.author ? json.author : "CAP User";
+            state.author = json.author;
             state.description = json.description;
             state.categories = json.categories;
             state.events = json.events;

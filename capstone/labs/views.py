@@ -279,7 +279,7 @@ def h2o_import(request):
 
             timeline_record = Timeline(
                 timeline=Timeline.generate_empty_timeline(
-                    {"author": "Imported from H2O",
+                    {"author": "(Imported from H2O)",
                     "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
                     "cases": timeline_cases}
                 ),
