@@ -15,10 +15,18 @@
 
             <header :class="{ 'header-section': true, 'title': true, 'expanded': headerExpanded}">
               <h4 id="timeline-title" @click="toggleHeader()">{{ $store.state.title }}</h4>
-              <div id="timeline-author">By {{ $store.state.author }}</div>
+              <div id="timeline-author">By CAP User {{ $store.state.author }}</div>
 
               <div id="timeline-description" v-if="$store.state.description" v-text="$store.state.description"
                    @click="toggleHeader()"></div>
+              <div @click="toggleHeader()" v-if="!this.$store.state.isAuthor && this.$store.getters.isMobile && this.headerExpanded" class="disclaimer mt-2 p-1">
+                <hr/>
+                Note: timelines are user generated and are not reviewed by the Caselaw Access Project. <br/><a
+                  :href="this.$store.state.urls.chronolawgic">Create your
+                own timeline! </a><br/><br/>
+                To let us know about inappropriate content,
+                <a :href="this.$store.state.urls.contact">click here</a>.
+              </div>
             </header>
             <div class="header-section years"></div>
             <div :class="{'header-section': true, 'zoom-section': true, 'expanded': headerExpanded}">
