@@ -109,23 +109,8 @@ const store = new Vuex.Store({
             url: "",
             color: "",
         },
-        templateCase: {
-            url: "",
-            name: "",
-            citation: "",
-            short_description: "",
-            long_description: "",
-            jurisdiction: "",
-            reporter: "",
-            decision_date: "",
-            categories: [],
-            color: "",
-        },
-        templateCategory: {
-            name: "",
-            shape: "",
-            color: ""
-        },
+        templateCase: {},
+        templateCategory: {},
         missingCases: {}
     },
     mutations: {
@@ -194,27 +179,27 @@ const store = new Vuex.Store({
             this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'cases', 'subobject': case_object});
         },
         updateCase(state, case_object) {
-            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'cases', 'subobject': case_object});
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'cases', 'subobject': case_object});
         },
         deleteCase(state, id) {
-            this.dispatch('requestDeleteSubobject', {'subobject_type':'cases', 'subobject_id': id});
+            this.dispatch('requestDeleteSubobject', {'subobject_type': 'cases', 'subobject_id': id});
         },
         addEvent(state, event_object) {
             event_object.id = this.generateUUID();
-            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'events', 'subobject': event_object});
         },
         updateEvent(state, event_object) {
-            this.dispatch('requestAddUpdateSubobject', {'subobject_type':'events', 'subobject': event_object});
+            this.dispatch('requestAddUpdateSubobject', {'subobject_type': 'events', 'subobject': event_object});
         },
         deleteEvent(state, id) {
-            this.dispatch('requestDeleteSubobject', {'subobject_type':'events', 'subobject_id': id});
+            this.dispatch('requestDeleteSubobject', {'subobject_type': 'events', 'subobject_id': id});
         },
         updateCategories(state, categories_list) {
             categories_list = categories_list.map((category) => {
-                    if (!Object.prototype.hasOwnProperty.call(category, 'id')) {
-                        category.id = this.generateUUID();
-                    }
-                    return category
+                if (!Object.prototype.hasOwnProperty.call(category, 'id')) {
+                    category.id = this.generateUUID();
+                }
+                return category
             });
             this.dispatch('requestUpdateCategories', categories_list);
         },
@@ -244,11 +229,11 @@ const store = new Vuex.Store({
             if (state.requestStatus === 'pending') {
                 return 'pending'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events') &&
-                !Object.prototype.hasOwnProperty.call(state, 'events') ) {
+                !Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return 'empty'
             } else if (!Object.prototype.hasOwnProperty.call(state, 'events')) {
                 return state.cases.length === 0 ? 'empty' : 'populated'
-            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases') ) {
+            } else if (!Object.prototype.hasOwnProperty.call(state, 'cases')) {
                 return state.events.length === 0 ? 'empty' : 'populated'
             }
             return state.events.length + state.cases.length === 0 ? 'empty' : 'populated';
@@ -339,7 +324,7 @@ const store = new Vuex.Store({
         },
 
 
-         requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
+        requestDeleteSubobject: function ({commit}, {subobject_type, subobject_id}) {
             commit('setRequestStatus', 'pending');
 
             let url = this.state.urls.api_delete_subobject
@@ -355,17 +340,21 @@ const store = new Vuex.Store({
                     }
                 })
                 .then(response => response.data)
-                .then(status => {
-                        if (status.status == "ok") {
-                            commit('setTimeline', status.timeline);
+                .then(data => {
+                        if (data.status === "ok") {
+                            commit('setTimeline', data.timeline);
+                            commit('setStats', data.stats)
+                            commit('setFirstYear', data.first_year)
+                            commit('setLastYear', data.last_year)
+
                             commit('setRequestStatusTerminal', 'success');
-                            commit('setNotificationMessage', status.message)
+                            commit('setNotificationMessage', data.message)
                         }
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
-            })
+                })
         },
         requestAddUpdateSubobject: function ({commit}, {subobject_type, subobject}) {
             commit('setRequestStatus', 'pending');
@@ -382,17 +371,20 @@ const store = new Vuex.Store({
                     }
                 })
                 .then(response => response.data)
-                .then(status => {
-                        if (status.status == "ok") {
-                            commit('setTimeline', status.timeline);
+                .then(data => {
+                        if (data.status === "ok") {
+                            commit('setTimeline', data.timeline);
+                            commit('setStats', data.stats)
+                            commit('setFirstYear', data.first_year)
+                            commit('setLastYear', data.last_year)
                             commit('setRequestStatusTerminal', 'success');
-                            commit('setNotificationMessage', status.message)
+                            commit('setNotificationMessage', data.message)
                         }
                     }
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', "error updating timeline: " + getBestError(error))
-            })
+                })
         },
         requestUpdateCategories: function ({commit}, category_list) {
             commit('setRequestStatus', 'pending');
@@ -417,7 +409,7 @@ const store = new Vuex.Store({
                 ).catch(error => {
                     commit('setRequestStatusTerminal', 'error');
                     commit('setNotificationMessage', "error updating categories: " + getBestError(error))
-            })
+                })
         },
         requestTimeline: function ({commit}, timelineId) {
             // clear timeline if it exists
@@ -449,7 +441,6 @@ const store = new Vuex.Store({
                 commit('setNotificationMessage', "error retrieving timeline: " + getBestError(error))
             })
         },
-
 
 
         requestTimelineList: function ({commit}) {
