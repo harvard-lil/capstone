@@ -71,7 +71,7 @@ class Timeline(models.Model):
         elif case_years:
             return min(case_years)
         elif event_years:
-            return min(case_years)
+            return min(event_years)
         return None
 
     @staticmethod
