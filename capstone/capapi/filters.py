@@ -175,7 +175,7 @@ class CaseFilter(FilterSet):
     court_id = filters.NumberFilter(label='Court ID')
     full_case = filters.ChoiceFilter(
         label='Include full case text or just metadata?',
-        choices=(('', 'Just metadata (default)'), ('true', 'Full case text')),
+        choices=(('false', 'Just metadata (default)'), ('true', 'Full case text')),
     )
     body_format = filters.ChoiceFilter(
         label='Format for case text (applies only if including case text)',
