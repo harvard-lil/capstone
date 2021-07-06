@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
-from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest, StreamingHttpResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
@@ -225,13 +225,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 return HttpResponseBadRequest("pdf is not available for this case")
             return Response(case.get_pdf())
 
-        response = super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
-
-        # handle ?format=csv
-        if request.accepted_renderer.format == 'csv':
-            response = self.bundle_csv_response(response)
-
-        return response
+        return super(CaseDocumentViewSet, self).retrieve(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
         # cites_to can contain citations or IDs, so split out IDs into separate
@@ -242,22 +236,20 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             params.setlist('cites_to', cites_to)
             params.setlist('cites_to_id', cites_to_id)
 
-        response = super(CaseDocumentViewSet, self).list(request, *args, **kwargs)
+        return super(CaseDocumentViewSet, self).list(request, *args, **kwargs)
 
-        if request.accepted_renderer.format == 'csv':
-            response = self.bundle_csv_response(response)
-
-        if request.accepted_renderer.format == 'json': #shouldn't affect the browsable API
-            response['Content-Disposition'] = 'attachment; filename="CAP_{}.json"'.format(str(datetime.now()))
-
+    def finalize_response(self, request, response, *args, **kwargs):
+        """Set content-disposition for json and csv formats."""
+        response = super().finalize_response(request, response, *args, **kwargs)
+        if isinstance(response, Response):
+            if response.status_code >= 400:
+                # use text/plain for csv errors or else browser hides them:
+                if response.accepted_renderer.format == 'csv':
+                    response.content_type = "text/plain"
+            elif response.accepted_renderer.format in ("csv", "json"):
+                response["Content-Disposition"] = f'attachment; filename="CAP_{datetime.now()}.{response.accepted_renderer.format}"'
         return response
 
-    @staticmethod
-    def bundle_csv_response(response):
-        data = capapi_renderers.CSVRenderer().render(response.data)
-        response = StreamingHttpResponse(data, content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="CAP_{}.csv"'.format(str(datetime.now()))
-        return response
 
 class ResolveDocumentViewSet(BaseDocumentViewSet):
     """The ResolveDocument view."""
