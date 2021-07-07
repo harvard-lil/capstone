@@ -121,7 +121,7 @@
               <button class="btn-secondary btn btn-sm disabled" v-else disabled>Back</button>
             </div>
             <div class="col-6 text-right">
-              <button class="btn-secondary btn btn-sm" v-if="$store.getters.next_page_url" @click="$store.dispatch('pageForward')">
+              <button class="btn-secondary btn btn-sm" v-if="$store.getters.nextPageCursor" @click="$store.dispatch('pageForward')">
                 Next: {{ $store.getters.page + 1 }} of {{ total_pages }}
               </button>
               <button class="btn-secondary btn btn-sm disabled" v-else disabled>Next</button>
