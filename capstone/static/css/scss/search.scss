@@ -395,8 +395,6 @@ label.dropdown-label {
       flex-wrap: nowrap;
       height: 2em;
       &:hover, &:active, &:focus {
-        height: unset;
-        min-height: 2em;
         .chosen-field-instance {
           .reset-field-instance {
             padding-top: .2rem;
@@ -448,12 +446,6 @@ label.dropdown-label {
         &:hover, &:active, &:focus {
           color: $color-light-gray;
           background-color: $color-violet-gray-dark;
-          .chosen-field-instance-value {
-            max-width: 30rem;
-            text-overflow: ellipsis;
-            overflow: visible;
-            white-space: normal;
-          }
           .close-icon {
             fill: $color-white;
           }

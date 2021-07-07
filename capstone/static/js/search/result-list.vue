@@ -20,8 +20,8 @@
               <template v-if="Array.isArray(field.value)">
                   <div v-for="(field_instance, index)  in field.value" :key="'chosen_field_instance' + field.name + field_instance"
                   class="list-inline-item field chosen-field-instance" :class="{'firstMulti': index === 0}">
-                    <div class="chosen-field-instance-value">
-                      {{  $store.getters.getLabelForChoice(field.name, field_instance) }}
+                    <div class="chosen-field-instance-value" :title="$store.getters.getLabelForChoice(field.name, field_instance)">
+                      {{ $store.getters.getLabelForChoice(field.name, field_instance) }}
                     </div>
                     <div class="reset-field-instance"
                       @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
