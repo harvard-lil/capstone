@@ -121,9 +121,9 @@ const store = new Vuex.Store({
       value: "relevance",
       label: "Result Sorting",
       choices: [
-        ["relevance", "Most Relevant First"],
-        ["-decision_date", "Newest Decisions First"],
-        ["decision_date", "Oldest Decisions First"]],
+        {"value": "relevance", "label": "Most Relevant First"},
+        {"value": "-decision_date", "label": "Newest Decisions First"},
+        {"value": "decision_date", "label": "Oldest Decisions First"}],
       error: null,
       highlight_field: false,
       highlight_explainer: false,
