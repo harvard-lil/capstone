@@ -1,6 +1,6 @@
 import bisect
 import urllib
-from datetime import datetime
+from datetime import datetime, date
 from collections import OrderedDict, defaultdict
 from pathlib import Path
 
@@ -11,11 +11,12 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
-from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest, StreamingHttpResponse
+from django.http import QueryDict, HttpRequest, HttpResponseRedirect, FileResponse, HttpResponseBadRequest, StreamingHttpResponse
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
+from capapi.resources import api_request
 from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
@@ -363,6 +364,92 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 total[1] += v[1]
         return totals_by_jurisdiction_year_length
 
+    @staticmethod
+    def get_valid_case_id(q):
+        # validate whether a case ID exists in the corpus
+        noresult = (False, False)
+        # check if the supplied item is a valid case id
+        if not q or not q.endswith('@'):
+            return noresult
+
+        caseid = q[:-1]
+
+        if not caseid.isdigit():
+            return noresult
+
+        # check if the case id is valid
+        case = models.CaseMetadata.objects.filter(id=int(caseid)).first()
+
+        year = case.decision_date.year
+        return (year, caseid) if case else noresult
+
+    @staticmethod
+    def clone_request(request, method, renderer, query_params):
+        # copy a request object with specified query changes
+        new_request = HttpRequest()
+        new_request.method = method
+        new_request.accepted_renderer = renderer
+        new_request.META = request.META
+        new_request.query_params = query_params
+        new_request.GET = QueryDict(mutable=True)
+        new_request.GET.update(query_params)
+
+        return new_request
+
+    def get_best_jurisdictions(self, request, case_id):
+        # TODO: Efficiently support wildcard jurisdictions for case citations
+        pass
+
+    def get_citation_data(self, request, case_id, decisionyear):
+        # given a case and its decision year, generate the timelien for the trends API.
+        currentyear = date.today().year
+
+        results = OrderedDict()
+        out = {}
+        # ready handler for extracting case counts
+        casescaller = CaseDocumentViewSet.as_view({'get': 'list'})
+
+        # hold onto jurisdiction to tag field name later
+        jurisdiction = request.GET.getlist('jurisdiction')
+
+        years_out = []
+        for year in range(decisionyear, currentyear):
+            # get count for every single year from publication up to current year
+            request_params = {'cites_to_id': case_id, 'page_size': '1', 'decision_date__gte': str(year), 'decision_date__lt': str(year+1)}
+            request_params_total = {'page_size': '1', 'decision_date__gte': str(year), 'decision_date__lt': str(year+1)}
+
+            # filter for jurisdictions
+            if jurisdiction:
+                if '*' not in jurisdiction[0]:
+                    request_params['jurisdiction'] = jurisdiction[0]
+
+            api_request = self.clone_request(request, 'GET', 'json', request_params)
+            api_request_total = self.clone_request(request, 'GET', 'json', request_params_total)
+
+            cited_to_cases = casescaller(api_request, {}).data
+            cite_count = cited_to_cases.popitem(last=False)
+
+            cited_to_cases_total = casescaller(api_request_total, {}).data
+            count_total = cited_to_cases_total.popitem(last=False)
+
+            if cite_count[0] != 'count' or count_total[0] != 'count':
+                raise Exception('Schema change for case listing prevents ngrams from retrieving case count')
+
+            if cite_count[1] == 0:
+                continue
+
+            years_out.append(OrderedDict((
+                ("year", str(year)),
+                ("count", [cite_count[1], count_total[1]]),
+                ("doc_count", [cite_count[1], count_total[1]])
+            )))
+
+        juris_key = jurisdiction[0] if jurisdiction else 'total'
+        out[juris_key] = years_out
+        results[case_id + ", citations"] = out
+
+        return results
+
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
         q = self.request.GET.get('q', '').strip().lower()
@@ -371,10 +458,18 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         ## look up query in KV store
         words = q.split(' ')[:3]  # use first 3 words
+
+        # check if we're querying for a case as opposed to a word
+        decisionyear, case_id = self.get_valid_case_id(q)
+
         q_len = len(words)
         # prepend word count as first byte
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
-        if q.endswith(b' *'):
+
+        if case_id:
+            results = self.get_citation_data(request, case_id, decisionyear)
+            pairs = []
+        elif q.endswith(b' *'):
             # wildcard search
             pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
         else:
@@ -386,8 +481,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 pairs = []
 
         ## format results
-        results = OrderedDict()
         if pairs:
+            results = OrderedDict()      
 
             # prepare jurisdiction_filter from jurisdiction= query param
             jurisdictions = request.GET.getlist('jurisdiction')

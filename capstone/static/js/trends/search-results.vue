@@ -61,12 +61,22 @@
     },
     methods: {
       search(term, params, startYear, endYear) {
-        const searchParams = this.params = {
-          search: `"${params.q}"`,
-          decision_date_min: `${startYear}-01-01`,
-          decision_date_max: `${endYear}-12-31`,
-          page_size: 5,
-        };
+        if (params.q.endsWith(', citations')) {
+          var searchParams = this.params = {
+            is_case_citation: 1,
+            cites_to: `${params.q.slice(0, -11)}`,
+            decision_date__gte: `${startYear}`,
+            decision_date__lt: `${endYear+1}`,
+            page_size: 5,
+          };
+        } else {
+          searchParams = this.params = {
+            search: `"${params.q}"`,
+            decision_date_min: `${startYear}-01-01`,
+            decision_date_max: `${endYear}-12-31`,
+            page_size: 5,
+          };
+        }
         if (params.jurisdiction && params.jurisdiction !== "total")
           searchParams.jurisdiction = params.jurisdiction;
         this.showLoading = true;
@@ -87,6 +97,8 @@
         });
       },
       searchPageUrl() {
+        if (this.params.is_case_citation == 1)
+            return `${this.urls.api_root}cases/?${encodeQueryData(this.params)}`
         return `${this.urls.search_page}?${encodeQueryData(this.params)}`
       },
       reset() {
