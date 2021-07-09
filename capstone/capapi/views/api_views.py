@@ -380,7 +380,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # check if the case id is valid
         case = models.CaseMetadata.objects.filter(id=int(caseid)).first()
 
-        year = case.decision_date.year
+        if case:
+            year = case.decision_date.year
+
         return (year, caseid) if case else noresult
 
     @staticmethod
@@ -470,9 +472,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             results = self.get_citation_data(request, case_id, decisionyear)
             pairs = []
         elif q.endswith(b' *'):
+            results = OrderedDict()      
             # wildcard search
             pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
         else:
+            results = OrderedDict()      
             # non-wildcard search
             value = ngram_kv_store_ro.get(q, packed=True)
             if value:
@@ -482,8 +486,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         ## format results
         if pairs:
-            results = OrderedDict()      
-
             # prepare jurisdiction_filter from jurisdiction= query param
             jurisdictions = request.GET.getlist('jurisdiction')
             if '*' in jurisdictions:
