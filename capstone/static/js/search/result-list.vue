@@ -20,8 +20,8 @@
               <template v-if="Array.isArray(field.value)">
                   <div v-for="(field_instance, index)  in field.value" :key="'chosen_field_instance' + field.name + field_instance"
                   class="list-inline-item field chosen-field-instance" :class="{'firstMulti': index === 0}">
-                    <div class="chosen-field-instance-value">
-                      {{  $store.getters.getLabelForChoice(field.name, field_instance) }}
+                    <div class="chosen-field-instance-value" :title="$store.getters.getLabelForChoice(field.name, field_instance)">
+                      {{ $store.getters.getLabelForChoice(field.name, field_instance) }}
                     </div>
                     <div class="reset-field-instance"
                       @click="$store.commit('trimFieldValueArrayandSearch', [field.name, field_instance])">
@@ -121,7 +121,7 @@
               <button class="btn-secondary btn btn-sm disabled" v-else disabled>Back</button>
             </div>
             <div class="col-6 text-right">
-              <button class="btn-secondary btn btn-sm" v-if="$store.getters.next_page_url" @click="$store.dispatch('pageForward')">
+              <button class="btn-secondary btn btn-sm" v-if="$store.getters.nextPageCursor" @click="$store.dispatch('pageForward')">
                 Next: {{ $store.getters.page + 1 }} of {{ total_pages }}
               </button>
               <button class="btn-secondary btn btn-sm disabled" v-else disabled>Next</button>
