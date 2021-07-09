@@ -91,11 +91,12 @@ class PdfRenderer(renderers.BaseRenderer):
 class CSVRenderer(renderers.JSONRenderer):
     media_type = 'text/csv'
     format = 'csv'
+    charset = 'utf-8'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
         if 'results' in data:
-            flattened_data = map(lambda case: flatten(case, '.', root_keys_to_ignore={'cites_to'}), data['results'])
-            json_normalize = pandas.json_normalize(list(flattened_data))
+            flattened_data = [flatten(case, '.', root_keys_to_ignore={'cites_to'}) for case in data['results']]
+            json_normalize = pandas.json_normalize(flattened_data)
         else:
             json_normalize = pandas.json_normalize(flatten(data, '.', root_keys_to_ignore={'cites_to'}))
         return json_normalize.to_csv(index=False)

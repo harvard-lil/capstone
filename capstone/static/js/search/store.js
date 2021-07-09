@@ -9,6 +9,13 @@ const importUrls = urls; // eslint-disable-line
 const importChoices = choices; // eslint-disable-line
 const temp_court_list = require("./temp_court_list");
 
+// helpers
+function cursorFromUrl(url) {
+  if (url)
+    return new URL(url).searchParams.get("cursor");
+  return null;
+}
+
 Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
@@ -21,8 +28,8 @@ const store = new Vuex.Store({
     first_result_number: null,
     last_result_number: null,
     showLoading: false,
-    previous_page_url: null,
-    next_page_url: null, 
+    previousPageCursor: null,
+    nextPageCursor: null, 
     page_size: 10,
     whitelisted: importChoices.whitelisted,
     search_error: null,
@@ -35,6 +42,7 @@ const store = new Vuex.Store({
     fields: {
       search: {
         value: null,
+        default_value: null,
         label: "Full-text search",
         placeholder: "Enter keyword or phrase",
         info: "Terms stemmed and combined using AND. Words in quotes searched as phrases.",
@@ -44,9 +52,10 @@ const store = new Vuex.Store({
         value_when_searched: null
       },
       decision_date_min: {
+        value: null,
+        default_value: null,
         label: "Date from YYYY-MM-DD",
         placeholder: "YYYY-MM-DD",
-        value: null,
         highlight_field: false,
         highlight_explainer: false,
         error: null,
@@ -54,6 +63,7 @@ const store = new Vuex.Store({
       },
       decision_date_max: {
         value: null,
+        default_value: null,
         label: "Date to YYYY-MM-DD",
         placeholder: "YYYY-MM-DD",
         highlight_field: false,
@@ -62,8 +72,9 @@ const store = new Vuex.Store({
         value_when_searched: null
       },
       name_abbreviation: {
-        label: "Case name abbreviation",
         value: null,
+        default_value: null,
+        label: "Case name abbreviation",
         placeholder: "Enter case name abbreviation e.g. Taylor v. Sprinkle",
         highlight_field: false,
         highlight_explainer: false,
@@ -72,6 +83,7 @@ const store = new Vuex.Store({
       },
       docket_number: {
         value: null,
+        default_value: null,
         label: "Docket number",
         placeholder: "e.g. Civ. No. 74-289",
         highlight_field: false,
@@ -81,6 +93,7 @@ const store = new Vuex.Store({
       },
       reporter: {
         value: [],
+        default_value: [],
         label: "Reporter",
         choices: importChoices.reporter.map((element) => { return  {'label': element[1], 'value': element[0].toString() } }),
         highlight_field: false,
@@ -90,6 +103,7 @@ const store = new Vuex.Store({
       },
       jurisdiction: {
         value: [],
+        default_value: [],
         label: "Jurisdiction",
         choices: importChoices.jurisdiction.map((element) => { return  {'label': element[1], 'value': element[0] } }),
         highlight_field: false,
@@ -99,6 +113,7 @@ const store = new Vuex.Store({
       },
       cite: {
         value: null,
+        default_value: null,
         label: "Citation e.g. 1 Ill. 17",
         placeholder: "e.g. 1 Ill. 17",
         highlight_field: false,
@@ -108,6 +123,7 @@ const store = new Vuex.Store({
       },
       court: {
         value: [],
+        default_value: [],
         label: "Court",
         placeholder: "e.g. ill-app-ct",
         choices: temp_court_list.map((element) => { return  {'label': element[1], 'value': element[0] } }),
@@ -119,11 +135,12 @@ const store = new Vuex.Store({
     },
     ordering: {
       value: "relevance",
+      default_value: "relevance",
       label: "Result Sorting",
       choices: [
-        ["relevance", "Most Relevant First"],
-        ["-decision_date", "Newest Decisions First"],
-        ["decision_date", "Oldest Decisions First"]],
+        {"value": "relevance", "label": "Most Relevant First"},
+        {"value": "-decision_date", "label": "Newest Decisions First"},
+        {"value": "decision_date", "label": "Oldest Decisions First"}],
       error: null,
       highlight_field: false,
       highlight_explainer: false,
@@ -176,30 +193,11 @@ const store = new Vuex.Store({
     showAdvanced(state) {
       state.advanced_fields_shown = true;
     },
-    next_page_url(state, value) {
-      state.next_page_url = value;
+    nextPageCursor(state, value) {
+      state.nextPageCursor = value;
     },
-    previous_page_url(state, value) {
-      state.previous_page_url = value;
-    },
-    clearAllFields(state, dispatch) {
-      state.ordering.value = 'relevance';
-      state.ordering.error = null;
-      Object.keys(state.fields).forEach(field => {
-        state.fields[field].error = state.fields[field].value = null;
-      });
-      dispatch('pushUrlUpdate', {})
-    },
-    clearField(state, field_name) {
-      if (name === 'ordering') {
-        state.ordering.error = null;
-        state.ordering.value = 'relevance';
-      } else if (Object.prototype.hasOwnProperty.call(state.fields[field_name], 'choices') ) {
-        state.fields[field_name].value = [];
-        state.fields[field_name].error = null;
-      } else {
-        state.fields[field_name].value = state.fields[field_name].error = null;
-      }
+    previousPageCursor(state, value) {
+      state.previousPageCursor = value;
     },
     clearFieldandSearch(state, field_name) {
       state.fields[field_name].value = state.fields[field_name].error = null;
@@ -215,22 +213,28 @@ const store = new Vuex.Store({
         state.fields[field]['error'] = null;
       });
     },
-    setFieldValue(state, update) {
-      if (update.name === 'ordering') {
-        return state.ordering.value = update.value;
+    setFieldValue(state, {name, value}) {
+      const field = name === 'ordering' ? state.ordering : state.fields[name];
+      if (value)
+        field.value = value;
+      else {
+        // if value is false-y, reset field to default
+        field.error = null;
+        field.value = field.default_value;
       }
-      state.fields[update.name].value = update.value;
     },
     setFieldValueWhenSearched(state, update) {
       if (update.name === 'ordering')
         return
       state.fields[update.name].value_when_searched = update.value;
     },
-    setFieldError(state, update) {
-      if (name === 'ordering') {
-        return state.ordering.error = update.error;
-      }
-      state.fields[update.name].error = update.error;
+    setFieldError(state, {name, error}) {
+      if (name === 'ordering')
+        state.ordering.error = error;
+      else if(state.fields[name])
+        state.fields[name].error = error;
+      else
+        state.search_error = error;
     },
     highlightField(state, name) {
       if (name === 'ordering') {
@@ -261,8 +265,8 @@ const store = new Vuex.Store({
     hitcount: state => state.hitcount,
     page: state => parseInt(state.page),
     cursor: state => state.cursor,
-    previous_page_url: state => state.previous_page_url,
-    next_page_url: state => state.next_page_url,
+    previousPageCursor: state => state.previousPageCursor,
+    nextPageCursor: state => state.nextPageCursor,
     fields: state => state.fields,
     results: state => state.results,
     resultsShown: state => state.resultsShown,
@@ -312,6 +316,10 @@ const store = new Vuex.Store({
           params[key] = state.fields[key]['value'];
         }
       });
+
+      if (state.cursor) {
+        params['cursor'] = state.cursor
+      }
 
       params['ordering'] = state.ordering['value'];
 
@@ -386,137 +394,87 @@ const store = new Vuex.Store({
       commit('results', []);
       commit('clearFieldErrors')
     },
-    searchFromParams: function ({dispatch}) {
-      dispatch('ingestDataFromQuery', router.currentRoute.query).then(()=> {
-        dispatch('clearSearchMeta', {});
-        dispatch('executeSearch', {doNotUpdateUrl: true});
-      }).catch((error)=>{
-        if (error !== "no change") {
-            throw error
-        }
-      });
-    },
     searchFromForm: function ({dispatch}) {
       dispatch('clearSearchMeta', {});
-      dispatch('executeSearch', {});
+      dispatch('pushUrlUpdate');
     },
-    executeSearch: function ({commit, dispatch, getters}, {url=null, doNotUpdateUrl=null}) {
+    async searchFromParams ({commit, dispatch, getters}) {
+      await dispatch('ingestDataFromQuery', router.currentRoute.query);
+
+      if (!router.currentRoute.query.page)
+        return;
+
       commit('showLoading', true);
-      dispatch('resetSearchResults');
+      await dispatch('resetSearchResults');
+      const url = getters.new_query_url;
 
-      if (!url) {
-        url = this.getters.new_query_url
-      }
-
+      // expand advanced fields if any are set
       for (let field in getters.populated_fields) {
         if (field !== 'search') {
           commit('showAdvanced');
+          break;
         }
       }
 
-      axios
-        .get(url)
-        .then(response => {
-          return response.data
-        })
-        .then(results_json => {
-          commit('hitcount', results_json.count);
-          commit('cursor', new URL(url).searchParams.get("cursor"));
-
-          for (let field in getters.fields) {
-            commit('setFieldValueWhenSearched', getters.getField(field))
-          }
-
-          if (results_json.next) {
-            commit('next_page_url', results_json.next);
+      try {
+        const response = await axios.get(url);
+        const results_json = await response.data;
+        commit('hitcount', results_json.count);
+        for (let field of Object.keys(getters.fields)) {
+          commit('setFieldValueWhenSearched', getters.getField(field))
+        }
+        commit('nextPageCursor', cursorFromUrl(results_json.next));
+        commit('previousPageCursor', cursorFromUrl(results_json.previous));
+        commit('results', results_json.results);
+        commit('showLoading', false);
+      } catch(error) {
+        commit('showLoading', false);
+        if (error.response) { // if we got an error response from the server
+          if (error.response.status === 400) {
+            // handle field errors
+            Object.keys(error.response.data).forEach(field => {
+              commit('setFieldError', {'name': field, 'error': error.response.data[field].join(', ')})
+            });
+            return false
           } else {
-            commit('next_page_url', null)
-          }
-
-          if (results_json.previous) {
-            commit('previous_page_url', results_json.previous)
-          } else {
-            commit('previous_page_url', null)
-          }
-          commit('results', results_json.results)
-        }).then(() => {
-          if(!doNotUpdateUrl) {
-              dispatch('pushUrlUpdate', this.getters.getNewParams)
-          }
-        }).then(() => {
-              commit('showLoading', false);
-        }).catch(error => {
-          commit('showLoading', false);
-          if (error.response) { // if we got an error response from the server
-            if (error.response.status === 400) {
-              // handle field errors
-              Object.keys(error.response.data).forEach(field => {
-                commit('setFieldError', { 'name': field, 'error': error.response.data[field].join(', ')} )
-              });
-              return false
-            } else {
-              commit('search_error', "Error " + error.response.status + "- query failed: " + url);
-              return false
-            }
-          } else if (error.request) { // if the request itself failed
-            commit('search_error', "Search error: request failed" + url + " " + error.request);
+            commit('search_error', "Error " + error.response.status + "- query failed: " + url);
             return false
           }
+        } else if (error.request) { // if the request itself failed
+          commit('search_error', "Search error: request failed" + url + " " + error.request);
+          return false
+        }
 
-          // if something else went wrong
-          commit('search_error', "Search error: " + error);
-          throw error;
-        })
-    },
-    pageForward: function ({commit, dispatch}) {
-      if (this.getters.next_page_url) {
-        commit('page', this.getters.page + 1);
-        dispatch('executeSearch', {url: this.getters.next_page_url});
+        // if something else went wrong
+        commit('search_error', "Search error: " + error);
+        throw error;
       }
     },
-    pageBackward: function ({commit, dispatch}) {
-      if (this.getters.previous_page_url && this.getters.page > 1) {
-        commit('page', this.getters.page - 1);
-        dispatch('executeSearch', {url: this.getters.previous_page_url});
+    pageForward: function ({commit, dispatch, getters}) {
+      if (getters.nextPageCursor) {
+        commit('page', getters.page + 1);
+        commit('cursor', getters.nextPageCursor);
+        dispatch('pushUrlUpdate');
       }
     },
-    ingestDataFromQuery: function ({commit, getters}, query) {
-      return new Promise((resolve, reject) => {
-        let change_flag = false;
-
-        if (query['cursor'] && query['cursor'] !== this.state.cursor) {
-          change_flag = true;
-          commit('cursor', query['cursor'])
-        }
-
-        if (query['page'] && query['page'] !== this.state.page) {
-          change_flag = true;
-          commit('page', query['page'])
-        }
-
-        Object.keys(this.state.fields).forEach(field_name => {
-          let field = getters.getField(field_name);
-          if (!query[field.name] && field.value && field.value.length !== 0) {
-            change_flag = true;
-            commit('clearField', field.name)
-          } else if (query[field.name] && field.value !== query[field.name]) {
-            change_flag = true;
-            let val = query[field.name];
-            if (Object.prototype.hasOwnProperty.call(field, 'choices') && !Array.isArray(val)) {
-              val = [val];
-            }
-            commit('setFieldValue', {'name': field.name, 'value': val})
-          }
-        });
-        if (change_flag) {
-          resolve("updated")
-        }
-
-        reject("no change");
-      })
+    pageBackward: function ({commit, dispatch, getters}) {
+      if (getters.previousPageCursor && getters.page > 1) {
+        commit('page', getters.page - 1);
+        commit('cursor', getters.page > 1 ? getters.previousPageCursor : null);
+        dispatch('pushUrlUpdate');
+      }
     },
-    pushUrlUpdate: function (commit, params) {
-      router.push({name: 'search', query: params}).catch(err => {
+    ingestDataFromQuery ({commit}, query) {
+      // Update state based on query string
+      commit('cursor', query.cursor || null);
+      commit('page', query.page || null);
+      commit('setFieldValue', {'name': 'ordering', 'value': query.ordering || null});
+      for (const field_name of Object.keys(this.state.fields)) {
+        commit('setFieldValue', {'name': field_name, 'value': query[field_name] || null});
+      }
+    },
+    pushUrlUpdate: function ({getters}) {
+      router.push({name: 'search', query: getters.getNewParams}).catch(err => {
         if (err.name !== 'NavigationDuplicated') {
           throw err
         }

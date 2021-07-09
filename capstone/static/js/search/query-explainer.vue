@@ -3,7 +3,7 @@
     <span>{{ $store.getters.api_root }}</span>
     <template v-for="(field, name) in $store.getters.fields">
       <span :key="'explainer_' + name"
-          v-if="field.value"
+          v-if="field.value && field.value.length"
           :data-field-name="name"
           :class="{'highlight-parameter': field.highlight_explainer || field.highlight_field}"
           v-on:mouseenter="$store.commit('highlightField', name)"
