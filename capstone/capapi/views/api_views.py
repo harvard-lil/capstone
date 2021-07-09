@@ -16,7 +16,6 @@ from django.http import QueryDict, HttpRequest, HttpResponseRedirect, FileRespon
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
-from capapi.resources import api_request
 from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
 from capdb import models
