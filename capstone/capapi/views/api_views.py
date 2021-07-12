@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
-from django.http import QueryDict, HttpRequest, HttpResponseRedirect, FileResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
