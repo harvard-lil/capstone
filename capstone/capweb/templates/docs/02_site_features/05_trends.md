@@ -147,6 +147,17 @@ Examples:
 * [`ride a *`]({% url 'trends' %}?q=ride a *) *(top ten three-word phrases beginning with "ride a")*
 * `* amendment` **(not currently supported)**{: class="highlighted" }
 
+{# ==============> Citation search <============== #}
+# Citation search
+
+Append "@" to the end of a valid case ID to perform a citation search. This will return a timeline of case citations 
+over time for that particular case. Do not use quotes. 
+
+Examples:
+
+* [`1785580@`]({% url 'trends' %}?q=6232114%40) *(citations over time for Mapp v. Ohio)*
+* [`cal: 1785580@`]({% url 'trends' %}?q=cal%3A+6232114%40) *(citations over time for Mapp v. Ohio in california)*
+* [`*: 1785580@`]({% url 'trends' %}?q=*%3A+6232114%40) *(citations over time for Mapp v. Ohio for all jurisdictions)*
 
 {# ==============> Jurisdiction Search <============== #}
 # Jurisdiction search
