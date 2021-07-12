@@ -377,17 +377,22 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return (year, caseid) if case else noresult
 
     @staticmethod
-    def clone_request(request, method, renderer, query_params):
-        # copy a request object with specified query changes
-        new_request = HttpRequest()
-        new_request.method = method
-        new_request.accepted_renderer = renderer
-        new_request.META = request.META
-        new_request.query_params = query_params
-        new_request.GET = QueryDict(mutable=True)
-        new_request.GET.update(query_params)
+    def create_timeline_entries(bucket_entries, total_dict):
+        # generate timeline datapoint given an elasticsearch query result
+        years_out = []
 
-        return new_request
+        for entry in bucket_entries:
+            year = datetime.fromtimestamp(entry['key'] / 1000.0).year
+            count = entry['doc_count']
+
+            years_out.append(OrderedDict((
+                ("year", str(year)),
+                ("count", [count, total_dict[year]]),
+                ("doc_count", [count, total_dict[year]])
+            )))
+
+        years_out.sort(key=lambda y: y["year"])
+        return years_out
 
     def get_citation_data(self, request, case_id, decisionyear):
         # given a case and its decision year, generate the timeline for the trends API.
@@ -396,8 +401,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # variables for output storage
         results = OrderedDict()
         out = {}
-        years_out = []
-
         jurisdiction = request.GET.getlist('jurisdiction')
         jurisdiction = jurisdiction[0].strip() if jurisdiction else 'total'
 
@@ -405,7 +408,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         total_search = CaseDocument.search() \
                 .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) \
                 .source(['decision_date']) 
-        total_search.aggs.bucket('count','date_histogram', field='decision_date', calendar_interval='year')
+        total_search.aggs.bucket('count','date_histogram',
+                                 field='decision_date', calendar_interval='year')
         total_results = total_search.execute().to_dict()
 
         total_dict = {}
@@ -415,31 +419,48 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # calculate cases citing to input case in a given year
         search = CaseDocument.search() \
-                .source(['name', 'decision_date']) \
+                .source(['name', 'decision_date', 'jurisdiction.slug']) \
                 .filter('term', extracted_citations__target_cases=case_id) \
                 .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) 
-
-        if jurisdiction != 'total':
+        if jurisdiction != 'total' and jurisdiction != '*':
             search = search.filter('term', jurisdiction__slug=jurisdiction)
 
-        search.aggs.bucket('count_by_year','date_histogram', field='decision_date', calendar_interval='year')
+        # if jurisdiction isn't a wildcard, generate histogram of citations and filter
+        # otherwise, first breakdown by jurisdiction and select top 10, then generate histogram
+        if jurisdiction != '*':
+            search.aggs.bucket('count','date_histogram',
+                               field='decision_date', calendar_interval='year')
+        else:
+            search.aggs.bucket('jurisdiction', 'terms', field='jurisdiction.slug')
+            search.aggs['jurisdiction'].bucket('count', 
+                                               'date_histogram',
+                                               field='decision_date',
+                                               calendar_interval='year')
+            search.aggs['jurisdiction'].pipeline('sortedbuckets', 'bucket_sort',
+                                                 sort=[{'_count': {'order': 'desc'}}])
+
         query_results = search.execute()
 
-        query_results = query_results.to_dict()['aggregations']['count_by_year']['buckets']
+        # format results into trend graph
+        if jurisdiction != '*':
+            query_results = query_results.to_dict()['aggregations']['count']['buckets']
 
-        # corral results into trend graph
-        for result in query_results:
-            year = datetime.fromtimestamp(result['key'] / 1000.0).year
-            count = result['doc_count']
+            years_out = self.create_timeline_entries(query_results, total_dict)
 
-            years_out.append(OrderedDict((
-                ("year", str(year)),
-                ("count", [count, total_dict[year]]),
-                ("doc_count", [count, total_dict[year]])
-            )))
+            out[jurisdiction] = years_out
+            results[case_id + ", citations"] = out
+        else:
+            query_results = query_results.to_dict()['aggregations']['jurisdiction']['buckets']
 
-        out[jurisdiction] = years_out
-        results[case_id + ", citations"] = out
+            for i, result in enumerate(query_results):
+                if i == 10:
+                    break
+
+                jurisdiction = result['key']
+                years_out = self.create_timeline_entries(result['count']['buckets'], total_dict)
+                out[jurisdiction] = years_out
+            
+            results[case_id + ", citations"] = out
 
         return results
 
