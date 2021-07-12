@@ -389,56 +389,56 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         return new_request
 
-    def get_best_jurisdictions(self, request, case_id):
-        # TODO: Efficiently support wildcard jurisdictions for case citations
-        pass
-
     def get_citation_data(self, request, case_id, decisionyear):
-        # given a case and its decision year, generate the timelien for the trends API.
+        # given a case and its decision year, generate the timeline for the trends API.
         currentyear = date.today().year
 
+        # variables for output storage
         results = OrderedDict()
         out = {}
-        # ready handler for extracting case counts
-        casescaller = CaseDocumentViewSet.as_view({'get': 'list'})
-
-        # hold onto jurisdiction to tag field name later
-        jurisdiction = request.GET.getlist('jurisdiction')
-
         years_out = []
-        for year in range(decisionyear, currentyear):
-            # get count for every single year from publication up to current year
-            request_params = {'cites_to_id': case_id, 'page_size': '1', 'decision_date__gte': str(year), 'decision_date__lt': str(year+1)}
-            request_params_total = {'page_size': '1', 'decision_date__gte': str(year), 'decision_date__lt': str(year+1)}
 
-            # filter for jurisdictions
-            if jurisdiction:
-                if '*' not in jurisdiction[0]:
-                    request_params['jurisdiction'] = jurisdiction[0]
+        jurisdiction = request.GET.getlist('jurisdiction')
+        jurisdiction = jurisdiction[0].strip() if jurisdiction else 'total'
 
-            api_request = self.clone_request(request, 'GET', 'json', request_params)
-            api_request_total = self.clone_request(request, 'GET', 'json', request_params_total)
+        # calculate total cases in a given year
+        total_search = CaseDocument.search() \
+                .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) \
+                .source(['decision_date']) 
+        total_search.aggs.bucket('count','date_histogram', field='decision_date', calendar_interval='year')
+        total_results = total_search.execute().to_dict()
 
-            cited_to_cases = casescaller(api_request, {}).data
-            cite_count = cited_to_cases.popitem(last=False)
+        total_dict = {}
+        for blob in total_results['aggregations']['count']['buckets']:
+            year = datetime.fromtimestamp(blob['key'] / 1000.0).year
+            total_dict[year] = blob['doc_count'] 
 
-            cited_to_cases_total = casescaller(api_request_total, {}).data
-            count_total = cited_to_cases_total.popitem(last=False)
+        # calculate cases citing to input case in a given year
+        search = CaseDocument.search() \
+                .source(['name', 'decision_date']) \
+                .filter('term', extracted_citations__target_cases=case_id) \
+                .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) 
 
-            if cite_count[0] != 'count' or count_total[0] != 'count':
-                raise Exception('Schema change for case listing prevents ngrams from retrieving case count')
+        if jurisdiction != 'total':
+            search = search.filter('term', jurisdiction__slug=jurisdiction)
 
-            if cite_count[1] == 0:
-                continue
+        search.aggs.bucket('count_by_year','date_histogram', field='decision_date', calendar_interval='year')
+        query_results = search.execute()
+
+        query_results = query_results.to_dict()['aggregations']['count_by_year']['buckets']
+
+        # corral results into trend graph
+        for result in query_results:
+            year = datetime.fromtimestamp(result['key'] / 1000.0).year
+            count = result['doc_count']
 
             years_out.append(OrderedDict((
                 ("year", str(year)),
-                ("count", [cite_count[1], count_total[1]]),
-                ("doc_count", [cite_count[1], count_total[1]])
+                ("count", [count, total_dict[year]]),
+                ("doc_count", [count, total_dict[year]])
             )))
 
-        juris_key = jurisdiction[0] if jurisdiction else 'total'
-        out[juris_key] = years_out
+        out[jurisdiction] = years_out
         results[case_id + ", citations"] = out
 
         return results
