@@ -129,6 +129,7 @@ def chronolawgic_api_create(request):
         'is_owner': request.user == timeline_record.created_by
     })
 
+
 def chronolawgic_update_categories(request, timeline_uuid):
     if request.method != 'POST':
         return JsonResponse({'status': 'err', 'reason': 'method_not_allowed'}, status=405)
@@ -143,7 +144,7 @@ def chronolawgic_update_categories(request, timeline_uuid):
 
     try:
         categories = [Timeline.normalize_and_validate_single_object('categories', category) for category in
-                                                                   json.loads(request.body.decode())]
+                      json.loads(request.body.decode())]
         timeline_record.timeline['categories'] = categories
         timeline_record.save()
     except json.decoder.JSONDecodeError as e:
@@ -186,10 +187,21 @@ def chronolawgic_add_update_subobject(request, subobject_type, timeline_uuid):
              'details': str(e)
              }, status=400)
 
+    case_years = timeline_record.case_years()
+    event_years = timeline_record.event_years()
+
+    first_year = Timeline.first_year(case_years, event_years)
+    last_year = Timeline.last_year(case_years, event_years)
+    event_stats = Timeline.event_stats(event_years, first_year, last_year)
+    case_stats = Timeline.case_stats(case_years, first_year, last_year)
+
     return JsonResponse({
         'status': 'ok',
         'message': 'updated {} list'.format(subobject_type),
-        'timeline': timeline_record.timeline
+        'timeline': timeline_record.timeline,
+        'stats': [case_stats, event_stats],
+        'first_year': first_year,
+        'last_year': last_year,
     })
 
 
@@ -206,10 +218,21 @@ def chronolawgic_delete_subobject(request, timeline_uuid, subobject_type, subobj
 
     timeline_record.delete_subobject(subobject_type, subobject_uuid)
 
+    case_years = timeline_record.case_years()
+    event_years = timeline_record.event_years()
+
+    first_year = Timeline.first_year(case_years, event_years)
+    last_year = Timeline.last_year(case_years, event_years)
+    event_stats = Timeline.event_stats(event_years, first_year, last_year)
+    case_stats = Timeline.case_stats(case_years, first_year, last_year)
+
     return JsonResponse({
         'status': 'ok',
         'message': 'deleted {}'.format(subobject_type),
-        'timeline': timeline_record.timeline
+        'timeline': timeline_record.timeline,
+        'stats': [case_stats, event_stats],
+        'first_year': first_year,
+        'last_year': last_year,
     })
 
 
@@ -280,8 +303,8 @@ def h2o_import(request):
             timeline_record = Timeline(
                 timeline=Timeline.generate_empty_timeline(
                     {"author": "(Imported from H2O)",
-                    "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
-                    "cases": timeline_cases}
+                     "description": "Original H2O textbook can be found at this URL: " + original_casebook_url,
+                     "cases": timeline_cases}
                 ),
                 created_by=request.user,
             )
@@ -301,7 +324,8 @@ def h2o_import(request):
             timeline_record.timeline['last_year'] = Timeline.last_year(case_years, event_years)
             timeline_record.timeline['stats'] = [case_stats, event_stats]
 
-            return JsonResponse({'status': 'ok', 'timeline': timeline_record.timeline, 'id': timeline_record.uuid, 'missing_cases': missing_cases})
+            return JsonResponse({'status': 'ok', 'timeline': timeline_record.timeline, 'id': timeline_record.uuid,
+                                 'missing_cases': missing_cases})
         else:
             return JsonResponse({'status': 'err', 'reason': ''}, status=resp.status_code)
     except Exception as e:

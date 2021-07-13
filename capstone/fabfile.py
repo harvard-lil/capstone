@@ -197,7 +197,11 @@ def export_volume(volume_id, output_zip=None):
         to_serialize.add(case.body_cache)
         to_serialize.add(case.court)
         to_serialize.update(case.citations.all())
-        to_serialize.update(case.extracted_citations.all())
+        extracted_citations = list(case.extracted_citations.all())
+        for e in extracted_citations:
+            # zero out target cases to avoid foreign key error
+            e.target_case = None
+        to_serialize.update(extracted_citations)
         to_serialize.update(case.analysis.all())
     serializer = serializers.get_serializer("json")()
     with zipfile.ZipFile(output_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zip:
@@ -205,6 +209,22 @@ def export_volume(volume_id, output_zip=None):
         if volume.pdf_file:
             with volume.pdf_file.open() as pdf:
                 zip.writestr("downloads/%s" % volume.pdf_file, pdf.read())
+
+
+@task
+def reexport_web_volumes():
+    """
+        Re-export all files in download_files_storage.iter_files('developer/volumes').
+        Use this after database updates to fix import_web_volumes() errors.
+    """
+    from capdb.storages import download_files_storage
+
+    for path in download_files_storage.iter_files('developer/volumes'):
+        print(f"Reexporting {path}")
+        volume_number, reporter_name = Path(path).stem.split(' ', 1)
+        volume = VolumeMetadata.objects.get(volume_number=volume_number, reporter__short_name__in=(reporter_name, reporter_name + '.'), out_of_scope=False)
+        export_volume(volume.pk, output_zip=download_files_storage.path(path))
+
 
 @task
 def import_volume(volume_zip_path):
