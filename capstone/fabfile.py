@@ -849,6 +849,7 @@ def update_files():
 @task
 def update_all_snippets():
     update_snippets.update_all()
+    update_files()
 
 @task
 def update_search_snippets():
