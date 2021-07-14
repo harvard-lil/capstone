@@ -1,7 +1,7 @@
 import bisect
 import urllib
 from datetime import datetime, date
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 from django.utils.functional import partition
@@ -385,11 +385,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             year = datetime.fromtimestamp(entry['key'] / 1000.0).year
             count = entry['doc_count']
 
-            years_out.append(OrderedDict((
-                ("year", str(year)),
-                ("count", [count, total_dict[year]]),
-                ("doc_count", [count, total_dict[year]])
-            )))
+            years_out.append({
+                "year": str(year),
+                "count": [count, total_dict[year]],
+                "doc_count": [count, total_dict[year]]
+            })
 
         years_out.sort(key=lambda y: y["year"])
         return years_out
@@ -399,7 +399,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         currentyear = date.today().year
 
         # variables for output storage
-        results = OrderedDict()
+        results = {}
         out = {}
         jurisdiction = request.GET.getlist('jurisdiction')
         jurisdiction = jurisdiction[0].strip() if jurisdiction else 'total'
@@ -407,7 +407,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # calculate total cases in a given year
         total_search = CaseDocument.search() \
                 .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) \
-                .source(['decision_date']) 
+                .source(['decision_date']) \
+                .extra(size=1)
         total_search.aggs.bucket('count','date_histogram',
                                  field='decision_date', calendar_interval='year')
         total_results = total_search.execute().to_dict()
@@ -421,7 +422,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         search = CaseDocument.search() \
                 .source(['name', 'decision_date', 'jurisdiction.slug']) \
                 .filter('term', extracted_citations__target_cases=case_id) \
-                .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) 
+                .filter('range', **{'decision_date': {'gte': decisionyear, 'lt': currentyear}}) \
+                .extra(size=1)
+
         if jurisdiction != 'total' and jurisdiction != '*':
             search = search.filter('term', jurisdiction__slug=jurisdiction)
 
@@ -452,10 +455,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         else:
             query_results = query_results.to_dict()['aggregations']['jurisdiction']['buckets']
 
-            for i, result in enumerate(query_results):
-                if i == 10:
-                    break
-
+            for i, result in enumerate(query_results[:10]):
                 jurisdiction = result['key']
                 years_out = self.create_timeline_entries(result['count']['buckets'], total_dict)
                 out[jurisdiction] = years_out
@@ -484,11 +484,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             results = self.get_citation_data(request, case_id, decisionyear)
             pairs = []
         elif q.endswith(b' *'):
-            results = OrderedDict()      
+            results = {}
             # wildcard search
             pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
         else:
-            results = OrderedDict()      
+            results = {}
             # non-wildcard search
             value = ngram_kv_store_ro.get(q, packed=True)
             if value:
@@ -567,11 +567,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                             continue
 
                         totals = self.totals_by_jurisdiction_year_length[(jur_id, year, q_len)]
-                        years_out.append(OrderedDict((
-                            ("year", str(year) if year else "total"),
-                            ("count", [count, totals[0]]),
-                            ("doc_count", [doc_count, totals[1]]),
-                        )))
+                        years_out.append({
+                            "year": str(year) if year else "total",
+                            "count": [count, totals[0]],
+                            "doc_count": [doc_count, totals[1]]
+                        })
 
                     years_out.sort(key=lambda y: y["year"])
                     out[jur_slug] = years_out
@@ -579,12 +579,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 if out:
                     results[gram[1:].decode('utf8')] = out
 
-        paginated = OrderedDict((
-            ("count", len(results)),
-            ("next", None),
-            ("previous", None),
-            ("results", results),
-        ))
+        paginated = {
+            "count": len(results),
+            "next": None,
+            "previous": None,
+            "results": results
+        }
 
         return Response(paginated)
 
