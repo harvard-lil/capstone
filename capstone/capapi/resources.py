@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
-from django.http import QueryDict, HttpRequest
+from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
