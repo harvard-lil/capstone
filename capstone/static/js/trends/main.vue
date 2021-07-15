@@ -72,7 +72,7 @@
 
           <h5 class="card-title">Citation search</h5>
           <p>
-            Utilize the `api()` command to filter and generate timelines by particular case features. A list of supported fields for filtering is included at the bottom of this document.
+            Use the `api()` command to generate timelines over CAP data filtered using parameters for the CAP Cases endpoint. Any fields used as filters for the Cases API (cites_to, reporter, jurisdiction) may be used.
           </p>
           <ul class="bullets">
             <li><example-link query="api(cites_to_id=1785580)"/> (citations over time for Mapp v. Ohio)</li>
