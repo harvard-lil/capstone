@@ -431,7 +431,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_total_dict(self, request):
         # get and cache total dictionary. 
         total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
-        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
+        total_results = api_request(request._request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
 
         results = total_results['facets']['jurisdiction,decision_date']
         total_dict = results.copy()
@@ -454,7 +454,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # set up request caller and make API requests with facet parameter
         # These queries should always return valid JSON
-        query_results = api_request(request, CaseDocumentViewSet, 'list', get_params=query_params).data
+        query_results = api_request(request._request, CaseDocumentViewSet, 'list', get_params=query_params).data
 
         # fail if there are no results. There should be _something_ in the page results if 
         # the aggregation is not just 0

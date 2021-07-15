@@ -167,22 +167,8 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
 
     # copy selected fields due to infinite recursion for some 
     # request copies
-    try:
-        api_request = copy(request)
-    except RecursionError:
-        api_request = HttpRequest()
-
-    api_request.method = request.method
-    api_request.META = request.META
-    api_request.COOKIES = request.COOKIES
-    api_request.FILES = request.FILES
-    api_request.POST = request.POST
+    api_request = copy(request)
     api_request.method = 'GET'
-
-    try:
-        api_request.accepted_renderer = request.accepted_renderer
-    except AttributeError:
-        pass
 
     api_request.GET = QueryDict(mutable=True)
     for key in get_params:
