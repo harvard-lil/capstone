@@ -424,7 +424,10 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         years_out.sort(key=lambda y: y["year"])
         return years_out
 
-    @cache_func(lambda: 'trends_es_case_counts', timeout=1)
+    @cache_func(
+        key=lambda self, request: 'trends_es_case_counts',
+        timeout=24*60*60,
+    )
     def get_total_dict(self, request):
         # get and cache total dictionary
         total_query_params = {'page_size': 1, 'facet': 'jurisdiction,decision_date'}
