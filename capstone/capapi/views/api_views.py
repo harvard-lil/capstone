@@ -24,6 +24,7 @@ from capapi.resources import api_request
 from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
+from capweb.helpers import cache_func
 from scripts.helpers import normalize_cite
 from user_data.models import UserHistory
 
@@ -402,32 +403,42 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return query_body
 
     @staticmethod
-    def create_timeline_entries(bucket_entries, total_dict):
+    def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
         # generate timeline datapoint given an elasticsearch query result
         years_out = []
 
         for year, count in bucket_entries.items():
+
+            total = 0
+            if jurisdiction == 'total':
+                total = total_dict[year]
+            else:
+                total = total_dict[jurisdiction][year]
+
             years_out.append({
                 "year": str(year),
-                "count": [count, total_dict[year]],
-                "doc_count": [count, total_dict[year]]
+                "count": [count, total],
+                "doc_count": [count, total]
             })
 
         years_out.sort(key=lambda y: y["year"])
         return years_out
 
-    @staticmethod
-    def clone_request(request, method, renderer, query_params):
-        # copy a request object with specified query changes
-        new_request = HttpRequest()
-        new_request.method = method
-        new_request.accepted_renderer = renderer
-        new_request.META = request.META
-        new_request.query_params = query_params
-        new_request.GET = QueryDict(mutable=True)
-        new_request.GET.update(query_params)
+    @cache_func(lambda: 'trends_es_case_counts', timeout=1)
+    def get_total_dict(self, request):
+        # get and cache total dictionary
+        total_query_params = {'page_size': 1, 'facet': 'jurisdiction,decision_date'}
+        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
+        aggregate_query_params = {'page_size': 1, 'facet': 'decision_date'}
+        aggregate_results = api_request(request, CaseDocumentViewSet, 'list', get_params=aggregate_query_params).data
 
-        return new_request
+        results = total_results['facets']['jurisdiction,decision_date']
+        total_dict = results.copy()
+
+        for key, value in aggregate_results['facets']['decision_date'].items():
+            total_dict[key] = value
+
+        return total_dict
 
     def get_citation_data(self, request, query_params, words_encoded):
         # given a case and its decision year, generate the timeline for the trends API.
@@ -444,15 +455,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # These queries should always return valid JSON
         query_results = api_request(request, CaseDocumentViewSet, 'list', get_params=query_params).data
 
-        total_query_params = {'page_size': 1, 'facet': 'decision_date'}
-        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
-
         # fail if there are no results. There should be _something_ in the page results if 
         # the aggregation is not just 0
         if not query_results['results']:
             return {}
 
-        total_dict = {year:count for year,count in total_results['facets']['decision_date'].items()}
+        total_dict = self.get_total_dict(request)
 
         # variables for output storage
         results = {}
@@ -461,7 +469,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # format results into trend graph
         if jurisdiction != '*':
             query_results = query_results['facets']['decision_date']
-            years_out = self.create_timeline_entries(query_results, total_dict)
+            years_out = self.create_timeline_entries(query_results, total_dict, jurisdiction)
 
             out[jurisdiction] = years_out
             results[words_encoded] = out
@@ -469,7 +477,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             query_results = query_results['facets']['jurisdiction,decision_date']
 
             for jurisdiction, value in list(query_results.items())[:10]:
-                years_out = self.create_timeline_entries(value, total_dict)
+                years_out = self.create_timeline_entries(value, total_dict, jurisdiction)
                 out[jurisdiction] = years_out
             
             results[words_encoded] = out
