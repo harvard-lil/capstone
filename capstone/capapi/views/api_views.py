@@ -389,6 +389,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
+
+            for key in query_body:
+                if key not in CaseDocumentViewSet.filter_fields:
+                    return False
+
             query_body['page_size'] = 1
             query_body['facet'] = 'decision_date'
         except Exception:
@@ -426,7 +431,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_citation_data(self, request, query_params, words_encoded):
         # given a case and its decision year, generate the timeline for the trends API.
-        casescaller = CaseDocumentViewSet.as_view({'get': 'list'})
 
         # parse jurisdiction
         jurisdiction = request.GET.getlist('jurisdiction')
@@ -436,14 +440,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         elif jurisdiction != 'total':
             query_params['jurisdiction'] = jurisdiction
 
-        # set up request caller and make API requests to ELK
-        api_request = self.clone_request(request, 'GET', 'json', query_params)
+        # set up request caller and make API requests with facet parameter
+        # These queries should always return valid JSON
+        query_results = api_request(request, CaseDocumentViewSet, 'list', get_params=query_params).data
 
         total_query_params = {'page_size': 1, 'facet': 'decision_date'}
-        total_api_request = self.clone_request(request, 'GET', 'json', total_query_params)
-
-        query_results = casescaller(api_request, {}).data
-        total_results = casescaller(total_api_request, {}).data
+        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
 
         # fail if there are no results. There should be _something_ in the page results if 
         # the aggregation is not just 0
