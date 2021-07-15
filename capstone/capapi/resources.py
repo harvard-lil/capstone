@@ -168,16 +168,18 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
     # request copies
     api_request = HttpRequest()
     api_request.method = request.method
-    if accepted_renderer in api_request:
-        api_request.accepted_renderer = request.accepted_renderer
     api_request.META = request.META
     api_request.COOKIES = request.COOKIES
     api_request.FILES = request.FILES
     api_request.POST = request.POST
-
     api_request.method = 'GET'
-    api_request.GET = QueryDict(mutable=True)
 
+    try:
+        api_request.accepted_renderer = request.accepted_renderer
+    except AttributeError:
+        pass
+
+    api_request.GET = QueryDict(mutable=True)
     for key in get_params:
         if type(get_params[key]) is list:
             api_request.GET.setlist(key, get_params[key])
