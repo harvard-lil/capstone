@@ -433,13 +433,10 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
         total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
 
-        results = total_results['facets']['jurisdiction,decision_date']
-        total_dict = results.copy()
-
-        for key, value in total_results['facets']['decision_date'].items():
-            total_dict[key] = value
-
-        return total_dict
+        return {
+            **total_results['facets']['jurisdiction,decision_date'],
+            **total_results['facets']['decision_date']
+        }
 
     def get_citation_data(self, request, query_params, words_encoded):
         # given a case and its decision year, generate the timeline for the trends API.
