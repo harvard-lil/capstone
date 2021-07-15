@@ -168,7 +168,8 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
     # request copies
     api_request = HttpRequest()
     api_request.method = request.method
-    api_request.accepted_renderer = request.accepted_renderer
+    if accepted_renderer in api_request:
+        api_request.accepted_renderer = request.accepted_renderer
     api_request.META = request.META
     api_request.COOKIES = request.COOKIES
     api_request.FILES = request.FILES
@@ -176,5 +177,11 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
 
     api_request.method = 'GET'
     api_request.GET = QueryDict(mutable=True)
-    api_request.GET.update(get_params)
+
+    for key in get_params:
+        if type(get_params[key]) is list:
+            api_request.GET.setlist(key, get_params[key])
+        else:
+            api_request.GET[key] = get_params[key]
+
     return viewset.as_view({'get': method})(api_request, **url_kwargs)

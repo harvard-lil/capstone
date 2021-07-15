@@ -429,16 +429,14 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         timeout=24*60*60,
     )
     def get_total_dict(self, request):
-        # get and cache total dictionary
-        total_query_params = {'page_size': 1, 'facet': 'jurisdiction,decision_date'}
+        # get and cache total dictionary. 
+        total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
         total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
-        aggregate_query_params = {'page_size': 1, 'facet': 'decision_date'}
-        aggregate_results = api_request(request, CaseDocumentViewSet, 'list', get_params=aggregate_query_params).data
 
         results = total_results['facets']['jurisdiction,decision_date']
         total_dict = results.copy()
 
-        for key, value in aggregate_results['facets']['decision_date'].items():
+        for key, value in total_results['facets']['decision_date'].items():
             total_dict[key] = value
 
         return total_dict
