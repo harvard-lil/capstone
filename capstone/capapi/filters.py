@@ -5,7 +5,6 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
     OrderingFilterBackend, FacetedSearchFilterBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
-from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
 from capdb import models

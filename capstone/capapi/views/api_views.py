@@ -1,7 +1,7 @@
 import bisect
 import urllib
 import re
-from datetime import datetime, date
+from datetime import datetime
 from collections import defaultdict
 from pathlib import Path
 
