@@ -1,5 +1,4 @@
 import hashlib
-from copy import copy
 
 import wrapt
 
