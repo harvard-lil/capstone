@@ -149,7 +149,7 @@ Examples:
 
 {# ==============> Citation search <============== #}
 # Citation search
-Use the `api()` command to generate timelines over CAP data filtered using parameters for the CAP Cases endpoint. Most fields used as filters for the Cases API (cites\_to, reporter, jurisdiction) may be used.
+Use the `api()` command to generate timelines over filtered subsets of CAP case data. The following parameters may be used: id, court, court\_id, reporter, jurisdiction, cite, cites\_to, cites\_to\_id, cites\_to.reporter, cites\_to.category, decision\_date, and all analysis fields.
 
 Examples:
 
