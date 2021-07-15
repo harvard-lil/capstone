@@ -1,6 +1,7 @@
 import hashlib
 from copy import copy
 
+import rest_framework.request
 import wrapt
 
 from django.conf import settings
@@ -167,6 +168,9 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
 
     # copy selected fields due to infinite recursion for some 
     # request copies
+    if isinstance(request, rest_framework.request.Request):
+        request = request._request
+
     api_request = copy(request)
     api_request.method = 'GET'
 
