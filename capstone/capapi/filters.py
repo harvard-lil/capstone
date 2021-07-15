@@ -1,17 +1,19 @@
 from functools import lru_cache
+from six import iteritems
 
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
-    OrderingFilterBackend
+    OrderingFilterBackend, FacetedSearchFilterBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
+from elasticsearch_dsl import TermsFacet, DateHistogramFacet
+from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
 from capdb import models
 from scripts.helpers import normalize_cite
 from scripts.extract_cites import extract_citations_normalized
 from user_data.models import UserHistory
-
 
 ### HELPERS ###
 
@@ -288,6 +290,85 @@ class CAPOrderingFilterBackend(OrderingFilterBackend):
         return super().transform_ordering_params(
             ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
             ordering_fields)
+
+class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
+    # The same as FacetedSearchFilterBackend, but with support for sub-aggregations.
+    def construct_facets(self, request, view):
+        """
+        Construct facets structure.
+        """    
+        __facets = {}
+        faceted_search_query_params = [item.split(',') for item in self.get_faceted_search_query_params(
+            request
+        )]
+        faceted_search_query_params = [item for sublist in faceted_search_query_params for item in sublist]
+
+        faceted_search_fields = self.prepare_faceted_search_fields(view)
+        for __field, __options in faceted_search_fields.items():
+            if __field in faceted_search_query_params or __options['enabled']:
+                __facets.update(
+                    {
+                        __field: {
+                            'facet': faceted_search_fields[__field]['facet'](
+                                field=faceted_search_fields[__field]['field'],
+                                **faceted_search_fields[__field]['options']
+                            ),
+                            'global': faceted_search_fields[__field]['global'],
+                        }
+                    }
+                )
+        return __facets
+    
+
+    def aggregate(self, request, queryset, view):
+        """
+        Generate field aggregations. Supports 3 parallel aggs and 2 sub-aggregations
+        """
+
+        # If cursor is attached, don't aggregate
+        query_params = request.query_params.copy()
+        if query_params.getlist('cursor', []):
+            return queryset
+
+        # pull query_params as the order of the aggregations
+        faceted_search_query_params = self.get_faceted_search_query_params(
+            request
+        )
+
+        __facets = self.construct_facets(request, view)
+
+        for i, __potential_field in enumerate(faceted_search_query_params[:3]):
+            __fields = __potential_field.split(',')
+            previous_agg_key = None
+
+            for j, __field in enumerate(__fields[:2]): 
+                __facet = __facets[__field]
+                agg = __facet['facet'].get_aggregation()
+                agg_filter = Q('match_all')
+
+                if previous_agg_key == None:
+                    next_index = min(j + 1, len(__fields) - 1)
+                    previous_agg_key = __field
+                    if next_index == j + 1:
+                        previous_agg_key += f',{__fields[next_index]}'
+
+                    queryset.aggs.bucket(
+                        previous_agg_key,
+                        agg
+                    )
+                    queryset.aggs[previous_agg_key].pipeline('sortedbucketfield', 
+                        'bucket_sort',
+                        sort=[{'_count': {'order': 'desc'}}])
+                else:
+                    queryset.aggs[previous_agg_key].bucket(
+                        __field,
+                        agg
+                    )
+                    queryset.aggs[previous_agg_key][__field].pipeline('sortedbucketfield', 
+                        'bucket_sort',
+                        sort=[{'_count': {'order': 'desc'}}])
+
+        return queryset
 
 
 class ResolveFilter(FilterSet):

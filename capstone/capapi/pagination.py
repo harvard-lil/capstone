@@ -2,6 +2,7 @@ import json
 import warnings
 from base64 import b64decode, b64encode
 from collections import OrderedDict
+from datetime import datetime
 
 from django.conf import settings
 from django_elasticsearch_dsl_drf.versions import ELASTICSEARCH_GTE_6_0
@@ -150,12 +151,45 @@ class ESPaginatorMixin:
         """
         raise NotImplementedError
 
+    def parse_bucket_key(self, blob):
+        """Generate and parse blob key.
+
+        :param string:
+        :return:
+        """
+        if 'key_as_string' in blob:
+            try:
+                return datetime.strptime(blob['key_as_string'], '%Y-%m-%dT%H:%M:%S.%fZ').year
+            except ValueError:
+                return blob['key']
+
+        return blob['key']
+
     def get_facets(self, facets=None):
-        """Get facets.
+        """Get facets. ONLY return up to max depth two layers to avoid infinite recursion
 
         :param facets:
         :return:
         """
+        newfacetdict = {}
+
+        if not self.facets:
+            return self.facets
+
+        for facetkey in self.facets:
+            newfacetdict[facetkey] = {}
+
+            keys = facetkey.split(',')
+
+            for bucket in self.facets[facetkey]['buckets']:             
+                value = bucket['doc_count']
+                if len(keys) == 2 and keys[1] in bucket and type(bucket[keys[1]]) == dict:
+                    value = {self.parse_bucket_key(blob):blob['doc_count'] for blob in bucket[keys[1]]['buckets']}
+
+                newfacetdict[facetkey][self.parse_bucket_key(bucket)] = value
+
+        self.facets = newfacetdict
+
         return self.facets if facets is None else facets
 
     def get_paginated_response_context(self, data):
