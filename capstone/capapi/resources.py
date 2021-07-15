@@ -1,4 +1,5 @@
 import hashlib
+from copy import copy
 
 import wrapt
 
@@ -166,7 +167,11 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
 
     # copy selected fields due to infinite recursion for some 
     # request copies
-    api_request = HttpRequest()
+    try:
+        api_request = copy(request)
+    except RecursionError:
+        api_request = HttpRequest()
+
     api_request.method = request.method
     api_request.META = request.META
     api_request.COOKIES = request.COOKIES
