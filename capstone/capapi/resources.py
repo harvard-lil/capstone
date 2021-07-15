@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import connections
 from django.db.models import QuerySet
-from django.http import QueryDict
+from django.http import QueryDict, HttpRequest
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
@@ -164,7 +164,17 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
             data = api_request(request, CaseDocumentViewSet, 'list', get_params={'q': 'foo'}).data
             data = api_request(request, CaseDocumentViewSet, 'retrieve', url_kwargs={'id': '123'}).data
     """
-    api_request = copy(request)
+
+    # copy selected fields due to infinite recursion for some 
+    # request copies
+    api_request = HttpRequest()
+    api_request.method = request.method
+    api_request.accepted_renderer = request.accepted_renderer
+    api_request.META = request.META
+    api_request.COOKIES = request.COOKIES
+    api_request.FILES = request.FILES
+    api_request.POST = request.POST
+
     api_request.method = 'GET'
     api_request.GET = QueryDict(mutable=True)
     api_request.GET.update(get_params)

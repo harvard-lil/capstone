@@ -20,6 +20,7 @@ from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
+from capapi.resources import api_request
 from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
@@ -375,27 +376,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 total[1] += v[1]
         return totals_by_jurisdiction_year_length
 
-    def parse_dsl_query_body(self, query_body):
-        # check if the query_body includes an accepted field, the right fields, and only one `=` character
-        query_dict = {}
-        for i, query in enumerate(query_body):
-            query_items = query.split('=')
-
-            if len(query_items) != 2:
-                return False
-            if query_items[0] not in CaseDocumentViewSet.filter_fields \
-                and query_items[0] != CaseDocumentViewSet.faceted_search_param:
-                return False
-
-            query_dict[query_items[0]] = query_items[1]
-
-        # because this is a trends timeline, force users to set page size to 1 
-        # also override facets to timeline
-        query_dict['page_size'] = 1
-        query_dict['facet'] = 'decision_date'
-
-        return query_dict
-
     def get_query_data_from_api_query(self, q):
         # given an `api(...)` query, return a structured list of filters and aggregations
         # validate whether a case ID exists in the corpus
@@ -406,8 +386,15 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # allow escapes like param1=valu\&e&param2=value3
         query_body = [keyval for keyval in re.split(r'(?<!\\)&', q[4:-1])] if q[4:-1] else False
+    
+        try:
+            query_body = QueryDict(q[4:-1], mutable=True)
+            query_body['page_size'] = 1
+            query_body['facet'] = 'decision_date'
+        except Exception:
+            return False
 
-        return self.parse_dsl_query_body(query_body) if query_body else False
+        return query_body
 
     @staticmethod
     def create_timeline_entries(bucket_entries, total_dict):

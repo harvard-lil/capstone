@@ -16,6 +16,7 @@
     const templateVars = {
       urls: {
         search: "{% url "search" %}#/cases",
+        trends: "{% url "trends" %}",
         redact: "{% url "redact_case" db_case.id host 'cite' %}",
         api: "{% api_url "api-root" %}v1/",
         citedBy: "{% url "citations" host 'cite' %}?q={{ db_case.id }}",
