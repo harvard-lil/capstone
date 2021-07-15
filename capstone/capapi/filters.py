@@ -1,12 +1,10 @@
 from functools import lru_cache
-from six import iteritems
 
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend, FacetedSearchFilterBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
-from elasticsearch_dsl import TermsFacet, DateHistogramFacet
 from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
@@ -344,9 +342,8 @@ class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
             for j, __field in enumerate(__fields[:2]): 
                 __facet = __facets[__field]
                 agg = __facet['facet'].get_aggregation()
-                agg_filter = Q('match_all')
 
-                if previous_agg_key == None:
+                if previous_agg_key is None:
                     next_index = min(j + 1, len(__fields) - 1)
                     previous_agg_key = __field
                     if next_index == j + 1:
