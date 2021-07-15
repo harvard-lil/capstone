@@ -150,14 +150,14 @@ Examples:
 {# ==============> Citation search <============== #}
 # Citation search
 
-Append "@" to the end of a valid case ID to perform a citation search. This will return a timeline of case citations 
-over time for that particular case. Do not use quotes. 
+Utilize the `api()` command to filter and generate timelines by particular case features. A list of supported 
+fields for filtering is included at the bottom of this document.
 
 Examples:
 
-* [`1785580@`]({% url 'trends' %}?q=6232114%40) *(citations over time for Mapp v. Ohio)*
-* [`cal: 1785580@`]({% url 'trends' %}?q=cal%3A+6232114%40) *(citations over time for Mapp v. Ohio in california)*
-* [`*: 1785580@`]({% url 'trends' %}?q=*%3A+6232114%40) *(citations over time for Mapp v. Ohio for all jurisdictions)*
+* [`api(cites_to_id=1785580)`]({% url 'trends' %}?q=api(cites_to_id%3D1785580)) *(citations over time for Mapp v. Ohio)*
+* [`cal: api(cites_to=367 U.S. 643)`]({% url 'trends' %}?q=api(cites_to%3D367 U.S. 643)) *(citations over time for Mapp v. Ohio in california)*
+* [`*: api(cites_to_id=1785580)`]({% url 'trends' %}?q=*%3A api(cites_to_id%3D1785580)) *(citations over time for Mapp v. Ohio for all jurisdictions)*
 
 {# ==============> Jurisdiction Search <============== #}
 # Jurisdiction search
@@ -244,6 +244,29 @@ Examples:
 * West Virginia: `w-va`
 * Wyoming: `wyo`
 
+{# ==============> FILTER FIELDS <============== #}
+# Filter fields
+
+* id
+* court
+* court\_id
+* reporter
+* jurisdiction
+* cite
+* cites\_to
+* cites\_to\_id
+* cites\_to.reporter
+* cites\_to.category
+* decision\_date
+* last\_updated
+* analysis.cardinality
+* analysis.char\_count
+* analysis.ocr\_confidence
+* analysis.pagerank.percentile
+* analysis.pagerank.raw
+* analysis.sha256
+* analysis.simhash
+* analysis.word\_count
 
 {# ==============> CITATION FEATURE <============== #}
 # Citation feature

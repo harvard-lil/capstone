@@ -18,7 +18,7 @@
             <li><example-link query="piracy"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="he said, she said"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="ride a *"/> <span aria-hidden="true"> / </span> </li>
-            <li><example-link query="1785580@"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="api(cites_to_id=1785580)"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="me: lobster, cal: gold, tex: cowboy"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="*: gold"/> <span aria-hidden="true"> / </span> </li>
             <li><a href="#" @click.prevent="clickHelpButton">more ...</a></li>
@@ -72,12 +72,12 @@
 
           <h5 class="card-title">Citation search</h5>
           <p>
-            Append "@" to the end of a valid case ID to perform a citation search. This will return a timeline of case citations over time for that particular case. Do not use quotes. Examples:
+            Utilize the `api()` command to filter and generate timelines by particular case features. A list of supported fields for filtering is included at the bottom of this document.
           </p>
           <ul class="bullets">
-            <li><example-link query="1785580@"/> (citations over time for Mapp v. Ohio)</li>
-            <li><example-link query="cal: 1785580@"/> (citations over time for Mapp v. Ohio in california)</li>
-            <li><example-link query="*: 1785580@"/> (citations over time for Mapp v. Ohio for all jurisdictions)</li>
+            <li><example-link query="api(cites_to_id=1785580)"/> (citations over time for Mapp v. Ohio)</li>
+            <li><example-link query="nc: api(cites_to=367 U.S. 643)"/> (citations over time for Mapp v. Ohio in North Carolina)</li>
+            <li><example-link query="*: api(cites_to_id=1785580)"/> (citations over time for Mapp v. Ohio for all jurisdictions)</li>
           </ul>
 
           <h5 class="card-title">Jurisdiction search</h5>
