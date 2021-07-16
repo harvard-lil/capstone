@@ -382,11 +382,14 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # check if the queries are expected filter inputs to the cases API.        
         additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if \
             issubclass(backend, filters.BaseFTSFilter)]
-
         additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
+        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
         for key in query_body:
             key = key.split('=')[0]
+            for pattern in modifier_patterns:
+                key = re.sub(pattern, '', key)
+
             if key not in CaseDocumentViewSet.filter_fields \
                 and key != 'search' \
                 and key not in additional_filter_fields:
