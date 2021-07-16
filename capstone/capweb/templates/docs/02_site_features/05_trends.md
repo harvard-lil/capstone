@@ -149,11 +149,12 @@ Examples:
 
 {# ==============> Citation search <============== #}
 # Citation search
-Use the `api()` command to generate timelines over filtered subsets of CAP case data. The following parameters may be used: id, court, court\_id, reporter, jurisdiction, cite, cites\_to, cites\_to\_id, cites\_to.reporter, cites\_to.category, decision\_date, and all analysis fields.
+The `api()` command is a powerful tool that can generate timelines over filtered subsets of CAP case data. All 
+parameters that can be supplied to the /v1/cases API, with the exception of `facet`, may be used. Examples: 
 
 Examples:
 
-* [`api(cites_to_id=1785580)`]({% url 'trends' %}?q=api(cites_to_id%3D1785580)) *(citations over time for Mapp v. Ohio)*
+* [`api(cites_to_id=1785580&decision_date_min=1990)`]({% url 'trends' %}?q=api(cites_to_id%3D1785580)) *(citations over time for Mapp v. Ohio for the years 1990 and after)*
 * [`cal: api(cites_to=367 U.S. 643)`]({% url 'trends' %}?q=api(cites_to%3D367 U.S. 643)) *(citations over time for Mapp v. Ohio in california)*
 * [`*: api(cites_to_id=1785580)`]({% url 'trends' %}?q=*%3A api(cites_to_id%3D1785580)) *(citations over time for Mapp v. Ohio for all jurisdictions)*
 

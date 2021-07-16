@@ -617,7 +617,7 @@ label.dropdown-label {
   background-color: $color-violet-gray-dark !important;
 }
 
-#query-explainer-button {
+#show-trends-link, #query-explainer-button {
   @extend .btn-tertiary;
   border: 0;
   background-color: transparent;

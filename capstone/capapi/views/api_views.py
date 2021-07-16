@@ -377,6 +377,24 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 total[1] += v[1]
         return totals_by_jurisdiction_year_length
 
+    @staticmethod
+    def query_params_are_filters(query_body):
+        # check if the queries are expected filter inputs to the cases API.        
+        additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if \
+            issubclass(backend, filters.BaseFTSFilter)]
+
+        additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
+
+        for key in query_body:
+            key = key.split('=')[0]
+            if key not in CaseDocumentViewSet.filter_fields \
+                and key != 'search' \
+                and key not in additional_filter_fields:
+                return False
+
+        return True
+
+
     def get_query_data_from_api_query(self, q):
         # given an `api(...)` query, return a structured list of filters and aggregations
         # validate whether a case ID exists in the corpus
@@ -387,14 +405,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # allow escapes like param1=valu\&e&param2=value3
         query_body = [keyval for keyval in re.split(r'(?<!\\)&', q[4:-1])] if q[4:-1] else False
+
+        if not self.query_params_are_filters(query_body):
+            return False
     
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
-
-            for key in query_body:
-                if key not in CaseDocumentViewSet.filter_fields:
-                    return False
-
             query_body['page_size'] = 1
             query_body['facet'] = 'decision_date'
         except Exception:
@@ -408,7 +424,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         years_out = []
 
         for year, count in bucket_entries.items():
-
             total = 0
             if jurisdiction == 'total':
                 total = total_dict[year]
@@ -455,7 +470,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # fail if there are no results. There should be _something_ in the page results if 
         # the aggregation is not just 0
-        if not query_results['results']:
+        if 'results' not in query_results or not query_results['results']:
             return {}
 
         total_dict = self.get_total_dict(request)

@@ -342,6 +342,17 @@ const store = new Vuex.Store({
 
       return `${state.urls.api_root}cases/?${encodeQueryData(params, true)}`;
     },
+    trends_link: (state) => {
+      var params = '';
+      for (const key in state.fields) {
+        var value = state.fields[key].value;
+        if (value && value.length > 0) {
+          params += encodeURIComponent(key + '=' + value + '&');
+        } 
+      }
+
+      return state.urls.trends + '?q=api(' + params.slice(0, -3) + ')'
+    },
     erroredFieldList: (state) => {
       let fields_with_errors = []
       Object.keys(state.fields).forEach(key => {

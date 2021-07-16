@@ -148,6 +148,7 @@
                   class="sr-only"
                   tabindex="-1">Loading</span>
           </div>
+          <a id="show-trends-link" :href="$store.getters.trends_link">Trends</a>
           <button id="query-explainer-button" class="mt-0" @click="$store.commit('toggleExplainer')"
              v-if="$store.getters.show_explainer">HIDE API CALL
           </button>
