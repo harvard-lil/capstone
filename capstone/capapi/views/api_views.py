@@ -380,7 +380,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def query_params_are_filters(query_body):
         # check if the queries are expected filter inputs to the cases API.        
-        additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if \
+        additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
             issubclass(backend, filters.BaseFTSFilter)]
         additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
         modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
