@@ -347,7 +347,13 @@ const store = new Vuex.Store({
       for (const key in state.fields) {
         var value = state.fields[key].value;
         if (value && value.length > 0) {
-          params += encodeURIComponent(key + '=' + value + '&');
+          if (Array.isArray(value)) {
+            for (const item of value) {
+              params += encodeURIComponent(key + '=' + item + '&');
+            }
+          } else {
+            params += encodeURIComponent(key + '=' + value + '&');
+          }
         } 
       }
 
