@@ -20,6 +20,8 @@
         <span v-else-if="citingCount === 0">No cases cite to this case</span>
         <span v-else>
           <a :href="urls.citedBy">{{citingCount}} case{{citingCount===1?"":"s"}} cite to this case</a>
+          <br>
+          <a :href="searchForTrends()">View citation history in trends</a>
         </span>
       </div>
     </div>
@@ -189,6 +191,9 @@
       },
       searchForSelection() {
         return this.urls.search + "?search=" + encodeURIComponent(this.selectedText);
+      },
+      searchForTrends() {
+        return this.urls.trends + "?q=" + encodeURIComponent("api(cites_to_id=" + this.templateVars.caseId + ")");
       },
       copyCiteToSelection() {
         // Copies: "Selected quotation" name_abbreviation, official_citation, (<year>)

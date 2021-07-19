@@ -172,6 +172,9 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
 * `search`
     * __data type:__    string
     * __description:__  [full-text search](#case-fts)
+* `facet`
+    * __data type:__    string
+    * __description:__  A field name to aggregate results given a particular field. Currently, only the values "jurisdiction" and "decision\_date" are supported. This endpoint supports ordered sub-aggregations; to split by jurisdiction and then decision\_date per jurisdiction, set facet to "jurisdiction,decision\_date".
 
 ### Single Case Endpoint {: id="endpoint-case" }
 

@@ -1,6 +1,7 @@
 import hashlib
 from copy import copy
 
+import rest_framework.request
 import wrapt
 
 from django.conf import settings
@@ -164,8 +165,20 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
             data = api_request(request, CaseDocumentViewSet, 'list', get_params={'q': 'foo'}).data
             data = api_request(request, CaseDocumentViewSet, 'retrieve', url_kwargs={'id': '123'}).data
     """
+
+    # copy selected fields due to infinite recursion for some 
+    # request copies
+    if isinstance(request, rest_framework.request.Request):
+        request = request._request
+
     api_request = copy(request)
     api_request.method = 'GET'
+
     api_request.GET = QueryDict(mutable=True)
-    api_request.GET.update(get_params)
+    for key in get_params:
+        if type(get_params[key]) is list:
+            api_request.GET.setlist(key, get_params[key])
+        else:
+            api_request.GET[key] = get_params[key]
+
     return viewset.as_view({'get': method})(api_request, **url_kwargs)

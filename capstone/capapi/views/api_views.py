@@ -1,7 +1,8 @@
 import bisect
 import urllib
+import re
 from datetime import datetime
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 from django.utils.functional import partition
@@ -11,16 +12,19 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
-from django.http import HttpResponseRedirect, FileResponse, HttpResponseBadRequest
+from django.http import QueryDict, HttpResponseRedirect, FileResponse, HttpResponseBadRequest
+from elasticsearch_dsl import TermsFacet, DateHistogramFacet
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
 from capapi.pagination import CapESCursorPagination
 from capapi.serializers import CaseDocumentSerializer, ResolveDocumentSerializer
 from capapi.middleware import add_cache_header
+from capapi.resources import api_request
 from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
+from capweb.helpers import cache_func
 from scripts.helpers import normalize_cite
 from user_data.models import UserHistory
 
@@ -99,6 +103,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.DocketNumberFTSFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
         filters.CAPOrderingFilterBackend, # Orders Document
+        filters.CAPFacetedSearchFilterBackend, # Aggregates Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
@@ -123,6 +128,25 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'decision_date_max': {'field': 'decision_date_original', 'default_lookup': 'lte'},
     }
 
+    faceted_search_fields = { 
+        'jurisdiction': {
+            'field': 'jurisdiction.slug',
+            'facet': TermsFacet,
+            'options': {
+                'size': 200,
+            }
+        },
+        'decision_date': {
+            'field': 'decision_date',
+            'facet': DateHistogramFacet,
+            'options': {
+                'interval': 'year',
+            },
+        },
+    }
+
+    faceted_search_param = 'facet'
+
     # Define ordering fields
     ordering_fields = {
         'relevance': '_score',
@@ -130,6 +154,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
         'last_updated': 'last_updated',
+
         **{'analysis.' + k: 'analysis.' + k for k in filters.analysis_fields},
     }
 
@@ -355,21 +380,154 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 total[1] += v[1]
         return totals_by_jurisdiction_year_length
 
+    @staticmethod
+    def query_params_are_filters(query_body):
+        # check if the queries are expected filter inputs to the cases API.    
+        if not query_body:
+            return False
+
+        additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
+            issubclass(backend, filters.BaseFTSFilter)]
+        additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
+        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
+
+        for key in query_body:
+            for pattern in modifier_patterns:
+                key = re.sub(pattern, '', key)
+
+            if key not in CaseDocumentViewSet.filter_fields \
+                and key != 'search' \
+                and key not in additional_filter_fields:
+                return False
+
+        return True
+
+
+    def get_query_data_from_api_query(self, q):
+        # given an `api(...)` query, return a structured list of filters and aggregations
+        # validate whether a case ID exists in the corpus
+        noresult = False
+        # check if the supplied item is a valid case id
+        if not q or not (q.startswith('api(') and q.endswith(')')):
+            return noresult
+    
+        query_body = None
+        try:
+            query_body = QueryDict(q[4:-1], mutable=True)
+        except Exception:
+            return False
+
+        if not self.query_params_are_filters(query_body):
+            return False
+
+        query_body['page_size'] = 1
+        query_body['facet'] = 'decision_date'
+
+        return query_body
+
+    @staticmethod
+    def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
+        # generate timeline datapoint given an elasticsearch query result
+        years_out = []
+
+        for year, count in bucket_entries.items():
+            total = 0
+            if jurisdiction == 'total':
+                total = total_dict[year]
+            else:
+                total = total_dict[jurisdiction][year]
+
+            years_out.append({
+                "year": str(year),
+                "count": [count, total],
+                "doc_count": [count, total]
+            })
+
+        years_out.sort(key=lambda y: y["year"])
+        return years_out
+
+    @cache_func(
+        key=lambda self, request: 'trends_es_case_counts',
+        timeout=24*60*60,
+    )
+    def get_total_dict(self, request):
+        # get and cache total dictionary. 
+        total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
+        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
+
+        return {
+            **total_results['facets']['jurisdiction,decision_date'],
+            **total_results['facets']['decision_date']
+        }
+
+    def get_citation_data(self, request, query_params, words_encoded):
+        # given a case and its decision year, generate the timeline for the trends API.
+
+        # parse jurisdiction
+        jurisdiction = request.GET.getlist('jurisdiction')
+        jurisdiction = jurisdiction[0].strip() if jurisdiction else 'total'
+        if jurisdiction == '*':
+            query_params['facet'] = 'jurisdiction,decision_date'
+        elif jurisdiction != 'total':
+            query_params['jurisdiction'] = jurisdiction
+
+        # set up request caller and make API requests with facet parameter
+        # These queries should always return valid JSON
+        query_results = api_request(request, CaseDocumentViewSet, 'list', get_params=query_params).data
+
+        # fail if there are no results. There should be _something_ in the page results if 
+        # the aggregation is not just 0
+        if 'results' not in query_results or not query_results['results']:
+            return {}
+
+        total_dict = self.get_total_dict(request)
+
+        # variables for output storage
+        results = {}
+        out = {}
+
+        # format results into trend graph
+        if jurisdiction != '*':
+            query_results = query_results['facets']['decision_date']
+            years_out = self.create_timeline_entries(query_results, total_dict, jurisdiction)
+
+            out[jurisdiction] = years_out
+            results[words_encoded] = out
+        else:
+            query_results = query_results['facets']['jurisdiction,decision_date']
+
+            for jurisdiction, value in list(query_results.items())[:10]:
+                years_out = self.create_timeline_entries(value, total_dict, jurisdiction)
+                out[jurisdiction] = years_out
+            
+            results[words_encoded] = out
+
+        return results
+
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
         q = self.request.GET.get('q', '').strip().lower()
         if not q:
             return Response({})
 
-        ## look up query in KV store
+        # check if we're querying for a case as opposed to a word
+        # default to keyword search if value is empty 
+        api_query_body = self.get_query_data_from_api_query(q)
+
+        # prepend word count as first byte. only applicable for n-grams
         words = q.split(' ')[:3]  # use first 3 words
         q_len = len(words)
-        # prepend word count as first byte
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
-        if q.endswith(b' *'):
+
+        if api_query_body:
+            results = self.get_citation_data(request, api_query_body, ' '.join(words))
+            pairs = []
+        elif q.endswith(b' *'):
+            results = {}
             # wildcard search
             pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
         else:
+            results = {}
             # non-wildcard search
             value = ngram_kv_store_ro.get(q, packed=True)
             if value:
@@ -378,9 +536,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 pairs = []
 
         ## format results
-        results = OrderedDict()
         if pairs:
-
             # prepare jurisdiction_filter from jurisdiction= query param
             jurisdictions = request.GET.getlist('jurisdiction')
             if '*' in jurisdictions:
@@ -450,11 +606,11 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                             continue
 
                         totals = self.totals_by_jurisdiction_year_length[(jur_id, year, q_len)]
-                        years_out.append(OrderedDict((
-                            ("year", str(year) if year else "total"),
-                            ("count", [count, totals[0]]),
-                            ("doc_count", [doc_count, totals[1]]),
-                        )))
+                        years_out.append({
+                            "year": str(year) if year else "total",
+                            "count": [count, totals[0]],
+                            "doc_count": [doc_count, totals[1]]
+                        })
 
                     years_out.sort(key=lambda y: y["year"])
                     out[jur_slug] = years_out
@@ -462,12 +618,12 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 if out:
                     results[gram[1:].decode('utf8')] = out
 
-        paginated = OrderedDict((
-            ("count", len(results)),
-            ("next", None),
-            ("previous", None),
-            ("results", results),
-        ))
+        paginated = {
+            "count": len(results),
+            "next": None,
+            "previous": None,
+            "results": results
+        }
 
         return Response(paginated)
 
