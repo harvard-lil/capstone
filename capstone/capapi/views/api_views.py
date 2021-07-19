@@ -383,9 +383,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def query_params_are_filters(query_body):
         # check if the queries are expected filter inputs to the cases API.    
-        if not query_body:
-            return False
-
         additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
             issubclass(backend, filters.BaseFTSFilter)]
         additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
@@ -398,32 +395,32 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             if key not in CaseDocumentViewSet.filter_fields \
                 and key != 'search' \
                 and key not in additional_filter_fields:
-                return False
+                return (False, f'{key} is not a valid API parameter.')
 
-        return True
+        return (True, True)
 
 
     def get_query_data_from_api_query(self, q):
         # given an `api(...)` query, return a structured list of filters and aggregations
         # validate whether a case ID exists in the corpus
-        noresult = False
         # check if the supplied item is a valid case id
         if not q or not (q.startswith('api(') and q.endswith(')')):
-            return noresult
+            return (False, False)
     
         query_body = None
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
         except Exception:
-            return False
+            return (False, 'Query is not in a URL parameter format.')
 
-        if not self.query_params_are_filters(query_body):
-            return False
+        err, msg = self.query_params_are_filters(query_body)
+        if not err:
+            return (False, msg)
 
         query_body['page_size'] = 1
         query_body['facet'] = 'decision_date'
 
-        return query_body
+        return (query_body, False)
 
     @staticmethod
     def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
@@ -512,16 +509,21 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # check if we're querying for a case as opposed to a word
         # default to keyword search if value is empty 
-        api_query_body = self.get_query_data_from_api_query(q)
+        api_query_body, err_msg = self.get_query_data_from_api_query(q)
 
         # prepend word count as first byte. only applicable for n-grams
         words = q.split(' ')[:3]  # use first 3 words
         q_len = len(words)
         q = bytes([q_len]) + ' '.join(words).encode('utf8')
 
-        if api_query_body:
+        err = ''
+        if api_query_body and not err_msg:
             results = self.get_citation_data(request, api_query_body, ' '.join(words))
             pairs = []
+        elif not api_query_body and err_msg:
+            results = {}
+            pairs = []
+            err = err_msg
         elif q.endswith(b' *'):
             results = {}
             # wildcard search
@@ -622,7 +624,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             "count": len(results),
             "next": None,
             "previous": None,
-            "results": results
+            "results": results,
+            "error": err
         }
 
         return Response(paginated)

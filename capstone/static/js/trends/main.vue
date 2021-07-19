@@ -764,10 +764,13 @@
             this.currentApiQueries.push([term, url]);
             return jsonQuery(url).then((resp)=>{
               // filter out responses with no results
-              if (Object.keys(resp.results).length === 0) {
+              if (resp.error && resp.error.length !== 0) {
+                this.errors.push(`Error: "${resp.error}"`);
+                return null;
+              } else if (Object.keys(resp.results).length === 0) {
                 this.errors.push(`"${term}" does not appear in our corpus.`);
                 return null;
-              }
+              } 
               return {results: resp.results, params};
             });
           })
@@ -933,7 +936,15 @@
         this.smoothingWindow = window;
         if (window < 1)
           return items;
-        return items.map((_, i) => average(items.slice(max(i-window, 0), min(i+window, items.length))));
+
+        return items.map((_, i) => this.safeAverage(items.map(value => isNaN(value) ? 0 : value).slice(max(i-window, 0), min(i+window, items.length))));
+      },
+      safeAverage(arr) {
+        var filteredArr = arr.filter(value => !Number.isNaN(value) );
+        if (filteredArr.length === 0) {
+          return NaN;
+        } 
+        return average(arr);
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
