@@ -382,13 +382,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @staticmethod
     def query_params_are_filters(query_body):
-        # check if the queries are expected filter inputs to the cases API.       
-
+        # check if the queries are expected filter inputs to the cases API.    
         if not query_body:
             return False
-
-        # allow escapes like param1=valu\&e&param2=value3
-        query_body = [keyval for keyval in re.split(r'(?<!\\)&', query_body)]
 
         additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
             issubclass(backend, filters.BaseFTSFilter)]
@@ -396,7 +392,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
         for key in query_body:
-            key = key.split('=')[0]
             for pattern in modifier_patterns:
                 key = re.sub(pattern, '', key)
 
@@ -415,16 +410,18 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # check if the supplied item is a valid case id
         if not q or not (q.startswith('api(') and q.endswith(')')):
             return noresult
-
-        if not self.query_params_are_filters(q[4:-1]):
-            return False
     
+        query_body = None
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
-            query_body['page_size'] = 1
-            query_body['facet'] = 'decision_date'
         except Exception:
             return False
+
+        if not self.query_params_are_filters(query_body):
+            return False
+
+        query_body['page_size'] = 1
+        query_body['facet'] = 'decision_date'
 
         return query_body
 
