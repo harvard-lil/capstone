@@ -933,7 +933,15 @@
         this.smoothingWindow = window;
         if (window < 1)
           return items;
-        return items.map((_, i) => average(items.slice(max(i-window, 0), min(i+window, items.length))));
+
+        return items.map((_, i) => this.safeAverage(items.map(value => isNaN(value) ? 0 : value).slice(max(i-window, 0), min(i+window, items.length))));
+      },
+      safeAverage(arr) {
+        var filteredArr = arr.filter(value => !Number.isNaN(value) );
+        if (filteredArr.length === 0) {
+          return NaN;
+        } 
+        return average(arr);
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
