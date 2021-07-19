@@ -764,10 +764,13 @@
             this.currentApiQueries.push([term, url]);
             return jsonQuery(url).then((resp)=>{
               // filter out responses with no results
-              if (Object.keys(resp.results).length === 0) {
+              if (resp.error && resp.error.length !== 0) {
+                this.errors.push(`Error: "${resp.error}"`);
+                return null;
+              } else if (Object.keys(resp.results).length === 0) {
                 this.errors.push(`"${term}" does not appear in our corpus.`);
                 return null;
-              }
+              } 
               return {results: resp.results, params};
             });
           })
