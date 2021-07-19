@@ -132,6 +132,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'jurisdiction': {
             'field': 'jurisdiction.slug',
             'facet': TermsFacet,
+            'options': {
+                'size': 200,
+            }
         },
         'decision_date': {
             'field': 'decision_date',
@@ -379,7 +382,14 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @staticmethod
     def query_params_are_filters(query_body):
-        # check if the queries are expected filter inputs to the cases API.        
+        # check if the queries are expected filter inputs to the cases API.       
+
+        if not query_body:
+            return False
+
+        # allow escapes like param1=valu\&e&param2=value3
+        query_body = [keyval for keyval in re.split(r'(?<!\\)&', query_body)]
+
         additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
             issubclass(backend, filters.BaseFTSFilter)]
         additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
@@ -406,10 +416,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if not q or not (q.startswith('api(') and q.endswith(')')):
             return noresult
 
-        # allow escapes like param1=valu\&e&param2=value3
-        query_body = [keyval for keyval in re.split(r'(?<!\\)&', q[4:-1])] if q[4:-1] else False
-
-        if not self.query_params_are_filters(query_body):
+        if not self.query_params_are_filters(q[4:-1]):
             return False
     
         try:

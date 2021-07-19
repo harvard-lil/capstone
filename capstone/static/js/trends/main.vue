@@ -18,7 +18,7 @@
             <li><example-link query="piracy"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="he said, she said"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="ride a *"/> <span aria-hidden="true"> / </span> </li>
-            <li><example-link query="api(cites_to_id=1785580)"/> <span aria-hidden="true"> / </span> </li>
+            <li><example-link query="api(cites_to=367 U.S. 643)"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="me: lobster, cal: gold, tex: cowboy"/> <span aria-hidden="true"> / </span> </li>
             <li><example-link query="*: gold"/> <span aria-hidden="true"> / </span> </li>
             <li><a href="#" @click.prevent="clickHelpButton">more ...</a></li>
@@ -76,7 +76,7 @@
             parameters that can be supplied to the /v1/cases API, with the exception of `facet`, may be used. Examples: 
           </p>
           <ul class="bullets">
-            <li><example-link query="api(cites_to_id=1785580&decision_date_min=1990)"/> (citations over time for Mapp v. Ohio for the years 1990 and after)</li>
+            <li><example-link query="api(cites_to=367 U.S. 643&decision_date_min=1990)"/> (citations over time for Mapp v. Ohio for the years 1990 and after)</li>
             <li><example-link query="nc: api(cites_to=367 U.S. 643)"/> (citations over time for Mapp v. Ohio in North Carolina)</li>
             <li><example-link query="*: api(cites_to_id=1785580)"/> (citations over time for Mapp v. Ohio for all jurisdictions)</li>
           </ul>
