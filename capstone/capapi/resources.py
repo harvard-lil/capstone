@@ -175,9 +175,12 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
     api_request.method = 'GET'
 
     api_request.GET = QueryDict(mutable=True)
+
     for key in get_params:
-        if type(get_params[key]) is list:
-            api_request.GET.setlist(key, get_params[key])
+        paramvalues = get_params.getlist(key, [])
+
+        if len(get_params.getlist(key, [])) > 1:
+            api_request.GET.setlist(key, paramvalues)
         else:
             api_request.GET[key] = get_params[key]
 

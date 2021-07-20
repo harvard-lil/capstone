@@ -764,10 +764,7 @@
             this.currentApiQueries.push([term, url]);
             return jsonQuery(url).then((resp)=>{
               // filter out responses with no results
-              if (resp.error && resp.error.length !== 0) {
-                this.errors.push(`Error: "${resp.error}"`);
-                return null;
-              } else if (Object.keys(resp.results).length === 0) {
+              if (Object.keys(resp.results).length === 0) {
                 this.errors.push(`"${term}" does not appear in our corpus.`);
                 return null;
               } 
@@ -795,11 +792,19 @@
           this.initialQuery = null;
 
           this.graphResults();
-        }).catch(response => {
+        }).catch(resp => {
           // error handling
           this.showLoading = false;
-          this.errors.push("Connection error: failed to load results");
-          console.log("Connection error:", response);  // eslint-disable-line
+          var errorsObject = this.errors;
+          Promise.resolve(resp.json()).then(function(value) {
+            if (value.error && value.error.length !== 0) {
+                  errorsObject.push(`Error: "${value.error}"`);
+                  console.log(`api() validation error: "${value.error}"`);
+                  return null;
+            }  
+            errorsObject.push("Connection error: failed to load results");
+            console.log("Connection error:", resp);  // eslint-disable-line
+          });
         });
 
       },
