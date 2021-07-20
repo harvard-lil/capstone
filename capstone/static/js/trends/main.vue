@@ -832,7 +832,7 @@
             if (year === null) return 0;
             if (this.percentOrAbs === "absolute") return year[this.countType][0];
             return year[this.countType][0]/year[this.countType][1]*100;
-          });
+          }).map(value => isNaN(value) ? 0 : value);
 
           // apply smoothingFactor setting
           data = this.movingAverage(data, dataMaxYear-dataMinYear);
@@ -942,14 +942,7 @@
         if (window < 1)
           return items;
 
-        return items.map((_, i) => this.safeAverage(items.map(value => isNaN(value) ? 0 : value).slice(max(i-window, 0), min(i+window, items.length))));
-      },
-      safeAverage(arr) {
-        var filteredArr = arr.filter(value => !Number.isNaN(value) );
-        if (filteredArr.length === 0) {
-          return NaN;
-        } 
-        return average(arr);
+        return items.map((_, i) => average(items.slice(max(i-window, 0), min(i+window, items.length))));
       },
       appendJurisdictionCode(code) {
         if (this.textToGraph)
