@@ -518,7 +518,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         q_len = len(words)
         q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
 
-        err = ''
         if api_query_body and not err_msg:
             results = self.get_citation_data(request, api_query_body, q)
             pairs = []
