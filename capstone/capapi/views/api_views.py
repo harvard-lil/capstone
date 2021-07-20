@@ -14,6 +14,7 @@ from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBa
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
 from django.http import QueryDict, HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 from elasticsearch_dsl import TermsFacet, DateHistogramFacet
+from rest_framework.exceptions import ValidationError
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
@@ -449,8 +450,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     )
     def get_total_dict(self, request):
         # get and cache total dictionary. 
-        total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
-        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
+        total_query_dict = QueryDict('page_size=1&facet=decision_date&facet=jurisdiction,decision_date', mutable=True)
+
+        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_dict).data
 
         return {
             **total_results['facets']['jurisdiction,decision_date'],
@@ -514,26 +516,23 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # prepend word count as first byte. only applicable for n-grams
         words = q.split(' ')[:3]  # use first 3 words
         q_len = len(words)
-        q = bytes([q_len]) + ' '.join(words).encode('utf8')
+        q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
 
-        err = ''
         if api_query_body and not err_msg:
-            results = self.get_citation_data(request, api_query_body, ' '.join(words))
+            results = self.get_citation_data(request, api_query_body, q)
             pairs = []
         elif not api_query_body and err_msg:
-            results = {}
-            pairs = []
-            err = err_msg
-        elif q.endswith(b' *'):
+            raise ValidationError({"error": err_msg})
+        elif q_sig.endswith(b' *'):
             results = {}
             # wildcard search
-            pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
+            pairs = ngram_kv_store_ro.get_prefix(q_sig[:-1], packed=True)
         else:
             results = {}
             # non-wildcard search
-            value = ngram_kv_store_ro.get(q, packed=True)
+            value = ngram_kv_store_ro.get(q_sig, packed=True)
             if value:
-                pairs = [(q, value)]
+                pairs = [(q_sig, value)]
             else:
                 pairs = []
 
@@ -624,8 +623,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             "count": len(results),
             "next": None,
             "previous": None,
-            "results": results,
-            "error": err
+            "results": results
         }
 
         return Response(paginated)
