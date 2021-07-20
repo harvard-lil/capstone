@@ -176,12 +176,17 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
 
     api_request.GET = QueryDict(mutable=True)
 
-    for key in get_params:
-        paramvalues = get_params.getlist(key, [])
+    # if QueryDicts are supplied, allow users to get all parameters via 
+    # getlist rather than directly updating the dict.
+    if type(get_params) is dict:
+        api_request.GET.update(get_params)
+    else:
+        for key in get_params:
+            paramvalues = get_params.getlist(key, [])
 
-        if len(get_params.getlist(key, [])) > 1:
-            api_request.GET.setlist(key, paramvalues)
-        else:
-            api_request.GET[key] = get_params[key]
+            if len(get_params.getlist(key, [])) > 1:
+                api_request.GET.setlist(key, paramvalues)
+            else:
+                api_request.GET[key] = get_params[key]
 
     return viewset.as_view({'get': method})(api_request, **url_kwargs)
