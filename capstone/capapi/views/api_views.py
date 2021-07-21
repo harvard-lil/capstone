@@ -99,6 +99,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # queries that take full-text search operators:
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
+        filters.AuthorFTSFilter,
+        filters.AuthorDispositionFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
@@ -187,6 +189,13 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             },
             'enabled': True,
         },
+    }
+
+    search_nested_fields = {
+        'author_disposition': {
+            'path': 'casebody_data.text.opinions',
+            'fields': ['author', 'type'],
+        }
     }
 
     def is_full_case_request(self):

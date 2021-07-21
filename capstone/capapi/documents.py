@@ -132,8 +132,8 @@ class CaseDocument(Document):
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
             'head_matter': FTSField(),
-            'opinions': fields.ObjectField(multi=True, properties={
-                'author': fields.KeywordField(),
+            'opinions': fields.NestedField(multi=True, properties={
+                'author': FTSField(),
                 'text': FTSField(),
                 'type': fields.KeywordField(),
             }),

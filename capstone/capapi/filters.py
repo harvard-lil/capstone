@@ -1,10 +1,15 @@
 from functools import lru_cache
+import operator
+import six
 
 from django.utils.functional import SimpleLazyObject
+from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
-    OrderingFilterBackend, FacetedSearchFilterBackend
+    OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend
+from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
+from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
 from capdb import models
@@ -176,6 +181,13 @@ class CaseFilter(FilterSet):
         label='Include full case text or just metadata?',
         choices=(('false', 'Just metadata (default)'), ('true', 'Full case text')),
     )
+    author = filters.CharFilter(
+        label='Filter by opinion author'
+        )
+    author_disposition = filters.CharFilter(
+        label='Filter by opinion author and their disposition in a ruling. Values must be separated by a colon; invalid input will be \
+            ignored. Example: author_disposition=scalia:dissent.'
+    )
     body_format = filters.ChoiceFilter(
         label='Format for case text (applies only if including case text)',
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
@@ -260,7 +272,6 @@ class MultiFieldFTSFilter(BaseFTSFilter):
         'docket_number',
     )
 
-
 class NameFTSFilter(BaseFTSFilter):
     search_param = 'name'
     fields = ('name',)
@@ -276,6 +287,84 @@ class DocketNumberFTSFilter(BaseFTSFilter):
     fields = ('docket_number',)
 
 
+class AuthorFTSFilter(BaseSearchFilterBackend):
+    """
+    Multi match search filter backend to query on author + disposition
+    """
+    search_param = 'author'
+    matching = MATCHING_OPTION_SHOULD
+
+    query_backends = [
+        NestedQueryBackend,
+    ]
+
+
+class AuthorDispositionNestedQueryBackend(NestedQueryBackend):
+    """
+    Overloaded MatchQueryBackend meant to split separate terms for each field
+    """
+    @classmethod
+    def construct_search(cls, request, view, search_backend):
+        if not hasattr(view, 'search_nested_fields'):
+            return []
+
+        query_params = search_backend.get_search_query_params(request)
+        __queries = []
+
+        for search_term in query_params:
+            sub_search_terms = search_backend.split_lookup_name(search_term, 1)
+            # require length to be 2
+            if len(sub_search_terms) != 2:
+                return __queries
+            for label, options in view.search_nested_fields.items():
+                queries = []
+                path = options.get('path')
+
+                for i, _field in enumerate(options.get('fields', [])):
+                    # In case if we deal with structure 2
+                    if isinstance(_field, dict):
+                        # take options (ex: boost) into consideration
+                        field_options = {key: value for key, value in _field.items() if key != 'name'}
+                        field_options.update({
+                            "query": search_term,
+                        })
+                        field = "{}.{}".format(path, _field['name'])
+                        field_kwargs = {
+                            field: field_options,
+                        }
+                    # In case if we deal with structure 1
+                    else:
+                        field = "{}.{}".format(path, _field)
+                        field_kwargs = {
+                            field: sub_search_terms[i]
+                        }
+                    queries.append(
+                        Q("match", **field_kwargs)
+                    )
+
+                __queries.append(
+                    Q(
+                        cls.query_type,
+                        path=path,
+                        query=six.moves.reduce(operator.and_, queries)
+                    )
+                )
+
+        return __queries
+
+
+class AuthorDispositionFTSFilter(BaseSearchFilterBackend):
+    """
+    Multi match search filter backend to query on author + disposition
+    """
+    search_param = 'author_disposition'
+    matching = MATCHING_OPTION_MUST
+
+    query_backends = [
+        AuthorDispositionNestedQueryBackend,
+    ]
+
+
 class CAPOrderingFilterBackend(OrderingFilterBackend):
     # NOTE: ordering in Elasticsearch falls back to the "internal Lucene doc id" for a given shard,
     # which means it is stable as long as we have only one shard. If we add additional shards, we will
@@ -287,6 +376,7 @@ class CAPOrderingFilterBackend(OrderingFilterBackend):
         return super().transform_ordering_params(
             ['relevance' if sort == '-relevance' else '-relevance' if sort == 'relevance' else sort for sort in ordering_params],
             ordering_fields)
+
 
 class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
     # The same as FacetedSearchFilterBackend, but with support for sub-aggregations.
