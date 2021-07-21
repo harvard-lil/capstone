@@ -13,7 +13,7 @@ from rest_framework.reverse import reverse
 from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBackend, HighlightBackend
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
 from django.http import QueryDict, HttpResponseRedirect, FileResponse, HttpResponseBadRequest
-from elasticsearch_dsl import TermsFacet, DateHistogramFacet
+from elasticsearch_dsl import TermsFacet, DateHistogramFacet, NestedFacet
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
@@ -131,6 +131,15 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     }
 
     faceted_search_fields = { 
+        'author': {
+            'field': 'casebody_data.text.opinions',
+            'facet': NestedFacet,
+            'inner_facet': TermsFacet,
+            'inner_field': 'type',
+            'options': {
+                'size': 10000,
+            }
+        },
         'jurisdiction': {
             'field': 'jurisdiction.slug',
             'facet': TermsFacet,
