@@ -115,8 +115,8 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         if 'inner_hits' in instance:
             for nested_field, nested_hits in instance['inner_hits'].items():
                 access_array = ['hits', 'hits']
-                _ = [preview_inner.extend(list(highlight['highlight'].values())) \
-                        for highlight in self.deep_get(nested_hits,access_array) \
+                _ = [preview_inner.extend(list(highlight['highlight'].values()))
+                        for highlight in self.deep_get(nested_hits,access_array)
                         if 'highlight' in highlight]
                 preview_inner = [item for sublist in preview_inner for item in sublist]
 
