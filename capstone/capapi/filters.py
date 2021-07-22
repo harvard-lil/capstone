@@ -344,13 +344,14 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     if __field in queried_fields or __options['enabled']:
                         highlight_inner['highlight']['fields'][__field] = __options['options']
                 
-                q_to_append = Q(
-                    cls.query_type,
-                    path=path,
-                    query=six.moves.reduce(query_operator, queries),
-                    inner_hits=highlight_inner
+                __queries.append(
+                    Q(
+                        cls.query_type,
+                        path=path,
+                        query=six.moves.reduce(query_operator, queries),
+                        inner_hits=highlight_inner
+                    )
                 )
-                __queries.append(q_to_append)
 
         return __queries
 
