@@ -1,4 +1,5 @@
 from functools import lru_cache
+import uuid
 import operator
 import six
 
@@ -305,7 +306,6 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
         if search_backend.matching == MATCHING_OPTION_MUST:
             query_operator = operator.and_
 
-        inner_hits_highlighted = False
         for search_term in query_params:
             # Overload the `:` splitting in split_lookup_name to separate distinct fields.
             sub_search_terms = list(search_backend.split_lookup_name(search_term, 1).copy())
@@ -339,7 +339,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     )
 
                 highlight_nested_fields = NestedSimpleStringQueryBackend.prepare_highlight_fields(view)
-                highlight_inner = {'highlight': {'fields': {}}}
+                highlight_inner = {'name':uuid.uuid4().hex.upper()[0:10], 'highlight': {'fields': {}}}
                 for __field, __options in highlight_nested_fields.items():
                     if __field in queried_fields or __options['enabled']:
                         highlight_inner['highlight']['fields'][__field] = __options['options']
@@ -350,14 +350,6 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     query=six.moves.reduce(query_operator, queries),
                     inner_hits=highlight_inner
                 )
-                if inner_hits_highlighted:
-                    q_to_append = Q(
-                        cls.query_type,
-                        path=path,
-                        query=six.moves.reduce(query_operator, queries),
-                    )
-                
-                inner_hits_highlighted = True
                 __queries.append(q_to_append)
 
         return __queries
