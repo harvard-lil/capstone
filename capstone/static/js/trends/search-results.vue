@@ -37,7 +37,7 @@
 
 <script>
   import CaseResult from '../search/case-result.vue';
-  import {getApiUrl, getApiUrlNoEncode, jsonQuery} from '../api';
+  import {getApiUrl, jsonQuery} from '../api';
   import {encodeQueryData} from '../utils';
   import Vue from 'vue';
 
@@ -61,15 +61,23 @@
     },
     methods: {
       search(term, params, startYear, endYear) {
-        var searchString = "";
         if (params.q.startsWith('api(')) {
           var searchParams = this.params = {
-            decision_date__gte: `${startYear}`,
-            decision_date__lt: `${endYear+1}`,
-            page_size: 5,
+            decision_date__gte: [`${startYear}`],
+            decision_date__lt: [`${endYear+1}`],
+            page_size: [5],
           };
-          searchString += new URLSearchParams(searchParams).toString() + '&';
-          searchString += params.q.slice(4, -1);
+
+          var qParams = new URLSearchParams(params.q.slice(4, -1));
+          for (let [key, val] of qParams.entries()) {
+            if (key !== 'jurisdiction' || !(params.jurisdiction && params.jurisdiction !== "total")) {
+              if (!(key in searchParams)) {
+                searchParams[key] = [val];
+              } else {
+                searchParams[key].push(val);
+              }
+            }
+          }
         } else {
           searchParams = this.params = {
             search: `"${params.q}"`,
@@ -83,11 +91,7 @@
         this.showLoading = true;
         Vue.nextTick().then(() => { this.$refs.loadingMessage.focus() });
         this.error = null;
-        if (searchString !== "") {
-          var url = getApiUrlNoEncode(urls.api_root,"cases", searchString);  // eslint-disable-line
-        } else {
-          url = getApiUrl(urls.api_root,"cases", searchParams);  // eslint-disable-line
-        }
+        const url = getApiUrl(urls.api_root,"cases", searchParams, true);  // eslint-disable-line
         jsonQuery(url).then((resp)=>{
           this.results = resp.results;
           this.term = term;
