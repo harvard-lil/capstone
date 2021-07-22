@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import reduce
 
 from django.db import transaction
 from django_elasticsearch_dsl_drf.utils import DictionaryProxy
@@ -103,6 +104,21 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
 
     _url_templates = None
 
+    def deep_get(self, dictionary, keys, default=[]):
+        """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
+
+    def get_preview(self, instance):
+        preview = []
+        if "_source" in instance:
+            preview_source = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
+        if 'inner_hits' in instance:
+            access_array = ['inner_hits', 'casebody_data.text.opinions', 'hits', 'hits']
+            preview_inner = [highlight['highlight'].values() for highlight in self.deep_get(instance,access_array)]
+            preview_inner = [highlight for highlights in preview_inner for highlight in highlights] 
+
+        return preview_source + preview_inner
+
     def to_representation(self, instance):
         """
             Convert ES result to output dictionary for the API.
@@ -148,9 +164,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 extracted_cite['pin_cites'] = c['pin_cites']
             extracted_citations.append(extracted_cite)
 
-        preview = []
-        if "_source" in instance:
-            preview = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
+        preview = self.get_preview(instance)
 
         # IMPORTANT: If you change what values are exposed here, also change the "CaseLastUpdate triggers"
         # section in set_up_postgres.py to keep Elasticsearch updated.

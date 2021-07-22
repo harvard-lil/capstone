@@ -168,6 +168,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             },
             'enabled': True,
         },
+        'casebody_data.text.corrections': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+    }
+
+    highlight_nested_fields = {
         'casebody_data.text.opinions.author': {
             'options': {
                 'pre_tags': ["<em class='search_highlight'>"],
@@ -176,13 +186,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             'enabled': True,
         },
         'casebody_data.text.opinions.text': {
-            'options': {
-                'pre_tags': ["<em class='search_highlight'>"],
-                'post_tags': ["</em>"]
-            },
-            'enabled': True,
-        },
-        'casebody_data.text.corrections': {
             'options': {
                 'pre_tags': ["<em class='search_highlight'>"],
                 'post_tags': ["</em>"]

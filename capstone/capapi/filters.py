@@ -277,8 +277,21 @@ class DocketNumberFTSFilter(BaseFTSFilter):
 
 class NestedSimpleStringQueryBackend(NestedQueryBackend):
     """
-    Overloaded MatchQueryBackend meant to split separate terms for each field
+    Support for SimpleStringQuery and highlighting for nested fields
     """
+    @classmethod
+    def prepare_highlight_fields(cls, view):
+        highlight_fields = view.highlight_nested_fields if hasattr(view, 'highlight_nested_fields') else {}
+
+        for field, options in highlight_fields.items():
+            if 'enabled' not in highlight_fields[field]:
+                highlight_fields[field]['enabled'] = False
+
+            if 'options' not in highlight_fields[field]:
+                highlight_fields[field]['options'] = {}
+
+        return highlight_fields
+
     @classmethod
     def construct_search(cls, request, view, search_backend):
         if not hasattr(view, 'search_nested_fields'):
@@ -292,8 +305,10 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
             query_operator = operator.and_
 
         for search_term in query_params:
+            # Overload the `:` splitting in split_lookup_name to separate distinct fields.
             sub_search_terms = list(search_backend.split_lookup_name(search_term, 1).copy())
 
+            queried_fields = []
             for label, options in view.search_nested_fields.items():
                 queries = []
                 path = options.get('path')
@@ -315,16 +330,25 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                         "query": value,
                         "fields": [field],
                     }
+                    queried_fields.append(field)
 
                     queries.append(
                         Q("simple_query_string", **field_kwargs)
                     )
 
+                highlight_nested_fields = NestedSimpleStringQueryBackend.prepare_highlight_fields(view)
+                highlight_inner = {'highlight': {'fields': {}}}
+                for __field, __options in highlight_nested_fields.items():
+                    if __field in queried_fields or __options['enabled']:
+                        del __options['enabled']
+                        highlight_inner['highlight']['fields'][__field] = __options
+                
                 __queries.append(
                     Q(
                         cls.query_type,
                         path=path,
-                        query=six.moves.reduce(query_operator, queries)
+                        query=six.moves.reduce(query_operator, queries),
+                        inner_hits=highlight_inner
                     )
                 )
 
