@@ -341,8 +341,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                 highlight_inner = {'highlight': {'fields': {}}}
                 for __field, __options in highlight_nested_fields.items():
                     if __field in queried_fields or __options['enabled']:
-                        del __options['enabled']
-                        highlight_inner['highlight']['fields'][__field] = __options
+                        highlight_inner['highlight']['fields'][__field] = __options['options']
                 
                 __queries.append(
                     Q(
