@@ -1,4 +1,5 @@
-from functools import lru_cache
+from functools import lru_cache, reduce
+import asyncio
 import operator
 import six
 
@@ -9,6 +10,7 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
@@ -17,6 +19,7 @@ from capdb import models
 from scripts.helpers import normalize_cite
 from scripts.extract_cites import extract_citations_normalized
 from user_data.models import UserHistory
+from capapi.views import api_views
 
 ### HELPERS ###
 
@@ -194,6 +197,7 @@ class CaseFilter(FilterSet):
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
     cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
+    cites_to_state = filters.CharFilter(label='Cases citing to cases in a state', field_name='cites_to', lookup_expr='state')
     facet = filters.CharFilter(label='Facet for which to aggregate results. Can be jurisdiction, \
         decision_date, or a comma-separated permutation of either.')
     ordering = filters.ChoiceFilter(
@@ -274,6 +278,78 @@ class NameAbbreviationFTSFilter(BaseFTSFilter):
 class DocketNumberFTSFilter(BaseFTSFilter):
     search_param = 'docket_number'
     fields = ('docket_number',)
+
+
+class CitesToDynamicFilter(BaseFTSFilter):
+    fields = ('id',)
+
+    # use a list to handle the first query results because append is thread-safe.
+    first_pass_results = []
+    max_workers = 3
+    page_size = 5
+
+    def get_search_fields(self, view, request):
+        """
+        Overridden methods to dynamically generate search fields
+        """
+        # TODO: Allow nested fields. only object fields for first pass.
+        # While powerful, do not allow users to query second degree citations to prevent exponential 
+        # performance costs.
+        return [f'cites_to_{field}' for field in view.filter_fields if not field.startswith('cites_to')]
+
+    def deep_get(self, dictionary, keys, default=[]):
+        """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
+
+    async def fetch(self, es, worker_i, search_terms):
+        body = {
+            "from": self.page_size * worker_i,
+            "size": self.page_size,
+            "_source": "false",
+            "sort": ["decision_date", "id"],
+            "query": {"bool": {"filter": [{"terms": search_terms}]}},
+        }
+        resp = await es.search(index='cases', body=body)
+        self.first_pass_results.append(self.deep_get(resp, ['hits','hits']))
+
+    async def get_query_results(self, search_terms):
+        es = AsyncElasticsearch(['elasticsearch:9200'])
+
+        await asyncio.gather(*[
+            asyncio.ensure_future(self.fetch(es, i, search_terms))
+            for i in range(0, self.max_workers)
+        ])
+
+    def filter_queryset(self, request, queryset, view):
+        # ignore empty searches
+        search_fields = self.get_search_fields(view, request)
+
+        # reformat data as ELK query. no dictionary comprehension due to complexity and length
+        cites_to_keys = {}
+        for key, value in request.GET.items():
+            if key in search_fields:
+                query_field = api_views.CaseDocumentViewSet.filter_fields[key[9:]]
+                if type(query_field) == dict:
+                    query_field = query_field['field']
+                cites_to_keys[query_field] = [value]
+
+        if cites_to_keys:
+            # write new query here
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(self.get_query_results(cites_to_keys))
+
+        self.first_pass_results = [item['_id'] for sublist in self.first_pass_results for item in sublist]
+
+        request.GET._mutable = True
+        request.GET.setlist('cites_to_id', self.first_pass_results)
+        request.GET._mutable = False
+
+        if request.GET.get(self.search_param):
+            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
+            # set up to be used multiple times on the same view.
+            view.simple_query_string_search_fields = self.fields
+            return super().filter_queryset(request, queryset, view)
+        return queryset
 
 
 class NestedSimpleStringQueryBackend(NestedQueryBackend):

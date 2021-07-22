@@ -104,6 +104,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.AuthorDispositionFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
+        filters.CitesToDynamicFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
         filters.CAPOrderingFilterBackend, # Orders Document
         filters.CAPFacetedSearchFilterBackend, # Aggregates Document
