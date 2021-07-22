@@ -100,6 +100,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # queries that take full-text search operators:
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
+        filters.AuthorFTSFilter,
+        filters.AuthorDispositionFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
@@ -167,6 +169,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             },
             'enabled': True,
         },
+        'casebody_data.text.corrections': {
+            'options': {
+                'pre_tags': ["<em class='search_highlight'>"],
+                'post_tags': ["</em>"]
+            },
+            'enabled': True,
+        },
+    }
+
+    highlight_nested_fields = {
         'casebody_data.text.opinions.author': {
             'options': {
                 'pre_tags': ["<em class='search_highlight'>"],
@@ -181,13 +193,13 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             },
             'enabled': True,
         },
-        'casebody_data.text.corrections': {
-            'options': {
-                'pre_tags': ["<em class='search_highlight'>"],
-                'post_tags': ["</em>"]
-            },
-            'enabled': True,
-        },
+    }
+
+    search_nested_fields = {
+        'author_disposition': {
+            'path': 'casebody_data.text.opinions',
+            'fields': ['author', 'type', 'text'],
+        }
     }
 
     def is_full_case_request(self):
@@ -384,9 +396,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def query_params_are_filters(query_body):
         # check if the queries are expected filter inputs to the cases API.    
-        additional_filter_fields = [backend.fields for backend in CaseDocumentViewSet.filter_backends if
-            issubclass(backend, filters.BaseFTSFilter)]
-        additional_filter_fields = [val for sublist in additional_filter_fields for val in sublist]
+        additional_filter_fields = [backend.search_param for backend in CaseDocumentViewSet.filter_backends if
+            hasattr(backend, 'search_param')]
+
         modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
         for key in query_body:
@@ -394,7 +406,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 key = re.sub(pattern, '', key)
 
             if key not in CaseDocumentViewSet.filter_fields \
-                and key != 'search' \
+                and key not in CaseDocumentViewSet.search_nested_fields \
                 and key not in additional_filter_fields:
                 return (False, f'{key} is not a valid API parameter.')
 
