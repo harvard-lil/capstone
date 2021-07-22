@@ -203,7 +203,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     search_nested_fields = {
         'author_disposition': {
             'path': 'casebody_data.text.opinions',
-            'fields': ['author', 'type'],
+            'fields': ['author', 'type', 'text'],
         }
     }
 

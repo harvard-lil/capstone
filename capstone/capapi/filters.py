@@ -6,7 +6,7 @@ from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend
-from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend
+from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
 from elasticsearch_dsl import NestedFacet
@@ -260,20 +260,6 @@ class BaseFTSFilter(SimpleQueryStringSearchFilterBackend):
         return queryset
 
 
-class MultiFieldFTSFilter(BaseFTSFilter):
-    search_param = 'search'
-    fields = (
-        'name',
-        'name_abbreviation',
-        'jurisdiction.name_long',
-        'court.name',
-        'casebody_data.text.head_matter',
-        'casebody_data.text.opinions.author',
-        'casebody_data.text.opinions.text',
-        'casebody_data.text.corrections',
-        'docket_number',
-    )
-
 class NameFTSFilter(BaseFTSFilter):
     search_param = 'name'
     fields = ('name',)
@@ -289,19 +275,7 @@ class DocketNumberFTSFilter(BaseFTSFilter):
     fields = ('docket_number',)
 
 
-class AuthorFTSFilter(BaseSearchFilterBackend):
-    """
-    Multi match search filter backend to query on author + disposition
-    """
-    search_param = 'author'
-    matching = MATCHING_OPTION_SHOULD
-
-    query_backends = [
-        NestedQueryBackend,
-    ]
-
-
-class AuthorDispositionNestedQueryBackend(NestedQueryBackend):
+class NestedSimpleStringQueryBackend(NestedQueryBackend):
     """
     Overloaded MatchQueryBackend meant to split separate terms for each field
     """
@@ -313,58 +287,114 @@ class AuthorDispositionNestedQueryBackend(NestedQueryBackend):
         query_params = search_backend.get_search_query_params(request)
         __queries = []
 
+        query_operator = operator.or_
+        if search_backend.matching == MATCHING_OPTION_MUST:
+            query_operator = operator.and_
+
         for search_term in query_params:
-            sub_search_terms = search_backend.split_lookup_name(search_term, 1)
-            # require length to be 2
-            if len(sub_search_terms) != 2:
-                return __queries
+            sub_search_terms = list(search_backend.split_lookup_name(search_term, 1).copy())
+
             for label, options in view.search_nested_fields.items():
                 queries = []
                 path = options.get('path')
 
-                for i, _field in enumerate(options.get('fields', [])):
-                    # In case if we deal with structure 2
-                    if isinstance(_field, dict):
-                        # take options (ex: boost) into consideration
-                        field_options = {key: value for key, value in _field.items() if key != 'name'}
-                        field_options.update({
-                            "query": search_term,
-                        })
-                        field = "{}.{}".format(path, _field['name'])
-                        field_kwargs = {
-                            field: field_options,
-                        }
-                    # In case if we deal with structure 1
-                    else:
-                        field = "{}.{}".format(path, _field)
-                        field_kwargs = {
-                            field: sub_search_terms[i]
-                        }
+                for _field in options.get('fields', []):
+                    field = "{}.{}".format(path, _field)
+
+                    # if the field in this query is not explicitly specified by the filter
+                    # or there is no more data left to pull from the parameter,
+                    # continue
+                    if field not in search_backend.nested_query_fields or not sub_search_terms:
+                        continue
+
+                    value = sub_search_terms[0]
+                    if search_backend.separate_queries_per_field:
+                        value = sub_search_terms.pop(0)
+
+                    field_kwargs = {
+                        "query": value,
+                        "fields": [field],
+                    }
+
                     queries.append(
-                        Q("match", **field_kwargs)
+                        Q("simple_query_string", **field_kwargs)
                     )
 
                 __queries.append(
                     Q(
                         cls.query_type,
                         path=path,
-                        query=six.moves.reduce(operator.and_, queries)
+                        query=six.moves.reduce(query_operator, queries)
                     )
                 )
 
         return __queries
 
 
-class AuthorDispositionFTSFilter(BaseSearchFilterBackend):
+class NestedFTSFilter(BaseSearchFilterBackend):
+    """
+    Filter to represent nested simple string queries
+    """
+    query_backends = [
+        NestedSimpleStringQueryBackend,
+    ]
+
+    separate_queries_per_field = True
+    matching = MATCHING_OPTION_MUST
+
+
+class MultiFieldFTSFilter(BaseSearchFilterBackend):
+    search_param = 'search'
+    fields = (
+        'name',
+        'name_abbreviation',
+        'jurisdiction.name_long',
+        'court.name',
+        'casebody_data.text.head_matter',
+        'casebody_data.text.corrections',
+        'docket_number',
+    )
+
+    nested_query_fields = (
+        'casebody_data.text.opinions.author',
+        'casebody_data.text.opinions.text',
+    )
+
+    query_backends = [
+        NestedSimpleStringQueryBackend,
+        SimpleQueryStringQueryBackend,
+    ]
+
+    separate_queries_per_field = False
+    matching = MATCHING_OPTION_SHOULD
+
+    """ Base filter for query params that search by simple_query_string. """
+    def filter_queryset(self, request, queryset, view):
+        # ignore empty searches
+        if request.GET.get(self.search_param):
+            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
+            # set up to be used multiple times on the same view.
+            view.simple_query_string_search_fields = self.fields
+            return super().filter_queryset(request, queryset, view)
+        return queryset
+
+
+class AuthorDispositionFTSFilter(NestedFTSFilter):
     """
     Multi match search filter backend to query on author + disposition
     """
     search_param = 'author_disposition'
+    nested_query_fields = ('casebody_data.text.opinions.author','casebody_data.text.opinions.type',)
+
     matching = MATCHING_OPTION_MUST
 
-    query_backends = [
-        AuthorDispositionNestedQueryBackend,
-    ]
+
+class AuthorFTSFilter(NestedFTSFilter):
+    """
+    Multi match search filter backend to query on author + disposition
+    """
+    search_param = 'author'
+    nested_query_fields = ('casebody_data.text.opinions.author',)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
@@ -396,7 +426,6 @@ class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
         for __field, __options in faceted_search_fields.items():
             if __field in faceted_search_query_params or __options['enabled']:
                 facet_value = None
-                print()
                 if faceted_search_fields[__field]['facet'] == NestedFacet:
                     facet_value = faceted_search_fields[__field]['facet'](
                         faceted_search_fields[__field]['field'],
@@ -420,8 +449,6 @@ class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
                         }
                     }
                 )
-        print("FACETS")
-        print(__facets)
         return __facets
     
 
