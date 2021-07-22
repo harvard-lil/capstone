@@ -131,15 +131,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     }
 
     faceted_search_fields = { 
-        'author': {
-            'field': 'casebody_data.text.opinions',
-            'facet': NestedFacet,
-            'inner_facet': TermsFacet,
-            'inner_field': 'type',
-            'options': {
-                'size': 10000,
-            }
-        },
         'jurisdiction': {
             'field': 'jurisdiction.slug',
             'facet': TermsFacet,

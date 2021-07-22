@@ -425,32 +425,18 @@ class CAPFacetedSearchFilterBackend(FacetedSearchFilterBackend):
         faceted_search_fields = self.prepare_faceted_search_fields(view)
         for __field, __options in faceted_search_fields.items():
             if __field in faceted_search_query_params or __options['enabled']:
-                facet_value = None
-                if faceted_search_fields[__field]['facet'] == NestedFacet:
-                    facet_value = faceted_search_fields[__field]['facet'](
-                        faceted_search_fields[__field]['field'],
-                        faceted_search_fields[__field]['inner_facet'](
-                            field=faceted_search_fields[__field]['inner_field'],
-                            **faceted_search_fields[__field]['options']
-                        ),
-                    )
-                # facet_value = NestedFacet('casebody_data.text.opinions', TermsFacet()
-                else:
-                    facet_value = faceted_search_fields[__field]['facet'](
-                        field=faceted_search_fields[__field]['field'],
-                        **faceted_search_fields[__field]['options']
-                    )
-
                 __facets.update(
                     {
                         __field: {
-                            'facet': facet_value,
+                            'facet': faceted_search_fields[__field]['facet'](
+                                field=faceted_search_fields[__field]['field'],
+                                **faceted_search_fields[__field]['options']
+                            ),
                             'global': faceted_search_fields[__field]['global'],
                         }
                     }
                 )
-        return __facets
-    
+        return __facets    
 
     def aggregate(self, request, queryset, view):
         """
