@@ -14,6 +14,7 @@ from django_elasticsearch_dsl_drf.filter_backends import DefaultOrderingFilterBa
 from django_elasticsearch_dsl_drf.viewsets import BaseDocumentViewSet as DEDDBaseDocumentViewSet
 from django.http import QueryDict, HttpResponseRedirect, FileResponse, HttpResponseBadRequest
 from elasticsearch_dsl import TermsFacet, DateHistogramFacet
+from rest_framework.exceptions import ValidationError
 
 from capapi import serializers, filters, permissions, renderers as capapi_renderers
 from capapi.documents import CaseDocument, RawSearch, ResolveDocument
@@ -407,32 +408,32 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             if key not in CaseDocumentViewSet.filter_fields \
                 and key not in CaseDocumentViewSet.search_nested_fields \
                 and key not in additional_filter_fields:
-                return False
+                return (False, f'{key} is not a valid API parameter.')
 
-        return True
+        return (True, True)
 
 
     def get_query_data_from_api_query(self, q):
         # given an `api(...)` query, return a structured list of filters and aggregations
         # validate whether a case ID exists in the corpus
-        noresult = False
         # check if the supplied item is a valid case id
         if not q or not (q.startswith('api(') and q.endswith(')')):
-            return noresult
+            return (False, False)
     
         query_body = None
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
         except Exception:
-            return False
+            return (False, 'Query is not in a URL parameter format.')
 
-        if not self.query_params_are_filters(query_body):
-            return False
+        err, msg = self.query_params_are_filters(query_body)
+        if not err:
+            return (False, msg)
 
         query_body['page_size'] = 1
         query_body['facet'] = 'decision_date'
 
-        return query_body
+        return (query_body, False)
 
     @staticmethod
     def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
@@ -461,8 +462,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     )
     def get_total_dict(self, request):
         # get and cache total dictionary. 
-        total_query_params = {'page_size': 1, 'facet': ['decision_date', 'jurisdiction,decision_date']}
-        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_params).data
+        total_query_dict = QueryDict('page_size=1&facet=decision_date&facet=jurisdiction,decision_date', mutable=True)
+
+        total_results = api_request(request, CaseDocumentViewSet, 'list', get_params=total_query_dict).data
 
         return {
             **total_results['facets']['jurisdiction,decision_date'],
@@ -521,26 +523,28 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # check if we're querying for a case as opposed to a word
         # default to keyword search if value is empty 
-        api_query_body = self.get_query_data_from_api_query(q)
+        api_query_body, err_msg = self.get_query_data_from_api_query(q)
 
         # prepend word count as first byte. only applicable for n-grams
         words = q.split(' ')[:3]  # use first 3 words
         q_len = len(words)
-        q = bytes([q_len]) + ' '.join(words).encode('utf8')
+        q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
 
-        if api_query_body:
-            results = self.get_citation_data(request, api_query_body, ' '.join(words))
+        if api_query_body and not err_msg:
+            results = self.get_citation_data(request, api_query_body, q)
             pairs = []
-        elif q.endswith(b' *'):
+        elif not api_query_body and err_msg:
+            raise ValidationError({"error": err_msg})
+        elif q_sig.endswith(b' *'):
             results = {}
             # wildcard search
-            pairs = ngram_kv_store_ro.get_prefix(q[:-1], packed=True)
+            pairs = ngram_kv_store_ro.get_prefix(q_sig[:-1], packed=True)
         else:
             results = {}
             # non-wildcard search
-            value = ngram_kv_store_ro.get(q, packed=True)
+            value = ngram_kv_store_ro.get(q_sig, packed=True)
             if value:
-                pairs = [(q, value)]
+                pairs = [(q_sig, value)]
             else:
                 pairs = []
 

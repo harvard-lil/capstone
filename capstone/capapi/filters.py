@@ -194,6 +194,8 @@ class CaseFilter(FilterSet):
         choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
     cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
+    facet = filters.CharFilter(label='Facet for which to aggregate results. Can be jurisdiction, \
+        decision_date, or a comma-separated permutation of either.')
     ordering = filters.ChoiceFilter(
         label='Sort order (defaults to relevance, if search is provided, else decision_date)',
         choices=[
