@@ -19,7 +19,7 @@
     </ul>
     <p v-else>No results found.</p>
     <div class="text-right">
-      <a :href="searchPageUrl()">
+      <a :href="searchPageUrl(this.term, this.startYear)">
         <span v-if="results.length >= 5">
           View more
         </span>
@@ -37,7 +37,7 @@
 
 <script>
   import CaseResult from '../search/case-result.vue';
-  import {getApiUrl, jsonQuery} from '../api';
+  import {getApiUrl, getApiUrlNoEncode, jsonQuery} from '../api';
   import {encodeQueryData} from '../utils';
   import Vue from 'vue';
 
@@ -61,16 +61,15 @@
     },
     methods: {
       search(term, params, startYear, endYear) {
+        var searchString = "";
         if (params.q.startsWith('api(')) {
           var searchParams = this.params = {
             decision_date__gte: `${startYear}`,
             decision_date__lt: `${endYear+1}`,
             page_size: 5,
           };
-          var urlparams = new URLSearchParams(params.q.slice(4, -1));
-          for(const entry of urlparams.entries()) {
-            searchParams[entry[0]] = entry[1];
-          }
+          searchString += new URLSearchParams(searchParams).toString() + '&';
+          searchString += params.q.slice(4, -1);
         } else {
           searchParams = this.params = {
             search: `"${params.q}"`,
@@ -84,7 +83,11 @@
         this.showLoading = true;
         Vue.nextTick().then(() => { this.$refs.loadingMessage.focus() });
         this.error = null;
-        const url = getApiUrl(urls.api_root,"cases", searchParams);  // eslint-disable-line
+        if (searchString !== "") {
+          var url = getApiUrlNoEncode(urls.api_root,"cases", searchString);  // eslint-disable-line
+        } else {
+          url = getApiUrl(urls.api_root,"cases", searchParams);  // eslint-disable-line
+        }
         jsonQuery(url).then((resp)=>{
           this.results = resp.results;
           this.term = term;
@@ -98,9 +101,21 @@
           this.error = "Error loading examples."
         });
       },
-      searchPageUrl() {
-        if (this.params.is_case_citation == 1)
-            return `${this.urls.api_root}cases/?${encodeQueryData(this.params)}`
+      searchPageUrl(term, startYear) {
+        var searchString = "";
+        if (term.indexOf('api(') !== -1) {
+          var searchParams = this.params = {
+            decision_date__gte: `${startYear}`,
+            decision_date__lt: `${startYear + 1}`,
+          };
+          searchString += new URLSearchParams(searchParams).toString() + '&';
+
+          var api_command = term.split('api(')[1].slice(0, -1);
+          searchString += api_command;
+
+          return `${this.urls.api_root}cases/?${searchString}`
+        } 
+
         return `${this.urls.search_page}?${encodeQueryData(this.params)}`
       },
       reset() {

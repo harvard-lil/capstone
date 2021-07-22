@@ -175,10 +175,6 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
     api_request.method = 'GET'
 
     api_request.GET = QueryDict(mutable=True)
-    for key in get_params:
-        if type(get_params[key]) is list:
-            api_request.GET.setlist(key, get_params[key])
-        else:
-            api_request.GET[key] = get_params[key]
+    api_request.GET.update(get_params)
 
     return viewset.as_view({'get': method})(api_request, **url_kwargs)
