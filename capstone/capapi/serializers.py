@@ -109,11 +109,12 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
 
     def get_preview(self, instance):
+        preview_source, preview_inner = [], []
         if "_source" in instance:
             preview_source = [highlight for highlights in instance['highlight'].values() for highlight in highlights] if 'highlight' in instance else []
         if 'inner_hits' in instance:
             access_array = ['inner_hits', 'casebody_data.text.opinions', 'hits', 'hits']
-            preview_inner = [highlight['highlight'].values() for highlight in self.deep_get(instance,access_array)]
+            preview_inner = [highlight['highlight'].values() for highlight in self.deep_get(instance,access_array) if 'highlight' in highlight]
             preview_inner = [highlight for highlights in preview_inner for highlight in highlights] 
 
         return preview_source + preview_inner
