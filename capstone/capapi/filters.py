@@ -3,6 +3,7 @@ from functools import lru_cache, reduce
 import asyncio
 import operator
 import six
+import uuid
 
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
@@ -288,12 +289,13 @@ class CitesToDynamicFilter(BaseFTSFilter):
 
     def get_search_fields(self, view, request):
         """
-        Overridden methods to dynamically generate search fields
+        Overridden methods to dynamically generate search fields.
+        While powerful, do not allow users to query second degree citations to prevent exponential 
+        performance costs.
         """
-        # TODO: Allow nested fields. only object fields for first pass.
-        # While powerful, do not allow users to query second degree citations to prevent exponential 
-        # performance costs.
-        return [f'cites_to__{field}' for field in view.filter_fields if not field.startswith('cites_to')]
+        return {f'cites_to__{field}':api_views.CaseDocumentViewSet.get_queryable_field_map()[field] for field 
+                    in api_views.CaseDocumentViewSet.get_queryable_field_map() 
+                    if not field.startswith('cites_to')}
 
     def deep_get(self, dictionary, keys, default=[]):
         """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
@@ -346,19 +348,15 @@ class CitesToDynamicFilter(BaseFTSFilter):
         search_fields = self.get_search_fields(view, request).copy()
 
         # reformat data as ELK query. no dictionary comprehension due to complexity and length
-        cites_to_keys = []
+        cites_to_keys = {}
         for key, value in request.GET.items():
             if key in search_fields:
-                query_field = api_views.CaseDocumentViewSet.filter_fields[key[10:]]
-                if type(query_field) == dict:
-                    query_field = query_field['field']
-                cites_to_keys.append({"term": {query_field: value}})
+                cites_to_keys[key.split('cites_to__')[1]] = request.GET[key]
 
         # We can use a shell request because the view simply pulls parameters out.
         first_request = HttpRequest()
-        first_dict = {k.split('cites_to__', 1)[1]:v for k, v in request.GET.items() if k.startswith('cites_to__')}
         first_request.query_params = QueryDict('', mutable=True)
-        first_request.query_params.update(first_dict)
+        first_request.query_params.update(cites_to_keys)
 
         results = self.parallel_execute(first_request) if cites_to_keys else []
 

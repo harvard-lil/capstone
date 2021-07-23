@@ -203,6 +203,19 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         }
     }
 
+    @classmethod
+    def get_queryable_field_map(self):
+        additional_filter_fields = {backend.search_param:backend.search_param for backend in self.filter_backends if
+            hasattr(backend, 'search_param')}
+        nested_fields = {k:k for k,v in self.search_nested_fields.items()}
+        filter_fields = {k:(v if type(v) is str else v['field']) for k,v in self.filter_fields.items()}
+
+        return {
+            **additional_filter_fields,
+            **nested_fields,
+            **filter_fields
+        }
+
     def is_full_case_request(self):
         return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
 
@@ -397,8 +410,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def query_params_are_filters(query_body):
         # check if the queries are expected filter inputs to the cases API.    
-        additional_filter_fields = [backend.search_param for backend in CaseDocumentViewSet.filter_backends if
-            hasattr(backend, 'search_param')]
+        additional_filter_fields = CaseDocumentViewSet.get_queryable_field_map().keys()
 
         modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
