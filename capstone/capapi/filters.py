@@ -1,6 +1,6 @@
+from copy import copy
 from functools import lru_cache, reduce
 import asyncio
-import uuid
 import operator
 import six
 
@@ -12,10 +12,11 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
+from django.http import QueryDict, HttpRequest
 from elasticsearch import AsyncElasticsearch, Elasticsearch
 from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
-
+from urllib.parse import urlencode
 
 from capdb import models
 from scripts.helpers import normalize_cite
@@ -292,13 +293,13 @@ class CitesToDynamicFilter(BaseFTSFilter):
         # TODO: Allow nested fields. only object fields for first pass.
         # While powerful, do not allow users to query second degree citations to prevent exponential 
         # performance costs.
-        return [f'cites_to_{field}' for field in view.filter_fields if not field.startswith('cites_to')]
+        return [f'cites_to__{field}' for field in view.filter_fields if not field.startswith('cites_to')]
 
     def deep_get(self, dictionary, keys, default=[]):
         """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
 
-    def parallel_execute(self, cites_to_keys, max_workers=20, page_size=1000):
+    def parallel_execute(self, request, max_workers=20, page_size=1000):
         """
         Execute queries in parallel. Return 20K results to temper cluster load.
         source: https://github.com/elastic/elasticsearch/issues/18829
@@ -307,29 +308,36 @@ class CitesToDynamicFilter(BaseFTSFilter):
         # lists are thread-safe, so use this to store results.
         results = []
 
-        async def fetch(es, worker_i, search_terms):
+        async def fetch(es, worker_i, query_body):
+            # Fetch data asynchronously
+            # Unfortunately, the decorators of regular Elasticsearch() are not present 
+            # So we have to shunt source / sort / pagination in ourselves.
             body = {
+                **query_body,
                 "from": page_size * worker_i,
                 "size": page_size,
                 "_source": "false",
                 "sort": ["decision_date", "id"],
-                "query": {"bool": {"filter": {"bool": {"must": search_terms}}}},
             }
             resp = await es.search(index='cases', body=body)
             results.append(self.deep_get(resp, ['hits','hits']))
 
-        async def get_query_results(search_terms):
+        async def get_query_results(query_body):
             es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
 
             await asyncio.gather(*[
-                asyncio.ensure_future(fetch(es, i, search_terms))
+                asyncio.ensure_future(fetch(es, i, query_body))
                 for i in range(0, max_workers)
             ])
 
+        view = api_views.CaseDocumentViewSet(request=request)
+        search = view.filter_queryset(view.get_queryset())
+        query_body = search.to_dict()
+        
         loop = asyncio.new_event_loop()
-        loop.run_until_complete(get_query_results(cites_to_keys))
+        loop.run_until_complete(get_query_results(query_body))
 
-        results = [item['_id'] for sublist in results for item in sublist]
+        results = [item['_id'] for sublist in results for item in sublist if '_id' in item]
         return results
 
 
@@ -341,12 +349,18 @@ class CitesToDynamicFilter(BaseFTSFilter):
         cites_to_keys = []
         for key, value in request.GET.items():
             if key in search_fields:
-                query_field = api_views.CaseDocumentViewSet.filter_fields[key[9:]]
+                query_field = api_views.CaseDocumentViewSet.filter_fields[key[10:]]
                 if type(query_field) == dict:
                     query_field = query_field['field']
                 cites_to_keys.append({"term": {query_field: value}})
 
-        results = self.parallel_execute(cites_to_keys) if cites_to_keys else []
+        # We can use a shell request because the view simply pulls parameters out.
+        first_request = HttpRequest()
+        first_dict = {k.split('cites_to__', 1)[1]:v for k, v in request.GET.items() if k.startswith('cites_to__')}
+        first_request.query_params = QueryDict('', mutable=True)
+        first_request.query_params.update(first_dict)
+
+        results = self.parallel_execute(first_request) if cites_to_keys else []
 
         if results:
             request.GET._mutable = True
