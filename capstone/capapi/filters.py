@@ -284,13 +284,6 @@ class DocketNumberFTSFilter(BaseFTSFilter):
 class CitesToDynamicFilter(BaseFTSFilter):
     fields = ('id',)
 
-    # use a list to handle the first query results because append is thread-safe.
-    # handle max 20*1000 results to limit cluster load.
-    # source: https://github.com/elastic/elasticsearch/issues/18829
-    first_pass_results = []
-    max_workers = 20
-    page_size = 1000
-
     def get_search_fields(self, view, request):
         """
         Overridden methods to dynamically generate search fields
@@ -304,28 +297,44 @@ class CitesToDynamicFilter(BaseFTSFilter):
         """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
 
-    async def fetch(self, es, worker_i, search_terms):
-        body = {
-            "from": self.page_size * worker_i,
-            "size": self.page_size,
-            "_source": "false",
-            "sort": ["decision_date", "id"],
-            "query": {"bool": {"filter": {"bool": {"must": search_terms}}}},
-        }
-        resp = await es.search(index='cases', body=body)
-        self.first_pass_results.append(self.deep_get(resp, ['hits','hits']))
+    def parallel_execute(self, cites_to_keys, max_workers=20, page_size=1000):
+        """
+        Execute queries in parallel. Return 20K results to temper cluster load.
+        source: https://github.com/elastic/elasticsearch/issues/18829
+        """
 
-    async def get_query_results(self, search_terms):
-        es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
+        # lists are thread-safe, so use this to store results.
+        results = []
 
-        await asyncio.gather(*[
-            asyncio.ensure_future(self.fetch(es, i, search_terms))
-            for i in range(0, self.max_workers)
-        ])
+        async def fetch(es, worker_i, search_terms):
+            body = {
+                "from": page_size * worker_i,
+                "size": page_size,
+                "_source": "false",
+                "sort": ["decision_date", "id"],
+                "query": {"bool": {"filter": {"bool": {"must": search_terms}}}},
+            }
+            resp = await es.search(index='cases', body=body)
+            results.append(self.deep_get(resp, ['hits','hits']))
+
+        async def get_query_results(search_terms):
+            es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
+
+            await asyncio.gather(*[
+                asyncio.ensure_future(fetch(es, i, search_terms))
+                for i in range(0, max_workers)
+            ])
+
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(get_query_results(cites_to_keys))
+
+        results = [item['_id'] for sublist in results for item in sublist]
+        return results
+
 
     def filter_queryset(self, request, queryset, view):
         # ignore empty searches
-        search_fields = self.get_search_fields(view, request)
+        search_fields = self.get_search_fields(view, request).copy()
 
         # reformat data as ELK query. no dictionary comprehension due to complexity and length
         cites_to_keys = []
@@ -336,16 +345,13 @@ class CitesToDynamicFilter(BaseFTSFilter):
                     query_field = query_field['field']
                 cites_to_keys.append({"term": {query_field: value}})
 
-        if cites_to_keys:
-            # write new query here
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self.get_query_results(cites_to_keys))
+        results = self.parallel_execute(cites_to_keys) if cites_to_keys else []
 
-        self.first_pass_results = [item['_id'] for sublist in self.first_pass_results for item in sublist]
-
-        request.GET._mutable = True
-        request.GET.setlist('cites_to_id', self.first_pass_results)
-        request.GET._mutable = False
+        if results:
+            request.GET._mutable = True
+            _ = [request.GET.pop(key) for key in search_fields if key in request.GET.keys()]
+            request.GET.setlist('cites_to_id', results)
+            request.GET._mutable = False
 
         if request.GET.get(self.search_param):
             # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
