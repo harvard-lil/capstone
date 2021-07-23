@@ -1,4 +1,5 @@
 from functools import lru_cache
+import uuid
 import operator
 import six
 
@@ -338,7 +339,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     )
 
                 highlight_nested_fields = NestedSimpleStringQueryBackend.prepare_highlight_fields(view)
-                highlight_inner = {'highlight': {'fields': {}}}
+                highlight_inner = {'name':uuid.uuid4().hex.upper()[0:10], 'highlight': {'fields': {}}}
                 for __field, __options in highlight_nested_fields.items():
                     if __field in queried_fields or __options['enabled']:
                         highlight_inner['highlight']['fields'][__field] = __options['options']
