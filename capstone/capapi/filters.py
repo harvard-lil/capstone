@@ -3,6 +3,7 @@ import asyncio
 import operator
 import six
 
+from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
@@ -284,9 +285,11 @@ class CitesToDynamicFilter(BaseFTSFilter):
     fields = ('id',)
 
     # use a list to handle the first query results because append is thread-safe.
+    # handle max 20*1000 results to limit cluster load.
+    # source: https://github.com/elastic/elasticsearch/issues/18829
     first_pass_results = []
-    max_workers = 3
-    page_size = 5
+    max_workers = 20
+    page_size = 1000
 
     def get_search_fields(self, view, request):
         """
@@ -307,13 +310,13 @@ class CitesToDynamicFilter(BaseFTSFilter):
             "size": self.page_size,
             "_source": "false",
             "sort": ["decision_date", "id"],
-            "query": {"bool": {"filter": [{"terms": search_terms}]}},
+            "query": {"bool": {"filter": {"bool": {"must": search_terms}}}},
         }
         resp = await es.search(index='cases', body=body)
         self.first_pass_results.append(self.deep_get(resp, ['hits','hits']))
 
     async def get_query_results(self, search_terms):
-        es = AsyncElasticsearch(['elasticsearch:9200'])
+        es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
 
         await asyncio.gather(*[
             asyncio.ensure_future(self.fetch(es, i, search_terms))
@@ -325,13 +328,13 @@ class CitesToDynamicFilter(BaseFTSFilter):
         search_fields = self.get_search_fields(view, request)
 
         # reformat data as ELK query. no dictionary comprehension due to complexity and length
-        cites_to_keys = {}
+        cites_to_keys = []
         for key, value in request.GET.items():
             if key in search_fields:
                 query_field = api_views.CaseDocumentViewSet.filter_fields[key[9:]]
                 if type(query_field) == dict:
                     query_field = query_field['field']
-                cites_to_keys[query_field] = [value]
+                cites_to_keys.append({"term": {query_field: value}})
 
         if cites_to_keys:
             # write new query here
