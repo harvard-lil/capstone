@@ -1,5 +1,7 @@
+import asyncio
 import hashlib
 from copy import copy
+from functools import reduce
 
 import rest_framework.request
 import wrapt
@@ -13,6 +15,7 @@ from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
+from elasticsearch import AsyncElasticsearch
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
@@ -157,6 +160,57 @@ def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
     else:
         raise Exception("Unexpected redaction format")
     return item
+
+
+def deep_get(dictionary, keys, default=[]):
+    """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
+    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
+
+def parallel_execute(query_body, max_workers=20, page_size=1000):
+    """
+    Execute queries in parallel. Return 20K results to temper cluster load.
+    source: https://github.com/elastic/elasticsearch/issues/18829
+    """
+
+    # lists are thread-safe, so use this to store results.
+    results = []
+
+    async def fetch(es, worker_i, query_body):
+        # Fetch data asynchronously
+        # Unfortunately, the decorators of regular Elasticsearch() are not present 
+        # So we have to shunt source / sort / pagination in ourselves.
+        body = {
+            'query': {
+                'function_score': { 
+                    **query_body,
+                    'random_score': {
+                        "seed": 10,
+                    },
+                },
+            },
+            'from': page_size * worker_i,
+            'size': page_size,
+            '_source': 'false'
+        }
+        del body['query']['function_score']['sort']
+        del body['query']['function_score']['track_total_hits']
+
+        resp = await es.search(index='cases', body=body)
+        results.append(deep_get(resp, ['hits','hits']))
+
+    async def get_query_results(query_body):
+        es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
+
+        await asyncio.gather(*[
+            asyncio.ensure_future(fetch(es, i, query_body))
+            for i in range(0, max_workers)
+        ])
+    
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(get_query_results(query_body))
+
+    results = [item['_id'] for sublist in results for item in sublist if '_id' in item]
+    return results
 
 
 def api_request(request, viewset, method, url_kwargs={}, get_params={}):
