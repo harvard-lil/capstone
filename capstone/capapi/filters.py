@@ -290,9 +290,7 @@ class CitesToDynamicFilter(BaseFTSFilter):
         While powerful, do not allow users to query second degree citations to prevent exponential 
         performance costs.
         """
-        return {f'cites_to__{field}':api_views.CaseDocumentViewSet.get_queryable_field_map()[field] for field 
-                    in api_views.CaseDocumentViewSet.get_queryable_field_map() 
-                    if not field.startswith('cites_to')}
+        return [f'cites_to__{field}' for field in view.valid_query_fields if not field.startswith('cites_to')]
 
     def filter_queryset(self, request, queryset, view):
         # ignore empty searches
