@@ -205,6 +205,8 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
             asyncio.ensure_future(fetch(es, i, query_body))
             for i in range(0, max_workers)
         ])
+
+        es.close()
     
     loop = asyncio.new_event_loop()
     loop.run_until_complete(get_query_results(query_body))
