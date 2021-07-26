@@ -210,6 +210,7 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
     loop.run_until_complete(get_query_results(query_body))
 
     results = [item['_id'] for sublist in results for item in sublist if '_id' in item]
+
     return results
 
 
