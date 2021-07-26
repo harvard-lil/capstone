@@ -101,8 +101,10 @@ mincss       # remove unused css styles
 elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
-aiohttp
-elasticsearch==7.8.1
+# Manually add elasticsearch[async] requirements from https://github.com/elastic/elasticsearch-py/blob/master/setup.py.
+# This wants to just be "elasticsearch[async]", but is currently blocked by https://github.com/pypa/pip/issues/9644
+elasticsearch
+aiohttp>=3,<4
 
 # citation extraction
 # eyecite
