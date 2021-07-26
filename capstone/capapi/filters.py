@@ -1,6 +1,7 @@
 from functools import lru_cache
 import operator
 import six
+import re
 import uuid
 
 from django.utils.functional import SimpleLazyObject
@@ -296,11 +297,16 @@ class CitesToDynamicFilter(BaseFTSFilter):
     def filter_queryset(self, request, queryset, view):
         # ignore empty searches
         search_fields = self.get_search_fields(view, request).copy()
+        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
         # reformat data as ELK query. no dictionary comprehension due to complexity and length
         cites_to_keys = {}
         for key, value in request.GET.items():
-            if key in search_fields:
+            key_to_match = key
+            for pattern in modifier_patterns:
+                key_to_match = re.sub(pattern, '', key_to_match)
+
+            if key_to_match in search_fields:
                 cites_to_keys[key.split('cites_to__')[1]] = request.GET[key]
 
         # We can use a shell request because the view simply pulls parameters out.
