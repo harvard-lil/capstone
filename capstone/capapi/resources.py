@@ -180,20 +180,18 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
         # Unfortunately, the decorators of regular Elasticsearch() are not present 
         # So we have to shunt source / sort / pagination in ourselves.
         body = {
-            'query': {
-                'function_score': { 
-                    **query_body,
-                    'random_score': {
-                        "seed": 10,
-                    },
-                },
-            },
+            **query_body,
             'from': page_size * worker_i,
             'size': page_size,
-            '_source': 'false'
+            '_source': 'false',
         }
-        del body['query']['function_score']['sort']
-        del body['query']['function_score']['track_total_hits']
+        body['sort'] = {
+            "_script" : { 
+                "script" : "(doc['_id'].value + 'capsalt').hashCode()",
+                "type" : "number",
+                "order" : "asc"
+            }
+        }
 
         resp = await es.search(index='cases', body=body)
         results.append(deep_get(resp, ['hits','hits']))
