@@ -517,7 +517,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         # without specific ngram search, return nothing
-        q = self.request.GET.get('q', '').strip().lower()
+        q = self.request.GET.get('q', '').strip()
         if not q:
             return Response({})
 
@@ -526,7 +526,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         api_query_body, err_msg = self.get_query_data_from_api_query(q)
 
         # prepend word count as first byte. only applicable for n-grams
-        words = q.split(' ')[:3]  # use first 3 words
+        words = q.lower().split(' ')[:3]  # use first 3 words
         q_len = len(words)
         q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
 
