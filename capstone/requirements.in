@@ -101,12 +101,8 @@ mincss       # remove unused css styles
 elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
-elasticsearch==7.8.1 \
-    --hash=sha256:2ffbd746fc7d2db08e5ede29c822483705f29c4bf43b0875c238637d5d843d44 \
-    --hash=sha256:92b534931865a186906873f75ae0b91808ff5036b0f2b9269eb5f6dc09644b55
-elasticsearch[async]==7.8.1 \
-    --hash=sha256:2ffbd746fc7d2db08e5ede29c822483705f29c4bf43b0875c238637d5d843d44 \
-    --hash=sha256:92b534931865a186906873f75ae0b91808ff5036b0f2b9269eb5f6dc09644b55
+aiohttp
+elasticsearch==7.8.1
 
 # citation extraction
 # eyecite

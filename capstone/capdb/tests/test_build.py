@@ -16,7 +16,7 @@ def test_makemigrations():
     assert out.getvalue() == 'No changes detected\n', "Model changes detected. Please run ./manage.py makemigrations"
 
 def test_pip_compile():
-    existing_requirements = Path('requirements.txt').read_bytes().split(b"# pip-manual-hashes")[0]
+    existing_requirements = Path('requirements.txt').read_bytes()
     subprocess.check_call(["fab", "pip-compile"], stdout=subprocess.PIPE,
                           # strip COV_ environment variables so pip-compile doesn't try to report test coverage
                           env={k:v for k,v in os.environ.items() if not k.startswith('COV_')})
