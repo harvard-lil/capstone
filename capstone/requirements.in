@@ -101,6 +101,8 @@ mincss       # remove unused css styles
 elasticsearch-dsl
 django-elasticsearch-dsl
 django-elasticsearch-dsl-drf
+elasticsearch==7.8.0
+elasticsearch[async]==7.8.0
 
 # citation extraction
 # eyecite
