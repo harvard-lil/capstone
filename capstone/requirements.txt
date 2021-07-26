@@ -444,6 +444,11 @@ elasticsearch-dsl==7.3.0 \
 elasticsearch[async]==7.8.1 \
     --hash=sha256:2ffbd746fc7d2db08e5ede29c822483705f29c4bf43b0875c238637d5d843d44 \
     --hash=sha256:92b534931865a186906873f75ae0b91808ff5036b0f2b9269eb5f6dc09644b55
+    # DO NOT REMOVE. Duplicate package with elasticsearch[async] to 
+    # manage elasticsearch-django-dsl-drf dependency.
+elasticsearch==7.8.1 \
+    --hash=sha256:2ffbd746fc7d2db08e5ede29c822483705f29c4bf43b0875c238637d5d843d44 \
+    --hash=sha256:92b534931865a186906873f75ae0b91808ff5036b0f2b9269eb5f6dc09644b55
     # via
     #   -r requirements.in
     #   django-elasticsearch-dsl-drf
