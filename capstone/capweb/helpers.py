@@ -235,7 +235,10 @@ def is_google_bot(request):
     domain_name = ".".join(host.split('.')[1:])
     if domain_name not in ['googlebot.com', 'google.com']:
         return False
-    host_ip = socket.gethostbyname(host)
+    try:
+        host_ip = socket.gethostbyname(host)
+    except socket.gaierror:
+        return False
     return host_ip == ip
 
 
