@@ -101,7 +101,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
         filters.AuthorFTSFilter,
-        filters.AuthorDispositionFTSFilter,
+        filters.AuthorTypeFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
         filters.CitesToDynamicFilter,
@@ -200,7 +200,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     }
 
     search_nested_fields = {
-        'author_disposition': {
+        'author_type': {
             'path': 'casebody_data.text.opinions',
             'fields': ['author', 'type', 'text'],
         }

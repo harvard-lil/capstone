@@ -189,9 +189,9 @@ class CaseFilter(FilterSet):
     author = filters.CharFilter(
         label='Filter by opinion author'
         )
-    author_disposition = filters.CharFilter(
-        label='Filter by opinion author and their disposition in a ruling. Values must be separated by a colon; invalid input will be \
-            ignored. Example: author_disposition=scalia:dissent.'
+    author_type = filters.CharFilter(
+        label='Filter by opinion author and their opinion type in a ruling. Values must be separated by a colon; invalid input will be \
+            ignored. Example: author_type=scalia:dissent.'
     )
     body_format = filters.ChoiceFilter(
         label='Format for case text (applies only if including case text)',
@@ -458,11 +458,11 @@ class MultiFieldFTSFilter(BaseSearchFilterBackend):
         return queryset
 
 
-class AuthorDispositionFTSFilter(NestedFTSFilter):
+class AuthorTypeFTSFilter(NestedFTSFilter):
     """
-    Multi match search filter backend to query on author + disposition
+    Multi match search filter backend to query on author + type 
     """
-    search_param = 'author_disposition'
+    search_param = 'author_type'
     nested_query_fields = ('casebody_data.text.opinions.author','casebody_data.text.opinions.type',)
 
     matching = MATCHING_OPTION_MUST
@@ -470,7 +470,7 @@ class AuthorDispositionFTSFilter(NestedFTSFilter):
 
 class AuthorFTSFilter(NestedFTSFilter):
     """
-    Multi match search filter backend to query on author + disposition
+    Multi match search filter backend to query on author
     """
     search_param = 'author'
     nested_query_fields = ('casebody_data.text.opinions.author',)
