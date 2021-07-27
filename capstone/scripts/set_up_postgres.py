@@ -67,6 +67,7 @@ def update_postgres_env(db='capdb'):
                     'reporter_id',
                     'volume_id',
                     'in_scope',
+                    'no_index_redacted',
                 ],
             },
             {
