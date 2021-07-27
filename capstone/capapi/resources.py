@@ -197,17 +197,19 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
         results.append(deep_get(resp, ['hits','hits']))
 
     async def get_query_results(query_body, es):
-        await asyncio.gather(*[
-            asyncio.ensure_future(fetch(es, i, query_body))
-            for i in range(0, max_workers)
-        ])
+        es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
 
-    es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
-    try:
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(get_query_results(query_body, es))
-    finally:
-        es.close()
+        try:
+            await asyncio.gather(*[
+                asyncio.ensure_future(fetch(es, i, query_body))
+                for i in range(0, max_workers)
+            ])
+        finally:
+            await es.close()
+
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(get_query_results(query_body, es))
+
 
     results = [item['_id'] for sublist in results for item in sublist if '_id' in item]
     return results
