@@ -1251,12 +1251,14 @@ class CaseMetadata(models.Model):
 
         text = self.body_cache.text
         words = list(tokenize(text))
+        hashvalue = hashlib.sha256(text.encode('utf8')).hexdigest()
         analyses = [
             CaseAnalysis(case=self, key='char_count', value=len(text)),
             CaseAnalysis(case=self, key='word_count', value=len(words)),
             CaseAnalysis(case=self, key='cardinality', value=len(set(words))),
             CaseAnalysis(case=self, key='simhash', value=get_simhash(text)),
             CaseAnalysis(case=self, key='sha256', value=hashlib.sha256(text.encode('utf8')).hexdigest()),
+            CaseAnalysis(case=self, key='sample', value=hashvalue[-4:]),
         ]
         confidence = None
         if self.human_corrected:

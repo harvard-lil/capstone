@@ -143,6 +143,7 @@ class CaseDocument(Document):
 
     analysis = fields.ObjectField(properties={
         'sha256': fields.KeywordField(),
+        'sample': fields.KeywordField(),
         'simhash': fields.KeywordField(),
     })
 

@@ -185,13 +185,11 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
             'size': page_size,
             '_source': 'false',
         }
-        body['sort'] = {
-            "_script" : { 
-                "script" : "(doc['_id'].value + 'capsalt').hashCode()",
-                "type" : "number",
-                "order" : "asc"
+        body['sort'] = [
+            "field" : { 
+                "analysis.sample" : "keyword"
             }
-        }
+        ]
 
         resp = await es.search(index='cases', body=body)
         results.append(deep_get(resp, ['hits','hits']))
