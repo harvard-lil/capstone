@@ -312,6 +312,7 @@ class CitesToDynamicFilter(BaseFTSFilter):
             first_request = HttpRequest()
             first_request.query_params = QueryDict('', mutable=True)
             first_request.query_params.update(cites_to_keys)
+            first_request.GET = first_request.query_params
 
             init_view = api_views.CaseDocumentViewSet(request=first_request)
             search = init_view.filter_queryset(init_view.get_queryset())
