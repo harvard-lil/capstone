@@ -189,9 +189,9 @@ class CaseFilter(FilterSet):
     author = filters.CharFilter(
         label='Filter by opinion author'
         )
-    author_disposition = filters.CharFilter(
-        label='Filter by opinion author and their disposition in a ruling. Values must be separated by a colon; invalid input will be \
-            ignored. Example: author_disposition=scalia:dissent.'
+    author_type = filters.CharFilter(
+        label='Filter by opinion author and their opinion type in a ruling. Values must be separated by a colon; invalid input will be \
+            ignored. Example: author_type=scalia:dissent.'
     )
     body_format = filters.ChoiceFilter(
         label='Format for case text (applies only if including case text)',
