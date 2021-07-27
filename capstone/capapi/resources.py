@@ -196,7 +196,7 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
         resp = await es.search(index='cases', body=body)
         results.append(deep_get(resp, ['hits','hits']))
 
-    async def get_query_results(query_body, es):
+    async def get_query_results(query_body):
         es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
 
         try:
