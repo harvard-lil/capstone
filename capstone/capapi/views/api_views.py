@@ -101,7 +101,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
         filters.AuthorFTSFilter,
-        filters.AuthorDispositionFTSFilter,
+        filters.AuthorTypeFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
         filters.CitesToDynamicFilter,
