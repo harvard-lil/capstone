@@ -134,6 +134,18 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
 * `cites_to`
     * __data type:__    string or integer
     * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
+* `cites_to.reporter`
+    * __data type:__    string
+    * __description:__  find cases that cite to the given reporter, e.g. `Ill. 2d` or `Harv. L. Rev.`
+* `cites_to.category`
+    * __data type:__    string
+    * __description:__  find cases that cite to the given citation category, e.g. `reporter:state` or `reporters:federal`. Category values can be found in results for the cases endpoint under `extracted_citations[].category`
+* `cites_to__*`
+    * __data type:__    integer, float, or string
+    * __description:__  find cases with citations into a set of cases filtered by arbitrary parameters, e.g. `cites_to__jurisdiction=nc, cites_to__author=breyer, cites_to__analysis.word_count__gt=1000`. The target cases will be chosen randomly within the provided filters if the result exceeds 20,000 cases. For multiple filters, simply combine parameters, e.g. `cites_to__jurisdiction=nc&cites_to__analysis.word_count__gt=1000`. Only fields used for filtering and searching the cases endpoint may be used. 
+* `cites_to`
+    * __data type:__    string or integer
+    * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
 * `court`
     * __data type:__    [slug]({% docs_url 'glossary' %}#def-slug)
     * __description:__  [court](#endpoint-courts) slug
