@@ -1,7 +1,8 @@
 from functools import lru_cache
-import uuid
 import operator
 import six
+import re
+import uuid
 
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
@@ -10,10 +11,12 @@ from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend,
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
+from django.http import QueryDict, HttpRequest
 from elasticsearch_dsl.query import Q
 from rest_framework.exceptions import ValidationError
 
-
+from capapi.resources import parallel_execute
+from capapi.views import api_views
 from capdb import models
 from scripts.helpers import normalize_cite
 from scripts.extract_cites import extract_citations_normalized
@@ -275,6 +278,57 @@ class NameAbbreviationFTSFilter(BaseFTSFilter):
 class DocketNumberFTSFilter(BaseFTSFilter):
     search_param = 'docket_number'
     fields = ('docket_number',)
+
+
+class CitesToDynamicFilter(BaseFTSFilter):
+    fields = ('id',)
+
+    def get_search_fields(self, view, request):
+        """
+        Overridden methods to dynamically generate search fields.
+        While powerful, do not allow users to query second degree citations to prevent exponential 
+        performance costs.
+        """
+        return [f'cites_to__{field}' for field in view.valid_query_fields if not field.startswith('cites_to')]
+
+    def filter_queryset(self, request, queryset, view):
+        # ignore empty searches
+        search_fields = self.get_search_fields(view, request).copy()
+        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
+
+        # reformat data as ELK query. no dictionary comprehension due to complexity and length
+        cites_to_keys = {}
+        for key, value in request.GET.items():
+            key_to_match = key
+            for pattern in modifier_patterns:
+                key_to_match = re.sub(pattern, '', key_to_match)
+
+            if key_to_match in search_fields:
+                cites_to_keys[key.split('cites_to__')[1]] = request.GET[key]
+
+        # We can use a shell request because the view simply pulls parameters out.
+        results = []
+        if cites_to_keys:
+            first_request = HttpRequest()
+            first_request.query_params = QueryDict('', mutable=True)
+            first_request.query_params.update(cites_to_keys)
+
+            init_view = api_views.CaseDocumentViewSet(request=first_request)
+            search = init_view.filter_queryset(init_view.get_queryset())
+            results = parallel_execute(search.to_dict()) if cites_to_keys else []
+
+        if results:
+            request.GET._mutable = True
+            _ = [request.GET.pop(key) for key in search_fields if key in request.GET.keys()]
+            request.GET.setlist('cites_to_id', results)
+            request.GET._mutable = False
+
+        if request.GET.get(self.search_param):
+            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
+            # set up to be used multiple times on the same view.
+            view.simple_query_string_search_fields = self.fields
+            return super().filter_queryset(request, queryset, view)
+        return queryset
 
 
 class NestedSimpleStringQueryBackend(NestedQueryBackend):

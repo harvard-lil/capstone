@@ -96,7 +96,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     serializer_class = CaseDocumentSerializer
     filterset_class = filters.CaseFilter
 
-    filter_backends = [
+    query_filter_backends = [
         # queries that take full-text search operators:
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
@@ -104,12 +104,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.AuthorDispositionFTSFilter,
         filters.NameAbbreviationFTSFilter,
         filters.DocketNumberFTSFilter,
+        filters.CitesToDynamicFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
+    ]
+    result_filter_backends = [
         filters.CAPOrderingFilterBackend, # Orders Document
         filters.CAPFacetedSearchFilterBackend, # Aggregates Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
+    filter_backends = query_filter_backends + result_filter_backends
 
     # Define filter fields
     filter_fields = {
@@ -201,6 +205,15 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             'fields': ['author', 'type', 'text'],
         }
     }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.valid_query_fields = [
+            *[field.name for backend in self.query_filter_backends 
+                for field in backend().get_schema_fields(self)],
+            *[backend.search_param for backend in self.query_filter_backends 
+                if hasattr(backend, 'search_param')]
+        ]
 
     def is_full_case_request(self):
         return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
@@ -396,8 +409,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def query_params_are_filters(query_body):
         # check if the queries are expected filter inputs to the cases API.    
-        additional_filter_fields = [backend.search_param for backend in CaseDocumentViewSet.filter_backends if
-            hasattr(backend, 'search_param')]
+        additional_filter_fields = CaseDocumentViewSet().valid_query_fields
 
         modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
