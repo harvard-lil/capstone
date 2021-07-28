@@ -144,13 +144,19 @@ class CaseDocument(Document):
     analysis = fields.ObjectField(properties={
         'sha256': fields.KeywordField(),
         'simhash': fields.KeywordField(),
+        'random_id': fields.DoubleField(),
+        'random_bucket': fields.IntegerField(),
     })
 
     def prepare_frontend_pdf_url(self, instance):
         return instance.get_pdf_url(with_host=False)
 
     def prepare_analysis(self, instance):
-        return dict(sorted((a.key, a.value) for a in instance.analysis.all()))
+        return {
+            **dict(sorted((a.key, a.value) for a in instance.analysis.all())),
+            'random_id': instance.random_id,
+            'random_bucket': int(hex(instance.random_id)[-4:], 16),
+        }
 
     def prepare_docket_numbers(self, instance):
         if not hasattr(instance, 'docket_numbers'):

@@ -3,6 +3,7 @@ import itertools
 import json
 import math
 import re
+import random
 from contextlib import contextmanager
 import struct
 import base64
@@ -956,6 +957,7 @@ class CaseMetadataQuerySet(TemporalQuerySet):
 
 class CaseMetadata(models.Model):
     case_id = models.CharField(max_length=64, unique=True)
+    random_id = models.BigIntegerField(unique=True, null=True)
     frontend_url = models.CharField(max_length=255, null=True, blank=True)
     first_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
     last_page = models.CharField(max_length=255, null=True, blank=True, help_text='Label of first page')
@@ -1034,6 +1036,13 @@ class CaseMetadata(models.Model):
             self.in_scope = not self.in_scope
         if self.tracker.has_changed('no_index_redacted'):
             self.sync_case_body_cache()
+
+        if not self.random_id:
+            while True:
+                self.random_id = random.getrandbits(32)
+                if not CaseMetadata.objects.filter(random_id=self.random_id).exists():
+                    break
+
         super().save(*args, **kwargs)
 
     def full_cite(self):
