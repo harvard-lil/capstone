@@ -150,9 +150,12 @@ class CaseDocument(Document):
         return instance.get_pdf_url(with_host=False)
 
     def prepare_analysis(self, instance):
-        value = dict(sorted((a.key, a.value) for a in instance.analysis.all()))
-        value['random_id'] = instance.random_id
-        value['random_bucket'] = int(hex(instance.random_id)[-2:], 16)
+        return {
+            **dict(sorted((a.key, a.value) for a in instance.analysis.all())),
+            'random_id': instance.random_id,
+            'random_bucket': int(hex(instance.random_id)[-2:], 16)
+        }
+        return value
 
     def prepare_docket_numbers(self, instance):
         if not hasattr(instance, 'docket_numbers'):
