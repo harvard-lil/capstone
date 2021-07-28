@@ -23,6 +23,7 @@ def generate_random_id(apps, schema_editor):
         chunk.append(case)
         if i % 2000 == 0 and chunk:
             CaseMetadata.objects.bulk_update(chunk, fields)
+            chunk = []
     CaseMetadata.objects.bulk_update(chunk, fields)
 
 class Migration(migrations.Migration):
