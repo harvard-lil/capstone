@@ -18,7 +18,7 @@ def generate_random_id(apps, schema_editor):
 
     fields = ['random_id']
     chunk = []
-    for i, case in CaseMetadata.objects.only(*fields).iterator(chunk_size=2000):
+    for i, case in enumerate(CaseMetadata.objects.only(*fields).iterator(chunk_size=2000)):
         case.random_id = try_saving_random_id()
         chunk.append(case)
         if i % 2000 == 0 and chunk:
