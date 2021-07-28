@@ -189,15 +189,12 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
             'analysis.random_bucket': { 
                 'order': 'asc'
             },
-            'analysis.random_id': { 
-                'order': 'asc'
-            }
         }]
 
         # delete highlight blocks. 
         body.pop('highlight', None)
         for obj in deep_get(body, ['query', 'bool', 'must']):
-            obj = obj.get('nested', None)
+            obj = obj.get('nested', {})
             obj.pop('inner_hits', None)
 
         resp = await es.search(index='cases', body=body)
