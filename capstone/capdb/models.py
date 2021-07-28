@@ -1258,7 +1258,7 @@ class CaseMetadata(models.Model):
             CaseAnalysis(case=self, key='cardinality', value=len(set(words))),
             CaseAnalysis(case=self, key='simhash', value=get_simhash(text)),
             CaseAnalysis(case=self, key='sha256', value=hashvalue),
-            CaseAnalysis(case=self, key='sample', value=int(hashvalue[-4:])),
+            CaseAnalysis(case=self, key='sample', value=int(hashvalue[-4:], 16)),
         ]
         confidence = None
         if self.human_corrected:

@@ -187,7 +187,7 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
         }
         body['sort'] = [{
             'field': { 
-                'analysis.sample': 'keyword'
+                'analysis.sample': 'long'
             }
         }]
 
