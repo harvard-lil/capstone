@@ -157,7 +157,6 @@ class CaseDocument(Document):
             'random_id': instance.random_id,
             'random_bucket': int(hex(instance.random_id)[-4:], 16),
         }
-        return value
 
     def prepare_docket_numbers(self, instance):
         if not hasattr(instance, 'docket_numbers'):

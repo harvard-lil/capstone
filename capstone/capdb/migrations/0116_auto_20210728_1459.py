@@ -2,7 +2,6 @@
 import random
 
 from django.db import migrations, models
-from django.db.utils import IntegrityError
 
 assigned_ids = set()
 
@@ -15,7 +14,6 @@ def try_saving_random_id():
     return id
 
 def generate_random_id(apps, schema_editor):
-    value = random.getrandbits(48)
     CaseMetadata = apps.get_model('capdb', 'CaseMetadata')
     for case in CaseMetadata.objects.iterator(chunk_size=2000):
         case.random_id = try_saving_random_id()

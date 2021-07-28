@@ -3,6 +3,7 @@ import itertools
 import json
 import math
 import re
+import random
 from contextlib import contextmanager
 import struct
 import base64
