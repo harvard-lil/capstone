@@ -14,7 +14,7 @@ def get_index(index_name):
     index.settings(
         number_of_shards=1,
         number_of_replicas=0,
-        max_result_window=settings.MAX_PAGE_SIZE+1,  # allow for one extra for pagination
+        max_result_window=settings.MAX_RESULT_WINDOW,
     )
     return index
 

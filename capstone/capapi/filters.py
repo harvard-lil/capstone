@@ -316,17 +316,20 @@ class CitesToDynamicFilter(BaseFTSFilter):
 
             init_view = api_views.CaseDocumentViewSet(request=first_request)
             search = init_view.filter_queryset(init_view.get_queryset())
-            results = parallel_execute(search.to_dict()) if cites_to_keys else []
+
+            search = search.source('false').sort('analysis.random_bucket')
+
+            results = parallel_execute(search, remove_keys=['highlight'])
+            cites_to_ids = [item['_id'] for item in results if '_id' in item]
 
             request.GET._mutable = True
             _ = [request.GET.pop(key) for key in search_fields if key in request.GET.keys()]
-            if results:
-                request.GET.setlist('cites_to_id', results)
+            if cites_to_ids:
+                request.GET.setlist('cites_to_id', cites_to_ids)
             else:
                 # if there are no matches, set cites_to_id to an impossible id
                 request.GET.setlist('cites_to_id', ['unmatchable'])
             request.GET._mutable = False
-
 
         if request.GET.get(self.search_param):
             # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
