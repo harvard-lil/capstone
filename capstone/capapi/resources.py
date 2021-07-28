@@ -16,6 +16,7 @@ from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 from elasticsearch import AsyncElasticsearch
+from elasticsearch_dsl.connections import get_connection
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
@@ -166,56 +167,66 @@ def deep_get(dictionary, keys, default=[]):
     """ https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary """
     return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys, dictionary)
 
-def parallel_execute(query_body, max_workers=20, page_size=1000):
+
+def remove_nested_keys(target_dict, keys):
     """
-    Execute queries in parallel. Return 20K results to temper cluster load.
-    source: https://github.com/elastic/elasticsearch/issues/18829
+        Recursively remove all keys in `keys` list from target_dict:
+        >>> target_dict = {'remove': 0, 'foo': {'remove': 1, 'baz': [{'remove': 2}]}}
+        >>> remove_nested_keys(target_dict, ['remove'])
+        >>> assert target_dict == {'foo': {'baz': [{}]}}
+    """
+    for key in keys:
+        target_dict.pop(key, None)
+    for value in target_dict.values():
+        if isinstance(value, dict):
+            remove_nested_keys(value, keys)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    remove_nested_keys(item, keys)
+
+
+def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
+    """
+    Execute an elasticsearch-dsl Search object in parallel. Example:
+
+        results = parallel_execute(CaseDocument.search().filter(...).sort(...), remove_keys=['highlight'])
+
+    Return 20K results by default to temper cluster load. Source: https://github.com/elastic/elasticsearch/issues/18829
+
+    remove_keys is an optional list of keys that will be recursively stripped from the search dictionary before being sent
+    to elasticsearch.
     """
 
-    # lists are thread-safe, so use this to store results.
-    results = []
+    # get elasticsearch query as a dictionary
+    query_body = search.to_dict()
+    if remove_keys:
+        remove_nested_keys(query_body, remove_keys)
 
-    async def fetch(es, worker_i, query_body):
-        # Fetch data asynchronously
-        # Unfortunately, the decorators of regular Elasticsearch() are not present 
-        # So we have to shunt source / sort / pagination in ourselves.
+    async def fetch(es, worker_i):
         body = {
             **query_body,
             'from': page_size * worker_i,
             'size': page_size,
-            '_source': 'false',
         }
-        body['sort'] = [{
-            'analysis.random_bucket': { 
-                'order': 'asc'
-            },
-        }]
+        resp = await es.search(index=search._index, body=body)
+        hits = deep_get(resp, ['hits', 'hits'])
+        return worker_i, hits
 
-        # delete highlight blocks. 
-        body.pop('highlight', None)
-        for obj in deep_get(body, ['query', 'bool', 'must']):
-            obj = obj.get('nested', {})
-            obj.pop('inner_hits', None)
-
-        resp = await es.search(index='cases', body=body)
-        results.append(deep_get(resp, ['hits','hits']))
-
-    async def get_query_results(query_body):
-        es = AsyncElasticsearch([settings.ELASTICSEARCH_DSL['default']['hosts']])
-
+    async def get_query_results():
+        es = AsyncElasticsearch(get_connection(search._using).transport.hosts)
+        tasks = [fetch(es, i) for i in range(0, pages)]
         try:
-            await asyncio.gather(*[
-                asyncio.ensure_future(fetch(es, i, query_body))
-                for i in range(0, max_workers)
-            ])
+            return await asyncio.gather(*tasks)
         finally:
-            await es.close() 
+            await es.close()
 
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(get_query_results(query_body))
+    results = asyncio.run(get_query_results())
 
-    results = [item['_id'] for sublist in results for item in sublist if '_id' in item]
-    return results
+    # get flat results in order
+    flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
+
+    return flat_results
 
 
 def api_request(request, viewset, method, url_kwargs={}, get_params={}):

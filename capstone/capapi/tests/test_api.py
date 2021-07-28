@@ -513,6 +513,7 @@ def test_filter_case(client, case_factory, elasticsearch):
 def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, elasticsearch):
     search_url = api_reverse("cases-list")
     cases = [case_factory() for _ in range(4)]
+    expected_case_ids = set(c.id for c in cases[:-1])
     cite_text = '1 Mass. 1'
     case_cited = case_factory(citations__cite=cite_text)
     for c in cases[:-1]:
@@ -526,11 +527,15 @@ def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, e
 
     # get cases by cites_to=citation
     content = client.get(search_url, {"cites_to": cite_text}).json()
-    assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
+    assert set(case['id'] for case in content['results']) == expected_case_ids
 
     # get cases by cites_to=id
     content = client.get(search_url, {"cites_to": case_cited.id}).json()
-    assert set(case['id'] for case in content['results']) == set(c.id for c in cases[:-1])
+    assert set(case['id'] for case in content['results']) == expected_case_ids
+
+    # get cases by cites_to__search=text
+    content = client.get(search_url, {"cites_to__search": case_cited.body_cache.text}).json()
+    assert set(case['id'] for case in content['results']) == expected_case_ids
 
 
 @pytest.mark.django_db(databases=['capdb'])
