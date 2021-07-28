@@ -186,6 +186,9 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
             '_source': 'false',
         }
         body['sort'] = [{
+            'analysis.random_bucket': { 
+                'order': 'asc'
+            },
             'analysis.random_id': { 
                 'order': 'asc'
             }

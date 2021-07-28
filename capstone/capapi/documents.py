@@ -144,6 +144,8 @@ class CaseDocument(Document):
     analysis = fields.ObjectField(properties={
         'sha256': fields.KeywordField(),
         'simhash': fields.KeywordField(),
+        'random_id': fields.DoubleField(),
+        'random_bucket': fields.IntegerField(),
     })
 
     def prepare_frontend_pdf_url(self, instance):
@@ -153,7 +155,7 @@ class CaseDocument(Document):
         return {
             **dict(sorted((a.key, a.value) for a in instance.analysis.all())),
             'random_id': instance.random_id,
-            'random_bucket': int(hex(instance.random_id)[-4:], 16)
+            'random_bucket': int(hex(instance.random_id)[-4:], 16),
         }
         return value
 
