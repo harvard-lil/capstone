@@ -15,10 +15,15 @@ def try_saving_random_id():
 
 def generate_random_id(apps, schema_editor):
     CaseMetadata = apps.get_model('capdb', 'CaseMetadata')
-    for case in CaseMetadata.objects.iterator(chunk_size=2000):
-        case.random_id = try_saving_random_id()
-        case.save()
 
+    fields = ['random_id']
+    chunk = []
+    for i, case in CaseMetadata.objects.only(*fields).iterator(chunk_size=2000):
+        case.random_id = try_saving_random_id()
+        chunk.append(case)
+        if i % 2000 == 0 and chunk:
+            CaseMetadata.objects.bulk_update(chunk, fields)
+        
 class Migration(migrations.Migration):
 
     dependencies = [
