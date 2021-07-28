@@ -191,6 +191,12 @@ def parallel_execute(query_body, max_workers=20, page_size=1000):
             }
         }]
 
+        # delete highlight blocks. 
+        body.pop('highlight', None)
+        for obj in deep_get(body, ['query', 'bool', 'must']):
+            obj = obj.get('nested', None)
+            obj.pop('inner_hits', None)
+
         resp = await es.search(index='cases', body=body)
         results.append(deep_get(resp, ['hits','hits']))
 
