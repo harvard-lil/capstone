@@ -16,7 +16,7 @@ from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import Elasticsearch
 from elasticsearch_dsl.connections import get_connection
 
 from capapi.tasks import cache_query_count
@@ -186,31 +186,37 @@ def remove_nested_keys(target_dict, keys):
                 if isinstance(item, dict):
                     remove_nested_keys(item, keys)
 
-
-def fetch(search_blob, worker_i):
+def fetch(search_blob):
     es = Elasticsearch(search_blob['host'])
-    page_size = search_blob['page_size']
-
-    body = {
-        **search_blob['query_body'],
-        'from': page_size * worker_i,
-        'size': page_size,
-    }
-
-    resp = es.search(index=search_blob['index'], body=body)
+    resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
     hits = deep_get(resp, ['hits', 'hits'])
     es.close()
     return worker_i, hits
 
 
-async def get_query_results(executor, search_blob):
+async def get_query_results(executor, search, workers, buckets_per_worker):
+
+    def get_next_search_dict(search, i):
+        filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, \
+            'lt': (i + 1) * buckets_per_worker}}).to_dict()
+
+        search_blob = {
+            'query_body': filtered_search,
+            'host': get_connection(search._using).transport.hosts,
+            'index': search._index,
+            'buckets_per_worker': buckets_per_worker,
+            'workers': workers
+        }
+
+        return search_blob
+
     loop = asyncio.get_event_loop()
-    tasks = [loop.run_in_executor(executor, fetch, *[search_blob, i]) 
-        for i in range(0, search_blob['pages'])]
+    tasks = [loop.run_in_executor(executor, fetch, *[get_next_search_dict(search, i)]) 
+        for i in range(0, workers)]
     return await asyncio.gather(*tasks)
 
 
-def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
+def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     """
     Execute an elasticsearch-dsl Search object in parallel. Example:
 
@@ -221,6 +227,9 @@ def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
     remove_keys is an optional list of keys that will be recursively stripped from the search dictionary before being sent
     to elasticsearch.
     """
+    count = search.count()
+    needed_buckets = 2 ** 16 * (desired_docs / count)
+    buckets_per_worker = int(needed_buckets / workers)
 
     # get elasticsearch query as a dictionary
     query_body = search.to_dict()
