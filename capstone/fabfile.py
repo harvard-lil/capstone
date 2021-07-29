@@ -258,10 +258,7 @@ def import_web_volumes():
                 shutil.copyfileobj(r.raw, f)
             f.flush()
             print("- importing")
-            try:
-                import_volume(f.name)
-            except IntegrityError:
-                print(" - integrity error; volume already imported? skipping")
+            import_volume(f.name)
 
 
 @task

@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+from concurrent.futures import ProcessPoolExecutor
 from copy import copy
 from functools import reduce
 
@@ -213,15 +214,20 @@ def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
         hits = deep_get(resp, ['hits', 'hits'])
         return worker_i, hits
 
-    async def get_query_results():
+    async def get_query_results(executor):
         es = AsyncElasticsearch(get_connection(search._using).transport.hosts)
-        tasks = [fetch(es, i) for i in range(0, pages)]
+        loop = asyncio.get_event_loop()
+        tasks = [loop.run_in_executor(executor, fetch, *[es, i]) for i in range(0, pages)]
         try:
             return await asyncio.gather(*tasks)
         finally:
             await es.close()
 
-    results = asyncio.run(get_query_results())
+    executor = concurrent.futures.ThreadPoolExecutor(
+        max_workers=5,
+    )
+
+    results = asyncio.run(get_query_results(executor))
 
     # get flat results in order
     flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
