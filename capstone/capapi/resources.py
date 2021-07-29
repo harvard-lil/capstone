@@ -1,4 +1,3 @@
-import asyncio
 import hashlib
 import concurrent.futures
 from copy import copy 
