@@ -307,7 +307,6 @@ class CitesToDynamicFilter(BaseFTSFilter):
                 cites_to_keys[key.split('cites_to__')[1]] = request.GET[key]
 
         # We can use a shell request because the view simply pulls parameters out.
-        results = []
         if cites_to_keys:
             first_request = HttpRequest()
             first_request.query_params = QueryDict('', mutable=True)
