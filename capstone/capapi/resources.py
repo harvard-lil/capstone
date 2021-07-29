@@ -198,9 +198,9 @@ def run_search(search_blob):
     return search_blob['worker_i'], [hit['_id'] for hit in hits]
 
 
-def execute_searches(searches):
+def execute_searches(searches, workers):
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        results = executor.map(run_search, tasks)
+        results = executor.map(run_search, searches)
 
 
 def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
@@ -237,7 +237,7 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     buckets_per_worker = int(needed_buckets / workers)
 
     tasks = [get_next_search_dict(search, i) for i in range(0, workers)]
-    results = execute_searches(tasks, remove_keys)
+    results = execute_searches(tasks, workers)
 
     # get flat results in order
     flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
