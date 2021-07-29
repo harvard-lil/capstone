@@ -198,11 +198,13 @@ def run_search(search_blob):
     return search_blob['worker_i'], [hit['_id'] for hit in hits]
 
 
-def execute_searches(searches, workers):
+def parallel_execute_searches(searches, workers):
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
         results = executor.map(run_search, searches)
-        return results
 
+        # get flat results in order
+        flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
+        return flat_results
 
 def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     """
@@ -210,7 +212,7 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
 
         results = parallel_execute(CaseDocument.search().filter(...).sort(...), remove_keys=['highlight'])
 
-    Return 20K results by default to temper cluster load. Source: https://github.com/elastic/elasticsearch/issues/18829
+    Return ~20K results by default to temper cluster load. Source: https://github.com/elastic/elasticsearch/issues/18829
 
     remove_keys is an optional list of keys that will be recursively stripped from the search dictionary before being sent
     to elasticsearch.
@@ -233,16 +235,12 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     count = search.count()
     if count == 0:
         return []
+
     needed_buckets = 2 ** 16 * (desired_docs / count)
     buckets_per_worker = int(needed_buckets / workers)
 
     tasks = [get_next_search_dict(search, i) for i in range(0, workers)]
-    results = execute_searches(tasks, workers)
-
-    # get flat results in order
-    flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
-
-    return flat_results
+    return parallel_execute_searches(tasks, workers)
 
 
 def api_request(request, viewset, method, url_kwargs={}, get_params={}):
