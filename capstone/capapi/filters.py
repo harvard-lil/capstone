@@ -315,7 +315,7 @@ class CitesToDynamicFilter(BaseFTSFilter):
             first_request.GET = first_request.query_params
 
             init_view = api_views.CaseDocumentViewSet(request=first_request)
-            search = init_view.filter_queryset(init_view.get_queryset())
+            search = init_view.filter_queryset(init_view.get_queryset()).source(False)
 
             results = parallel_execute(search, remove_keys=['highlight'])
             cites_to_ids = [item['_id'] for item in results if '_id' in item]

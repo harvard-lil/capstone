@@ -186,34 +186,20 @@ def remove_nested_keys(target_dict, keys):
                 if isinstance(item, dict):
                     remove_nested_keys(item, keys)
 
-def fetch(search_blob, worker_i):
+
+def run_search(search_blob):
+    # get elasticsearch query as a dictionary
+    if search_blob['remove_keys']:
+        remove_nested_keys(search_blob['query_body'], search_blob['remove_keys'])
+
     es = Elasticsearch(search_blob['host'])
     resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
     hits = deep_get(resp, ['hits', 'hits'])
     es.close()
-    return worker_i, hits
 
+    hits = [hit['_id'] for hit in hits]
 
-async def get_query_results(executor, search, workers, buckets_per_worker):
-
-    def get_next_search_dict(search, i):
-        filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, \
-            'lt': (i + 1) * buckets_per_worker}}).to_dict()
-
-        search_blob = {
-            'query_body': filtered_search,
-            'host': get_connection(search._using).transport.hosts,
-            'index': search._index,
-            'buckets_per_worker': buckets_per_worker,
-            'workers': workers
-        }
-
-        return search_blob
-
-    loop = asyncio.get_event_loop()
-    tasks = [loop.run_in_executor(executor, fetch, *[get_next_search_dict(search, i), i]) 
-        for i in range(0, workers)]
-    return await asyncio.gather(*tasks)
+    return search_blob['worker_i'], hits
 
 
 def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
@@ -227,30 +213,35 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     remove_keys is an optional list of keys that will be recursively stripped from the search dictionary before being sent
     to elasticsearch.
     """
+    def get_next_search_dict(search, i):
+        filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, \
+            'lt': (i + 1) * buckets_per_worker}}).to_dict()
+
+        search_blob = {
+            'query_body': filtered_search,
+            'host': get_connection(search._using).transport.hosts,
+            'index': search._index,
+            'buckets_per_worker': buckets_per_worker,
+            'workers': workers,
+            'worker_i': i,
+            'remove_keys': remove_keys
+        }
+
+        return search_blob
+
     count = search.count()
     if count == 0:
         return []
     needed_buckets = 2 ** 16 * (desired_docs / count)
     buckets_per_worker = int(needed_buckets / workers)
 
-    # get elasticsearch query as a dictionary
-    query_body = search.to_dict()
-    if remove_keys:
-        remove_nested_keys(query_body, remove_keys)
-
     executor = concurrent.futures.ProcessPoolExecutor(
         max_workers=5,
     )
 
-    search_blob = {
-        'query_body': search.to_dict(),
-        'host': get_connection(search._using).transport.hosts,
-        'index': search._index,
-        'page_size': page_size,
-        'pages': pages
-    }
-
-    results = asyncio.run(get_query_results(executor, search_blob))
+    tasks = [get_next_search_dict(search, i) for i in range(0, workers)]
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+        results = executor.map(run_search, tasks)
 
     # get flat results in order
     flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
