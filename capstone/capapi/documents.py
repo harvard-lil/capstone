@@ -155,7 +155,7 @@ class CaseDocument(Document):
         return {
             **dict(sorted((a.key, a.value) for a in instance.analysis.all())),
             'random_id': instance.random_id,
-            'random_bucket': int(hex(instance.random_id)[-4:], 16),
+            'random_bucket': instance.random_id & 0xFFFF,
         }
 
     def prepare_docket_numbers(self, instance):
