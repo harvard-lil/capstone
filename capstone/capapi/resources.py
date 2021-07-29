@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
-from copy import copy
+import concurrent.futures
+from copy import copy 
 from functools import reduce
 
 import rest_framework.request
@@ -186,6 +187,29 @@ def remove_nested_keys(target_dict, keys):
                     remove_nested_keys(item, keys)
 
 
+def fetch(search_blob, worker_i):
+    es = Elasticsearch(search_blob['host'])
+    page_size = search_blob['page_size']
+
+    body = {
+        **search_blob['query_body'],
+        'from': page_size * worker_i,
+        'size': page_size,
+    }
+
+    resp = es.search(index=search_blob['index'], body=body)
+    hits = deep_get(resp, ['hits', 'hits'])
+    es.close()
+    return worker_i, hits
+
+
+async def get_query_results(executor, search_blob):
+    loop = asyncio.get_event_loop()
+    tasks = [loop.run_in_executor(executor, fetch, *[search_blob, i]) 
+        for i in range(0, search_blob['pages'])]
+    return await asyncio.gather(*tasks)
+
+
 def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
     """
     Execute an elasticsearch-dsl Search object in parallel. Example:
@@ -203,25 +227,19 @@ def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
     if remove_keys:
         remove_nested_keys(query_body, remove_keys)
 
-    async def fetch(es, worker_i):
-        body = {
-            **query_body,
-            'from': page_size * worker_i,
-            'size': page_size,
-        }
-        resp = await es.search(index=search._index, body=body)
-        hits = deep_get(resp, ['hits', 'hits'])
-        return worker_i, hits
+    executor = concurrent.futures.ProcessPoolExecutor(
+        max_workers=5,
+    )
 
-    async def get_query_results():
-        es = AsyncElasticsearch(get_connection(search._using).transport.hosts)
-        tasks = [fetch(es, i) for i in range(0, pages)]
-        try:
-            return await asyncio.gather(*tasks)
-        finally:
-            await es.close()
+    search_blob = {
+        'query_body': search.to_dict(),
+        'host': get_connection(search._using).transport.hosts,
+        'index': search._index,
+        'page_size': page_size,
+        'pages': pages
+    }
 
-    results = asyncio.run(get_query_results())
+    results = asyncio.run(get_query_results(executor, search_blob))
 
     # get flat results in order
     flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
