@@ -225,7 +225,6 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
             'query_body': filtered_search,
             'host': get_connection(search._using).transport.hosts,
             'index': search._index,
-            'buckets_per_worker': buckets_per_worker,
             'worker_i': i,
             'remove_keys': remove_keys
         }
