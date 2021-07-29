@@ -186,7 +186,7 @@ def remove_nested_keys(target_dict, keys):
                 if isinstance(item, dict):
                     remove_nested_keys(item, keys)
 
-def fetch(search_blob):
+def fetch(search_blob, worker_i):
     es = Elasticsearch(search_blob['host'])
     resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
     hits = deep_get(resp, ['hits', 'hits'])
@@ -211,7 +211,7 @@ async def get_query_results(executor, search, workers, buckets_per_worker):
         return search_blob
 
     loop = asyncio.get_event_loop()
-    tasks = [loop.run_in_executor(executor, fetch, *[get_next_search_dict(search, i)]) 
+    tasks = [loop.run_in_executor(executor, fetch, *[get_next_search_dict(search, i), i]) 
         for i in range(0, workers)]
     return await asyncio.gather(*tasks)
 
@@ -228,6 +228,8 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     to elasticsearch.
     """
     count = search.count()
+    if count == 0:
+        return []
     needed_buckets = 2 ** 16 * (desired_docs / count)
     buckets_per_worker = int(needed_buckets / workers)
 
