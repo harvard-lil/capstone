@@ -201,6 +201,7 @@ def run_search(search_blob):
 def execute_searches(searches, workers):
     with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
         results = executor.map(run_search, searches)
+        return results
 
 
 def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
@@ -223,7 +224,6 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
             'host': get_connection(search._using).transport.hosts,
             'index': search._index,
             'buckets_per_worker': buckets_per_worker,
-            'workers': workers,
             'worker_i': i,
             'remove_keys': remove_keys
         }
