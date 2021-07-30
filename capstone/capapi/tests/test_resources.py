@@ -9,9 +9,9 @@ from capapi.resources import parallel_execute
 def test_parallel_execute(three_cases, elasticsearch):
     # run search in parallel
     expected_ids = [str(three_cases[0].id), str(three_cases[1].id)]
-    results = parallel_execute(CaseDocument.search().filter('terms', id=expected_ids).sort('id'), page_size=1)
-    assert [i['_id'] for i in results] == expected_ids
+    results = parallel_execute(CaseDocument.search().filter('terms', id=expected_ids), desired_docs=3)
+    assert sorted(results) == expected_ids
 
     # errors are raised
     with pytest.raises(RequestError):
-        parallel_execute(CaseDocument.search().sort('invalid'), page_size=1)
+        parallel_execute(CaseDocument.search().sort('invalid'), desired_docs=1)
