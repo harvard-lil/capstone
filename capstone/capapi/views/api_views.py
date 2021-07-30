@@ -37,6 +37,7 @@ class BaseDocumentViewSet(DEDDBaseDocumentViewSet):
         # use RawSearch to avoid using Elasticsearch wrappers, for speed
         super().__init__(*args, **kwargs)
         self.search.__class__ = RawSearch
+        self.search.params(request_timeout=30)
 
     # this lets DRF handle 'not found' issues the way they they are with the DB back end
     ignore = [404]
