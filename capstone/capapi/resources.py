@@ -16,7 +16,6 @@ from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl.connections import get_connection
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
@@ -191,7 +190,7 @@ def run_search(search_blob):
     if search_blob['remove_keys']:
         remove_nested_keys(search_blob['query_body'], search_blob['remove_keys'])
 
-    es = Elasticsearch(search_blob['host'])
+    es = Elasticsearch(**settings.ELASTICSEARCH_DSL['default'])
     resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
     hits = deep_get(resp, ['hits', 'hits'])
     es.close()
@@ -223,7 +222,6 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
 
         search_blob = {
             'query_body': filtered_search,
-            'host': get_connection(search._using).transport.hosts,
             'index': search._index,
             'worker_i': i,
             'remove_keys': remove_keys
