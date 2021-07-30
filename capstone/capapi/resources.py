@@ -191,7 +191,7 @@ def run_search(search_blob):
     if search_blob['remove_keys']:
         remove_nested_keys(search_blob['query_body'], search_blob['remove_keys'])
 
-    es = Elasticsearch(search_blob['host'])
+    es = Elasticsearch(**settings.ELASTICSEARCH_DSL['default'])
     resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
     hits = deep_get(resp, ['hits', 'hits'])
     es.close()
@@ -218,12 +218,11 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     to elasticsearch.
     """
     def get_next_search_dict(search, i):
-        filtered_search = search.params(request_timeout=30).filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, 
+        filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, 
             'lt': (i + 1) * buckets_per_worker}})[0:desired_docs].to_dict()
 
         search_blob = {
             'query_body': filtered_search,
-            'host': get_connection(search._using).transport.hosts,
             'index': search._index,
             'worker_i': i,
             'remove_keys': remove_keys
