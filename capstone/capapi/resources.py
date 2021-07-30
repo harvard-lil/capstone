@@ -219,7 +219,7 @@ def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     """
     def get_next_search_dict(search, i):
         filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, 
-            'lt': (i + 1) * buckets_per_worker}}).to_dict()
+            'lt': (i + 1) * buckets_per_worker}})[0:desired_docs].to_dict()
 
         search_blob = {
             'query_body': filtered_search,
