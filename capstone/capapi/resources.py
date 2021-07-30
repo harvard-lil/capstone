@@ -16,7 +16,6 @@ from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl.connections import get_connection
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
