@@ -145,7 +145,7 @@ const store = new Vuex.Store({
       author_type: {
         value: null,
         default_value: null,
-        label: "Author e.g. scalia:dissent",
+        label: "Author Type e.g. scalia:dissent",
         placeholder: "e.g. scalia:dissent",
         highlight_field: false,
         highlight_explainer: false,
