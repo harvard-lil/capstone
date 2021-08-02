@@ -45,29 +45,31 @@ def extract_citations(case, html, xml):
     clean_html_pq = parse_html(clean_text(html))
     clean_html_pq('a').remove()
 
-    # Extract cites from each paragraph:
-    for el in clean_html_pq('p[id], blockquote[id]').items():
-        el_text = el.text()
-        extracted_cites = []
-        for eyecite_cite in extract_citations_from_text(el_text, require_classes=None):
-            eyecite_cites.append(eyecite_cite)
-            extracted_cites.append(eyecite_cite)
+    # Extract cites from each paragraph for each opinion:
+    for i, section in enumerate(clean_html_pq('.opinion').items()):
+        for el in section('p[id], blockquote[id]').items():
+            el_text = el.text()
+            extracted_cites = []
+            for eyecite_cite in extract_citations_from_text(el_text, require_classes=None):
+                eyecite_cites.append(eyecite_cite)
+                extracted_cites.append(eyecite_cite)
 
-            if not isinstance(eyecite_cite, FullCitation):
-                continue
+                if not isinstance(eyecite_cite, FullCitation):
+                    continue
 
-            # get normalized forms of cite
-            normalized_forms = {'cite': eyecite_cite.matched_text()}
-            normalized_forms['normalized_cite'] = normalize_cite(normalized_forms['cite'])
-            normalized_forms['rdb_cite'] = eyecite_cite.corrected_citation()
-            normalized_forms['rdb_normalized_cite'] = normalize_cite(normalized_forms['rdb_cite'])
-            eyecite_cite.normalized_forms = normalized_forms
+                # get normalized forms of cite
+                normalized_forms = {'cite': eyecite_cite.matched_text()}
+                normalized_forms['normalized_cite'] = normalize_cite(normalized_forms['cite'])
+                normalized_forms['rdb_cite'] = eyecite_cite.corrected_citation()
+                normalized_forms['rdb_normalized_cite'] = normalize_cite(normalized_forms['rdb_cite'])
+                eyecite_cite.normalized_forms = normalized_forms
+                eyecite_cite.opinion_id = i
 
-            for k, v in normalized_forms.items():
-                cites_by_type[k].append(v)
+                for k, v in normalized_forms.items():
+                    cites_by_type[k].append(v)
 
-        if extracted_cites:
-            extracted_els.append((el.attr("id"), el_text, extracted_cites))
+            if extracted_cites:
+                extracted_els.append((el.attr("id"), el_text, extracted_cites))
 
     # short circuit if no cites found
     if not extracted_els:
@@ -224,6 +226,7 @@ def extract_citations(case, html, xml):
             pin_cites=pin_cites,
             weight=weight,
             year=first_cite.year,
+            opinion_id=first_cite.opinion_id,
         )
 
         found_cites.append(extracted_cite)

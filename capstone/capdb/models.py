@@ -1476,6 +1476,15 @@ class CaseMetadata(models.Model):
         replacements = sorted(self.no_index_redacted.items(), reverse=True, key=lambda i: len(i[0]))
         return apply_replacements(text, replacements)
 
+    def insert_citations(self, text):
+        citations = ExtractedCitation.objects.filter(cited_by_id=self.case_id)
+        for citation in citations:
+            if not text['text']['opinions'][citation.opinion_id].get('extracted_citations', []):
+                text['text']['opinions'][citation.opinion_id]['extracted_citations'] = [citation]
+            else:
+                text['text']['opinions'][citation.opinion_id]['extracted_citations'].append(citations)
+        return text
+
     def elide_obj(self, text, strip=False):
         text = self.redact_obj(text)
         if not self.no_index_elided:
@@ -2055,6 +2064,7 @@ class ExtractedCitation(models.Model):
     category = models.CharField(max_length=255, blank=True, null=True, help_text="Source and cite_type from reporters-db, e.g. 'laws:leg_statute'")
     weight = models.SmallIntegerField(default=1, help_text="Number of citations in cited_by, counting short cites.")
     year = models.SmallIntegerField(null=True, help_text="Year included in citation.")
+    opinion_id = models.SmallIntegerField(null=True, blank=True, help_text="Id of opinion making extracted citation.")
 
     def __str__(self):
         return self.cite

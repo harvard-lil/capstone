@@ -102,20 +102,6 @@ class CaseDocument(Document):
         "rdb_normalized_cite": fields.KeywordField(),
     })
 
-    extracted_citations = fields.ObjectField(properties={
-        "cite": fields.KeywordField(),
-        "normalized_cite": fields.KeywordField(),
-        "rdb_normalized_cite": fields.KeywordField(),
-        "reporter": fields.KeywordField(),
-        "category": fields.KeywordField(),
-        "target_cases": fields.KeywordField(multi=True),
-        "groups": fields.ObjectField(),
-        "metadata": fields.ObjectField(),
-        "pin_cites": fields.ObjectField(),
-        "weight": fields.IntegerField(),
-        "year": fields.IntegerField(),
-    })
-
     jurisdiction = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
@@ -136,6 +122,19 @@ class CaseDocument(Document):
                 'author': FTSField(),
                 'text': FTSField(),
                 'type': fields.KeywordField(),
+                'extracted_citations': fields.NestedField(properties={
+                    "cite": fields.KeywordField(),
+                    "normalized_cite": fields.KeywordField(),
+                    "rdb_normalized_cite": fields.KeywordField(),
+                    "reporter": fields.KeywordField(),
+                    "category": fields.KeywordField(),
+                    "target_cases": fields.KeywordField(multi=True),
+                    "groups": fields.ObjectField(),
+                    "metadata": fields.ObjectField(),
+                    "pin_cites": fields.ObjectField(),
+                    "weight": fields.IntegerField(),
+                    "year": fields.IntegerField(),
+                })  
             }),
             'corrections': fields.TextField(),
         }),
@@ -155,7 +154,7 @@ class CaseDocument(Document):
         return {
             **dict(sorted((a.key, a.value) for a in instance.analysis.all())),
             'random_id': instance.random_id,
-            'random_bucket': instance.random_id,
+            'random_bucket': instance.random_id & 0xFF,
         }
 
     def prepare_docket_numbers(self, instance):
@@ -171,11 +170,12 @@ class CaseDocument(Document):
 
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        return instance.redact_obj({
+        redacted = instance.redact_obj({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
         })
+        return instance.insert_citations(redacted)
 
     def prepare_name(self, instance):
         return instance.redact_obj(instance.name)
