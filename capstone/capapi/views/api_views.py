@@ -430,7 +430,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # check if the queries are expected filter inputs to the cases API.    
         additional_filter_fields = CaseDocumentViewSet().valid_query_fields
 
-        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$', r'^cites_to__']
+        modifier_patterns = [r'__exclude$', r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$', r'^cites_to__']
 
         for key in query_body:
             for pattern in modifier_patterns:
