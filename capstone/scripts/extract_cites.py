@@ -226,7 +226,7 @@ def extract_citations(case, html, xml):
             # NOTE if adding any fields here, also add to cite_key()
             extracted_cite = ExtractedCitation(
                 **normalized_forms,
-                reporter=weight,
+                reporter=reporter,
                 category=category,
                 cited_by=case,
                 target_case_id=target_case_id,

@@ -1478,11 +1478,13 @@ class CaseMetadata(models.Model):
         return apply_replacements(text, replacements)
 
     def insert_citations(self, text):
-        citations = serializers.serialize('json', ExtractedCitation.objects.filter(cited_by_id=self.id))
+        citations = json.loads(serializers.serialize('json', ExtractedCitation.objects.filter(cited_by_id=self.id)))
 
-        for citation in json.loads(citations):
+        for citation in citations:
             opinion_id = citation['fields']['opinion_id']
             fields = citation['fields']
+            fields['target_cases'] = json.loads(fields['target_cases'])
+
             if not text['text']['opinions'][opinion_id].get('extracted_citations', []):
                 text['text']['opinions'][opinion_id]['extracted_citations'] = [fields]
             else:
