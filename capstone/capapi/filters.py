@@ -4,8 +4,9 @@ import six
 import re
 import uuid
 
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import SimpleLazyObject
-from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD, ALL_LOOKUP_FILTERS_AND_QUERIES
+from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
     OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend, NestedFilteringFilterBackend
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
@@ -548,6 +549,7 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
         :param options:
         :param args:
         :param kwargs:
+        :param inner_query_only: specify if only the inside query shoudl be returned
         :return:
         """
         if options is None or 'path' not in options:
@@ -576,7 +578,7 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
 
     @classmethod
     def apply_query(cls, queryset, options=None, args=None, kwargs=None):
-        self.apply_filter(cls, queryset, options, args, kwargs)
+        MultiNestedFilteringFilterBackend.apply_filter(cls, queryset, options, args, kwargs)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
