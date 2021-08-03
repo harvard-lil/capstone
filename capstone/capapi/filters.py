@@ -307,7 +307,6 @@ class CitesToDynamicFilter(BaseFTSFilter):
             if key_to_match in search_fields:
                 cites_to_keys[key.split('cites_to__')[1]] = request.GET[key]
 
-
         # We can use a shell request because the view simply pulls parameters out.
         if cites_to_keys:
             first_request = HttpRequest()
@@ -329,11 +328,10 @@ class CitesToDynamicFilter(BaseFTSFilter):
                 request.GET.setlist('cites_to_id', ['unmatchable'])
             request.GET._mutable = False
 
-        if request.GET.get(self.search_param):
-            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
-            # set up to be used multiple times on the same view.
+            # due to rearchitecture of cites_to, use MultiNestedFilteringFilterBackend's filter queryset.
             view.simple_query_string_search_fields = self.fields
-            return super().filter_queryset(request, queryset, view)
+            return MultiNestedFilteringFilterBackend().filter_queryset(request, queryset, view)
+
         return queryset
 
 

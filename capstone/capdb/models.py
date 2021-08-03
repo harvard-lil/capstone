@@ -1483,7 +1483,8 @@ class CaseMetadata(models.Model):
         for citation in citations:
             opinion_id = citation['fields']['opinion_id']
             fields = citation['fields']
-            fields['target_cases'] = json.loads(fields['target_cases'])
+            # TODO: Consider a better solution to manual casting
+            fields['target_cases'] = [int(id) for id in json.loads(fields['target_cases'])]
 
             if not text['text']['opinions'][opinion_id].get('extracted_citations', []):
                 text['text']['opinions'][opinion_id]['extracted_citations'] = [fields]

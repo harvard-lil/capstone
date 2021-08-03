@@ -328,14 +328,17 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client)
 
     # check API response
     case_json = client.get(api_reverse("cases-detail", args=[case.id])).json()
+
+    print("CASE JSON IS")
+    print(case_json['cites_to'])
     assert case_json['cites_to'] == [
+        {'cite': '2 US 2', 'category': 'reporters:federal', 'reporter': 'U.S.', 'case_ids': [2, 3], 'weight': 2},
+        {'cite': '1 Minn. L. Rev. 1', 'category': 'journals:journal', 'reporter': 'Minn. L. Rev.'},
+        {'cite': 'Ala. Code § 92.979', 'category': 'laws:leg_statute', 'reporter': 'Ala. Code'},
+        {'cite': '125 Yt. 152', 'category': 'reporters:state', 'reporter': 'Vt.'},
+        {'cite': "2 F.-'Supp.- 2", 'category': 'reporters:federal', 'reporter': 'F. Supp.'},
         {'cite': '1 U.S. 1', 'category': 'reporters:federal', 'reporter': 'U.S.', 'case_ids': [1], 'weight': 2,
          'year': 2000, 'pin_cites': [{'page': '12', 'parenthetical': 'overruling'}, {'page': '153'}]},
-        {'cite': "2 F.-'Supp.- 2", 'category': 'reporters:federal', 'reporter': 'F. Supp.'},
-        {'cite': '125 Yt. 152', 'category': 'reporters:state', 'reporter': 'Vt.'},
-        {'cite': 'Ala. Code § 92.979', 'category': 'laws:leg_statute', 'reporter': 'Ala. Code'},
-        {'cite': '1 Minn. L. Rev. 1', 'category': 'journals:journal', 'reporter': 'Minn. L. Rev.'},
-        {'cite': '2 US 2', 'category': 'reporters:federal', 'reporter': 'U.S.', 'case_ids': [2, 3], 'weight': 2}
     ]
 
     # modify a cite --
