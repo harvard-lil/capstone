@@ -41,9 +41,9 @@ Cases published after 1922 do not include headnotes.
 Here are some tsv-formatted spreadsheets with specific counts from our collection, and links to view those cases in the 
 API:
 
-* [Case Count by Reporter Series]({% static "downloads/cases_by_reporter.tsv" %})
-* [Case Count by Jurisdiction]({% static "downloads/cases_by_jurisdiction.tsv" %})
-* [Case Count by Decision Date]({% static "downloads/cases_by_decision_date.tsv" %})
+* [Case Count by Reporter Series]({% url "download-files" "cases_by_reporter.tsv" %})
+* [Case Count by Jurisdiction]({% url "download-files" "cases_by_jurisdiction.tsv" %})
+* [Case Count by Decision Date]({% url "download-files" "cases_by_decision_date.tsv" %})
 
 # Digitization Process {: class="subtitle" data-toc-label='Digitization' } 
 

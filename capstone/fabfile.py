@@ -42,7 +42,7 @@ from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Cit
 
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
-    validate_private_volumes as validate_private_volumes_script, export, update_snippets
+    validate_private_volumes as validate_private_volumes_script, export, update_snippets, update_download_tsv
 from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
 
 
@@ -843,8 +843,13 @@ def run_edit_script(script=None, dry_run='true', **kwargs):
         method(dry_run=dry_run, **kwargs)
 
 @task
+def update_files():
+    update_download_tsv.update_all()
+
+@task
 def update_all_snippets():
     update_snippets.update_all()
+    update_files()
 
 @task
 def update_search_snippets():
