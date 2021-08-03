@@ -195,6 +195,13 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         },
     }
 
+    search_nested_fields = {
+        'author_type': {
+            'path': 'casebody_data.text.opinions',
+            'fields': ['author', 'type', 'text'],
+        }
+    }
+
     nested_filter_fields = {
         'cites_to': {
             'field': 'casebody_data.text.opinions.extracted_citations.normalized_cite',

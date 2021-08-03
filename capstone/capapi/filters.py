@@ -487,8 +487,13 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
     """
     def get_filter_query_params(self, request, view):
         """DO NOT RUN if author / author_type exist"""
-        # TODO: test nonexistence case
         query_params = request.query_params.copy()
+
+        if 'cites_to' in query_params:
+            request.query_params._mutable = True
+            request.query_params.setlist('cites_to', [normalize_cite(c) for c in query_params.getlist('cites_to', [])])
+            request.query_params._mutable = False
+
         if AuthorTypeFTSFilter.search_param in query_params \
             or AuthorFTSFilter.search_param in query_params:
             return {}
@@ -515,9 +520,9 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
             kwargs = {}
 
         query = Q(*args, **kwargs)
-        while len(options.get('path')) > 1:
-            path = options.get('path').pop()
-            query = Q('nested', query=query, path=path)
+        for i, path in enumerate(reversed(options.get('path'))):
+            if i != len(options.get('path')) - 1:
+                query = Q('nested', query=query, path=path)
 
         return queryset.query(
             'nested',
