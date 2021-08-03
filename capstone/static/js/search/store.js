@@ -132,6 +132,26 @@ const store = new Vuex.Store({
         error: null,
         value_when_searched: null
       },
+      author: {
+        value: null,
+        default_value: null,
+        label: "Author e.g. breyer",
+        placeholder: "e.g. breyer",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
+      author_type: {
+        value: null,
+        default_value: null,
+        label: "Author Type e.g. scalia:dissent",
+        placeholder: "e.g. scalia:dissent",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
     },
     ordering: {
       value: "relevance",

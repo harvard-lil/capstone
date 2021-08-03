@@ -1,7 +1,6 @@
-import asyncio
 import hashlib
-from concurrent.futures import ProcessPoolExecutor
-from copy import copy
+import concurrent.futures
+from copy import copy 
 from functools import reduce
 
 import rest_framework.request
@@ -16,8 +15,7 @@ from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
-from elasticsearch import AsyncElasticsearch
-from elasticsearch_dsl.connections import get_connection
+from elasticsearch import Elasticsearch
 
 from capapi.tasks import cache_query_count
 from capweb.helpers import reverse, statement_timeout, StatementTimeout
@@ -187,52 +185,59 @@ def remove_nested_keys(target_dict, keys):
                     remove_nested_keys(item, keys)
 
 
-def parallel_execute(search, pages=20, page_size=1000, remove_keys=None):
+def run_search(search_blob):
+    # get elasticsearch query as a dictionary
+    if search_blob['remove_keys']:
+        remove_nested_keys(search_blob['query_body'], search_blob['remove_keys'])
+
+    es = Elasticsearch(**settings.ELASTICSEARCH_DSL['default'])
+    resp = es.search(index=search_blob['index'], body=search_blob['query_body'])
+    hits = deep_get(resp, ['hits', 'hits'])
+    es.close()
+    return search_blob['worker_i'], [hit['_id'] for hit in hits]
+
+
+def parallel_execute_searches(searches, workers):
+    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+        results = executor.map(run_search, searches)
+
+        # get flat results in order
+        flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
+        return flat_results
+
+def parallel_execute(search, workers=20, desired_docs=20000, remove_keys=None):
     """
     Execute an elasticsearch-dsl Search object in parallel. Example:
 
         results = parallel_execute(CaseDocument.search().filter(...).sort(...), remove_keys=['highlight'])
 
-    Return 20K results by default to temper cluster load. Source: https://github.com/elastic/elasticsearch/issues/18829
+    Return ~20K results by default to temper cluster load. Source: https://github.com/elastic/elasticsearch/issues/18829
 
     remove_keys is an optional list of keys that will be recursively stripped from the search dictionary before being sent
     to elasticsearch.
     """
+    def get_next_search_dict(search, i):
+        filtered_search = search.filter('range', **{'analysis.random_bucket': {'gte': i * buckets_per_worker, 
+            'lt': (i + 1) * buckets_per_worker}})[0:desired_docs].to_dict()
 
-    # get elasticsearch query as a dictionary
-    query_body = search.to_dict()
-    if remove_keys:
-        remove_nested_keys(query_body, remove_keys)
-
-    async def fetch(es, worker_i):
-        body = {
-            **query_body,
-            'from': page_size * worker_i,
-            'size': page_size,
+        search_blob = {
+            'query_body': filtered_search,
+            'index': search._index,
+            'worker_i': i,
+            'remove_keys': remove_keys
         }
-        resp = await es.search(index=search._index, body=body)
-        hits = deep_get(resp, ['hits', 'hits'])
-        return worker_i, hits
 
-    async def get_query_results(executor):
-        es = AsyncElasticsearch(get_connection(search._using).transport.hosts)
-        loop = asyncio.get_event_loop()
-        tasks = [loop.run_in_executor(executor, fetch, *[es, i]) for i in range(0, pages)]
-        try:
-            return await asyncio.gather(*tasks)
-        finally:
-            await es.close()
+        return search_blob
 
-    executor = concurrent.futures.ThreadPoolExecutor(
-        max_workers=5,
-    )
+    count = search.count()
+    if count == 0:
+        return []
 
-    results = asyncio.run(get_query_results(executor))
+    needed_buckets = 2 ** 16 * (desired_docs / count)
+    buckets_per_worker = int(needed_buckets / workers)
 
-    # get flat results in order
-    flat_results = [i for _, worker_results in sorted(results) for i in worker_results]
-
-    return flat_results
+    tasks = [get_next_search_dict(search, i) for i in range(0, workers)]
+    return parallel_execute_searches(tasks, workers)
 
 
 def api_request(request, viewset, method, url_kwargs={}, get_params={}):
