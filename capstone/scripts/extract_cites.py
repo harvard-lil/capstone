@@ -53,6 +53,7 @@ def extract_citations(case, html, xml):
             for eyecite_cite in extract_citations_from_text(el_text, require_classes=None):
                 eyecite_cites.append(eyecite_cite)
                 extracted_cites.append(eyecite_cite)
+                eyecite_cite.opinion_id = i
 
                 if not isinstance(eyecite_cite, FullCitation):
                     continue
@@ -63,7 +64,6 @@ def extract_citations(case, html, xml):
                 normalized_forms['rdb_cite'] = eyecite_cite.corrected_citation()
                 normalized_forms['rdb_normalized_cite'] = normalize_cite(normalized_forms['rdb_cite'])
                 eyecite_cite.normalized_forms = normalized_forms
-                eyecite_cite.opinion_id = i
 
                 for k, v in normalized_forms.items():
                     cites_by_type[k].append(v)
@@ -184,11 +184,16 @@ def extract_citations(case, html, xml):
 
     # make each ExtractedCitation
     for resolution, cluster in clusters.items():
+        filtered_cluster = [cite for cite in cluster if isinstance(cite, FullCitation)]
 
+        # pull selected metadata from first cite
+        first_cite: FullCitation = filtered_cluster[0]
+        normalized_forms = first_cite.normalized_forms
+        reporter = first_cite.corrected_reporter()
         weight = len(cluster)
-        first_cite: FullCitation = cluster[0]
         first_reporter = first_cite.all_editions[0].reporter
         category = f"{first_reporter.source}:{first_reporter.cite_type}"
+        
         metadata = {k: v for k, v in first_cite.metadata.__dict__.items() if v}
         if isinstance(resolution, tuple):
             target_cases = [m.id for m in resolution]
@@ -211,25 +216,31 @@ def extract_citations(case, html, xml):
             if extra:
                 pin_cites.append(extra)
 
-        # create new cite
-        normalized_forms = first_cite.normalized_forms
-        # NOTE if adding any fields here, also add to cite_key()
-        extracted_cite = ExtractedCitation(
-            **normalized_forms,
-            reporter=first_cite.corrected_reporter(),
-            category=category,
-            cited_by=case,
-            target_case_id=target_case_id,
-            target_cases=target_cases,
-            groups=first_cite.groups or {},
-            metadata=metadata,
-            pin_cites=pin_cites,
-            weight=weight,
-            year=first_cite.year,
-            opinion_id=first_cite.opinion_id,
-        )
+        opinion_includes_cite = {}
 
-        found_cites.append(extracted_cite)
+        for cite in filtered_cluster:
+            # If citation is already included in this opinion, skip
+            if cite.opinion_id in opinion_includes_cite:
+                continue
+
+            # NOTE if adding any fields here, also add to cite_key()
+            extracted_cite = ExtractedCitation(
+                **normalized_forms,
+                reporter=weight,
+                category=category,
+                cited_by=case,
+                target_case_id=target_case_id,
+                target_cases=target_cases,
+                groups=cite.groups or {},
+                metadata=metadata,
+                pin_cites=pin_cites,
+                weight=weight,
+                year=cite.year,
+                opinion_id=cite.opinion_id,
+            )
+
+            found_cites.append(extracted_cite)
+            opinion_includes_cite[cite.opinion_id] = True 
 
     if found_cites:
         # serialize annotated html and xml
@@ -356,6 +367,7 @@ def cite_key(extracted_cite):
         extracted_cite.category,
         extracted_cite.cited_by_id,
         extracted_cite.target_case_id,
+        extracted_cite.opinion_id,
         tuple(extracted_cite.target_cases) if extracted_cite.target_cases else None,
         frozenset(extracted_cite.groups.items()) if extracted_cite.groups else None,
         frozenset(extracted_cite.metadata.items()) if extracted_cite.metadata else None,

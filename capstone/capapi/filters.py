@@ -5,9 +5,9 @@ import re
 import uuid
 
 from django.utils.functional import SimpleLazyObject
-from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
+from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD, ALL_LOOKUP_FILTERS_AND_QUERIES
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
-    OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend
+    OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend, NestedFilteringFilterBackend
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
@@ -467,7 +467,46 @@ class MultiFieldFTSFilter(BaseSearchFilterBackend):
         return queryset
 
 
+class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
+    """
+    Class for handling nested filters in nested filters. Extension of 
+    """
+    @classmethod
+    def apply_filter(cls, queryset, options=None, args=None, kwargs=None):
+        """Apply filter.
+        :param queryset:
+        :param options:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        if options is None or 'path' not in options:
+            raise ImproperlyConfigured(
+                "You should provide an `path` argument in the field options."
+            )
+
+        if args is None:
+            args = []
+        if kwargs is None:
+            kwargs = {}
+
+        query = Q(*args, **kwargs)
+        while len(options.get('path')) > 1:
+            path = options.get('path').pop()
+            query = Q('nested', query=query, path=path)
+
+        return queryset.query(
+            'nested',
+            path=options.get('path')[0],
+            query=query
+        )
+
+    @classmethod
+    def apply_query(cls, queryset, options=None, args=None, kwargs=None):
+        self.apply_filter(cls, queryset, options, args, kwargs)
+
 class AuthorTypeFTSFilter(NestedFTSFilter):
+
     """
     Multi match search filter backend to query on author + type 
     """

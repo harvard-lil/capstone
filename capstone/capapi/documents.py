@@ -203,7 +203,6 @@ class CaseDocument(Document):
         doc['jurisdiction'] = self.jurisdiction.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text'] = self.casebody_data.text.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
-        doc['cites_to'] = self.extracted_citations
         return doc
 
     def full_cite(self):

@@ -103,6 +103,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.AuthorFTSFilter,
         filters.AuthorTypeFTSFilter,
         filters.NameAbbreviationFTSFilter,
+        filters.MultiNestedFilteringFilterBackend,
         filters.DocketNumberFTSFilter,
         filters.CitesToDynamicFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
@@ -122,13 +123,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'court_id': 'court.id',
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
-        'cite': 'citations.normalized_cite',
-        'cites_to': 'extracted_citations.normalized_cite',
-        'cites_to_id': 'extracted_citations.target_cases',
-        'cites_to.reporter': 'extracted_citations.reporter',
-        'cites_to.category': 'extracted_citations.category',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
+        'cite': 'citations.normalized_cite',
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
@@ -161,7 +158,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
         'last_updated': 'last_updated',
-
         **{'analysis.' + k: 'analysis.' + k for k in filters.analysis_fields},
     }
 
@@ -199,11 +195,23 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         },
     }
 
-    search_nested_fields = {
-        'author_type': {
-            'path': 'casebody_data.text.opinions',
-            'fields': ['author', 'type', 'text'],
-        }
+    nested_filter_fields = {
+        'cites_to': {
+            'field': 'casebody_data.text.opinions.extracted_citations.normalized_cite',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },
+        'cites_to_id': {
+            'field': 'casebody_data.text.opinions.extracted_citations.target_cases',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },   
+        'cites_to.reporter': {
+            'field': 'casebody_data.text.opinions.extracted_citations.reporter',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },  
+        'cites_to.category': {
+            'field': 'casebody_data.text.opinions.extracted_citations.category',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        }      
     }
 
     def __init__(self, *args, **kwargs):
@@ -227,6 +235,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
         # exclude all values from casebody_data that we don't need to complete the request
+        data_formats_to_exclude = ["text.head_matter", "text.corrections", "text.parties", "text.attorneys", 
+            "text.opinions.text", "text.opinions.type", "text.opinions.author", "text.judges", "html", "xml"]
+
         if self.is_full_case_request():
             data_formats_to_exclude = ["text", "html", "xml"]
 
@@ -236,9 +247,11 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 # defaults to sending text if it's a full case request with no body_format specified.
                 data_formats_to_exclude.remove('text')
 
-            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude]}
-        else:
-            source_filter = {"excludes": "casebody_data.*"}
+        source_filter = {
+            "excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude],
+        }
+
+        # raise Exception(source_filter)
 
         return queryset.source(source_filter)
 

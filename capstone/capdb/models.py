@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction, connections
 from django.db.models import Q
@@ -1477,12 +1478,16 @@ class CaseMetadata(models.Model):
         return apply_replacements(text, replacements)
 
     def insert_citations(self, text):
-        citations = ExtractedCitation.objects.filter(cited_by_id=self.case_id)
-        for citation in citations:
-            if not text['text']['opinions'][citation.opinion_id].get('extracted_citations', []):
-                text['text']['opinions'][citation.opinion_id]['extracted_citations'] = [citation]
+        citations = serializers.serialize('json', ExtractedCitation.objects.filter(cited_by_id=self.id))
+
+        for citation in json.loads(citations):
+            opinion_id = citation['fields']['opinion_id']
+            fields = citation['fields']
+            if not text['text']['opinions'][opinion_id].get('extracted_citations', []):
+                text['text']['opinions'][opinion_id]['extracted_citations'] = [fields]
             else:
-                text['text']['opinions'][citation.opinion_id]['extracted_citations'].append(citations)
+                text['text']['opinions'][opinion_id]['extracted_citations'].append(fields)
+
         return text
 
     def elide_obj(self, text, strip=False):

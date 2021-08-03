@@ -150,7 +150,9 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
 
         # get extracted_citations list, removing duplicate c["cite"] values
         extracted_citations = []
-        for c in s["extracted_citations"]:
+        ec = [o['extracted_citations'] for o in s['casebody_data']['text']['opinions']]
+        ec = [item for sublist in ec for item in sublist]
+        for c in ec:
             c = as_dict(c)
             extracted_cite = {
                 "cite": c["cite"],
