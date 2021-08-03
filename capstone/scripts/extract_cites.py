@@ -193,7 +193,8 @@ def extract_citations(case, html, xml):
         weight = len(cluster)
         first_reporter = first_cite.all_editions[0].reporter
         category = f"{first_reporter.source}:{first_reporter.cite_type}"
-        
+        groups = first_cite.groups or {}
+
         metadata = {k: v for k, v in first_cite.metadata.__dict__.items() if v}
         if isinstance(resolution, tuple):
             target_cases = [m.id for m in resolution]
@@ -231,7 +232,7 @@ def extract_citations(case, html, xml):
                 cited_by=case,
                 target_case_id=target_case_id,
                 target_cases=target_cases,
-                groups=cite.groups or {},
+                groups=groups,
                 metadata=metadata,
                 pin_cites=pin_cites,
                 weight=weight,

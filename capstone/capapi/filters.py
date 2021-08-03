@@ -463,10 +463,38 @@ class MultiFieldFTSFilter(BaseSearchFilterBackend):
         return queryset
 
 
+class AuthorTypeFTSFilter(NestedFTSFilter):
+    """
+    Multi match search filter backend to query on author + type 
+    """
+    search_param = 'author_type'
+    nested_query_fields = ('casebody_data.text.opinions.author','casebody_data.text.opinions.type',)
+
+    matching = MATCHING_OPTION_MUST
+
+
+class AuthorFTSFilter(NestedFTSFilter):
+    """
+    Multi match search filter backend to query on author
+    """
+    search_param = 'author'
+    nested_query_fields = ('casebody_data.text.opinions.author',)
+
+
 class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
     """
-    Class for handling nested filters in nested filters. Extension of 
+    Class for handling nested filters in nested filters. 
     """
+    def get_filter_query_params(self, request, view):
+        """DO NOT RUN if author / author_type exist"""
+        # TODO: test nonexistence case
+        query_params = request.query_params.copy()
+        if AuthorTypeFTSFilter.search_param in query_params \
+            or AuthorFTSFilter.search_param in query_params:
+            return {}
+
+        return super().get_filter_query_params(request, view)
+
     @classmethod
     def apply_filter(cls, queryset, options=None, args=None, kwargs=None):
         """Apply filter.
@@ -500,24 +528,6 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
     @classmethod
     def apply_query(cls, queryset, options=None, args=None, kwargs=None):
         self.apply_filter(cls, queryset, options, args, kwargs)
-
-class AuthorTypeFTSFilter(NestedFTSFilter):
-
-    """
-    Multi match search filter backend to query on author + type 
-    """
-    search_param = 'author_type'
-    nested_query_fields = ('casebody_data.text.opinions.author','casebody_data.text.opinions.type',)
-
-    matching = MATCHING_OPTION_MUST
-
-
-class AuthorFTSFilter(NestedFTSFilter):
-    """
-    Multi match search filter backend to query on author
-    """
-    search_param = 'author'
-    nested_query_fields = ('casebody_data.text.opinions.author',)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
