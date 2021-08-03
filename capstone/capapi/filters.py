@@ -294,7 +294,7 @@ class CitesToDynamicFilter(BaseFTSFilter):
     def filter_queryset(self, request, queryset, view):
         # ignore empty searches
         search_fields = self.get_search_fields(view, request).copy()
-        modifier_patterns = [r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
+        modifier_patterns = [r'__exclude$', r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$']
 
         # reformat data as ELK query. no dictionary comprehension due to complexity and length
         cites_to_keys = {}
