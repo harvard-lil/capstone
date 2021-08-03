@@ -448,12 +448,19 @@ class NestedFTSFilter(BaseSearchFilterBackend):
     matching = MATCHING_OPTION_MUST
     search_key = 'query_values'
 
-    def get_search_query_params(self, request, view):
+    def get_search_query_params(self, request, view=None):
         params = super().get_search_query_params(request)
 
         if self.combine_with_cite and params:
+            copy_request = HttpRequest()
+            copy_request.query_params = QueryDict('', mutable=True)
+            for param in request.query_params:
+                if param.startswith('opinion__'):
+                    new_param = param.split('opinion__')[1]
+                    copy_request.query_params.setlist(new_param, request.query_params.getlist(param, []))
+
             # Add params from multinestedfilteringbackend. View not needed.
-            cite_params = MultiNestedFilteringFilterBackend().get_filter_query_params(request, view, called_from_multi=True)
+            cite_params = MultiNestedFilteringFilterBackend().get_filter_query_params(copy_request, view)
             if cite_params:
                 cite_params[self.search_key] = params
                 params = cite_params
@@ -496,7 +503,7 @@ class MultiFieldFTSFilter(BaseSearchFilterBackend):
             return super().filter_queryset(request, queryset, view)
         return queryset
 
-    def get_search_query_params(self, request, view):
+    def get_search_query_params(self, request, view=None):
         return super().get_search_query_params(request)
 
 
@@ -524,20 +531,13 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
     """
     Class for handling nested filters in nested filters. 
     """
-    def get_filter_query_params(self, request, view, called_from_multi=False):
-        """DO NOT RUN if author / author_type exist"""
+    def get_filter_query_params(self, request, view):
         query_params = request.query_params.copy()
 
         if 'cites_to' in query_params:
             request.query_params._mutable = True
             request.query_params.setlist('cites_to', [normalize_cite(c) for c in query_params.getlist('cites_to', [])])
             request.query_params._mutable = False
-
-        # If the AuthorFTSFilter or AuthorTypeFTSFilter are handling, ignore here.
-        # The reason is that a different level of nesting is required for multi-nested fields if we want 
-        if (AuthorTypeFTSFilter.search_param in query_params or AuthorFTSFilter.search_param in query_params) \
-            and not called_from_multi:
-            return {}
 
         return super().get_filter_query_params(request, view)
 

@@ -258,8 +258,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
             "excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude],
         }
 
-        # raise Exception(source_filter)
-
         return queryset.source(source_filter)
 
     def get_renderers(self):
