@@ -152,6 +152,16 @@ const store = new Vuex.Store({
         error: null,
         value_when_searched: null
       },
+      cites_to: {
+        value: [],
+        default_value: [],
+        label: "Cites to...",
+        choices: ['search','jurisdiction','author','author_type'],
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
     },
     ordering: {
       value: "relevance",
