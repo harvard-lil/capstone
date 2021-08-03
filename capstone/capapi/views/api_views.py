@@ -123,9 +123,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'court_id': 'court.id',
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
+        'cite': 'citations.normalized_cite',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
-        'cite': 'citations.normalized_cite',
+
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
