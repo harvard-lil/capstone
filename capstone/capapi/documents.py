@@ -1,11 +1,13 @@
 import re
+from copy import deepcopy
 from difflib import SequenceMatcher
+from itertools import groupby
 
 from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
-from capdb.models import CaseMetadata, CaseLastUpdate
+from capdb.models import CaseMetadata, CaseLastUpdate, ExtractedCitation
 from scripts.simhash import get_distance
 
 
@@ -170,12 +172,20 @@ class CaseDocument(Document):
 
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
-        redacted = instance.redact_obj({
+        serializer = self._fields['casebody_data']['text']['opinions']['extracted_citations']
+        # We must unroll to dict to support the `in` operator
+        outbound_cites = [c for c in ExtractedCitation.objects.all() if c.cited_by_id == instance.id]
+        cites_by_id = {k: list(v) for k,v in groupby(outbound_cites, lambda c: c.opinion_id)}
+
+        for i, opinion in enumerate(body.json['opinions']):
+            if i in cites_by_id:
+                body.json['opinions'][i]['extracted_citations'] = [serializer.get_value_from_instance(c) for c in cites_by_id[i]]
+
+        return instance.redact_obj({
             'xml': body.xml,
             'html': body.html,
             'text': body.json,
         })
-        return instance.insert_citations(redacted)
 
     def prepare_name(self, instance):
         return instance.redact_obj(instance.name)

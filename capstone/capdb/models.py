@@ -1477,22 +1477,6 @@ class CaseMetadata(models.Model):
         replacements = sorted(self.no_index_redacted.items(), reverse=True, key=lambda i: len(i[0]))
         return apply_replacements(text, replacements)
 
-    def insert_citations(self, text):
-        citations = json.loads(serializers.serialize('json', ExtractedCitation.objects.filter(cited_by_id=self.id)))
-
-        for citation in citations:
-            opinion_id = citation['fields']['opinion_id']
-            fields = citation['fields']
-            # TODO: Consider a better solution to manual casting
-            fields['target_cases'] = [int(id) for id in json.loads(fields['target_cases'])]
-
-            if not text['text']['opinions'][opinion_id].get('extracted_citations', []):
-                text['text']['opinions'][opinion_id]['extracted_citations'] = [fields]
-            else:
-                text['text']['opinions'][opinion_id]['extracted_citations'].append(fields)
-
-        return text
-
     def elide_obj(self, text, strip=False):
         text = self.redact_obj(text)
         if not self.no_index_elided:
