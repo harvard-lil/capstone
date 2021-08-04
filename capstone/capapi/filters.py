@@ -368,8 +368,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
 
         search_terms = query_params
         if type(query_params) == dict:
-            search_terms = query_params[search_backend.search_key]
-            del query_params[search_backend.search_key]
+            search_terms = query_params.pop(search_backend.search_key)
         else:
             query_params = {}
 
