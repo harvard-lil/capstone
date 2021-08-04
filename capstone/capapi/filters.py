@@ -5,6 +5,7 @@ import re
 import uuid
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.functional import partition
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
@@ -456,7 +457,13 @@ class NestedFTSFilter(BaseSearchFilterBackend):
             for param in request.query_params:
                 if param.startswith('opinion__'):
                     new_param = param.split('opinion__')[1]
-                    copy_request.query_params.setlist(new_param, request.query_params.getlist(param, []))
+
+                    if new_param == 'cites_to':
+                        cites_to, cites_to_id = partition(lambda c: c.isdigit(), request.query_params.getlist(param))
+                        copy_request.query_params.setlist('cites_to', cites_to)
+                        copy_request.query_params.setlist('cites_to_id', cites_to_id)
+                    else:
+                        copy_request.query_params.setlist(new_param, request.query_params.getlist(param, []))
 
             # Add params from multinestedfilteringbackend. View not needed.
             cite_params = MultiNestedFilteringFilterBackend().get_filter_query_params(copy_request, view)
