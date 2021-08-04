@@ -20,6 +20,7 @@ This is the source code for [case.law](https://case.law), a website written by t
   - [Applying model changes](#applying-model-changes)
   - [Stored Postgres functions](#stored-postgres-functions)
   - [Running Command Line Scripts](#running-command-line-scripts)
+  - [Logging In](#logging-in)
   - [Local debugging tools](#local-debugging-tools)
   - [Download real data locally](#download-real-data-locally )
   - [Model versioning](#model-versioning)
@@ -109,6 +110,7 @@ Load dev data:
     # fab init_dev_db
     # fab ingest_fixtures
     # fab import_web_volumes
+    # fab rebuild_search_index
 
 Run the dev server:
 
@@ -172,6 +174,12 @@ This will write a migration script to `cap/migrations`. Then apply:
 
     # fab migrate
 
+This will migrate the underlying model in PostgreSQL. In order to transfer changes to Elasticsearch, apply:
+
+    # fab rebuild_search_index
+    
+Ensure that the relevant handlers to transfer this data are written in capstone/capapi/documents.py.
+
 ### Stored Postgres functions <a id="stored-postgres-functions"></a>
 
 Some Capstone features depend on stored functions.
@@ -181,6 +189,29 @@ See `set_up_postgres.py` for documentation.
 
 Command line scripts are defined in `fabfile.py`. You can list all available commands using `fab -l`, and run a
 command with `fab command_name`.
+
+### Logging In <a id="logging-in"></a>
+
+In order to access full cases, you can register for a Caselaw Access Project account on the local development server. 
+Creating a new user requires access to an email verification link. That link will be shown in the output of `fab run` 
+or `fab run_frontend` in the following format:
+
+```
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Caselaw Access Project: Verify your email address
+From: info@example.com
+To: a@mail.com
+Date: Wed, 04 Aug 2021 17:53:46 -0000
+Message-ID: <162809962609.2188.6020186441304370023@63fceca6d616>
+
+Please click here to verify your email address:
+
+https://case.test:8000/user/verify-user/4/ffffffffffffffffff/
+
+If you received this message in error, please ignore it.
+```
 
 ### Local debugging tools <a id="local-debugging-tools"></a>
 [django-extensions](https://github.com/django-extensions/django-extensions) is enabled by default, including the very
