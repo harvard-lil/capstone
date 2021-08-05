@@ -2,6 +2,7 @@ import re
 import unicodedata
 from collections import defaultdict
 from functools import lru_cache, partial
+from itertools import groupby
 import urllib.parse
 
 from django.conf import settings
@@ -184,16 +185,16 @@ def extract_citations(case, html, xml):
 
     # make each ExtractedCitation
     for resolution, cluster in clusters.items():
-        filtered_cluster = [cite for cite in cluster if isinstance(cite, FullCitation)]
+        opinion_clusters = {k:list(v) for k,v in groupby(cluster, lambda c: c.opinion_id)}
 
         # pull selected metadata from first cite
-        first_cite: FullCitation = filtered_cluster[0]
+        first_cite: FullCitation = cluster[0]
         normalized_forms = first_cite.normalized_forms
         reporter = first_cite.corrected_reporter()
-        weight = len(cluster)
         first_reporter = first_cite.all_editions[0].reporter
         category = f"{first_reporter.source}:{first_reporter.cite_type}"
         groups = first_cite.groups or {}
+        year = first_cite.year
 
         metadata = {k: v for k, v in first_cite.metadata.__dict__.items() if v}
         if isinstance(resolution, tuple):
@@ -203,45 +204,46 @@ def extract_citations(case, html, xml):
             target_cases = []
             target_case_id = None
 
-        # collect pin cites
-        pin_cites = []
-        for cite in cluster:
-            extra = {}
-            if getattr(cite.metadata, 'parenthetical'):
-                extra['parenthetical'] = cite.metadata.parenthetical
-            if getattr(cite.metadata, 'pin_cite'):
-                page = cite.metadata.pin_cite or ''
-                if page.startswith('at '):
-                    page = page[3:]
-                extra['page'] = page
-            if extra:
-                pin_cites.append(extra)
+        for opinion_id, opinion_cluster in opinion_clusters.items():
+            opinion_includes_cite = {}
+            for cite in opinion_cluster:
+                # If citation is already included in this opinion, skip
+                if cite.opinion_id in opinion_includes_cite:
+                    continue
 
-        opinion_includes_cite = {}
+                # collect pin cites
+                pin_cites = []
+                for cite in cluster:
+                    extra = {}
+                    if getattr(cite.metadata, 'parenthetical'):
+                        extra['parenthetical'] = cite.metadata.parenthetical
+                    if getattr(cite.metadata, 'pin_cite'):
+                        page = cite.metadata.pin_cite or ''
+                        if page.startswith('at '):
+                            page = page[3:]
+                        extra['page'] = page
+                    if extra:
+                        pin_cites.append(extra)
+                weight = len(opinion_cluster)
 
-        for cite in filtered_cluster:
-            # If citation is already included in this opinion, skip
-            if cite.opinion_id in opinion_includes_cite:
-                continue
+                # NOTE if adding any fields here, also add to cite_key()
+                extracted_cite = ExtractedCitation(
+                    **normalized_forms,
+                    reporter=reporter,
+                    category=category,
+                    cited_by=case,
+                    target_case_id=target_case_id,
+                    target_cases=target_cases,
+                    groups=groups,
+                    metadata=metadata,
+                    pin_cites=pin_cites,
+                    weight=weight,
+                    year=year,
+                    opinion_id=cite.opinion_id,
+                )
 
-            # NOTE if adding any fields here, also add to cite_key()
-            extracted_cite = ExtractedCitation(
-                **normalized_forms,
-                reporter=reporter,
-                category=category,
-                cited_by=case,
-                target_case_id=target_case_id,
-                target_cases=target_cases,
-                groups=groups,
-                metadata=metadata,
-                pin_cites=pin_cites,
-                weight=weight,
-                year=cite.year,
-                opinion_id=cite.opinion_id,
-            )
-
-            found_cites.append(extracted_cite)
-            opinion_includes_cite[cite.opinion_id] = True 
+                found_cites.append(extracted_cite)
+                opinion_includes_cite[cite.opinion_id] = True 
 
     if found_cites:
         # serialize annotated html and xml
