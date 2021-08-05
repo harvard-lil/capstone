@@ -1293,6 +1293,11 @@ class CaseMetadata(models.Model):
 
         # extract each opinion into a dictionary
         opinions = []
+        opinions.append({
+            'type': 'head_matter',
+            'author': 'head_matter',
+            'text': casebody_pq('.head-matter').text(),
+        })
         for opinion in casebody_pq.items('.opinion'):
             opinions.append({
                 'type': opinion.attr['data-type'],
@@ -1300,14 +1305,14 @@ class CaseMetadata(models.Model):
                 'text': opinion.text(),
             })
         json = {
-            'head_matter': casebody_pq('.head-matter').text(),
             'judges': [judge.text() for judge in casebody_pq('.judges').items()],
             'attorneys': [attorney.text() for attorney in casebody_pq('.attorneys').items()],
             'parties': [party.text() for party in casebody_pq('.parties').items()],
             'opinions': opinions,
             'corrections': casebody_pq('.corrections').text(),
         }
-        text = "\n".join([json['head_matter']] + [o['text'] for o in json['opinions']] + [json['corrections']])
+
+        text = "\n".join([o['text'] for o in json['opinions']] + [json['corrections']])
         return json, text
 
     def sync_from_initial_metadata(self, force=False):

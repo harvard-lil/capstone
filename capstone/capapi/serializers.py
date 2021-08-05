@@ -169,6 +169,10 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 extracted_cite['pin_cites'] = c['pin_cites']
             extracted_citations.append(extracted_cite)
 
+        # move head_matter outside of casebody_data
+        head_matter = s['casebody_data']['text']['opinions'].pop(0)
+        s['casebody_data']['text']['head_matter'] = head_matter['text']
+
         preview = self.get_preview(instance)
 
         # IMPORTANT: If you change what values are exposed here, also change the "CaseLastUpdate triggers"

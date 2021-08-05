@@ -119,7 +119,6 @@ class CaseDocument(Document):
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
-            'head_matter': FTSField(),
             'opinions': fields.NestedField(multi=True, properties={
                 'author': FTSField(),
                 'text': FTSField(),

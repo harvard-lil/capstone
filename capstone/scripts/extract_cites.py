@@ -47,7 +47,8 @@ def extract_citations(case, html, xml):
     clean_html_pq('a').remove()
 
     # Extract cites from each paragraph for each opinion:
-    for i, section in enumerate(clean_html_pq('.opinion').items()):
+
+    for i, section in enumerate(clean_html_pq('.head-matter, .opinion').items()):
         for el in section('p[id], blockquote[id]').items():
             el_text = el.text()
             extracted_cites = []
