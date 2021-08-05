@@ -1,5 +1,4 @@
 import re
-from copy import deepcopy
 from difflib import SequenceMatcher
 from itertools import groupby
 
@@ -7,7 +6,7 @@ from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
-from capdb.models import CaseMetadata, CaseLastUpdate, ExtractedCitation
+from capdb.models import CaseMetadata, CaseLastUpdate 
 from scripts.simhash import get_distance
 
 

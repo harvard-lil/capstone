@@ -172,7 +172,8 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         # move head_matter outside of casebody_data
         head_matter = list(filter(lambda x: x['type'] == 'head_matter', s['casebody_data']['text']['opinions']))
         head_matter = head_matter[0] if head_matter else []
-        s['casebody_data']['text']['opinions'].remove(head_matter)
+        if head_matter:
+            s['casebody_data']['text']['opinions'].remove(head_matter)
 
         if 'text' in head_matter:
             s['casebody_data']['text']['head_matter'] = head_matter

@@ -17,7 +17,6 @@ from bs4 import BeautifulSoup
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction, connections
 from django.db.models import Q
