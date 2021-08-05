@@ -140,13 +140,13 @@ Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt
 * `cites_to.category`
     * __data type:__    string
     * __description:__  find cases that cite to the given citation category, e.g. `reporter:state` or `reporters:federal`. Category values can be found in results for the cases endpoint under `extracted_citations[].category`.
-* `opinion__cites_to`
+* `author__cites_to`
     * __data type:__    string or integer
     * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given citation or case ID.
-* `opinion__cites_to.reporter`
+* `author__cites_to.reporter`
     * __data type:__    string
     * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given reporter.
-* `opinion__cites_to.category`
+* `author__cites_to.category`
     * __data type:__    string
     * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given category.
 * `cites_to__*`

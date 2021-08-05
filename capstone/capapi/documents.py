@@ -170,11 +170,31 @@ class CaseDocument(Document):
         except CaseLastUpdate.DoesNotExist:
             return None
 
+    def get_all_text_fields(self, start_array, prefix, recursive_field=None, ignore=None):
+        output = []
+        text_fields = recursive_field if recursive_field else self._fields 
+        for item in start_array:
+            text_fields = text_fields[item]
+        text_fields = text_fields._doc_class._doc_type.mapping.properties._params.get('properties', {}).items()
+
+        # Don't use comprehensions because we can't iterate through a generator twice, and the ugliness of copying 
+        # seems greater.
+        for field, value in text_fields:
+            if field == ignore:
+                continue
+            if type(value) == fields.ObjectField or type(value) == fields.NestedField:
+                output = output + self.get_all_text_fields([], f'{prefix}.{field}', recursive_field=value, ignore=ignore)
+            else:
+                output.append(f'{prefix}.{field}')
+
+        return output
+
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
         serializer = self._fields['casebody_data']['text']['opinions']['extracted_citations']
         # We must unroll to dict to support the `in` operator
-        outbound_cites = [c for c in ExtractedCitation.objects.all() if c.cited_by_id == instance.id]
+
+        outbound_cites = instance.extracted_citations.all()
         cites_by_id = {k: list(v) for k,v in groupby(outbound_cites, lambda c: c.opinion_id)}
 
         for i, opinion in enumerate(body.json['opinions']):

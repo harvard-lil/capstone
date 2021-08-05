@@ -454,7 +454,7 @@ class NestedFTSFilter(BaseSearchFilterBackend):
             copy_request = HttpRequest()
             copy_request.query_params = QueryDict('', mutable=True)
             for param in request.query_params:
-                if param.startswith('opinion__'):
+                if param.startswith('author__'):
                     new_param = param.split('opinion__')[1]
 
                     if new_param == 'cites_to':

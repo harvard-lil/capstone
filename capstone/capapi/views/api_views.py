@@ -243,8 +243,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
         # exclude all values from casebody_data that we don't need to complete the request
-        data_formats_to_exclude = ["text.head_matter", "text.corrections", "text.parties", "text.attorneys", 
-            "text.opinions.text", "text.opinions.type", "text.opinions.author", "text.judges", "html", "xml"]
+        data_formats_to_exclude = ["xml", "html", 
+            *CaseDocument().get_all_text_fields(['casebody_data', 'text'], 'text', ignore='extracted_citations')]
 
         if self.is_full_case_request():
             data_formats_to_exclude = ["text", "html", "xml"]
@@ -431,7 +431,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         additional_filter_fields = CaseDocumentViewSet().valid_query_fields
 
         modifier_patterns = [r'__exclude$', r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$',
-            r'^cites_to__', r'^opinion__']
+            r'^cites_to__', r'^author__']
 
         for key in query_body:
             for pattern in modifier_patterns:

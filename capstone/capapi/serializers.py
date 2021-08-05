@@ -152,7 +152,6 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         extracted_citations = []
         ec = [o['extracted_citations'] for o in s['casebody_data']['text']['opinions'] if 'extracted_citations' in o]
         ec = [item for sublist in ec for item in sublist]
-        [item.pop('opinion_id') for item in ec]
         for c in ec:
             c = as_dict(c)
             extracted_cite = {
