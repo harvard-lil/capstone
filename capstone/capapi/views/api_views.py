@@ -244,7 +244,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
         # exclude all values from casebody_data that we don't need to complete the request
         data_formats_to_exclude = ["xml", "html", 
-            *CaseDocument().get_all_text_fields(['casebody_data', 'text'], 'text', ignore='extracted_citations')]
+            *CaseDocument().get_all_text_fields(['casebody_data', 'text'], 'text', \
+                ignore=['text.opinions.extracted_citations', 'text.opinions.type'])]
 
         if self.is_full_case_request():
             data_formats_to_exclude = ["text", "html", "xml"]

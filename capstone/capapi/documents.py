@@ -179,7 +179,8 @@ class CaseDocument(Document):
         # Don't use comprehensions because we can't iterate through a generator twice, and the ugliness of copying 
         # seems greater.
         for field, value in text_fields:
-            if field == ignore:
+            if f'{prefix}.{field}' in ignore:
+                print(f'IGNORING: {prefix}.{field}')
                 continue
             if type(value) == fields.ObjectField or type(value) == fields.NestedField:
                 output = output + self.get_all_text_fields([], f'{prefix}.{field}', recursive_field=value, ignore=ignore)
