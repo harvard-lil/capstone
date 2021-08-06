@@ -126,7 +126,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('author')"></field-item>
+              <field-item :author_field="true" :clearable="true" :multiple="true" :field="$store.getters.getField('author')"></field-item>
               <div v-if="$store.getters.fieldHasError('author')" class="invalid-feedback">
                 {{ $store.getters.getField('author').error }}
               </div>
@@ -136,7 +136,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('author_type')"></field-item>
+              <field-item :author_field="true" :clearable="true" :multiple="true" :field="$store.getters.getField('author_type')"></field-item>
               <div v-if="$store.getters.fieldHasError('author_type')" class="invalid-feedback">
                 {{ $store.getters.getField('author_type').error }}
               </div>

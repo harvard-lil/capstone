@@ -301,8 +301,11 @@ const store = new Vuex.Store({
       }  
       state.fields[name].highlight_explainer = false;
     },
-    exposeAuthorCitesTo(state) {
-      return state.exposeAuthorCitesToField = true;
+    exposeAuthorCitesTo(state, author_field) {
+      if (author_field === true) {
+        return state.exposeAuthorCitesToField = true;
+      }
+      return state.exposeAuthorCitesToField;
     },
   },
   getters: {
