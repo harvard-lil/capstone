@@ -17,27 +17,40 @@
           {{ errors }}
           <br/>
         </template>
-        <template v-if="selectedState !== 'Overall' && !errors">
+
+        <!--If state is clicked-->
+        <template v-else-if="selectedState !== 'Overall'">
           <b>Top cited {{ selectedState }} cases in the year {{ year }}</b>
           <br/>
-
           <ul v-for="(jur_cases, name) in cases" :class="{'active': cleanJurisdictionName(name) === selectedSlug}"
               v-bind:key="name">
             <li v-for="(Case, idx) in jur_cases" :class="name" class="states-info" v-bind:key="idx">
-              <a :href="Case[Object.keys(Case)[0]][2]"><b>{{ Object.keys(Case)[0] }}</b></a>
+              <!--Name of case (linked to case on CAP)-->
+              <a :href="Case[Object.keys(Case)[0]][2]">
+                <b>{{ Object.keys(Case)[0] }}</b>
+              </a>
+              <!--decision date if available-->
               <template v-if="Case[Object.keys(Case)[0]][3]"> ({{ Case[Object.keys(Case)[0]][3] }})</template>
+              <!--how many times cited-->
               cited {{ Case[Object.keys(Case)[0]][1] }} times
             </li>
           </ul>
         </template>
-        <template v-else-if="!errors">
-          <b>Top cited cases in United States in the year {{ year }}</b>
+
+        <!--If overall stats are shown-->
+        <template v-else>
+          <b>Top cited state cases in United States in the year {{ year }}</b>
           <br/>
           <ul v-for="overallCase in overallCases" v-bind:key="Object.keys(overallCase)[0]" class="active">
             <li v-for="(Case, name) in overallCase" v-bind:key="name">
-              <a :href="Case[2]"><b>{{ name }}</b></a>
-              <template v-if="Case[3]">({{ Case[3] }}</template>
-              , <b>{{ translation[cleanJurisdictionName(Case[4])] }}</b>) cited {{ Case[1] }} times
+            <!--Name of case (linked to case on CAP)-->
+              <a :href="Case[2]">
+                <b>{{ name }}</b>
+              </a>
+              <!--decision date if available-->
+              <template v-if="Case[3]"> ({{ Case[3] }}, </template>
+              <!--name of decision jurisdiction and how many times case is cited-->
+              <b v-if="Case[4]">{{ translation[cleanJurisdictionName(Case[4])] }})</b> cited {{ Case[1] }} times
             </li>
           </ul>
         </template>
