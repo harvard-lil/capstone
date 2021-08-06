@@ -145,6 +145,18 @@
               </small>
             </div>
 
+            <transition name="fade">
+              <div v-if="$store.getters.exposeAuthorCitesToField === true" class="search-field shown">
+                <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('author__cites_to')"></field-item>
+                <div v-if="$store.getters.fieldHasError('author__cites_to')" class="invalid-feedback">
+                  {{ $store.getters.getField('author__cites_to').error }}
+                </div>
+                <small :id="`help-text-author__cites_to`" class="form-text text-muted">
+                  {{ $store.getters.getField('author__cites_to').info }}
+                </small>
+              </div>
+            </transition>
+
             <div class="search-field shown">
               <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('cites_to')"></field-item>
               <div v-if="$store.getters.fieldHasError('cites_to')" class="invalid-feedback">

@@ -30,6 +30,7 @@
            :max="field.max"
            @focus="$store.commit('highlightExplainer', field.name)"
            @blur="$store.commit('unhighlightExplainer', field.name)"
+           v-on:input="$store.commit('exposeAuthorCitesTo')"
            v-on:keyup.enter="$store.dispatch('searchFromForm')">
     <label :for="field.name">
       {{ field.label }}
