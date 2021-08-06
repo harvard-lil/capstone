@@ -17,3 +17,6 @@ Check out [_The Legal History of Banana Peels_ 🍌](https://case.law/labs/chron
 Have you built a timeline? We would love to see it! Please [get in touch]({% url 'contact' %}).
 
 Dive in by [creating a new timeline]({% url "labs:chronolawgic-dashboard" %})!
+
+###[Most cited through time]({% url "labs:most-cited" %})
+Most cited state cases per year.

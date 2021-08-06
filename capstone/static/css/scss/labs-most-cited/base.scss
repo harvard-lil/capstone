@@ -1,0 +1,120 @@
+$highlight: #F3FFA7;
+$color-gray: #f5f5f5;
+$color-gray-medium: #c4c4c4;
+
+h1, h2 {
+  font-family: $font-sans-serif;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.2em;
+}
+
+h3 {
+  font-size: 1em;
+}
+
+.state {
+  stroke: #fb8f5a;
+}
+
+.header {
+  margin-bottom: 1em;
+}
+
+#most-cited {
+  display: grid;
+  min-height: 70vh;
+  grid-template-areas: "info-container . map-container";
+  grid-template-columns: 30% 5% 65%;
+  padding: 1em 3em;
+  @include media-breakpoint-down(lg) {
+    padding: 2em;
+    grid-template-columns: 40% 2% 58%;
+  }
+  @include media-breakpoint-down(sm) {
+    grid-template-areas:
+            "map-container"
+            "info-container";
+    grid-template-columns: 100% 100%;
+  }
+}
+
+.map-container {
+  margin-top: 2em;
+  grid-area: map-container;
+
+  p {
+    color: #7A7A7A;
+    font-size: 0.8em;
+    text-align: center;
+  }
+}
+
+.info-container {
+  grid-area: info-container;
+  overflow-y: scroll;
+  font-size: 0.9em;
+  max-width: 400px;
+}
+
+
+#state-citations {
+  ul {
+    display: none;
+
+    &.active {
+      display: block;
+    }
+  }
+}
+
+.selected-year {
+  border: 0;
+  border-bottom: 1px solid $color-blue;
+  outline: none;
+  font-size: 1.2em;
+  color: $color-dark-blue;
+}
+
+.btn-close {
+  padding: 0;
+  height: 27px;
+  margin-bottom: 0.5em;
+  border: 2px solid $color-blue !important;
+
+  svg {
+    margin-bottom: 1em;
+    fill: $color-blue;
+  }
+}
+
+.btn-primary {
+  border: 2px solid $color-black;
+  background-color: $color-white;
+  font-family: $font-monospace;
+  color: $color-black;
+
+  &:focus, &:hover, &:active {
+    background-color: $highlight;
+    color: $color-black;
+    border: 2px solid black;
+  }
+}
+
+.btn-tertiary {
+  font-weight: $font-weight-regular;
+  text-decoration: underline;
+  font-family: $font-monospace;
+
+  &:focus, &:hover, &:active {
+    color: $color-blue;
+    text-decoration: underline;
+  }
+
+}
+

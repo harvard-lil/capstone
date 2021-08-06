@@ -1,0 +1,26 @@
+{% extends "../labs_base.html" %}
+{% load static %}
+{% load pipeline %}
+{% load render_bundle from webpack_loader %}
+{% load api_url %}
+{% load snippet %}
+
+{% block title %}Most Cited{% endblock %}
+{% block content_title %}{% endblock %}
+{% block extra_head %}{% stylesheet "labs-most-cited" %}{% endblock %}
+<!--{% block meta_description %}Chronolawgic— a caselaw timeline tool{% endblock %}-->
+{% block project_name %}Most cited{% endblock %}
+
+{% block main_content %}
+<div id="app" class="content"></div>
+
+<script>
+    // This is essentially each endpoint with its API interface
+    // eslint-disable-next-line
+
+</script>
+<noscript>
+  This experimental interface requires javascript, even for basic functionality.
+</noscript>
+{% render_bundle 'labs-most-cited' %}
+{% endblock %}

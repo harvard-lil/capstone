@@ -46,6 +46,7 @@ let vueConfig = {
     'cite-grid': 'static/js/cite-grid/main.js',
     'case-editor': 'static/js/case-editor/main.js',
     'labs-chronolawgic': 'static/js/labs/chronolawgic/main.js',
+    'labs-most-cited': 'static/js/labs/most-cited/main.js',
   },
 
   configureWebpack: {
