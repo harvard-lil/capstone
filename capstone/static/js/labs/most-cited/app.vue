@@ -22,18 +22,15 @@
         <template v-else-if="selectedState !== 'Overall'">
           <b>Top cited {{ selectedState }} cases in the year {{ year }}</b>
           <br/>
-          <ul v-for="(jur_cases, name) in cases" :class="{'active': cleanJurisdictionName(name) === selectedSlug}"
+          <ul v-for="(jur_cases, name) in cases"
+              :class="{'active': cleanJurisdictionName(name) === selectedSlug}"
               v-bind:key="name">
-            <li v-for="(Case, idx) in jur_cases" :class="name" class="states-info" v-bind:key="idx">
-              <!--Name of case (linked to case on CAP)-->
-              <a :href="Case[Object.keys(Case)[0]][2]">
-                <b>{{ Object.keys(Case)[0] }}</b>
-              </a>
-              <!--decision date if available-->
-              <template v-if="Case[Object.keys(Case)[0]][3]"> ({{ Case[Object.keys(Case)[0]][3] }})</template>
-              <!--how many times cited-->
-              cited {{ Case[Object.keys(Case)[0]][1] }} times
-            </li>
+              <selected-state-component v-for="(Case, idx) in jur_cases"
+                                        :key="idx"
+                                        :class="name"
+                                        :caseobject="Case[Object.keys(Case)[0]]"
+                                        :casename="Object.keys(Case)[0]">
+              </selected-state-component>
           </ul>
         </template>
 
@@ -42,16 +39,12 @@
           <b>Top cited state cases in United States in the year {{ year }}</b>
           <br/>
           <ul v-for="overallCase in overallCases" v-bind:key="Object.keys(overallCase)[0]" class="active">
-            <li v-for="(Case, name) in overallCase" v-bind:key="name">
-            <!--Name of case (linked to case on CAP)-->
-              <a :href="Case[2]">
-                <b>{{ name }}</b>
-              </a>
-              <!--decision date if available-->
-              <template v-if="Case[3]"> ({{ Case[3] }}, </template>
-              <!--name of decision jurisdiction and how many times case is cited-->
-              <b v-if="Case[4]">{{ translation[cleanJurisdictionName(Case[4])] }})</b> cited {{ Case[1] }} times
-            </li>
+            <selected-state-component v-for="(Case, name) in overallCase"
+                                      :jurisdiction="translation[cleanJurisdictionName(Case[4])]"
+                                      :class="name"
+                                      :caseobject="Case"
+                                      :casename="name"
+                                      :key="name"></selected-state-component>
           </ul>
         </template>
       </div>
@@ -59,8 +52,6 @@
     <div class="map-container">
       <p>The darker the color the more citations a jurisdiction receives in the selected year.</p>
       <div class="map bg-transparent">
-        <a href="#section-dive-in"
-           class="skip">Skip map</a>
         <USMap @click="mapChoose" tabindex=""/>
       </div>
     </div>
@@ -72,12 +63,14 @@
 import USMap from '../../../../capweb/templates/includes/usa_territories_white.svg';
 import CloseIcon from '../../../../static/img/icons/close.svg';
 import axios from "axios";
+import SelectedStateComponent from './selectedStateComponent';
 
 export default {
   name: 'Admin',
   components: {
     USMap,
     CloseIcon,
+    SelectedStateComponent,
   },
   data() {
     return {
