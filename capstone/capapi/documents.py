@@ -179,7 +179,6 @@ class CaseDocument(Document):
         # seems greater.
         for field, value in text_fields:
             if f'{prefix}.{field}' in ignore:
-                print(f'IGNORING: {prefix}.{field}')
                 continue
             if type(value) == fields.ObjectField or type(value) == fields.NestedField:
                 output = output + self.get_all_text_fields([], f'{prefix}.{field}', recursive_field=value, ignore=ignore)
@@ -194,7 +193,7 @@ class CaseDocument(Document):
         # We must unroll to dict to support the `in` operator
 
         outbound_cites = instance.extracted_citations.all()
-        cites_by_id = {k: list(v) for k,v in groupby(outbound_cites, lambda c: c.opinion_id)}
+        cites_by_id = {k: list(v) for k,v in groupby(sorted(outbound_cites, key=lambda c: c.opinion_id), lambda c: c.opinion_id)}
 
         for i, opinion in enumerate(body.json['opinions']):
             if i in cites_by_id:

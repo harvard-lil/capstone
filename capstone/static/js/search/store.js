@@ -152,6 +152,16 @@ const store = new Vuex.Store({
         error: null,
         value_when_searched: null
       },
+      cites_to: {
+        value: null,
+        default_value: null,
+        label: "Case text cites to e.g. 367 U.S. 643",
+        placeholder: "e.g. 367 U.S. 643",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
     },
     ordering: {
       value: "relevance",

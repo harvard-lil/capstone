@@ -186,7 +186,7 @@ def extract_citations(case, html, xml):
 
     # make each ExtractedCitation
     for resolution, cluster in clusters.items():
-        opinion_clusters = {k:list(v) for k,v in groupby(cluster, lambda c: c.opinion_id)}
+        opinion_clusters = {k:list(v) for k,v in groupby(sorted(cluster, key=lambda c: c.opinion_id), lambda c: c.opinion_id)}
 
         # pull selected metadata from first cite
         first_cite: FullCitation = cluster[0]
@@ -214,12 +214,12 @@ def extract_citations(case, html, xml):
 
                 # collect pin cites
                 pin_cites = []
-                for cite in cluster:
+                for cite_two in opinion_cluster:
                     extra = {}
-                    if getattr(cite.metadata, 'parenthetical'):
-                        extra['parenthetical'] = cite.metadata.parenthetical
-                    if getattr(cite.metadata, 'pin_cite'):
-                        page = cite.metadata.pin_cite or ''
+                    if getattr(cite_two.metadata, 'parenthetical'):
+                        extra['parenthetical'] = cite_two.metadata.parenthetical
+                    if getattr(cite_two.metadata, 'pin_cite'):
+                        page = cite_two.metadata.pin_cite or ''
                         if page.startswith('at '):
                             page = page[3:]
                         extra['page'] = page

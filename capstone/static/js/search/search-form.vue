@@ -144,6 +144,16 @@
                 {{ $store.getters.getField('author_type').info }}
               </small>
             </div>
+
+            <div class="search-field shown">
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('cites_to')"></field-item>
+              <div v-if="$store.getters.fieldHasError('cites_to')" class="invalid-feedback">
+                {{ $store.getters.getField('cites_to').error }}
+              </div>
+              <small :id="`help-text-cites_to`" class="form-text text-muted">
+                {{ $store.getters.getField('cites_to').info }}
+              </small>
+            </div>
           </template>
         </div>
         <button class="btn btn-tertiary show-advanced-options"
