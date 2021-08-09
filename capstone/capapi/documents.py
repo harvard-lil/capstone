@@ -134,6 +134,7 @@ class CaseDocument(Document):
                     "pin_cites": fields.ObjectField(),
                     "weight": fields.IntegerField(),
                     "year": fields.IntegerField(),
+                    "opinion_id": fields.IntegerField(),
                 })  
             }),
             'corrections': fields.TextField(),

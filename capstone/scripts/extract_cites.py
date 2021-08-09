@@ -206,45 +206,38 @@ def extract_citations(case, html, xml):
             target_case_id = None
 
         for opinion_id, opinion_cluster in opinion_clusters.items():
-            opinion_includes_cite = {}
+            # collect pin cites
+            pin_cites = []
             for cite in opinion_cluster:
-                # If citation is already included in this opinion, skip
-                if cite.opinion_id in opinion_includes_cite:
-                    continue
+                extra = {}
+                if getattr(cite.metadata, 'parenthetical'):
+                    extra['parenthetical'] = cite.metadata.parenthetical
+                if getattr(cite.metadata, 'pin_cite'):
+                    page = cite.metadata.pin_cite or ''
+                    if page.startswith('at '):
+                        page = page[3:]
+                    extra['page'] = page
+                if extra:
+                    pin_cites.append(extra)
+            weight = len(opinion_cluster)
 
-                # collect pin cites
-                pin_cites = []
-                for cite_two in opinion_cluster:
-                    extra = {}
-                    if getattr(cite_two.metadata, 'parenthetical'):
-                        extra['parenthetical'] = cite_two.metadata.parenthetical
-                    if getattr(cite_two.metadata, 'pin_cite'):
-                        page = cite_two.metadata.pin_cite or ''
-                        if page.startswith('at '):
-                            page = page[3:]
-                        extra['page'] = page
-                    if extra:
-                        pin_cites.append(extra)
-                weight = len(opinion_cluster)
+            # NOTE if adding any fields here, also add to cite_key()
+            extracted_cite = ExtractedCitation(
+                **normalized_forms,
+                reporter=reporter,
+                category=category,
+                cited_by=case,
+                target_case_id=target_case_id,
+                target_cases=target_cases,
+                groups=groups,
+                metadata=metadata,
+                pin_cites=pin_cites,
+                weight=weight,
+                year=year,
+                opinion_id=opinion_id,
+            )
 
-                # NOTE if adding any fields here, also add to cite_key()
-                extracted_cite = ExtractedCitation(
-                    **normalized_forms,
-                    reporter=reporter,
-                    category=category,
-                    cited_by=case,
-                    target_case_id=target_case_id,
-                    target_cases=target_cases,
-                    groups=groups,
-                    metadata=metadata,
-                    pin_cites=pin_cites,
-                    weight=weight,
-                    year=year,
-                    opinion_id=cite.opinion_id,
-                )
-
-                found_cites.append(extracted_cite)
-                opinion_includes_cite[cite.opinion_id] = True 
+            found_cites.append(extracted_cite)
 
     if found_cites:
         # serialize annotated html and xml

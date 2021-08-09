@@ -167,6 +167,8 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 extracted_cite['year'] = c['year']
             if c.get('pin_cites'):
                 extracted_cite['pin_cites'] = c['pin_cites']
+            if c.get('opinion_id'):
+                extracted_cite['opinion_id'] = c['opinion_id'] - 1
             extracted_citations.append(extracted_cite)
 
         # move head_matter outside of casebody_data
@@ -175,8 +177,13 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         if head_matter:
             s['casebody_data']['text']['opinions'].remove(head_matter)
 
+        # strip citations from casebody data
+        for i, element in enumerate(s['casebody_data']['text']['opinions']):
+            if 'extracted_citations' in element:
+                del s['casebody_data']['text']['opinions'][i]['extracted_citations']
+
         if 'text' in head_matter:
-            s['casebody_data']['text']['head_matter'] = head_matter
+            s['casebody_data']['text']['head_matter'] = head_matter['text']
 
         preview = self.get_preview(instance)
 
