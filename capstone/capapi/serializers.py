@@ -167,7 +167,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 extracted_cite['year'] = c['year']
             if c.get('pin_cites'):
                 extracted_cite['pin_cites'] = c['pin_cites']
-            if c.get('opinion_id'):
+            if isinstance(c.get('opinion_id'), int):
                 extracted_cite['opinion_id'] = c['opinion_id'] - 1
             extracted_citations.append(extracted_cite)
 
