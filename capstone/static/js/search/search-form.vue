@@ -146,7 +146,7 @@
             </div>
 
             <transition name="fade">
-              <div v-if="$store.getters.exposeAuthorCitesToField === true" class="search-field shown">
+              <div v-if="$store.getters.exposeAuthorCitesToField === true || $store.getters.getField('author__cites_to').value" class="search-field shown">
                 <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('author__cites_to')"></field-item>
                 <div v-if="$store.getters.fieldHasError('author__cites_to')" class="invalid-feedback">
                   {{ $store.getters.getField('author__cites_to').error }}
