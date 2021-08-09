@@ -192,9 +192,13 @@ command with `fab command_name`.
 
 ### Logging In <a id="logging-in"></a>
 
-In order to access full cases, you can register for a Caselaw Access Project account on the local development server. 
-Creating a new user requires access to an email verification link. That link will be shown in the output of `fab run` 
-or `fab run_frontend` in the following format:
+`fab init_dev_db` will create a user with email `admin@example.com` and password `Password2`.
+
+You can create additional test users from `./manage.py shell_plus` using the same code that is used by the `init_dev_db`
+command, or using the web frontend on the local development server.
+
+Creating a new user through the frontend requires access to an email verification link. That link will be shown in the 
+output of `fab run` or `fab run_frontend` in the following format:
 
 ```
 Content-Type: text/plain; charset="utf-8"
