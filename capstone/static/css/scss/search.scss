@@ -633,3 +633,11 @@ label.dropdown-label {
     }
   }
 }
+
+.fade-enter-active, .fade-leave-active, .fadegroup-enter-active, .fadegroup-leave-active {
+  transition: opacity .5s;
+}
+
+.fade-enter, .fade-leave-to, .fadegroup-enter, .fadegroup-leave-to {
+  opacity: 0;
+}

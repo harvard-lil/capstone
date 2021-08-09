@@ -26,6 +26,8 @@ const store = new Vuex.Store({
     results: [],
     resultsShown: false,
     first_result_number: null,
+    exposeAuthorCitesToField: false,
+    exposeDynamicCitesToField: [],
     last_result_number: null,
     showLoading: false,
     previousPageCursor: null,
@@ -39,6 +41,7 @@ const store = new Vuex.Store({
     download_full_case: true,
     show_explainer: false,
     advanced_fields_shown: false,
+    change_dynamic_fields: false,
     fields: {
       search: {
         value: null,
@@ -151,6 +154,38 @@ const store = new Vuex.Store({
         highlight_explainer: false,
         error: null,
         value_when_searched: null
+      },
+      author__cites_to: {
+        value: null,
+        default_value: null,
+        label: "Author opinion cites to e.g. 367 U.S. 643",
+        placeholder: "e.g. 367 U.S. 643",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
+      cites_to: {
+        value: null,
+        default_value: null,
+        label: "Case text cites to e.g. 367 U.S. 643",
+        placeholder: "e.g. 367 U.S. 643",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
+      cites_to__: {
+        value: [],
+        default_value: [],
+        choices: [],
+        label: "Cases that cite to cases...",
+        placeholder: "e.g. in a jurisdiction, court, etc.",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null,
+        dynamic_field: true,
       },
     },
     ordering: {
@@ -277,9 +312,32 @@ const store = new Vuex.Store({
     unhighlightExplainer(state, name) {
       if (name === 'ordering') {
         return state.ordering.highlight_explainer = false;
-      }
+      }  
       state.fields[name].highlight_explainer = false;
     },
+    exposeFields(state, {field_to_change, value}) {
+      if (field_to_change === 'author') {
+        return state.exposeAuthorCitesToField = true;
+      } else if (field_to_change == 'dynamic') {
+        if (!Array.isArray(value)) value = [value];
+        const newValue = value.map((key) => { return  {
+          'name': `cites_to__${key}`,
+          'label': `Citations to ${key}`, 
+        }});
+
+        // Only update array on change in order to prevent infinite looping. Otherwise,
+        // rendered divs will constantly refresh.
+        const larger = state.exposeDynamicCitesToField.length > newValue.length 
+          ? state.exposeDynamicCitesToField.length : newValue.length;
+        for (var i = 0; i < larger; ++i) {
+          const a = state.exposeDynamicCitesToField[i] ? state.exposeDynamicCitesToField[i].label : 'novalue';
+          const b = newValue[i] ? newValue[i].label : 'novalue';
+          if (a !== b)  {
+            state.exposeDynamicCitesToField = newValue;
+          }
+        }
+      }
+    }
   },
   getters: {
     hitcount: state => state.hitcount,
@@ -297,6 +355,8 @@ const store = new Vuex.Store({
     choices: state => state.choices,
     search_error: state => state.search_error,
     ordering: state => state.ordering,
+    exposeAuthorCitesToField: state => state.exposeAuthorCitesToField,
+    getExposeDynamicCitesToField: state => state.exposeDynamicCitesToField,
     urls: state => state.urls,
     api_root: state => state.urls.api_root,
     download_size: state => state.download_size,
@@ -365,6 +425,7 @@ const store = new Vuex.Store({
     trends_link: (state) => {
       var params = '';
       for (const key in state.fields) {
+        if (key === 'cites_to__') continue;
         var value = state.fields[key].value;
         if (value && value.length > 0) {
           if (Array.isArray(value)) {
@@ -520,5 +581,23 @@ const store = new Vuex.Store({
   }
 });
 
+// Seed store with cites_to__ field dynamically
+store.state.fields['cites_to__'].choices = Object.keys(store.state.fields).filter(key => !key.includes('cites_to'))
+  .map((key) => { return  {'label': key, 'value': key }})
+
+for (const key of Object.keys(store.state.fields)) {
+  if (key !== "cites_to__") {
+    Vue.set(store.state.fields, `cites_to__${key}`, {
+      value: null,
+      default_value: null,
+      label: `Citations to ${key}`,
+      placeholder: "",
+      highlight_field: false,
+      highlight_explainer: false,
+      error: null,
+      value_when_searched: null            
+    });
+  }
+}
 
 export default store;
