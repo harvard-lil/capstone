@@ -103,6 +103,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.AuthorFTSFilter,
         filters.AuthorTypeFTSFilter,
         filters.NameAbbreviationFTSFilter,
+        filters.MultiNestedFilteringFilterBackend,
         filters.DocketNumberFTSFilter,
         filters.CitesToDynamicFilter,
         filters.CaseFilterBackend, # Facilitates Filtering (Filters)
@@ -123,12 +124,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'reporter': 'reporter.id',
         'jurisdiction': 'jurisdiction.slug',
         'cite': 'citations.normalized_cite',
-        'cites_to': 'extracted_citations.normalized_cite',
-        'cites_to_id': 'extracted_citations.target_cases',
-        'cites_to.reporter': 'extracted_citations.reporter',
-        'cites_to.category': 'extracted_citations.category',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
+
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
         # legacy fields:
         'decision_date_min': {'field': 'decision_date_original', 'default_lookup': 'gte'},
@@ -161,7 +159,6 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'name_abbreviation': 'name_abbreviation.raw',
         'id': 'id',
         'last_updated': 'last_updated',
-
         **{'analysis.' + k: 'analysis.' + k for k in filters.analysis_fields},
     }
 
@@ -206,6 +203,25 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         }
     }
 
+    nested_filter_fields = {
+        'cites_to': {
+            'field': 'casebody_data.text.opinions.extracted_citations.normalized_cite',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },
+        'cites_to_id': {
+            'field': 'casebody_data.text.opinions.extracted_citations.target_cases',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },   
+        'cites_to.reporter': {
+            'field': 'casebody_data.text.opinions.extracted_citations.reporter',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        },  
+        'cites_to.category': {
+            'field': 'casebody_data.text.opinions.extracted_citations.category',
+            'path': ['casebody_data.text.opinions','casebody_data.text.opinions.extracted_citations'],
+        }      
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.valid_query_fields = [
@@ -227,6 +243,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
         # exclude all values from casebody_data that we don't need to complete the request
+        data_formats_to_exclude = ["xml", "html", 
+            *CaseDocument().get_all_text_fields(['casebody_data', 'text'], 'text',
+                ignore=['text.opinions.extracted_citations', 'text.opinions.type'])]
+
         if self.is_full_case_request():
             data_formats_to_exclude = ["text", "html", "xml"]
 
@@ -236,9 +256,9 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
                 # defaults to sending text if it's a full case request with no body_format specified.
                 data_formats_to_exclude.remove('text')
 
-            source_filter = {"excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude]}
-        else:
-            source_filter = {"excludes": "casebody_data.*"}
+        source_filter = {
+            "excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude],
+        }
 
         return queryset.source(source_filter)
 
@@ -411,7 +431,8 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # check if the queries are expected filter inputs to the cases API.    
         additional_filter_fields = CaseDocumentViewSet().valid_query_fields
 
-        modifier_patterns = [r'__exclude$', r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$', r'^cites_to__']
+        modifier_patterns = [r'__exclude$', r'__in$', r'__gt$', r'__gte$', r'__lt$', r'__lte$',
+            r'^cites_to__', r'^author__']
 
         for key in query_body:
             for pattern in modifier_patterns:

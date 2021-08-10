@@ -30,6 +30,7 @@
            :max="field.max"
            @focus="$store.commit('highlightExplainer', field.name)"
            @blur="$store.commit('unhighlightExplainer', field.name)"
+           v-on:input="$store.commit('exposeAuthorCitesTo', author_field)"
            v-on:keyup.enter="$store.dispatch('searchFromForm')">
     <label :for="field.name">
       {{ field.label }}
@@ -43,7 +44,7 @@ import vSelect from 'vue-select';
 export default {
   components: {vSelect},
   name: "field-item",
-  props: [ 'field', 'search_on_change', 'clearable', 'multiple' ],
+  props: [ 'field', 'search_on_change', 'clearable', 'multiple', 'author_field' ],
   computed: {
     value: {
       get () {

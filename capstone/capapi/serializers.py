@@ -150,7 +150,9 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
 
         # get extracted_citations list, removing duplicate c["cite"] values
         extracted_citations = []
-        for c in s["extracted_citations"]:
+        ec = [o['extracted_citations'] for o in s['casebody_data']['text']['opinions'] if 'extracted_citations' in o]
+        ec = [item for sublist in ec for item in sublist]
+        for c in ec:
             c = as_dict(c)
             extracted_cite = {
                 "cite": c["cite"],
@@ -165,7 +167,23 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
                 extracted_cite['year'] = c['year']
             if c.get('pin_cites'):
                 extracted_cite['pin_cites'] = c['pin_cites']
+            if isinstance(c.get('opinion_id'), int):
+                extracted_cite['opinion_id'] = c['opinion_id'] - 1
             extracted_citations.append(extracted_cite)
+
+        # move head_matter outside of casebody_data
+        head_matter = list(filter(lambda x: x['type'] == 'head_matter', s['casebody_data']['text']['opinions']))
+        head_matter = head_matter[0] if head_matter else []
+        if head_matter:
+            s['casebody_data']['text']['opinions'].remove(head_matter)
+
+        if 'text' in head_matter:
+            s['casebody_data']['text']['head_matter'] = head_matter['text']
+
+        # strip citations from casebody data
+        for i, element in enumerate(s['casebody_data']['text']['opinions']):
+            if 'extracted_citations' in element:
+                del s['casebody_data']['text']['opinions'][i]['extracted_citations']
 
         preview = self.get_preview(instance)
 

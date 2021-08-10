@@ -26,6 +26,7 @@ const store = new Vuex.Store({
     results: [],
     resultsShown: false,
     first_result_number: null,
+    exposeAuthorCitesToField: false,
     last_result_number: null,
     showLoading: false,
     previousPageCursor: null,
@@ -147,6 +148,26 @@ const store = new Vuex.Store({
         default_value: null,
         label: "Author Type e.g. scalia:dissent",
         placeholder: "e.g. scalia:dissent",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
+      author__cites_to: {
+        value: null,
+        default_value: null,
+        label: "Author opinion cites to e.g. 367 U.S. 643",
+        placeholder: "e.g. 367 U.S. 643",
+        highlight_field: false,
+        highlight_explainer: false,
+        error: null,
+        value_when_searched: null
+      },
+      cites_to: {
+        value: null,
+        default_value: null,
+        label: "Case text cites to e.g. 367 U.S. 643",
+        placeholder: "e.g. 367 U.S. 643",
         highlight_field: false,
         highlight_explainer: false,
         error: null,
@@ -277,8 +298,14 @@ const store = new Vuex.Store({
     unhighlightExplainer(state, name) {
       if (name === 'ordering') {
         return state.ordering.highlight_explainer = false;
-      }
+      }  
       state.fields[name].highlight_explainer = false;
+    },
+    exposeAuthorCitesTo(state, author_field) {
+      if (author_field === true) {
+        return state.exposeAuthorCitesToField = true;
+      }
+      return state.exposeAuthorCitesToField;
     },
   },
   getters: {
@@ -297,6 +324,7 @@ const store = new Vuex.Store({
     choices: state => state.choices,
     search_error: state => state.search_error,
     ordering: state => state.ordering,
+    exposeAuthorCitesToField: state => state.exposeAuthorCitesToField,
     urls: state => state.urls,
     api_root: state => state.urls.api_root,
     download_size: state => state.download_size,
