@@ -176,14 +176,12 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         head_matter = head_matter[0] if head_matter else []
         if head_matter:
             s['casebody_data']['text']['opinions'].remove(head_matter)
+            s['casebody_data']['text']['head_matter'] = head_matter['text']
 
         # strip citations from casebody data
         for i, element in enumerate(s['casebody_data']['text']['opinions']):
             if 'extracted_citations' in element:
                 del s['casebody_data']['text']['opinions'][i]['extracted_citations']
-
-        if 'text' in head_matter:
-            s['casebody_data']['text']['head_matter'] = head_matter['text']
 
         preview = self.get_preview(instance)
 
