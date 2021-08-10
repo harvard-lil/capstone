@@ -176,6 +176,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
         head_matter = head_matter[0] if head_matter else []
         if head_matter:
             s['casebody_data']['text']['opinions'].remove(head_matter)
+
         if 'text' in head_matter:
             s['casebody_data']['text']['head_matter'] = head_matter['text']
 
