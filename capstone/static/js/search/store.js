@@ -327,20 +327,22 @@ const store = new Vuex.Store({
         // Only update array on change in order to prevent infinite looping. Otherwise,
         // rendered divs will constantly refresh. Using the filter logic here seemingly 
         // does not resolve the loop.
+        var changed = false;
         const larger = state.exposeDynamicCitesToField.length > newValue.length 
           ? state.exposeDynamicCitesToField.length : newValue.length;
         for (var i = 0; i < larger; ++i) {
-          const a = state.exposeDynamicCitesToField[i] ? state.exposeDynamicCitesToField[i].name : 'novalue';
-          const b = newValue[i] ? newValue[i].name : 'novalue';
-          if (a !== b)  {
-            if (a === 'novalue') {
-              state.fields[b].value = null;
-              state.fields[b].value_when_searched = null;
+          const _old = state.exposeDynamicCitesToField[i] ? state.exposeDynamicCitesToField[i].name : 'novalue';
+          const _new = newValue[i] ? newValue[i].name : 'novalue';
+          if (_old !== _new)  {
+            changed = true;
+            if (_new === 'novalue') {
+              state.fields[_old].value = null;
+              state.fields[_old].value_when_searched = null;
             }
-
-            state.exposeDynamicCitesToField = newValue;
           }
         }
+
+        if (changed) state.exposeDynamicCitesToField = newValue;
       }
     }
   },
