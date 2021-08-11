@@ -582,7 +582,7 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
 
     @classmethod
     def apply_query(cls, queryset, options=None, args=None, kwargs=None):
-        MultiNestedFilteringFilterBackend.apply_filter(cls, queryset, options, args, kwargs)
+        return MultiNestedFilteringFilterBackend.apply_filter(queryset, options, args, kwargs)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
