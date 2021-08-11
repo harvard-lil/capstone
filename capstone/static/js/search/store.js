@@ -41,7 +41,6 @@ const store = new Vuex.Store({
     download_full_case: true,
     show_explainer: false,
     advanced_fields_shown: false,
-    change_dynamic_fields: false,
     fields: {
       search: {
         value: null,
