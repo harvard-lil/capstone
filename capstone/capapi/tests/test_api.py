@@ -522,6 +522,7 @@ def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, e
             cite=cite_text,
             normalized_cite=normalize_cite(cite_text),
             target_case=case_cited,
+            opinion_id=0,
             target_cases=[case_cited.id])
     update_elasticsearch_from_queue()
 

@@ -82,6 +82,10 @@ To filter by prefix, append `__prefix`. For example, to find cases from February
 
     curl "{% api_url "cases-list" %}?decision_date__prefix=1800-02"
 
+To filter by fields not equal to a value, append `__exclude`. For example, to fetch cases outside of California:
+
+    curl "{% api_url "cases-list" %}?jurisdiction__exclude=cal"
+
 ## Sorting
   
 You can sort your search in the `/cases` endpoint using the `ordering` parameter. To sort your results in ascending order,

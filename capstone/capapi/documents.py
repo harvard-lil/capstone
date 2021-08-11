@@ -1,11 +1,12 @@
 import re
 from difflib import SequenceMatcher
+from itertools import groupby
 
 from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
-from capdb.models import CaseMetadata, CaseLastUpdate
+from capdb.models import CaseMetadata, CaseLastUpdate 
 from scripts.simhash import get_distance
 
 
@@ -102,20 +103,6 @@ class CaseDocument(Document):
         "rdb_normalized_cite": fields.KeywordField(),
     })
 
-    extracted_citations = fields.ObjectField(properties={
-        "cite": fields.KeywordField(),
-        "normalized_cite": fields.KeywordField(),
-        "rdb_normalized_cite": fields.KeywordField(),
-        "reporter": fields.KeywordField(),
-        "category": fields.KeywordField(),
-        "target_cases": fields.KeywordField(multi=True),
-        "groups": fields.ObjectField(),
-        "metadata": fields.ObjectField(),
-        "pin_cites": fields.ObjectField(),
-        "weight": fields.IntegerField(),
-        "year": fields.IntegerField(),
-    })
-
     jurisdiction = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
@@ -131,11 +118,24 @@ class CaseDocument(Document):
             'attorneys': fields.TextField(multi=True),
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
-            'head_matter': FTSField(),
             'opinions': fields.NestedField(multi=True, properties={
                 'author': FTSField(),
                 'text': FTSField(),
                 'type': fields.KeywordField(),
+                'extracted_citations': fields.NestedField(properties={
+                    "cite": fields.KeywordField(),
+                    "normalized_cite": fields.KeywordField(),
+                    "rdb_normalized_cite": fields.KeywordField(),
+                    "reporter": fields.KeywordField(),
+                    "category": fields.KeywordField(),
+                    "target_cases": fields.KeywordField(multi=True),
+                    "groups": fields.ObjectField(),
+                    "metadata": fields.ObjectField(),
+                    "pin_cites": fields.ObjectField(),
+                    "weight": fields.IntegerField(),
+                    "year": fields.IntegerField(),
+                    "opinion_id": fields.IntegerField(),
+                })  
             }),
             'corrections': fields.TextField(),
         }),
@@ -169,8 +169,37 @@ class CaseDocument(Document):
         except CaseLastUpdate.DoesNotExist:
             return None
 
+    def get_all_text_fields(self, start_array, prefix, recursive_field=None, ignore=None):
+        output = []
+        text_fields = recursive_field if recursive_field else self._fields 
+        for item in start_array:
+            text_fields = text_fields[item]
+        text_fields = text_fields._doc_class._doc_type.mapping.properties._params.get('properties', {}).items()
+
+        # Don't use comprehensions because we can't iterate through a generator twice, and the ugliness of copying 
+        # seems greater.
+        for field, value in text_fields:
+            if f'{prefix}.{field}' in ignore:
+                continue
+            if type(value) == fields.ObjectField or type(value) == fields.NestedField:
+                output = output + self.get_all_text_fields([], f'{prefix}.{field}', recursive_field=value, ignore=ignore)
+            else:
+                output.append(f'{prefix}.{field}')
+
+        return output
+
     def prepare_casebody_data(self, instance):
         body = instance.body_cache
+        serializer = self._fields['casebody_data']['text']['opinions']['extracted_citations']
+        # We must unroll to dict to support the `in` operator
+
+        outbound_cites = instance.extracted_citations.all()
+        cites_by_id = {k: list(v) for k,v in groupby(sorted(outbound_cites, key=lambda c: c.opinion_id), lambda c: c.opinion_id)}
+
+        for i, opinion in enumerate(body.json['opinions']):
+            if i in cites_by_id:
+                body.json['opinions'][i]['extracted_citations'] = [serializer.get_value_from_instance(c) for c in cites_by_id[i]]
+
         return instance.redact_obj({
             'xml': body.xml,
             'html': body.html,
@@ -203,7 +232,6 @@ class CaseDocument(Document):
         doc['jurisdiction'] = self.jurisdiction.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text'] = self.casebody_data.text.to_dict(skip_empty=skip_empty)
         doc['casebody_data']['text']['opinions'] = [ op.to_dict(skip_empty=skip_empty) for op in self.casebody_data['text'].opinions ]
-        doc['cites_to'] = self.extracted_citations
         return doc
 
     def full_cite(self):

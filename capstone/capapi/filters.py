@@ -4,10 +4,12 @@ import six
 import re
 import uuid
 
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.functional import partition
 from django.utils.functional import SimpleLazyObject
 from django_elasticsearch_dsl_drf.constants import MATCHING_OPTION_MUST, MATCHING_OPTION_SHOULD
 from django_elasticsearch_dsl_drf.filter_backends import FilteringFilterBackend, SimpleQueryStringSearchFilterBackend, \
-    OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend
+    OrderingFilterBackend, FacetedSearchFilterBackend, BaseSearchFilterBackend, NestedFilteringFilterBackend
 from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import NestedQueryBackend, SimpleQueryStringQueryBackend
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
@@ -327,11 +329,10 @@ class CitesToDynamicFilter(BaseFTSFilter):
                 request.GET.setlist('cites_to_id', ['unmatchable'])
             request.GET._mutable = False
 
-        if request.GET.get(self.search_param):
-            # Patch simple_query_string_search_fields on the view, since SimpleQueryStringSearchFilterBackend isn't
-            # set up to be used multiple times on the same view.
+            # due to rearchitecture of cites_to, use MultiNestedFilteringFilterBackend's filter queryset.
             view.simple_query_string_search_fields = self.fields
-            return super().filter_queryset(request, queryset, view)
+            return MultiNestedFilteringFilterBackend().filter_queryset(request, queryset, view)
+
         return queryset
 
 
@@ -357,14 +358,21 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
         if not hasattr(view, 'search_nested_fields'):
             return []
 
-        query_params = search_backend.get_search_query_params(request)
+        query_params = search_backend.get_search_query_params(request, view)
+
         __queries = []
 
         query_operator = operator.or_
         if search_backend.matching == MATCHING_OPTION_MUST:
             query_operator = operator.and_
 
-        for search_term in query_params:
+        search_terms = query_params
+        if type(query_params) == dict:
+            search_terms = query_params.pop(search_backend.search_key)
+        else:
+            query_params = {}
+
+        for search_term in search_terms:
             # Overload the `:` splitting in split_lookup_name to separate distinct fields.
             sub_search_terms = list(search_backend.split_lookup_name(search_term, 1).copy())
 
@@ -373,6 +381,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                 queries = []
                 path = options.get('path')
 
+                # Add query for fields
                 for _field in options.get('fields', []):
                     field = "{}.{}".format(path, _field)
 
@@ -395,6 +404,17 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     queries.append(
                         Q("simple_query_string", **field_kwargs)
                     )
+
+                # Add first nested query (for now, cites_to fields)
+                for field, options in query_params.items():
+                    query = MultiNestedFilteringFilterBackend.apply_filter(
+                        queryset=None,
+                        options=options,
+                        args=['terms'],
+                        kwargs={options['field']:options['values']},
+                        inner_query_only=True
+                    )
+                    queries.append(query)
 
                 highlight_nested_fields = NestedSimpleStringQueryBackend.prepare_highlight_fields(view)
                 highlight_inner = {'name':uuid.uuid4().hex.upper()[0:10], 'highlight': {'fields': {}}}
@@ -423,7 +443,34 @@ class NestedFTSFilter(BaseSearchFilterBackend):
     ]
 
     separate_queries_per_field = True
+    combine_with_cite = False
     matching = MATCHING_OPTION_MUST
+    search_key = 'query_values'
+
+    def get_search_query_params(self, request, view=None):
+        params = super().get_search_query_params(request)
+
+        if self.combine_with_cite and params:
+            copy_request = HttpRequest()
+            copy_request.query_params = QueryDict('', mutable=True)
+            for param in request.query_params:
+                if param.startswith('author__'):
+                    new_param = param.split('author__')[1]
+
+                    if new_param == 'cites_to':
+                        cites_to, cites_to_id = partition(lambda c: c.isdigit(), request.query_params.getlist(param))
+                        copy_request.query_params.setlist('cites_to', cites_to)
+                        copy_request.query_params.setlist('cites_to_id', cites_to_id)
+                    else:
+                        copy_request.query_params.setlist(new_param, request.query_params.getlist(param, []))
+
+            # Add params from multinestedfilteringbackend. View not needed.
+            cite_params = MultiNestedFilteringFilterBackend().get_filter_query_params(copy_request, view)
+            if cite_params:
+                cite_params[self.search_key] = params
+                params = cite_params
+
+        return params
 
 
 class MultiFieldFTSFilter(BaseSearchFilterBackend):
@@ -461,6 +508,9 @@ class MultiFieldFTSFilter(BaseSearchFilterBackend):
             return super().filter_queryset(request, queryset, view)
         return queryset
 
+    def get_search_query_params(self, request, view=None):
+        return super().get_search_query_params(request)
+
 
 class AuthorTypeFTSFilter(NestedFTSFilter):
     """
@@ -468,6 +518,7 @@ class AuthorTypeFTSFilter(NestedFTSFilter):
     """
     search_param = 'author_type'
     nested_query_fields = ('casebody_data.text.opinions.author','casebody_data.text.opinions.type',)
+    combine_with_cite = True
 
     matching = MATCHING_OPTION_MUST
 
@@ -478,6 +529,60 @@ class AuthorFTSFilter(NestedFTSFilter):
     """
     search_param = 'author'
     nested_query_fields = ('casebody_data.text.opinions.author',)
+    combine_with_cite = True
+
+
+class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
+    """
+    Class for handling nested filters in nested filters. 
+    """
+    def get_filter_query_params(self, request, view):
+        query_params = request.query_params.copy()
+
+        if 'cites_to' in query_params:
+            request.query_params._mutable = True
+            request.query_params.setlist('cites_to', [normalize_cite(c) for c in query_params.getlist('cites_to', [])])
+            request.query_params._mutable = False
+
+        return super().get_filter_query_params(request, view)
+
+    @classmethod
+    def apply_filter(cls, queryset, options=None, args=None, kwargs=None, inner_query_only=False):
+        """Apply filter.
+        :param queryset:
+        :param options:
+        :param args:
+        :param kwargs:
+        :param inner_query_only: specify if only the inside query shoudl be returned
+        :return:
+        """
+        if options is None or 'path' not in options:
+            raise ImproperlyConfigured(
+                "You should provide an `path` argument in the field options."
+            )
+
+        if args is None:
+            args = []
+        if kwargs is None:
+            kwargs = {}
+
+        query = Q(*args, **kwargs)
+        for i, path in enumerate(reversed(options.get('path'))):
+            if i != len(options.get('path')) - 1:
+                query = Q('nested', query=query, path=path)
+
+        if inner_query_only:
+            return query
+
+        return queryset.query(
+            'nested',
+            path=options.get('path')[0],
+            query=query
+        )
+
+    @classmethod
+    def apply_query(cls, queryset, options=None, args=None, kwargs=None):
+        MultiNestedFilteringFilterBackend.apply_filter(cls, queryset, options, args, kwargs)
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):

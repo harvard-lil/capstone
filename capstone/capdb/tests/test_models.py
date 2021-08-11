@@ -315,11 +315,15 @@ def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory
         'judges': [],
         'opinions': [
             {
+                'type': 'head_matter',
+                'author': 'head_matter',
+                'text': 'Case text 0'
+            },
+            {
                 'type': 'majority',
                 'author': None,
                 'text': 'Foo v. Bar, 1 U.S. 1. Case text 2\nCase text 3'
             }],
-        'head_matter': 'Case text 0',
         'corrections': ''
     }
     assert xml_equal(case.body_cache.xml,
