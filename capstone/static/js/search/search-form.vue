@@ -178,7 +178,7 @@
             </div>
 
             <div class="search-field shown" v-for="dynamicField in $store.getters.getExposeDynamicCitesToField" :key=dynamicField.name>
-              <field-item :clearable="true" :multiple="true" :field="dynamicField"></field-item>
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField(dynamicField.name)"></field-item>
               <div v-if="$store.getters.fieldHasError(dynamicField.name)" class="invalid-feedback">
                 {{ $store.getters.getField(dynamicField.name).error }}
               </div>
