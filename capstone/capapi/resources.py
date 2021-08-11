@@ -149,8 +149,8 @@ def apply_replacements(item, replacements, prefix="[ ", suffix=" ]"):
     replacements = list(replacements)
 
     if isinstance(item, int):
-        item = str(item)
-    if isinstance(item, str):
+        return item
+    elif isinstance(item, str):
         for replacement in replacements:
             item = item.replace(replacement[0], prefix + replacement[1] + suffix)
     elif isinstance(item, list):
