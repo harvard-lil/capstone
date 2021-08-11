@@ -177,15 +177,15 @@
               </small>
             </div>
 
-            <transition-group tag="div" name="fadegroup" class="search-field shown" v-for="dynamicField in $store.getters.getExposeDynamicCitesToField" :key=dynamicField.name>
-              <field-item :key="`${dynamicField.name}_item`" :clearable="true" :multiple="true" :field="dynamicField"></field-item>
-              <div :key="`${dynamicField.name}_error`" v-if="$store.getters.fieldHasError(dynamicField.name)" class="invalid-feedback">
+            <div class="search-field shown" v-for="dynamicField in $store.getters.getExposeDynamicCitesToField" :key=dynamicField.name>
+              <field-item :clearable="true" :multiple="true" :field="dynamicField"></field-item>
+              <div v-if="$store.getters.fieldHasError(dynamicField.name)" class="invalid-feedback">
                 {{ $store.getters.getField(dynamicField.name).error }}
               </div>
-              <small :key="`${dynamicField.name}_info`" :id="`help-text-${dynamicField.name}`" class="form-text text-muted">
+              <small :id="`help-text-${dynamicField.name}`" class="form-text text-muted">
                 {{ $store.getters.getField(dynamicField).info }}
               </small>
-            </transition-group>
+            </div>
         </template>
         </div>
         <button class="btn btn-tertiary show-advanced-options"
