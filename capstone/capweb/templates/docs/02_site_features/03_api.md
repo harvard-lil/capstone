@@ -118,7 +118,7 @@ case in our system, you can append it to the [path]({% docs_url 'glossary' %}#de
 
 ### Endpoint Parameters
 
-Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering](#case-filtering).
+Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering](#case-filtering).
 
 * `analysis.<key>`
 {: add_list_class="parameter-list" }
@@ -133,13 +133,22 @@ Many parameters can be appended with `__in`, `__gt`, `__gte`, `__lt`, or `__lte`
     * __description:__  citation to case, e.g. `1 Ill. 21`
 * `cites_to`
     * __data type:__    string or integer
-    * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`
+    * __description:__  find cases that cite to the given citation or case ID, e.g. `1 Ill. 21` or `12345`. 
 * `cites_to.reporter`
     * __data type:__    string
     * __description:__  find cases that cite to the given reporter, e.g. `Ill. 2d` or `Harv. L. Rev.`
 * `cites_to.category`
     * __data type:__    string
-    * __description:__  find cases that cite to the given citation category, e.g. `reporter:state` or `reporters:federal`. Category values can be found in results for the cases endpoint under `extracted_citations[].category`
+    * __description:__  find cases that cite to the given citation category, e.g. `reporter:state` or `reporters:federal`. Category values can be found in results for the cases endpoint under `extracted_citations[].category`.
+* `author__cites_to`
+    * __data type:__    string or integer
+    * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given citation or case ID.
+* `author__cites_to.reporter`
+    * __data type:__    string
+    * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given reporter.
+* `author__cites_to.category`
+    * __data type:__    string
+    * __description:__  only active when the `author` or `author_type` parameters are also present. Find cases where the selected author's opinions cite to the given category.
 * `cites_to__*`
     * __data type:__    integer, float, or string
     * __description:__  find cases with citations into a set of cases filtered by arbitrary parameters, e.g. `cites_to__jurisdiction=nc, cites_to__author=breyer, cites_to__analysis.word_count__gt=1000`. The target cases will be chosen randomly within the provided filters if the result exceeds 20,000 cases. For multiple filters, simply combine parameters, e.g. `cites_to__jurisdiction=nc&cites_to__analysis.word_count__gt=1000`. Only fields used for filtering and searching the cases endpoint may be used. 
