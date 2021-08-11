@@ -260,7 +260,7 @@ def test_redact_id_numbers(case_factory):
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_extract_citations(reset_sequences, case_factory, elasticsearch, client):
+def test_extract_citations(reset_sequences, case_factory, elasticsearch, client, django_assert_num_queries):
     paragraph_1 = """
         correct: Foo v. Bar, 1 U.S. 1, 12 (2000) (overruling).
         extra cruft matched: 2 F.-'Supp.- 2
@@ -279,7 +279,8 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client)
 
     case = case_factory(decision_date=datetime(2000, 1, 1))
     set_case_text(case, paragraph_1, text3=paragraph_2)
-    case.sync_case_body_cache()
+    with django_assert_num_queries(select=4, insert=2, update=1):
+        case.sync_case_body_cache()
     update_elasticsearch_from_queue()
 
     # check html

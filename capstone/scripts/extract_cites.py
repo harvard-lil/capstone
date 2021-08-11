@@ -88,8 +88,9 @@ def extract_citations(case, html, xml):
             Q(cite__in=cites_by_type['cite']) |
             Q(normalized_cite__in=cites_by_type['normalized_cite']) |
             Q(rdb_cite__in=cites_by_type['rdb_cite']) |
-            Q(rdb_normalized_cite__in=cites_by_type['rdb_normalized_cite'])
-        ))
+            Q(rdb_normalized_cite__in=cites_by_type['rdb_normalized_cite']))
+        .select_related('case')
+    )
     for cite in target_cites:
         for cite_type in cites_by_type:
             cite_str = getattr(cite, cite_type)
