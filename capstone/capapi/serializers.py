@@ -162,7 +162,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
             if c.get("target_cases"):
                 extracted_cite["case_ids"] = c["target_cases"]
             if int(c.get('weight', 1)) > 1:
-                extracted_cite['weight'] = c['weight']
+                extracted_cite['weight'] = int(c['weight'])
             if c.get('year'):
                 extracted_cite['year'] = c['year']
             if c.get('pin_cites'):
