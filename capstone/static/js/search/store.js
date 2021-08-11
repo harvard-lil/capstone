@@ -330,13 +330,12 @@ const store = new Vuex.Store({
         const larger = state.exposeDynamicCitesToField.length > newValue.length 
           ? state.exposeDynamicCitesToField.length : newValue.length;
         for (var i = 0; i < larger; ++i) {
-          const a = state.exposeDynamicCitesToField[i] ? state.exposeDynamicCitesToField[i].label : 'novalue';
-          const b = newValue[i] ? newValue[i].label : 'novalue';
+          const a = state.exposeDynamicCitesToField[i] ? state.exposeDynamicCitesToField[i].name : 'novalue';
+          const b = newValue[i] ? newValue[i].name : 'novalue';
           if (a !== b)  {
-            let toDelete = state.exposeDynamicCitesToField.filter(x => !newValue.includes(x));
-            for (let object of toDelete) {
-              state.fields[object['name']].value = null;
-              state.fields[object['name']].value_when_searched = null;
+            if (a === 'novalue') {
+              state.fields[b].value = null;
+              state.fields[b].value_when_searched = null;
             }
 
             state.exposeDynamicCitesToField = newValue;
@@ -362,7 +361,7 @@ const store = new Vuex.Store({
     search_error: state => state.search_error,
     ordering: state => state.ordering,
     exposeAuthorCitesToField: state => state.exposeAuthorCitesToField,
-    getExposeDynamicCitesToField: state => state.exposeDynamicCitesToField,
+    exposeDynamicCitesToField: state => state.exposeDynamicCitesToField,
     urls: state => state.urls,
     api_root: state => state.urls.api_root,
     download_size: state => state.download_size,
