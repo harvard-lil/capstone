@@ -12,7 +12,7 @@ from tqdm import tqdm
 from capdb.models import Citation, EditLog, Reporter, CaseMetadata
 from scripts.helpers import group_by, normalize_cite
 
-"""
+r"""
     Usage: fab run_script:scripts.link_scdb
     
     This script attempts to link up CAP cases with SCDB cases.
@@ -100,7 +100,7 @@ def manual_pre_edits(dry_run='true'):
 
     if dry_run == 'false':
         with EditLog(
-            description='Delete incorrectly identified cites matching "\d+ U. S. \d+" (extra space). '
+            description=r'Delete incorrectly identified cites matching "\d+ U. S. \d+" (extra space). '
             'These all refer to prior history of the case.'
         ).record():
             for cite in to_delete:
