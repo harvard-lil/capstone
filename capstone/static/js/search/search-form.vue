@@ -126,7 +126,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :author_field="true" :clearable="true" :multiple="true" :field="$store.getters.getField('author')"></field-item>
+              <field-item field_to_change="author" :clearable="true" :multiple="true" :field="$store.getters.getField('author')"></field-item>
               <div v-if="$store.getters.fieldHasError('author')" class="invalid-feedback">
                 {{ $store.getters.getField('author').error }}
               </div>
@@ -136,7 +136,7 @@
             </div>
 
             <div class="search-field shown">
-              <field-item :author_field="true" :clearable="true" :multiple="true" :field="$store.getters.getField('author_type')"></field-item>
+              <field-item field_to_change="author" :clearable="true" :multiple="true" :field="$store.getters.getField('author_type')"></field-item>
               <div v-if="$store.getters.fieldHasError('author_type')" class="invalid-feedback">
                 {{ $store.getters.getField('author_type').error }}
               </div>
@@ -146,7 +146,7 @@
             </div>
 
             <transition name="fade">
-              <div v-if="$store.getters.exposeAuthorCitesToField === true" class="search-field shown">
+              <div v-if="$store.getters.exposeAuthorCitesToField === true || $store.getters.getField('author__cites_to').value" class="search-field shown">
                 <field-item :clearable="true" :multiple="true" :field="$store.getters.getField('author__cites_to')"></field-item>
                 <div v-if="$store.getters.fieldHasError('author__cites_to')" class="invalid-feedback">
                   {{ $store.getters.getField('author__cites_to').error }}
@@ -166,7 +166,27 @@
                 {{ $store.getters.getField('cites_to').info }}
               </small>
             </div>
-          </template>
+
+            <div class="search-field shown">
+              <field-item field_to_change="dynamic" :clearable="true" :multiple="true" :field="$store.getters.getField('cites_to__')"></field-item>
+              <div v-if="$store.getters.fieldHasError('cites_to__')" class="invalid-feedback">
+                {{ $store.getters.getField('cites_to__').error }}
+              </div>
+              <small :id="`help-text-cites_to__`" class="form-text text-muted">
+                {{ $store.getters.getField('cites_to__').info }}
+              </small>
+            </div>
+
+            <div class="search-field shown" v-for="dynamicField in $store.getters.exposeDynamicCitesToField" :key=dynamicField.name>
+              <field-item :clearable="true" :multiple="true" :field="$store.getters.getField(dynamicField.name)"></field-item>
+              <div v-if="$store.getters.fieldHasError(dynamicField.name)" class="invalid-feedback">
+                {{ $store.getters.getField(dynamicField.name).error }}
+              </div>
+              <small :id="`help-text-${dynamicField.name}`" class="form-text text-muted">
+                {{ $store.getters.getField(dynamicField).info }}
+              </small>
+            </div>
+        </template>
         </div>
         <button class="btn btn-tertiary show-advanced-options"
            aria-label="Show or hide advanced filters"

@@ -10,10 +10,10 @@
         :clearable="clearable"
         :id="field.name"
         :reduce="option => option.value"
+        :on-change="$store.commit('exposeFields', {field_to_change, value})"
         :class="['dropdown-field', 'col-12',
            {'is-invalid': $store.getters.fieldHasError(field.name)},
            { 'queryfield_highlighted': field.highlight_field} ]">
-
       </v-select>
   </div>
   <!-- for text, numbers, and everything else (that we presume is text) -->
@@ -30,7 +30,7 @@
            :max="field.max"
            @focus="$store.commit('highlightExplainer', field.name)"
            @blur="$store.commit('unhighlightExplainer', field.name)"
-           v-on:input="$store.commit('exposeAuthorCitesTo', author_field)"
+           v-on:input="$store.commit('exposeFields', {field_to_change, value})"
            v-on:keyup.enter="$store.dispatch('searchFromForm')">
     <label :for="field.name">
       {{ field.label }}
@@ -44,7 +44,7 @@ import vSelect from 'vue-select';
 export default {
   components: {vSelect},
   name: "field-item",
-  props: [ 'field', 'search_on_change', 'clearable', 'multiple', 'author_field' ],
+  props: [ 'field', 'search_on_change', 'clearable', 'multiple', 'field_to_change'],
   computed: {
     value: {
       get () {
