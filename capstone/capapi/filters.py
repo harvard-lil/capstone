@@ -166,7 +166,23 @@ class UserHistoryFilter(FilterSet):
         fields = ['case_id', 'date']
 
 
-class CaseFilter(FilterSet):
+class SingleCaseFilter(FilterSet):
+    """Filters that apply to single-case endpoint as well as list endpoint."""
+    full_case = filters.ChoiceFilter(
+        label='Include full case text or just metadata?',
+        choices=(('false', 'Just metadata (default)'), ('true', 'Full case text')),
+    )
+    body_format = filters.ChoiceFilter(
+        label='Format for case text (applies only if including case text)',
+        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML')),
+    )
+
+    class Meta:
+        model = models.CaseMetadata
+        fields = []
+
+
+class CaseFilter(SingleCaseFilter):
     """
         Used for HTML display and validation, but not actual filtering.
         Rendered by CaseFilterBackend, which applies filters to the ES query.
@@ -184,20 +200,12 @@ class CaseFilter(FilterSet):
     docket_number = filters.CharFilter(label='Docket Number (contains)')
     court = filters.ChoiceFilter(choices=court_choices)
     court_id = filters.NumberFilter(label='Court ID')
-    full_case = filters.ChoiceFilter(
-        label='Include full case text or just metadata?',
-        choices=(('false', 'Just metadata (default)'), ('true', 'Full case text')),
-    )
     author = filters.CharFilter(
         label='Filter by opinion author'
         )
     author_type = filters.CharFilter(
         label='Filter by opinion author and their opinion type in a ruling. Values must be separated by a colon; invalid input will be \
             ignored. Example: author_type=scalia:dissent.'
-    )
-    body_format = filters.ChoiceFilter(
-        label='Format for case text (applies only if including case text)',
-        choices=(('text', 'text only (default)'), ('html', 'HTML'), ('xml', 'XML'), ('tokens', 'debug tokens')),
     )
     cites_to = filters.CharFilter(label='Cases citing to citation (citation or case id)')
     facet = filters.CharFilter(label='Facet for which to aggregate results. Can be jurisdiction, \

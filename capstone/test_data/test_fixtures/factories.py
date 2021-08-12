@@ -302,6 +302,16 @@ class CaseStructureFactory(factory.DjangoModelFactory):
 
 
 @register
+class ExtractedCitationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = ExtractedCitation
+
+    cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
+    # cited_by = factory.SubFactory(CaseFactory)
+    opinion_id = 0
+
+
+@register
 class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
@@ -322,6 +332,7 @@ class CaseFactory(factory.DjangoModelFactory):
     structure = factory.RelatedFactory(CaseStructureFactory, 'metadata')
     citations = factory.RelatedFactory(CitationFactory, 'case')
     body_cache = factory.RelatedFactory(CaseBodyCacheFactory, 'metadata')
+    extracted_citations = factory.RelatedFactory(ExtractedCitationFactory, 'cited_by')
 
     @post_generation
     def post(obj, create, extracted, **kwargs):
@@ -383,14 +394,3 @@ class CaseExportFactory(factory.DjangoModelFactory):
     public = True
     filter_type = 'jurisdiction'
     filter_id = factory.LazyAttribute(lambda o: JurisdictionFactory.create().pk)
-
-
-@register
-class ExtractedCitationFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = ExtractedCitation
-
-    cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
-    cited_by = factory.SubFactory(CaseFactory)
-
-
