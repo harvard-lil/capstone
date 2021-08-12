@@ -279,7 +279,7 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client,
 
     case = case_factory(decision_date=datetime(2000, 1, 1))
     set_case_text(case, paragraph_1, text3=paragraph_2)
-    with django_assert_num_queries(select=4, insert=2, update=1):
+    with django_assert_num_queries(select=5, insert=2, update=1, delete=1):
         case.sync_case_body_cache()
     update_elasticsearch_from_queue()
 
@@ -365,7 +365,7 @@ def test_sync_case_body_cache_for_vol(volume_metadata, case_factory, django_asse
 
     # full sync
     CaseBodyCache.objects.update(text='blank')
-    with django_assert_num_queries(select=7, update=2, insert=1):
+    with django_assert_num_queries(select=8, update=2, insert=1, delete=1):
         sync_case_body_cache_for_vol(volume_metadata.barcode)
     assert all(c.text == 'Case text 0\nCase text 1Case text 2\nCase text 3\n' for c in CaseBodyCache.objects.all())
 

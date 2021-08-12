@@ -6,6 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from django.utils.functional import partition
+from django_filters.utils import translate_validation
 from rest_framework import viewsets, renderers, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -106,7 +107,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.MultiNestedFilteringFilterBackend,
         filters.DocketNumberFTSFilter,
         filters.CitesToDynamicFilter,
-        filters.CaseFilterBackend, # Facilitates Filtering (Filters)
+        filters.CaseFilterBackend,
     ]
     result_filter_backends = [
         filters.CAPOrderingFilterBackend, # Orders Document
@@ -232,7 +233,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         ]
 
     def is_full_case_request(self):
-        return True if self.request.query_params.get('full_case', 'false').lower() == 'true' else False
+        return self.request.query_params.get('full_case', 'false').lower() == 'true'
 
     def get_serializer_class(self, *args, **kwargs):
         if self.is_full_case_request():
@@ -240,27 +241,30 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         else:
             return self.serializer_class
 
+    def get_queryset(self):
+        """Validate query params for single-case endpoint."""
+        queryset = super().get_queryset()
+        filterset = filters.SingleCaseFilter(data=self.request.query_params, queryset=queryset, request=self.request)
+        if not filterset.is_valid():
+            raise translate_validation(filterset.errors)
+        return queryset
+
     def filter_queryset(self, queryset):
         queryset = super(CaseDocumentViewSet, self).filter_queryset(queryset)
+
         # exclude all values from casebody_data that we don't need to complete the request
-        data_formats_to_exclude = ["xml", "html", 
-            *CaseDocument().get_all_text_fields(['casebody_data', 'text'], 'text',
-                ignore=['text.opinions.extracted_citations', 'text.opinions.type'])]
+        full_case_request = self.is_full_case_request()
+        body_format = self.request.query_params.get('body_format', 'text') or 'text'
+        data_formats_to_exclude = []
+        if not (full_case_request and body_format == 'xml'):
+            data_formats_to_exclude.append('casebody_data.xml')
+        if not (full_case_request and body_format == 'html'):
+            data_formats_to_exclude.append('casebody_data.html')
+        if not (full_case_request and body_format == 'text'):
+            data_formats_to_exclude.append('casebody_data.text.opinions.text')
+        queryset = queryset.source({"excludes": data_formats_to_exclude})
 
-        if self.is_full_case_request():
-            data_formats_to_exclude = ["text", "html", "xml"]
-
-            try:
-                data_formats_to_exclude.remove(self.request.query_params.get('body_format', 'text'))
-            except ValueError:
-                # defaults to sending text if it's a full case request with no body_format specified.
-                data_formats_to_exclude.remove('text')
-
-        source_filter = {
-            "excludes": ["casebody_data.%s" % format for format in data_formats_to_exclude],
-        }
-
-        return queryset.source(source_filter)
+        return queryset
 
     def get_renderers(self):
         if self.action == 'retrieve':

@@ -334,11 +334,6 @@ def admin_client(admin_user_factory):
     return client_with_user(admin_user_factory())
 
 
-@pytest.fixture
-def api_request_factory():
-    return APIRequestFactory()
-
-
 @pytest.fixture()
 def private_case_export():
     return CaseExportFactory.create(public=False)

@@ -2,8 +2,11 @@ from csv import DictReader
 from io import StringIO
 
 from flaky import flaky
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 from capapi import api_reverse
+from capapi.views import api_views
 from capdb.tasks import update_elasticsearch_from_queue
 from test_data.test_fixtures.factories import *
 from capapi.tests.helpers import check_response
@@ -379,12 +382,18 @@ def test_case_citation_redirect(client, case_factory, elasticsearch):
 
 # FORMATS
 def get_casebody_data_with_format(client, case_id, body_format):
-    response = client.get(api_reverse('cases-detail', args=[case_id]), {"full_case": "true", "body_format": body_format})
-    check_response(response)
-    content = response.json()
-    casebody = content["casebody"]
+    # fetch case using both list and detail endpoints and make sure they match
+    list_response = client.get(api_reverse('cases-list'), {"id": case_id, "full_case": "true", "body_format": body_format})
+    check_response(list_response)
+    detail_response = client.get(api_reverse('cases-detail', args=[case_id]), {"full_case": "true", "body_format": body_format})
+    check_response(detail_response)
+    list_data = list_response.json()["results"][0]
+    detail_data = detail_response.json()
+    assert list_data == detail_data
+    casebody = detail_data["casebody"]
     assert casebody['status'] == "ok"
     return casebody['data']
+
 
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_default(auth_client, restricted_case, elasticsearch):
@@ -396,15 +405,11 @@ def test_body_format_default(auth_client, restricted_case, elasticsearch):
     assert set(opinion.keys()) == {'type', 'author', 'text'}
     assert opinion["text"]
 
+
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_unrecognized(auth_client, restricted_case, elasticsearch):
-    data = get_casebody_data_with_format(auth_client, restricted_case.id, "uh_oh_not_a_real_format")
-    assert type(data["judges"]) is list
-    assert type(data["attorneys"]) is list
-    assert type(data["parties"]) is list
-    opinion = data["opinions"][0]
-    assert set(opinion.keys()) == {'type', 'author', 'text'}
-    assert opinion["text"]
+    detail_response = auth_client.get(api_reverse('cases-detail', args=[restricted_case.id]), {"full_case": "true", "body_format": "invalid"})
+    check_response(detail_response, status_code=400, content_includes="Select a valid choice")
 
 
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
@@ -412,10 +417,25 @@ def test_body_format_xml(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "xml")
     assert "<?xml version=" in data
 
+
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_body_format_html(auth_client, restricted_case, elasticsearch):
     data = get_casebody_data_with_format(auth_client, restricted_case.id, "html")
     assert restricted_case.body_cache.html in data
+
+
+@pytest.mark.django_db(databases=['capdb'])
+@pytest.mark.parametrize("body_format", ["html", "xml", "text"])
+def test_exclude_data(body_format, case, elasticsearch):
+    request = Request(APIRequestFactory().get(api_reverse("cases-list"), {"full_case": "true", "body_format": body_format}))
+    view = api_views.CaseDocumentViewSet(request=request)
+    search = view.filter_queryset(view.get_queryset())
+    response = search.execute()
+    data = response['hits']['hits'][0]['_source']['casebody_data']
+    assert ("html" in data) == (body_format == "html")
+    assert ("xml" in data) == (body_format == "xml")
+    assert ("text" in data["text"]["opinions"][0]) == (body_format == "text")
+
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_full_text_search(client, case_factory, elasticsearch):
@@ -510,20 +530,18 @@ def test_filter_case(client, case_factory, elasticsearch):
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_filter_case_cite_by(client, extracted_citation_factory, case_factory, elasticsearch):
+def test_filter_case_cite_by(client, case_factory, elasticsearch):
     search_url = api_reverse("cases-list")
-    cases = [case_factory() for _ in range(4)]
-    expected_case_ids = set(c.id for c in cases[:-1])
     cite_text = '1 Mass. 1'
     case_cited = case_factory(citations__cite=cite_text)
-    for c in cases[:-1]:
-        extracted_citation_factory(
-            cited_by=c,
-            cite=cite_text,
-            normalized_cite=normalize_cite(cite_text),
-            target_case=case_cited,
-            opinion_id=0,
-            target_cases=[case_cited.id])
+    case_factory()  # create non-matching case to be filtered out
+    matching_cases = [case_factory(
+        extracted_citations__cite=cite_text,
+        extracted_citations__normalized_cite=normalize_cite(cite_text),
+        extracted_citations__target_case=case_cited,
+        extracted_citations__target_cases=[case_cited.id]
+    ) for _ in range(3)]
+    expected_case_ids = set(c.id for c in matching_cases)
     update_elasticsearch_from_queue()
 
     # get cases by cites_to=citation
