@@ -383,4 +383,20 @@ def legacy_please_refresh(request, timeline_uuid):
         "uuid": timeline_uuid
     }, status=400)
 
+
 # # # # END CHRONOLAWGIC # # # #
+
+def most_cited(request):
+    return render(request, "lab/most-cited/most-cited.html")
+
+
+def most_cited_data(request, year):
+    with open("./labs/templates/lab/most-cited/most-cited-data/" + str(year) + ".json", "r") as f:
+        data = json.load(f)
+    return JsonResponse(data)
+
+
+def most_cited_overall(request, year):
+    with open("./labs/templates/lab/most-cited/overall/" + str(year) + ".json", "r") as f:
+        data = json.load(f)
+    return JsonResponse({'response': data})

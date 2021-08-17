@@ -7,6 +7,9 @@ from django.conf import settings
 # General labs URLS — No project specific stuff
 urlpatterns = [
     path('', LabMarkdownView.as_view(template_name='labs-about.md'), name='labs'),
+    path('most-cited/', views.most_cited, name='most-cited'),
+    path('most-cited/data/<int:year>', views.most_cited_data, name='most-cited-data'),
+    path('most-cited/overall-data/<int:year>', views.most_cited_overall, name='most-cited-overall')
 ]
 
 # Project URLs- make discreet groups of URLs for each project

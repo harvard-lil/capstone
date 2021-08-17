@@ -259,7 +259,7 @@ PIPELINE = {
             # embedded with {% stylesheet "base" %}:
             'base', 'index', 'about', 'bulk', 'gallery', 'contact', 'docs', 'registration', 'api', 'case_editor',
             'case', 'case_cited_by', 'search', 'view_metadata', 'trends', 'cite', 'file_download', 'cite-grid',
-            'unified_docs', 'fetch', 'labs', 'labs-chronolawgic'
+            'unified_docs', 'fetch', 'labs', 'labs-chronolawgic', 'labs-most-cited',
         ]
     },
 
