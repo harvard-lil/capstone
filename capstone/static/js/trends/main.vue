@@ -81,6 +81,11 @@
             <li><example-link query="*: api(cites_to_id=1785580)"/> (citations over time for Mapp v. Ohio for all jurisdictions)</li>
           </ul>
 
+          <p>
+            Alternatively, users may build a trends query directly in the search page <a href="/search">here</a>. The search 
+            pane may be more intuitive for complex queries.
+          </p>
+
           <h5 class="card-title">Jurisdiction search</h5>
           <p>
             Limit a term to a particular jurisdiction (US state or state-level political division) by starting the term with
