@@ -406,6 +406,7 @@ class NestedSimpleStringQueryBackend(NestedQueryBackend):
                     field_kwargs = {
                         "query": value,
                         "fields": [field],
+                        "default_operator": "and",
                     }
                     queried_fields.append(field)
 
