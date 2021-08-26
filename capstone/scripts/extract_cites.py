@@ -16,7 +16,7 @@ from eyecite.tokenizers import HyperscanTokenizer, EXTRACTORS
 from eyecite.utils import is_balanced_html
 
 from capweb.helpers import reverse
-from scripts.helpers import serialize_xml, parse_xml, serialize_html, normalize_cite, parse_html
+from scripts.helpers import serialize_xml, parse_xml, serialize_html, alphanum_lower, parse_html
 
 
 ### ENTRY POINTS ###
@@ -62,9 +62,9 @@ def extract_citations(case, html, xml):
 
                 # get normalized forms of cite
                 normalized_forms = {'cite': eyecite_cite.matched_text()}
-                normalized_forms['normalized_cite'] = normalize_cite(normalized_forms['cite'])
+                normalized_forms['normalized_cite'] = alphanum_lower(normalized_forms['cite'])
                 normalized_forms['rdb_cite'] = eyecite_cite.corrected_citation()
-                normalized_forms['rdb_normalized_cite'] = normalize_cite(normalized_forms['rdb_cite'])
+                normalized_forms['rdb_normalized_cite'] = alphanum_lower(normalized_forms['rdb_cite'])
                 eyecite_cite.normalized_forms = normalized_forms
 
                 for k, v in normalized_forms.items():
@@ -97,7 +97,6 @@ def extract_citations(case, html, xml):
             if cite_str:
                 cases_by_cite[cite_type][cite_str].add(cite.case)
 
-    # cluster cites by the resources they refer to
     def resolve_full_cite(eyecite_cite):
         # use builtin resolver for non-case citations
         if not isinstance(eyecite_cite, FullCaseCitation):
@@ -273,13 +272,13 @@ def extract_citations_normalized(text):
     for eyecite_cite in extract_citations_from_text(text):
         matched_text = eyecite_cite.matched_text()
         canonical_cite = eyecite_cite.corrected_citation()
-        cites.append((matched_text, normalize_cite(matched_text), normalize_cite(canonical_cite)))
+        cites.append((matched_text, alphanum_lower(matched_text), alphanum_lower(canonical_cite)))
     return list(dict.fromkeys(cites).keys())  # remove dupes while retaining order
 
 
-def extract_whole_cite(text):
+def extract_whole_cite(text, require_classes=(CaseCitation,), ignore_classes=(NonopinionCitation,)):
     """Return eyecite cite only if entire text is matched as a single cite. Otherwise return None."""
-    cites = list(extract_citations_from_text(text))
+    cites = list(extract_citations_from_text(text, require_classes, ignore_classes))
     if len(cites) == 1 and cites[0].matched_text() == text:
         return cites[0]
     return None

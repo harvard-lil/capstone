@@ -28,6 +28,12 @@ import fabfile
 from .factories import *
 
 
+### Pytest setup ###
+
+def pytest_addoption(parser):
+    parser.addoption("--recreate_fastcase_files", action="store_true", default=False, help="Recreate files in test_data/fastcase rather than testing existing files")
+
+
 ### Database setup ###
 
 # This is run once at database setup and data loaded here is available to all tests

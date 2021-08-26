@@ -18,11 +18,14 @@ RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sou
 #  https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch-on-unix
 # FOURTH LINE:
 # libhyperscan-dev for pip hyperscan package
+# FIFTH LINE:
+# htmltidy for fastcase ingest
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
     && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
     && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
-    && apt-get -t buster-backports install -y libhyperscan-dev
+    && apt-get -t buster-backports install -y libhyperscan-dev \
+    && apt-get install -y tidy
 
 # pip
 RUN mkdir /app

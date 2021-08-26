@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "CurrentOpinion": {
+      "type": "string"
+    },
+    "ShortName": {
+      "type": "string"
+    },
+    "Jurisdiction": {
+      "type": "object",
+      "properties": {
+        "CourtAbbreviation": {
+          "type": "string"
+        },
+        "CourtName": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "CourtAbbreviation",
+        "CourtName"
+      ],
+      "additionalProperties": false
+    },
+    "DocketNumbers": {
+      "type": ["object", "null"],
+      "properties": {
+        "DocketNumber": {
+          "type": "array",
+          "items": [
+            {
+              "type": ["string", "null"]
+            }
+          ]
+        }
+      },
+      "required": [
+        "DocketNumber"
+      ],
+      "additionalProperties": false
+    },
+    "Citations": {
+      "type": "object",
+      "properties": {
+        "Citation": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "Volume": {
+                  "type": "string"
+                },
+                "Reporter": {
+                  "type": "string"
+                },
+                "Page": {
+                  "type": "string"
+                },
+                "Suffix": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Volume",
+                "Reporter",
+                "Page"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "Citation"
+      ]
+    },
+    "DecisionDate": {
+      "type": "string"
+    },
+    "Author": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "PartyHeader": {
+      "type": ["string", "null"]
+    },
+    "LawyerHeader": {
+      "type": ["string", "null"]
+    },
+    "HeaderHtml": {
+      "type": "string"
+    },
+    "CaseHtml": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": [
+    "CurrentOpinion",
+    "ShortName",
+    "Jurisdiction",
+    "PartyHeader",
+    "HeaderHtml",
+    "CaseHtml"
+  ],
+  "additionalProperties": false
+}

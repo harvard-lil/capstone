@@ -26,7 +26,8 @@ argh                # needed by watchdog
 # xml
 lxml
 xmltodict
-pyquery
+# pyquery
+https://github.com/gawel/pyquery/archive/ca82465e8c049ea5f0c18586a32169338125cffe.zip#egg=pyquery  # Until version >= 2.0.0.dev0 is released
 
 # database
 psycopg2            # postgres connector

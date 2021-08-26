@@ -537,7 +537,7 @@ def test_filter_case_cite_by(client, case_factory, elasticsearch):
     case_factory()  # create non-matching case to be filtered out
     matching_cases = [case_factory(
         extracted_citations__cite=cite_text,
-        extracted_citations__normalized_cite=normalize_cite(cite_text),
+        extracted_citations__normalized_cite=alphanum_lower(cite_text),
         extracted_citations__target_case=case_cited,
         extracted_citations__target_cases=[case_cited.id]
     ) for _ in range(3)]

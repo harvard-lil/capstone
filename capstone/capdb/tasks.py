@@ -186,7 +186,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
             fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
             labels_by_block_id = PageStructure.labels_by_block_id(pages)
             update_fields = ['html', 'xml', 'text', 'json']
-            query = query.select_related('structure').prefetch_related('citations', 'extracted_citations')
+            query = query.select_related('structure', 'fastcase_import').prefetch_related('citations', 'extracted_citations')
 
         # just rendering text/json
         else:

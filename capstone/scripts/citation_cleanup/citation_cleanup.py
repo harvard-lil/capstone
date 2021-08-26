@@ -6,7 +6,7 @@ import csv
 from datetime import datetime
 
 from capdb.models import Citation, CaseMetadata, EditLog
-from scripts.helpers import normalize_cite
+from scripts.helpers import alphanum_lower
 
 """ 
     How to run this script:
@@ -121,7 +121,7 @@ def main(dry_run='true'):
                     if action == 'update':
                         # print("Updating: {}".format(new_citation))
                         matching_citation.cite = new_citation
-                        matching_citation.normalized_cite = normalize_cite(new_citation)
+                        matching_citation.normalized_cite = alphanum_lower(new_citation)
                         new_citation_obj = matching_citation
                         to_update.append(matching_citation)
                     elif action == 'create':
@@ -130,7 +130,7 @@ def main(dry_run='true'):
                             case_id=case_id,
                             type="parallel",
                             cite=new_citation,
-                            normalized_cite=normalize_cite(new_citation),
+                            normalized_cite=alphanum_lower(new_citation),
                         )
                         to_insert.append(new_citation_obj)
 

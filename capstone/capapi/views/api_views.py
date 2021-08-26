@@ -27,7 +27,7 @@ from capdb import models
 from capdb.models import CaseMetadata
 from capdb.storages import ngram_kv_store_ro
 from capweb.helpers import cache_func
-from scripts.helpers import normalize_cite
+from scripts.helpers import alphanum_lower
 from user_data.models import UserHistory
 
 
@@ -277,7 +277,7 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         # we redirect to /cases/?cite=casecitation
         id = kwargs[self.lookup_field]
         if not id.isdigit():
-            normalized_cite = normalize_cite(id)
+            normalized_cite = alphanum_lower(id)
             query_string = urllib.parse.urlencode(dict(self.request.query_params, cite=normalized_cite), doseq=True)
             new_url = reverse('cases-list') + "?" + query_string
             return HttpResponseRedirect(new_url)

@@ -10,7 +10,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from capapi.models import CapUser
 from capapi.resources import CachedCountDefaultQuerySet
 from .models import VolumeXML, CaseXML, PageXML, TrackingToolLog, VolumeMetadata, Reporter, \
-    SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation, EditLog, EditLogTransaction
+    SlowQuery, Jurisdiction, CaseMetadata, CaseExport, Citation, EditLog, EditLogTransaction, FastcaseImport
 
 
 ### helpers and setup ###
@@ -68,6 +68,7 @@ class CaseMetadataAdmin(CachedCountMixin, admin.ModelAdmin):
     inlines = (
         new_class('CitationInline', ReadonlyInlineMixin, admin.TabularInline, model=Citation),
         new_class('CaseXMLInline', admin.StackedInline, model=CaseXML, raw_id_fields=['volume']),
+        new_class('FastcaseImportInline', admin.StackedInline, model=FastcaseImport, fk_name='case', raw_id_fields=['duplicate_of']),
     )
     fieldsets = (
         ('Flags', {

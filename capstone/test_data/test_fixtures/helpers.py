@@ -105,3 +105,12 @@ def set_case_text(case, text, text2="", text3=None):
     if text3 is not None:
         page.blocks[3]["tokens"][3] = text3
     page.save()
+
+
+def sort_nested_dict(d):
+    """Alphabetize keys in nested dict, including dicts inside lists."""
+    if isinstance(d, dict):
+        return {k: sort_nested_dict(v) for k, v in sorted(d.items())}
+    if isinstance(d, (list, tuple)):
+        return [sort_nested_dict(v) for v in d]
+    return d
