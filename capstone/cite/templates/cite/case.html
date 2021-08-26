@@ -71,8 +71,25 @@
             </div>
           </template>
 
+          {% if db_case.source == 'Fastcase' %}
+            <template v-slot:source>
+              <hr class="d-none d-lg-block"/>
+              <div class="sidebar-section" id="source">
+                <h2 class="sidebar-title">Case source</h2>
+                <div class="sidebar-section-contents">
+                  <a href="https://www.fastcase.com/">
+                    <img src="{% static "img/logos/fastcase.png" %}" style="width: 50%">
+                    <br>
+                    Case text courtesy of Fastcase
+                  </a>
+                </div>
+              </div>
+            </template>
+          {% endif %}
+
           {% if similar_cases %}
             <template v-slot:similar-cases>
+              <hr class="d-none d-lg-block"/>
               <div class="sidebar-section" id="similar-cases">
                 <h2 class="sidebar-title">Other databases</h2>
                 <div class="sidebar-section-contents">
@@ -125,9 +142,17 @@
             <div class="sidebar-section d-none d-lg-block" id="info-section">
               <h3>What is this page?</h3>
               <div class="sidebar-section-contents">
-                Every document on this site is part of the official caselaw of a court within the
-                United States, scanned from the collection of the Harvard Law School Library.
-                <a href="{% url "about" %}">Learn more</a>.
+                <p>
+                  Every document on this site is part of the official caselaw of a court within the
+                  United States. <a href="{% url "about" %}">Learn more</a>.
+                </p>
+                <p>
+                  <ul>
+                    <li>Source: {{ db_case.source }}</li>
+                    <li>Batch: {{ db_case.batch }}</li>
+                    <li>Date added: {{ db_case.date_added }}</li>
+                  </ul>
+                </p>
               </div>
             </div>
           </template>

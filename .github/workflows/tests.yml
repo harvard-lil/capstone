@@ -61,7 +61,7 @@ jobs:
             `#-n 2                                           # run tests in parallel for speed` \
             `#--junitxml=junit/pytest/test-results.xml       # write junit test results so they can be displayed somewhere later?` \
             --cov --cov-config=setup.cfg --cov-report xml  `# write coverage data to .coverage for upload by codecov` \
-            -v
+            -vv
 
       ### codecov ###
       # https://github.com/codecov/codecov-action

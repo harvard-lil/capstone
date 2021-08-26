@@ -2,10 +2,15 @@ from contextlib import contextmanager
 from copy import deepcopy
 
 from lxml import etree, sax
+from pyquery import PyQuery
 
 
 ### HELPERS ###
-from pyquery import PyQuery
+
+# sax functions passed to render_sax_tags
+sax_start = sax.ElementTreeContentHandler.startElement
+sax_end = sax.ElementTreeContentHandler.endElement
+sax_chars = sax.ElementTreeContentHandler.characters
 
 
 def iter_pars(opinions):
@@ -88,14 +93,17 @@ class VolumeRenderer:
                 - as text
                 - as token stream for debugging
     """
-    def __init__(self, blocks_by_id, fonts_by_id, labels_by_block_id, redacted=True, pretty_print=True):
+    duplicative = False
+    original_xml = False
+
+    def __init__(self, blocks_by_id=None, fonts_by_id=None, labels_by_block_id=None, redacted=True, pretty_print=True, format='xml'):
         """ Set some initial values that apply for the whole volume. """
         self.blocks_by_id = blocks_by_id
         self.fonts_by_id = fonts_by_id
         self.labels_by_block_id = labels_by_block_id
         self.redacted = redacted
-        self.original_xml = False
         self.pretty_print = pretty_print
+        self.format = format
 
     ### ALTO <Page> RENDERING ###
 
@@ -269,7 +277,7 @@ class VolumeRenderer:
             Render <casebody> as HTML
         """
         self.format = 'html'
-        return self.render_markup(case, method='html').replace('\xad', '')
+        return self.render_markup(case).replace('\xad', '')
 
     def render_xml(self, case):
         """
@@ -297,7 +305,7 @@ class VolumeRenderer:
             par['blocks'] = [blocks_by_id[id] for id in par['block_ids']]
         return opinions
 
-    def render_markup(self, case, method='xml'):
+    def render_markup(self, case):
         """
             Core renderer.
         """
@@ -328,7 +336,7 @@ class VolumeRenderer:
 
                 # <aside class='footnote'>, or <footnote>
                 for footnote in opinion.get('footnotes', []):
-                    footnote_el = self.make_footnote_el(footnote)
+                    footnote_el = self.make_footnote_el(**footnote)
                     if footnote_el is None:
                         continue
                     left_strip_text = None if self.original_xml else footnote.get('label', None)  # used for stripping footnote labels from text
@@ -342,63 +350,79 @@ class VolumeRenderer:
                 else:
                     case_el.append(opinion_el)
 
-        etree.indent(case_el)
-        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print, method=method)
+        return self.serialize_case_el(case_el)
+
+    def serialize_case_el(self, case_el, indent=True):
+        if indent:
+            etree.indent(case_el)
+        return etree.tostring(case_el, encoding=str, pretty_print=self.pretty_print, method=self.format)
 
     def make_case_el(self, case):
         """ Make <section class='case'>, or <casebody> """
         if self.format == 'xml':
-            return etree.Element('casebody', {
+            case_el = etree.Element('casebody', {
                 'firstpage': case.first_page or '',
                 'lastpage': case.last_page or '',
                 'xmlns': 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body_Duplicative:v1' if self.duplicative else 'http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1',
             })
         else:
-            return etree.Element('section', {
+            case_el = etree.Element('section', {
                 'class': 'casebody',
                 'data-case-id': case.case_id,
                 'data-firstpage': case.first_page or '',
                 'data-lastpage': case.last_page or '',
             })
+        case_el.text = "\n"
+        return case_el
 
     def make_opinion_el(self, opinion):
         """ Make <section class='opinion'>, or <opinion> """
         if self.format == 'xml':
-            return etree.Element('opinion', {'type': opinion['type']})
+            opinion_el = etree.Element('opinion', {'type': opinion['type']})
         else:
             if opinion['type'] == 'head':
-                return etree.Element('section', {'class': 'head-matter'})
+                opinion_el = etree.Element('section', {'class': 'head-matter'})
             elif opinion['type'] == 'corrections':
-                return etree.Element('section', {'class': 'corrections'})
+                opinion_el = etree.Element('section', {'class': 'corrections'})
             else:
-                return etree.Element('article', {'class': 'opinion', 'data-type': opinion['type']})
+                opinion_el = etree.Element('article', {'class': 'opinion', 'data-type': opinion['type']})
+        opinion_el.tail = "\n"
+        return opinion_el
 
-    def make_footnote_el(self, footnote):
+    def make_footnote_el(self, id=None, label=None, orphan=None, redacted=False, **unhandled_kwargs):
         """ Make <aside class='footnote'>, or <footnote> """
+        if redacted and self.redacted:
+            return None
+        footnote_attrs = {}
         if self.format == 'xml':
-            footnote_attrs = {k: footnote[k] for k in ('label', 'orphan') if k in footnote}
-            if footnote.get('redacted'):
-                if self.redacted:
-                    return None
+            if label:
+                footnote_attrs['label'] = label
+            if orphan:
+                footnote_attrs['orphan'] = orphan
+            if redacted:
                 footnote_attrs['redact'] = 'true'
-            return etree.Element('footnote', footnote_attrs)
+            footnote_el = etree.Element('footnote', footnote_attrs)
         else:
-            if self.redacted and footnote.get('redacted'):
-                return None
-            footnote_attrs = {'data-' + k: footnote[k] for k in ('label', 'orphan') if k in footnote}
+            if label:
+                footnote_attrs['data-label'] = label
+            if orphan:
+                footnote_attrs['data-orphan'] = orphan
             footnote_attrs['class'] = 'footnote'
-            footnote_attrs['id'] = footnote.get('id', '')
+            footnote_attrs['id'] = id or ''
             footnote_el = etree.Element('aside', footnote_attrs)
-            if 'label' in footnote:
-                etree.SubElement(footnote_el, 'a', {'href': '#ref_'+footnote['id']}).text = footnote['label']
-            return footnote_el
+            if label:
+                label_el = etree.SubElement(footnote_el, 'a', {'href': '#ref_'+id})
+                label_el.text = label
+                label_el.tail = "\n"
+        footnote_el.text = "\n"
+        footnote_el.tail = "\n"
+        return footnote_el
 
     def make_pars(self, pars, parent_el, left_strip_text=None, last_page_label=None, include_block_label=False):
         """ Make each <p class='label'> or <label> element. """
         for par in pars:
             if self.redacted and par.get('redacted'):
                 continue
-            handler = sax.ElementTreeContentHandler()
             tag_stack = []
             open_tags = set()
 
@@ -412,7 +436,7 @@ class VolumeRenderer:
                     if 'class' in first_block and first_block['class'] != 'p':
                         par_attrs['label'] = first_block['class']
 
-                tag_stack.append((handler.startElement, (par['class'], par_attrs,)))
+                tag_stack.append((sax_start, (par['class'], par_attrs,)))
             else:
                 if par['class'] == 'p':
                     tag = ('p', {'id': par['id']},)
@@ -420,7 +444,7 @@ class VolumeRenderer:
                     tag = ('blockquote', {'id': par['id']},)
                 else:
                     tag = (par_class_to_tag.get(par['class'], 'p'), {'class': par['class'], 'id': par['id']},)
-                tag_stack.append((handler.startElement, tag))
+                tag_stack.append((sax_start, tag))
 
             # write each block in the paragraph
             for block_id in par['block_ids']:
@@ -431,23 +455,16 @@ class VolumeRenderer:
                     page_label = self.labels_by_block_id[block_id]
                     if page_label != last_page_label:
                         if last_page_label is not None:
-                            if self.format == 'xml':
-                                tag_stack.append((handler.startElement, ('page-number', {'label': page_label, 'citation-index': '1'},)))
-                                tag_stack.append((handler.characters, ('*'+page_label,)))
-                                tag_stack.append((handler.endElement, ('page-number',)))
-                            else:
-                                tag_stack.append((handler.startElement, ('a', {'id':'p'+page_label, 'href':'#p'+page_label, 'data-label':page_label, 'data-citation-index':'1', 'class':'page-label'},)))
-                                tag_stack.append((handler.characters, ('*'+page_label,)))
-                                tag_stack.append((handler.endElement, ('a',)))
+                            tag_stack.extend(self.page_label_tags(page_label))
                         last_page_label = page_label
 
                 # write <img>
                 if block.get('format') == 'image' and not (self.redacted and block.get('redacted')):
                     if self.original_xml:
-                        tag_stack.append((handler.characters, ('[[Image here]]',)))
+                        tag_stack.append((sax_chars, ('[[Image here]]',)))
                     else:
-                        tag_stack.append((handler.startElement, ('img', {'src': 'data:'+block['data'], 'class': block['class'], 'width': str(round(block['rect'][2])), 'height': str(round(block['rect'][3]))},)))
-                        tag_stack.append((handler.endElement, ('img',)))
+                        tag_stack.append((sax_start, ('img', {'src': 'data:' + block['data'], 'class': block['class'], 'width': str(round(block['rect'][2])), 'height': str(round(block['rect'][3]))},)))
+                        tag_stack.append((sax_end, ('img',)))
 
                 # write tokens
                 else:
@@ -463,7 +480,7 @@ class VolumeRenderer:
                                         token = token[1:]
                                     else:
                                         left_strip_text = None
-                            tag_stack.append((handler.characters, (token,)))
+                            tag_stack.append((sax_chars, (token,)))
                             continue
 
                         token_name, token_attrs = (token + [{}])[:2]
@@ -474,43 +491,39 @@ class VolumeRenderer:
                                 continue
                             font_obj = self.fonts_by_id[token_attrs['id']]
                             open_font_tags = [tag for tag, font_string in self.font_style_map if font_string in font_obj.style]
-                            self.open_font_tags(handler, tag_stack, open_font_tags)
+                            self.open_font_tags(tag_stack, open_font_tags)
                         elif token_name == '/font':
                             if self.original_xml:
                                 continue
-                            self.close_font_tags(handler, tag_stack, open_font_tags)
+                            self.close_font_tags(tag_stack, open_font_tags)
                             open_font_tags = []
 
                         # handle footnotemark and bracketnum
                         elif token_name == 'footnotemark' or token_name == 'bracketnum':
                             if self.original_xml:
-                                tag_stack.append((handler.startElement, (token_name,)))
+                                tag_stack.append((sax_start, (token_name,)))
                             elif self.format == 'xml':
-                                with self.wrap_font_tags(handler, tag_stack, open_font_tags):
-                                    tag_stack.append((handler.startElement, (token_name,)))
+                                with self.wrap_font_tags(tag_stack, open_font_tags):
+                                    tag_stack.append((sax_start, (token_name,)))
                             else:
                                 attrs = {'class': token_name}
                                 ref = token_attrs.get('ref')
                                 if ref:
                                     attrs['href'] = '#' + ref
                                     attrs['id'] = 'ref_' + ref
-                                with self.wrap_font_tags(handler, tag_stack, open_font_tags):
-                                    tag_stack.append((handler.startElement, ('a', attrs,)))
+                                with self.wrap_font_tags(tag_stack, open_font_tags):
+                                    tag_stack.append((sax_start, ('a', attrs,)))
                             open_tags.add(token_name)
                         elif token_name == '/footnotemark' or token_name == '/bracketnum':
                             # we could hit a close tag without an open tag, if the open tag was in a previous redacted block
                             tag_name = token_name[1:]
                             if tag_name in open_tags:
-                                with self.wrap_font_tags(handler, tag_stack, open_font_tags):
-                                    tag_stack.append((handler.endElement, (token_name[1:] if self.format == 'xml' else 'a',)))
+                                with self.wrap_font_tags(tag_stack, open_font_tags):
+                                    tag_stack.append((sax_end, (token_name[1:] if self.format == 'xml' else 'a',)))
                                 open_tags.remove(tag_name)
 
-            # run all of our commands, like "handler.startElement(*args)", to actually build the xml tree
-            for method, args in tag_stack:
-                method(*args)
-
             # remove empty tags, which would typically be created by redacted spans
-            par_el = handler._root
+            par_el = self.render_sax_tags(tag_stack)
             remove_empty_tags(par_el, ignore_tags={'img'})
 
             # append element if not empty (contents not redacted)
@@ -520,29 +533,53 @@ class VolumeRenderer:
         return last_page_label
 
     @staticmethod
-    def open_font_tags(handler, tag_stack, font_tags):
-        for tag in font_tags:
-            last_el = tag_stack[-1]
-            if last_el[0] == handler.endElement and last_el[1][0] == tag:
-                tag_stack.pop()
-            else:
-                tag_stack.append((handler.startElement, (tag,)))
+    def render_sax_tags(tag_stack):
+        # run all of our commands, like "sax_start(*args)", to actually build the xml tree
+        handler = sax.ElementTreeContentHandler()
+        for method, args in tag_stack:
+            method(handler, *args)
+        return handler._root
+
+    def page_label_tags(self, page_label, citation_index=1):
+        if self.format == 'xml':
+            return [
+                (sax_start, ('page-number', {'label': page_label, 'citation-index': str(citation_index)},)),
+                (sax_chars, ('*' + page_label,)),
+                (sax_end, ('page-number',)),
+            ]
+        else:
+            return [
+                (sax_start, ('a', {'id': 'p' + page_label, 'href': '#p' + page_label,
+                                              'data-label': page_label, 'data-citation-index': str(citation_index),
+                                              'class': 'page-label'},)),
+                (sax_chars, ('*' * citation_index + page_label,)),
+                (sax_end, ('a',)),
+            ]
 
     @staticmethod
-    def close_font_tags(handler, tag_stack, open_font_tags):
-        for tag in reversed(open_font_tags):
+    def open_font_tags(tag_stack, font_tags):
+        for tag in font_tags:
             last_el = tag_stack[-1]
-            if last_el[0] == handler.startElement and last_el[1][0] == tag:
+            if last_el[0] == sax_end and last_el[1][0] == tag:
                 tag_stack.pop()
             else:
-                tag_stack.append((handler.endElement, (tag,)))
+                tag_stack.append((sax_start, (tag,)))
+
+    @staticmethod
+    def close_font_tags(tag_stack, open_font_tags):
+        for tag in reversed(open_font_tags):
+            last_el = tag_stack[-1]
+            if last_el[0] == sax_start and last_el[1][0] == tag:
+                tag_stack.pop()
+            else:
+                tag_stack.append((sax_end, (tag,)))
 
     @contextmanager
-    def wrap_font_tags(self, handler, tag_stack, open_font_tags):
+    def wrap_font_tags(self, tag_stack, open_font_tags):
         """ When opening or closing another tag, close and re-open all style tags (e.g. <em>, <strong>) """
         if open_font_tags:
-            self.close_font_tags(handler, tag_stack, open_font_tags)
+            self.close_font_tags(tag_stack, open_font_tags)
             yield
-            self.open_font_tags(handler, tag_stack, open_font_tags)
+            self.open_font_tags(tag_stack, open_font_tags)
         else:
             yield

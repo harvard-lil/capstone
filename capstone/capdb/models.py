@@ -33,10 +33,11 @@ from capweb.helpers import reverse, transaction_safe_exceptions
 from scripts import render_case
 from scripts.extract_cites import extract_citations, extract_whole_cite
 from scripts.extract_images import extract_images
+from scripts.fastcase.format_fastcase import format_fastcase_html
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key, copy_file, normalize_cite, parse_html)
+                             short_id_from_s3_key, copy_file, alphanum_lower, parse_html)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 from elasticsearch.helpers import BulkIndexError
@@ -951,11 +952,16 @@ class CaseMetadataQuerySet(TemporalQuerySet):
             Fetch associated data for cases that are going to be indexed by elasticsearch.
         """
         return self\
-            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update')\
+            .select_related('volume', 'reporter', 'court', 'jurisdiction', 'body_cache', 'last_update', 'fastcase_import')\
             .prefetch_related('extracted_citations', 'citations', 'analysis')
 
 
 class CaseMetadata(models.Model):
+    # provenance
+    source = models.CharField(max_length=10, choices=(('CAP', 'CAP'), ('Fastcase', 'Fastcase')), default='CAP')
+    batch = models.CharField(max_length=255, default='2018')
+    date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+
     case_id = models.CharField(max_length=64, unique=True)
     random_id = models.BigIntegerField(unique=True, null=True)
     frontend_url = models.CharField(max_length=255, null=True, blank=True)
@@ -985,7 +991,6 @@ class CaseMetadata(models.Model):
                                on_delete=models.DO_NOTHING)
     reporter = models.ForeignKey('Reporter', related_name='case_metadatas',
                                  on_delete=models.DO_NOTHING)
-    date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
     human_corrected = models.BooleanField(default=False, help_text="True if the case meets a 'human corrected' standard of accuracy")
     duplicative = models.BooleanField(default=False,
                                       help_text="True if case was not processed because it is an unofficial case in a regional reporter")
@@ -1034,7 +1039,7 @@ class CaseMetadata(models.Model):
             self.decision_date = parse_decision_date(self.decision_date_original)
         if self.in_scope != self.get_in_scope():
             self.in_scope = not self.in_scope
-        if self.tracker.has_changed('no_index_redacted'):
+        if self.pk and self.tracker.has_changed('no_index_redacted'):
             self.sync_case_body_cache()
 
         if not self.random_id:
@@ -1213,20 +1218,27 @@ class CaseMetadata(models.Model):
                 return True, analyses, [], []
             return False, [], [], []
 
-        structure = self.structure
-        if not blocks_by_id or not labels_by_block_id:
-            pages = list(structure.pages.all())
-        blocks_by_id = blocks_by_id or PageStructure.blocks_by_id(pages)
-        fonts_by_id = fonts_by_id or CaseFont.fonts_by_id(blocks_by_id)
-        labels_by_block_id = labels_by_block_id or PageStructure.labels_by_block_id(pages)
+        if self.source == 'Fastcase':
+            formats = format_fastcase_html(self)
 
-        renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
-        html = renderer.render_html(self)
-        xml = renderer.render_xml(self)
-        json, text = self.get_json_from_html(html)
+        else:
+            structure = self.structure
+            if not blocks_by_id or not labels_by_block_id:
+                pages = list(structure.pages.all())
+            blocks_by_id = blocks_by_id or PageStructure.blocks_by_id(pages)
+            fonts_by_id = fonts_by_id or CaseFont.fonts_by_id(blocks_by_id)
+            labels_by_block_id = labels_by_block_id or PageStructure.labels_by_block_id(pages)
+
+            renderer = render_case.VolumeRenderer(blocks_by_id, fonts_by_id, labels_by_block_id)
+            formats = {
+                'html': renderer.render_html(self),
+                'xml': renderer.render_xml(self),
+            }
+
+        formats['json'], formats['text'] = self.get_json_from_html(formats['html'])
 
         # extract citations and annotate html/xml
-        html, xml, cites_to_delete, cites_to_create = extract_citations(self, html, xml)
+        formats['html'], formats['xml'], cites_to_delete, cites_to_create = extract_citations(self, formats['html'], formats['xml'])
 
         ## save
         try:
@@ -1234,8 +1246,7 @@ class CaseMetadata(models.Model):
         except CaseBodyCache.DoesNotExist:
             body_cache = self.body_cache = CaseBodyCache(metadata=self)
         changed = bool(cites_to_delete or cites_to_create)
-        for k in ['text', 'html', 'xml', 'json']:
-            new_val = locals()[k]
+        for k, new_val in formats.items():
             new_val = self.redact_obj(new_val)
             old_val = getattr(body_cache, k)
             if new_val != old_val:
@@ -1402,7 +1413,7 @@ class CaseMetadata(models.Model):
         if citations:
             Citation.objects.bulk_create(Citation(
                 cite=citation['text'],
-                normalized_cite=normalize_cite(citation['text']),
+                normalized_cite=alphanum_lower(citation['text']),
                 type=citation['category'],
                 category=citation['type'],
                 duplicative=citation.get('duplicative', False),
@@ -1928,13 +1939,14 @@ class Citation(models.Model):
             self.cite_updated()
         super(Citation, self).save(*args, **kwargs)
 
-    def cite_updated(self):
+    def cite_updated(self, eyecite_cite=None):
         """Update normalized_cite, rdb_cite, and rdb_normalized_cite to match cite."""
-        self.normalized_cite = normalize_cite(self.cite)
-        eyecite_cite = extract_whole_cite(self.cite)
+        self.normalized_cite = alphanum_lower(self.cite)
+        if not eyecite_cite:
+            eyecite_cite = extract_whole_cite(self.cite)
         if eyecite_cite:
             self.rdb_cite = eyecite_cite.corrected_citation()
-            self.rdb_normalized_cite = normalize_cite(self.rdb_cite)
+            self.rdb_normalized_cite = alphanum_lower(self.rdb_cite)
         else:
             self.rdb_cite = None
             self.rdb_normalized_cite = None
@@ -2416,6 +2428,17 @@ class CaseInitialMetadata(models.Model):
 
     ingest_source = models.ForeignKey(TarFile, on_delete=models.DO_NOTHING)
     ingest_path = models.CharField(max_length=1000)
+
+
+class FastcaseImport(models.Model):
+    """
+        Raw data imported from Fastcase.
+    """
+    case = models.OneToOneField(CaseMetadata, null=True, on_delete=models.DO_NOTHING, related_name='fastcase_import')
+    duplicate_of = models.ForeignKey(CaseMetadata, null=True, on_delete=models.DO_NOTHING, related_name='fastcase_duplicates')
+    data = models.JSONField()
+    path = models.CharField(max_length=1000)
+    batch = models.CharField(max_length=1000)
 
 
 class CaseBodyCache(models.Model):

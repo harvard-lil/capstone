@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from lxml import etree
+import html as python_html
 from pyquery import PyQuery
 
 from django.core.files.storage import FileSystemStorage
@@ -175,6 +176,67 @@ jurisdiction_translation_long_name = {
     'Wyo.': 'Wyoming'
 }
 
+postal_states = {
+    "AL": "Alabama",
+    "AK": "Alaska",
+    "AS": "American Samoa",
+    "AZ": "Arizona",
+    "AR": "Arkansas",
+    "CA": "California",
+    "CO": "Colorado",
+    "CT": "Connecticut",
+    "DE": "Delaware",
+    "DC": "District of Columbia",
+    "FL": "Florida",
+    "GA": "Georgia",
+    "GU": "Guam",
+    "HI": "Hawaii",
+    "ID": "Idaho",
+    "IL": "Illinois",
+    "IN": "Indiana",
+    "IA": "Iowa",
+    "KS": "Kansas",
+    "KY": "Kentucky",
+    "LA": "Louisiana",
+    "ME": "Maine",
+    "MH": "Marshall Islands",
+    "MD": "Maryland",
+    "MA": "Massachusetts",
+    "MI": "Michigan",
+    "MN": "Minnesota",
+    "MS": "Mississippi",
+    "MO": "Missouri",
+    "MT": "Montana",
+    "NE": "Nebraska",
+    "NV": "Nevada",
+    "NH": "New Hampshire",
+    "NJ": "New Jersey",
+    "NM": "New Mexico",
+    "NY": "New York",
+    "NC": "North Carolina",
+    "ND": "North Dakota",
+    "MP": "Northern Mariana Islands",
+    "OH": "Ohio",
+    "OK": "Oklahoma",
+    "OR": "Oregon",
+    "PW": "Palau",
+    "PA": "Pennsylvania",
+    "PR": "Puerto Rico",
+    "RI": "Rhode Island",
+    "SC": "South Carolina",
+    "SD": "South Dakota",
+    "TN": "Tennessee",
+    "TX": "Texas",
+    "UT": "Utah",
+    "VT": "Vermont",
+    "VI": "Virgin Islands",
+    "VA": "Virginia",
+    "WA": "Washington",
+    "WV": "West Virginia",
+    "WI": "Wisconsin",
+    "WY": "Wyoming"
+}
+
 special_jurisdiction_cases = {
     '32044078495512': 'Ohio',
     '32044078495546': 'Ohio',
@@ -221,6 +283,13 @@ def serialize_xml(xml):
 def serialize_html(html):
     """Write PyQuery object back to HTML."""
     return html.outer_html()
+
+
+
+def inner_html(tree, encoding=str, method='html', **kwargs):
+    """ Return inner HTML of lxml element """
+    return (python_html.escape(tree.text) if tree.text else '') + \
+        ''.join([etree.tostring(child, encoding=encoding, method=method, **kwargs) for child in tree.iterchildren()])
 
 
 _root_file_system_storage = FileSystemStorage('/')
@@ -414,6 +483,6 @@ def group_by(collection, key):
     return out
 
 
-def normalize_cite(cite):
-    """Remove spaces and special characters from a citation"""
-    return re.sub(r'[^0-9a-z]', '', cite.lower())
+def alphanum_lower(text):
+    """Return lowercase text with only alphanumeric characters."""
+    return re.sub(r'[^0-9a-z]', '', text.lower())

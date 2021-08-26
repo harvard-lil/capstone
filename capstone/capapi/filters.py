@@ -20,7 +20,7 @@ from rest_framework.exceptions import ValidationError
 from capapi.resources import parallel_execute
 from capapi.views import api_views
 from capdb import models
-from scripts.helpers import normalize_cite
+from scripts.helpers import alphanum_lower
 from scripts.extract_cites import extract_citations_normalized
 from user_data.models import UserHistory
 
@@ -250,7 +250,7 @@ class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
         query_params = super().get_filter_query_params(request, view)
 
         if 'cite' in query_params:
-            query_params['cite']['values'] = [normalize_cite(cite) for cite in lc_values(query_params['cite']['values'])]
+            query_params['cite']['values'] = [alphanum_lower(cite) for cite in lc_values(query_params['cite']['values'])]
 
         if 'court' in query_params:
             query_params['court']['values'] = lc_values(query_params['court']['values'])
@@ -259,7 +259,7 @@ class CaseFilterBackend(FilteringFilterBackend, DjangoFilterBackend):
             query_params['jurisdiction']['values'] = lc_values(query_params['jurisdiction']['values'])
 
         if 'cites_to' in query_params:
-            query_params['cites_to']['values'] = [normalize_cite(c) for c in query_params['cites_to']['values']]
+            query_params['cites_to']['values'] = [alphanum_lower(c) for c in query_params['cites_to']['values']]
         return query_params
 
 
@@ -550,7 +550,7 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
 
         if 'cites_to' in query_params:
             request.query_params._mutable = True
-            request.query_params.setlist('cites_to', [normalize_cite(c) for c in query_params.getlist('cites_to', [])])
+            request.query_params.setlist('cites_to', [alphanum_lower(c) for c in query_params.getlist('cites_to', [])])
             request.query_params._mutable = False
 
         return super().get_filter_query_params(request, view)

@@ -1,4 +1,3 @@
-import re
 from difflib import SequenceMatcher
 from itertools import groupby
 
@@ -6,7 +5,8 @@ from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
-from capdb.models import CaseMetadata, CaseLastUpdate 
+from capdb.models import CaseMetadata, CaseLastUpdate
+from scripts.helpers import alphanum_lower
 from scripts.simhash import get_distance
 
 
@@ -45,6 +45,19 @@ def FTSField(**kwargs):
         index_options='offsets': allow for highlighting of long documents without increasing max_analyzed_offset
     """
     return fields.TextField(index_phrases=True, analyzer='english', index_options='offsets', **kwargs)
+
+
+class DictField(fields.ObjectField):
+    """
+        Variant of ObjectField for indexing dictionaries of simple values. Just returns dictionary for serializing
+        instead of calling serializers for subfields. This avoids errors if dict might be missing some fields.
+    """
+    def _get_inner_field_data(self, obj, field_value_to_ignore=None):
+        if not obj:
+            return {}
+        if isinstance(obj, dict):
+            return obj
+        raise ValueError("DictField values must be dictionaries.""")
 
 
 class RawSearch(Search):
@@ -131,7 +144,10 @@ class CaseDocument(Document):
                     "target_cases": fields.KeywordField(multi=True),
                     "groups": fields.ObjectField(),
                     "metadata": fields.ObjectField(),
-                    "pin_cites": fields.ObjectField(),
+                    "pin_cites": DictField(properties={
+                        "page": fields.KeywordField(),
+                        "parenthetical": FTSField(),
+                    }),
                     "weight": fields.IntegerField(),
                     "year": fields.IntegerField(),
                     "opinion_id": fields.IntegerField(),
@@ -147,6 +163,19 @@ class CaseDocument(Document):
         'random_id': fields.DoubleField(),
         'random_bucket': fields.IntegerField(),
     })
+
+    provenance = fields.ObjectField(properties={
+        "date_added": fields.KeywordField(),
+        "source": fields.KeywordField(),
+        "batch": fields.KeywordField(),
+    })
+
+    def prepare_provenance(self, instance):
+        return {
+            "date_added": instance.date_added.strftime('%Y-%m-%d'),
+            "source": instance.source,
+            "batch": instance.batch,
+        }
 
     def prepare_frontend_pdf_url(self, instance):
         return instance.get_pdf_url(with_host=False)
@@ -319,8 +348,8 @@ class ResolveDocument(Document):
 
         # estimate similarities for each case
         for candidate in candidates:
-            n1 = re.sub(r'[^a-z0-9]', '', self.name_short.lower())
-            n2 = re.sub(r'[^a-z0-9]', '', candidate.name_short.lower())
+            n1 = alphanum_lower(self.name_short)
+            n2 = alphanum_lower(candidate.name_short)
             if n1 in n2 or n2 in n1:
                 candidate.similarity = 1
             else:

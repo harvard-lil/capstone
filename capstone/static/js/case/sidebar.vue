@@ -25,6 +25,7 @@
         </span>
       </div>
     </div>
+    <slot name="source"></slot>
     <slot name="similar-cases"></slot>
     <hr class="d-none d-lg-block"/>
     <div class="sidebar-section d-none d-lg-block" id="tools-section">

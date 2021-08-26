@@ -1,0 +1,1834 @@
+A3d_100:
+  cases:
+    FC:A3d/100/100a3d1004_Replace2.xml:
+      analysis:
+      - key: cardinality
+        value: 1253
+      - key: char_count
+        value: 31285
+      - key: sha256
+        value: a4551c1f251b13a70f141547434afa659f03d640e1a025cbf656fa517f759af6
+      - key: simhash
+        value: 1:e98af70f179a57d3
+      - key: word_count
+        value: 5022
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 100 A.3d 1004
+        normalized_cite: 100a3d1004
+        type: official
+      - category: null
+        cite: 153 Conn. App. 266
+        normalized_cite: 153connapp266
+        type: parallel
+      court:
+        jurisdiction:
+          name: Conn.
+        name: Appellate Court of Connecticut
+        name_abbreviation: Conn. App. Ct.
+      decision_date_original: '2014-09-30'
+      docket_number: No. 35670.
+      docket_numbers:
+      - No. 35670.
+      fastcase_import:
+        batch: test_batch
+        path: A3d/100/100a3d1004_Replace2.xml
+      first_page: '1004'
+      first_page_order: 1004
+      frontend_url: /a3d/100/1004/
+      has_body_cache: true
+      jurisdiction:
+        name: Conn.
+      last_page: '1013'
+      last_page_order: 1013
+      name: STATE of Connecticut v. Anthony DYOUS.
+      name_abbreviation: State v. Dyous
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+    FC:A3d/100/100a3d1076_Replace2.xml:
+      analysis:
+      - key: cardinality
+        value: 1693
+      - key: char_count
+        value: 45684
+      - key: sha256
+        value: 84c8d814288e8500541981e74c93d8fa5b4fc1c032afe1edb06c9e2a47c30e4f
+      - key: simhash
+        value: 1:ac0bb24045c650c6
+      - key: word_count
+        value: 7378
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 100 A.3d 1076
+        normalized_cite: 100a3d1076
+        type: official
+      court:
+        jurisdiction:
+          name: D.C.
+        name: District of Columbia Court of Appeals
+        name_abbreviation: DC
+      decision_date_original: '2014-09-18'
+      docket_number: "No. 12\u2013CF\u20131657."
+      docket_numbers:
+      - "No. 12\u2013CF\u20131657."
+      fastcase_import:
+        batch: test_batch
+        path: A3d/100/100a3d1076_Replace2.xml
+      first_page: '1076'
+      first_page_order: 1076
+      frontend_url: /a3d/100/1076/
+      has_body_cache: true
+      jurisdiction:
+        name: D.C.
+      last_page: '1091'
+      last_page_order: 1091
+      name: Bernard WEST, Appellant. v. UNITED STATES, Appellee.
+      name_abbreviation: West v. United States
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+    FC:A3d/100/100a3d1091_Replace2.xml:
+      analysis:
+      - key: cardinality
+        value: 690
+      - key: char_count
+        value: 11030
+      - key: sha256
+        value: 8dc3ac9974ab563907a0b5f98e4983cc2a9b64cbde1c8606bd5153453f3eae05
+      - key: simhash
+        value: 1:8e21c776eec5b667
+      - key: word_count
+        value: 1772
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 100 A.3d 1091
+        normalized_cite: 100a3d1091
+        type: official
+      court:
+        jurisdiction:
+          name: D.C.
+        name: District of Columbia Court of Appeals
+        name_abbreviation: DC
+      decision_date_original: '2014-10-09'
+      docket_number: "No. 12\u2013FS\u20131771."
+      docket_numbers:
+      - "No. 12\u2013FS\u20131771."
+      fastcase_import:
+        batch: test_batch
+        path: A3d/100/100a3d1091_Replace2.xml
+      first_page: '1091'
+      first_page_order: 1091
+      frontend_url: /a3d/100/1091/
+      has_body_cache: true
+      jurisdiction:
+        name: D.C.
+      last_page: '1095'
+      last_page_order: 1095
+      name: In re J.W., Appellant.
+      name_abbreviation: In re J.W.
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+    FC:A3d/100/100a3d1112_Replace_3.xml:
+      analysis:
+      - key: cardinality
+        value: 1979
+      - key: char_count
+        value: 85670
+      - key: sha256
+        value: 687c06e02ad4e5afb5b87c6629fbfab532c5d5de6d88d5553cd6eb367d1dd1cf
+      - key: simhash
+        value: 1:4b945bc69492fde9
+      - key: word_count
+        value: 13633
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 100 A.3d 1112
+        normalized_cite: 100a3d1112
+        type: official
+      - category: null
+        cite: 440 Md. 128
+        normalized_cite: 440md128
+        type: parallel
+      court:
+        jurisdiction:
+          name: Md.
+        name: Court of Appeals of Maryland
+        name_abbreviation: Md.
+      decision_date_original: '2014-08-27'
+      docket_number: Misc. Docket AG No. 11; Sept. Term, 2013.
+      docket_numbers:
+      - Misc. Docket AG No. 11
+      - Sept. Term, 2013.
+      fastcase_import:
+        batch: test_batch
+        path: A3d/100/100a3d1112_Replace_3.xml
+      first_page: '1112'
+      first_page_order: 1112
+      frontend_url: /a3d/100/1112/
+      has_body_cache: true
+      jurisdiction:
+        name: Md.
+      last_page: '1143'
+      last_page_order: 1143
+      name: ATTORNEY GRIEVANCE COMMISSION OF MARYLAND v. Runan ZHANG.
+      name_abbreviation: Attorney Grievance Comm'n of Md. v. Zhang
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+    FC:A3d/100/100a3d206_1_Replace2.xml:
+      analysis:
+      - key: cardinality
+        value: 91
+      - key: char_count
+        value: 890
+      - key: sha256
+        value: 13810f0e43dfbbd208c27a2a382a965a7f7b6159943253f1859cb3e3c5b077a6
+      - key: simhash
+        value: 1:742f03bdd1a2ce36
+      - key: word_count
+        value: 135
+      batch: test_batch
+      citations:
+      - category: (Mem)
+        cite: 100 A.3d 206
+        normalized_cite: 100a3d206
+        type: official
+      - category: null
+        cite: 627 Pa. 352
+        normalized_cite: 627pa352
+        type: parallel
+      court:
+        jurisdiction:
+          name: Pa.
+        name: Supreme Court of Pennsylvania
+        name_abbreviation: Pa.
+      decision_date_original: '2014-08-29'
+      docket_number: No. 402 MAL 2011
+      docket_numbers:
+      - No. 402 MAL 2011
+      fastcase_import:
+        batch: test_batch
+        path: A3d/100/100a3d206_1_Replace2.xml
+      first_page: '206'
+      first_page_order: 206
+      frontend_url: /a3d/100/206/
+      has_body_cache: true
+      jurisdiction:
+        name: Pa.
+      last_page: '206'
+      last_page_order: 206
+      name: COMMONWEALTH of Pennsylvania, Respondent v. Hugo Marcus SELENSKI, Petitioner.
+      name_abbreviation: Commonwealth v. Selenski
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 964
+  volume_number: '100'
+A3d_107:
+  cases:
+    FC:A3d/107/107a3d1004_Replace2.xml:
+      analysis:
+      - key: cardinality
+        value: 906
+      - key: char_count
+        value: 28127
+      - key: sha256
+        value: d8adadf84cfcd8e36967dd274f6b37688c2b9c2664f4282836c3e6bc9f79353f
+      - key: simhash
+        value: 1:c0dae5a2b54e0311
+      - key: word_count
+        value: 4476
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 107 A.3d 1004
+        normalized_cite: 107a3d1004
+        type: official
+      - category: null
+        cite: 154 Conn. App. 780
+        normalized_cite: 154connapp780
+        type: parallel
+      court:
+        jurisdiction:
+          name: Conn.
+        name: Appellate Court of Connecticut
+        name_abbreviation: Conn. App. Ct.
+      decision_date_original: '2015-01-20'
+      docket_number: No. 36530.
+      docket_numbers:
+      - No. 36530.
+      fastcase_import:
+        batch: test_batch
+        path: A3d/107/107a3d1004_Replace2.xml
+      first_page: '1004'
+      first_page_order: 1004
+      frontend_url: /a3d/107/1004/
+      has_body_cache: true
+      jurisdiction:
+        name: Conn.
+      last_page: '1013'
+      last_page_order: 1013
+      name: Angela D. CIOTTONE v. Jonathan CIOTTONE.
+      name_abbreviation: Ciottone v. Ciottone
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 964
+  volume_number: '107'
+A3d_148:
+  cases:
+    FC:A3d/148/148 A.3d 441_Replace.xml:
+      analysis:
+      - key: cardinality
+        value: 824
+      - key: char_count
+        value: 16509
+      - key: sha256
+        value: c0a771afe3ea089f9b8d2123b3b1eb63f21eb4bdbc776139c18e1e7c168c6237
+      - key: simhash
+        value: 1:b6f644e1b0270e4c
+      - key: word_count
+        value: 2555
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 148 A.3d 441
+        normalized_cite: 148a3d441
+        type: official
+      - category: null
+        cite: 447 N.J. Super. 391
+        normalized_cite: 447njsuper391
+        type: parallel
+      court:
+        jurisdiction:
+          name: N.J.
+        name: Superior Court of New Jersey, Appellate Division
+        name_abbreviation: N.J. Super. App. Div.
+      decision_date_original: '2016-10-19'
+      docket_number: ''
+      docket_numbers: []
+      fastcase_import:
+        batch: test_batch
+        path: A3d/148/148 A.3d 441_Replace.xml
+      first_page: '441'
+      first_page_order: 441
+      frontend_url: /a3d/148/441/
+      has_body_cache: true
+      jurisdiction:
+        name: N.J.
+      last_page: '447'
+      last_page_order: 447
+      name: Petro-Lubricant Testing Laboratories, Inc., and John Wintermute, Plaintiffs-Appellants/Cross-Respondents,
+        v. Asher Adelman, d/b/a eBossWatch.com, Defendant-Respondent/Cross-Appellant.
+      name_abbreviation: Petro-Lubricant Testing Labs., Inc. v. Adelman
+      reporter:
+        short_name: A.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 964
+  volume_number: '148'
+BR_590:
+  cases:
+    FC:BR/590/590 B.R. 577.xml:
+      analysis:
+      - key: cardinality
+        value: 2153
+      - key: char_count
+        value: 68906
+      - key: sha256
+        value: 8c268e0cec29b57cdea9d5fd9da492d5704b43629ffffdbd240547712ac04239
+      - key: simhash
+        value: 1:7589cabab091d7cb
+      - key: word_count
+        value: 10939
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 590 B.R. 577
+        normalized_cite: 590br577
+        type: official
+      court:
+        jurisdiction:
+          name: U.S.
+        name: United States District Court, D. Puerto Rico
+        name_abbreviation: D. P.R.
+      decision_date_original: '2018-08-17'
+      docket_number: Case No. 17 BK 3283-LTS (Jointly Administered); Case No. 17 BK
+        3566-LTS; Adv. Proc. No. 17-213-LTS
+      docket_numbers:
+      - Case No. 17 BK 3283-LTS (Jointly Administered)
+      - Case No. 17 BK 3566-LTS
+      - Adv. Proc. No. 17-213-LTS
+      fastcase_import:
+        batch: test_batch
+        path: BR/590/590 B.R. 577.xml
+      first_page: '577'
+      first_page_order: 577
+      frontend_url: /br/590/577/
+      has_body_cache: true
+      jurisdiction:
+        name: U.S.
+      last_page: '600'
+      last_page_order: 600
+      name: 'IN RE: The FINANCIAL OVERSIGHT AND MANAGEMENT BOARD FOR PUERTO RICO,
+        as representative of the Commonwealth of Puerto Rico, et al., Debtors.  The
+        Financial Oversight and Management Board for Puerto Rico, as representative
+        of the Employees Retirement System of the Government of the Commonwealth of
+        Puerto Rico, Debtors.  The Financial Oversight and Management Board for Puerto
+        Rico, as representative of, the Employees Retirement System of the Government
+        of the Commonwealth of Puerto Rico, Plaintiff, v. Altair Global Credit Opportunities
+        Fund (a), LLC, et al., Defendants-Counterclaimants.'
+      name_abbreviation: Fin. Oversight & Mgmt. Bd. for P.R. v. Altair Global Credit
+        Opportunities Fund (a), LLC (In re Fin. Oversight & Mgmt. Bd. for P.R.)
+      reporter:
+        short_name: B.R.
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 935
+  volume_number: '590'
+CalRptr3d_204:
+  cases:
+    FC:CalRptr3d/204/204 Cal.Rptr.3d 539_Replace.xml:
+      analysis:
+      - key: cardinality
+        value: 1225
+      - key: char_count
+        value: 28768
+      - key: sha256
+        value: 47b9f456d276df421b3539c60247f5d28014a121150a625b649f57e9789d0c2a
+      - key: simhash
+        value: 1:573166157f928c15
+      - key: word_count
+        value: 4526
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 1 Cal. App. 5th 438
+        normalized_cite: 1calapp5th438
+        type: parallel
+      - category: null
+        cite: 204 Cal. Rptr. 3d 539
+        normalized_cite: 204calrptr3d539
+        type: official
+      court:
+        jurisdiction:
+          name: Cal.
+        name: Court of Appeal, Second District, Division 1, California
+        name_abbreviation: Cal. App. Ct.
+      decision_date_original: '2016-06-29'
+      docket_number: B266015
+      docket_numbers:
+      - B266015
+      fastcase_import:
+        batch: test_batch
+        path: CalRptr3d/204/204 Cal.Rptr.3d 539_Replace.xml
+      first_page: '539'
+      first_page_order: 539
+      frontend_url: /cal-rptr-3d/204/539/
+      has_body_cache: true
+      jurisdiction:
+        name: Cal.
+      last_page: '548'
+      last_page_order: 548
+      name: Amir PIROUZIAN, Petitioner, v. The SUPERIOR COURT of Los Angeles County,
+        Respondent; Medical Board of California, Real Party in Interest.
+      name_abbreviation: Pirouzian v. Superior Court of L.A. Cnty.
+      reporter:
+        short_name: Cal. Rptr. 3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 1089
+  volume_number: '204'
+CalRptr3d_217:
+  cases:
+    FC:CalRptr3d/217/217 Cal.Rptr.3d 704.xml:
+      analysis:
+      - key: cardinality
+        value: 1250
+      - key: char_count
+        value: 34246
+      - key: sha256
+        value: 69a395e7dfe2090dd3bb761b9d586108bdc660428a0055cb85f0e5da79676a36
+      - key: simhash
+        value: 1:60afb12b9a665917
+      - key: word_count
+        value: 5460
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 11 Cal. App. 5th 697
+        normalized_cite: 11calapp5th697
+        type: parallel
+      - category: null
+        cite: 217 Cal. Rptr. 3d 704
+        normalized_cite: 217calrptr3d704
+        type: official
+      court:
+        jurisdiction:
+          name: Cal.
+        name: Court of Appeal, First District, Division 1, California
+        name_abbreviation: Cal. App. Ct.
+      decision_date_original: '2017-05-12'
+      docket_number: A148307
+      docket_numbers:
+      - A148307
+      fastcase_import:
+        batch: test_batch
+        path: CalRptr3d/217/217 Cal.Rptr.3d 704.xml
+      first_page: '704'
+      first_page_order: 704
+      frontend_url: /cal-rptr-3d/217/704/
+      has_body_cache: true
+      jurisdiction:
+        name: Cal.
+      last_page: '715'
+      last_page_order: 715
+      name: IN RE A.V., a Person Coming Under the Juvenile Court Law.  The People,
+        Plaintiff and Respondent, v. A.V., Defendant and Appellant.
+      name_abbreviation: People v. A.V. (In re A.V.)
+      reporter:
+        short_name: Cal. Rptr. 3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 1089
+  volume_number: '217'
+NE2d_944:
+  cases:
+    FC:NE2d/944/944ne2d1119.xml:
+      analysis:
+      - key: cardinality
+        value: 225
+      - key: char_count
+        value: 2436
+      - key: sha256
+        value: 83d5441eb5c6b139a7da2d7e99c46f4b0c43a18a673e0968da55a4d070f819c0
+      - key: simhash
+        value: 1:4be4079c84827431
+      - key: word_count
+        value: 388
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 16 N.Y.3d 757
+        normalized_cite: 16ny3d757
+        type: parallel
+      - category: null
+        cite: 919 N.Y.S.2d 480
+        normalized_cite: 919nys2d480
+        type: parallel
+      - category: null
+        cite: 944 N.E.2d 1119
+        normalized_cite: 944ne2d1119
+        type: official
+      court:
+        jurisdiction:
+          name: N.Y.
+        name: Court of Appeals of New York
+        name_abbreviation: N.Y.
+      decision_date_original: '2011-03-03'
+      docket_number: Feb. 15; 2011.
+      docket_numbers:
+      - Feb. 15
+      - '2011.'
+      fastcase_import:
+        batch: test_batch
+        path: NE2d/944/944ne2d1119.xml
+      first_page: '1119'
+      first_page_order: 1119
+      frontend_url: /ne2d/944/1119/
+      has_body_cache: true
+      jurisdiction:
+        name: N.Y.
+      last_page: '1119'
+      last_page_order: 1119
+      name: Gretchen RIVERA, an Infant by Her Mother and Natural Guardian, Maria Rivera,
+        et al., Appellants,v.Paul G. KLEINMAN, M.D., et al., Respondents.
+      name_abbreviation: Rivera v.  Kleinman
+      reporter:
+        short_name: N.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 971
+  volume_number: '944'
+NE2d_945:
+  cases:
+    FC:NE2d/945/945ne2d484.xml:
+      analysis:
+      - key: cardinality
+        value: 1394
+      - key: char_count
+        value: 37728
+      - key: sha256
+        value: b28f7144ffc61ca4af28c5e73b46423d8e771b890fdcc3a145b92616cba013fc
+      - key: simhash
+        value: 1:cd86b2da0aa982a1
+      - key: word_count
+        value: 6229
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 16 N.Y.3d 272
+        normalized_cite: 16ny3d272
+        type: parallel
+      - category: null
+        cite: 920 N.Y.S.2d 291
+        normalized_cite: 920nys2d291
+        type: parallel
+      - category: null
+        cite: 945 N.E.2d 484
+        normalized_cite: 945ne2d484
+        type: official
+      court:
+        jurisdiction:
+          name: N.Y.
+        name: Court of Appeals of New York
+        name_abbreviation: N.Y.
+      decision_date_original: '2010-12-03'
+      docket_number: Feb. 24; 2011.
+      docket_numbers:
+      - Feb. 24
+      - '2011.'
+      fastcase_import:
+        batch: test_batch
+        path: NE2d/945/945ne2d484.xml
+      first_page: '484'
+      first_page_order: 484
+      frontend_url: /ne2d/945/484/
+      has_body_cache: true
+      jurisdiction:
+        name: N.Y.
+      last_page: '491'
+      last_page_order: 491
+      name: BLEECKER STREET TENANTS CORP., Respondent,v.BLEEKER JONES LLC et al.,
+        Appellants, et al., Defendants.
+      name_abbreviation: Bleecker St. Tenants Corp.. v. Bleeker Jones Llc
+      reporter:
+        short_name: N.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 971
+  volume_number: '945'
+NE2d_990:
+  cases:
+    FC:NE2d/990/990ne2d139_12.xml:
+      analysis:
+      - key: cardinality
+        value: 65
+      - key: char_count
+        value: 507
+      - key: sha256
+        value: 7c173700dd0302ab154e42c89944d5b02c71be175dda16e9b4022736f5b0734f
+      - key: simhash
+        value: 1:8d1a8cd930418384
+      - key: word_count
+        value: 91
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 21 N.Y.3d 942
+        normalized_cite: 21ny3d942
+        type: parallel
+      - category: null
+        cite: 968 N.Y.S.2d 5
+        normalized_cite: 968nys2d5
+        type: parallel
+      - category: null
+        cite: 990 N.E.2d 139
+        normalized_cite: 990ne2d139
+        type: official
+      court:
+        jurisdiction:
+          name: N.Y.
+        name: Court of Appeals of New York
+        name_abbreviation: N.Y.
+      decision_date_original: '2013-05-14'
+      docket_number: ''
+      docket_numbers: []
+      fastcase_import:
+        batch: test_batch
+        path: NE2d/990/990ne2d139_12.xml
+      first_page: '139'
+      first_page_order: 139
+      frontend_url: /ne2d/990/139/
+      has_body_cache: true
+      jurisdiction:
+        name: N.Y.
+      last_page: '139'
+      last_page_order: 139
+      name: People v. Lonnie Flowers
+      name_abbreviation: People v. Flowers
+      reporter:
+        short_name: N.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 971
+  volume_number: '990'
+NE2d_997:
+  cases:
+    FC:NE2d/997/997ne2d384.xml:
+      analysis:
+      - key: cardinality
+        value: 961
+      - key: char_count
+        value: 22794
+      - key: sha256
+        value: 89b2861bf0467dda8edcdfc0a36f9f42b8665b8cf1c6bf0e8a7c49978e0091f3
+      - key: simhash
+        value: 1:ab283094b72a2e52
+      - key: word_count
+        value: 3861
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 997 N.E.2d 384
+        normalized_cite: 997ne2d384
+        type: official
+      court:
+        jurisdiction:
+          name: Ind.
+        name: Court of Appeals of Indiana
+        name_abbreviation: Ind. App. Ct.
+      decision_date_original: '2013-10-28'
+      docket_number: "No. 71A04\u20131304\u2013CR\u2013187."
+      docket_numbers:
+      - "No. 71A04\u20131304\u2013CR\u2013187."
+      fastcase_import:
+        batch: test_batch
+        path: NE2d/997/997ne2d384.xml
+      first_page: '384'
+      first_page_order: 384
+      frontend_url: /ne2d/997/384/
+      has_body_cache: true
+      jurisdiction:
+        name: Ind.
+      last_page: '393'
+      last_page_order: 393
+      name: "Chaunsey L. FOX, Appellant\u2013Defendant, v. STATE of Indiana, Appellee\u2013\
+        Plaintiff."
+      name_abbreviation: Fox v. State
+      reporter:
+        short_name: N.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 971
+  volume_number: '997'
+NE3d_1:
+  cases:
+    FC:NE3d/1/1ne3d259.xml:
+      analysis:
+      - key: cardinality
+        value: 1321
+      - key: char_count
+        value: 38442
+      - key: sha256
+        value: 208cb0a27035b3c676f5a97421495aa9e85022f554b2a993c835723722def51d
+      - key: simhash
+        value: 1:adf7c7119dad6f0e
+      - key: word_count
+        value: 6137
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 1 N.E.3d 259
+        normalized_cite: 1ne3d259
+        type: official
+      - category: null
+        cite: 466 Mass. 676
+        normalized_cite: 466mass676
+        type: parallel
+      court:
+        jurisdiction:
+          name: Mass.
+        name: Supreme Judicial Court of Massachusetts, Middlesex
+        name_abbreviation: Mass.
+      decision_date_original: '2013-12-24'
+      docket_number: ''
+      docket_numbers: []
+      fastcase_import:
+        batch: test_batch
+        path: NE3d/1/1ne3d259.xml
+      first_page: '259'
+      first_page_order: 259
+      frontend_url: /ne3d/1/259/
+      has_body_cache: true
+      jurisdiction:
+        name: Mass.
+      last_page: '270'
+      last_page_order: 270
+      name: COMMONWEALTH v. Marquise BROWN.
+      name_abbreviation: Commonwealth v. Brown
+      reporter:
+        short_name: N.E.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 890
+  volume_number: '1'
+NE3d_122:
+  cases:
+    FC:NE3d/122/122 N.E.3d 432.xml:
+      analysis:
+      - key: cardinality
+        value: 1414
+      - key: char_count
+        value: 36769
+      - key: sha256
+        value: 0664537545734aee390b38317b834409598936acd22b74e83e4383b9868b3768
+      - key: simhash
+        value: 1:b03eb2dfb7c738f4
+      - key: word_count
+        value: 5957
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 122 N.E.3d 432
+        normalized_cite: 122ne3d432
+        type: official
+      - category: null
+        cite: 2018 IL App (1st) 152522
+        normalized_cite: 2018ilapp1st152522
+        type: parallel
+      - category: null
+        cite: 428 Ill. Dec. 423
+        normalized_cite: 428illdec423
+        type: parallel
+      court:
+        jurisdiction:
+          name: Ill.
+        name: Appellate Court of Illinois, First District, FIFTH DIVISION
+        name_abbreviation: Ill. App. Ct.
+      decision_date_original: '2018-11-30'
+      docket_number: No. 1-15-2522
+      docket_numbers:
+      - No. 1-15-2522
+      fastcase_import:
+        batch: test_batch
+        path: NE3d/122/122 N.E.3d 432.xml
+      first_page: '432'
+      first_page_order: 432
+      frontend_url: /ne3d/122/432/
+      has_body_cache: true
+      jurisdiction:
+        name: Ill.
+      last_page: '445'
+      last_page_order: 445
+      name: PEOPLE of the State of Illinois, Plaintiff-Appellee, v. Rodney LEE, Defendant-Appellant.
+      name_abbreviation: People v. Lee
+      reporter:
+        short_name: N.E.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 890
+  volume_number: '122'
+NW2d_737:
+  cases:
+    FC:NW2d/737/737NW2d768_3New.xml:
+      analysis:
+      - key: cardinality
+        value: 613
+      - key: char_count
+        value: 10077
+      - key: sha256
+        value: f7abd9147fc525bbaae18099295a56bc00c97b2f151175c1e6c9457c4ef9e158
+      - key: simhash
+        value: 1:9f96f53f7b4a5e36
+      - key: word_count
+        value: 1648
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 480 Mich. 874
+        normalized_cite: 480mich874
+        type: parallel
+      - category: null
+        cite: 737 N.W.2d 768
+        normalized_cite: 737nw2d768
+        type: official
+      court:
+        jurisdiction:
+          name: Mich.
+        name: Supreme Court of Michigan
+        name_abbreviation: Mich.
+      decision_date_original: '2007-09-14'
+      docket_number: Docket No. 133961.; Docket No. 133962.; COA No. 266264.; COA
+        No. 267309.
+      docket_numbers:
+      - Docket No. 133961.
+      - Docket No. 133962.
+      - COA No. 266264.
+      - COA No. 267309.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/737/737NW2d768_3New.xml
+      first_page: '768'
+      first_page_order: 768
+      frontend_url: /nw2d/737/768/
+      has_body_cache: true
+      jurisdiction:
+        name: Mich.
+      last_page: '771'
+      last_page_order: 771
+      name: 'Geoffrey N. FIEGER, Fieger, Fieger, Kenny & Johnson, P.C., John L. Barlow,
+        John L. Barlow & Associates Advertising, Inc., and Nancy Fisher, Petitioners-Appellants,
+
+        v.
+
+        Michael A. COX, Individually and in his, Official Capacity as Attorney General,
+        Terri Lynn Land, Individually and in her Official Capacity as Secretary of
+        State, and Thomas Cameron, Respondents-Appellees.'
+      name_abbreviation: Fieger v. Cox
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '737'
+NW2d_740:
+  cases:
+    FC:NW2d/740/740NW2d659_1.xml:
+      analysis:
+      - key: cardinality
+        value: 1576
+      - key: char_count
+        value: 59557
+      - key: sha256
+        value: e9c0d0bb791df556a7ce3fc7e215023f018a46a477f927ccbddaefc33181bddb
+      - key: simhash
+        value: 1:cf63563fffeeaf65
+      - key: word_count
+        value: 9569
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 275 Mich. App. 543
+        normalized_cite: 275michapp543
+        type: parallel
+      - category: null
+        cite: 740 N.W.2d 659
+        normalized_cite: 740nw2d659
+        type: official
+      court:
+        jurisdiction:
+          name: Mich.
+        name: Court of Appeals of Michigan
+        name_abbreviation: Mich. App. Ct.
+      decision_date_original: '2007-05-17'
+      docket_number: Docket No. 263197.; Docket No. 265278.; Docket No. 268335.
+      docket_numbers:
+      - Docket No. 263197.
+      - Docket No. 265278.
+      - Docket No. 268335.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/740/740NW2d659_1.xml
+      first_page: '659'
+      first_page_order: 659
+      frontend_url: /nw2d/740/659/
+      has_body_cache: true
+      jurisdiction:
+        name: Mich.
+      last_page: '678'
+      last_page_order: 678
+      name: 'GRISWOLD PROPERTIES, L.L.C., Plaintiff-Appellee,
+
+        v.
+
+        LEXINGTON INSURANCE COMPANY, Defendant-Appellant.
+
+        Gainors Meat Packing, Inc., Plaintiff-Appellant,
+
+        v.
+
+        Home-Owners Insurance Company, Defendant-Appellee.
+
+        Samuel C. Gardner and Cynthia A. Gardner, Plaintiffs-Appellants/Cross-Appellees,
+
+        v.
+
+        Harleysville Lake States Insurance Company, Defendant-Appellee/Cross-Appellant.'
+      name_abbreviation: Griswold Properties v. Lexington Ins. Co.
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '740'
+NW2d_753:
+  cases:
+    FC:NW2d/753/753NW2d552_1.xml:
+      analysis:
+      - key: cardinality
+        value: 713
+      - key: char_count
+        value: 14526
+      - key: sha256
+        value: 37792e8f66db67223069faf97d7284059e4dfef3bd544dd1804bb25e4bac60f4
+      - key: simhash
+        value: 1:47c6e16163cecf36
+      - key: word_count
+        value: 2454
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 2008 WI App 98
+        normalized_cite: 2008wiapp98
+        type: parallel
+      - category: null
+        cite: 753 N.W.2d 552
+        normalized_cite: 753nw2d552
+        type: official
+      court:
+        jurisdiction:
+          name: Wis.
+        name: Court of Appeals of Wisconsin
+        name_abbreviation: Wis. App. Ct.
+      decision_date_original: '2008-05-22'
+      docket_number: No. 2007AP2491.
+      docket_numbers:
+      - No. 2007AP2491.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/753/753NW2d552_1.xml
+      first_page: '552'
+      first_page_order: 552
+      frontend_url: /nw2d/753/552/
+      has_body_cache: true
+      jurisdiction:
+        name: Wis.
+      last_page: '557'
+      last_page_order: 557
+      name: "TOWN OF MERRIMAC, Plaintiff-Appellant,\u2020\nv.\nVILLAGE OF MERRIMAC,\
+        \ Defendant-Respondent."
+      name_abbreviation: Town of Merrimac v. Village of Merrimac
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '753'
+NW2d_760:
+  cases:
+    FC:NW2d/760/760NW2d526_1.xml:
+      analysis:
+      - key: cardinality
+        value: 1061
+      - key: char_count
+        value: 34832
+      - key: sha256
+        value: c797f18d9a109e10863e29d807f4e2f8dd10cb848e80fc1e1ff04d1b2c92b93d
+      - key: simhash
+        value: 1:9bbca1966b0f8cfd
+      - key: word_count
+        value: 5371
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 279 Mich. App. 468
+        normalized_cite: 279michapp468
+        type: parallel
+      - category: null
+        cite: 760 N.W.2d 526
+        normalized_cite: 760nw2d526
+        type: official
+      court:
+        jurisdiction:
+          name: Mich.
+        name: Court of Appeals of Michigan
+        name_abbreviation: Mich. App. Ct.
+      decision_date_original: '2008-07-01'
+      docket_number: Docket No. 276372.; Docket No. 276452.
+      docket_numbers:
+      - Docket No. 276372.
+      - Docket No. 276452.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/760/760NW2d526_1.xml
+      first_page: '526'
+      first_page_order: 526
+      frontend_url: /nw2d/760/526/
+      has_body_cache: true
+      jurisdiction:
+        name: Mich.
+      last_page: '537'
+      last_page_order: 537
+      name: 'ROBERT A. HANSEN FAMILY TRUST
+
+        v.
+
+        FGH INDUSTRIES, LLC.'
+      name_abbreviation: Hansen Trust v. Fgh Industries
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '760'
+NW2d_761:
+  cases:
+    FC:NW2d/761/761NW2d645_1.xml:
+      analysis:
+      - key: cardinality
+        value: 1948
+      - key: char_count
+        value: 82838
+      - key: sha256
+        value: 832d3baca1631c3dbc13fb004e618de65a39742b36d3ee8b421987a6d12b2f2f
+      - key: simhash
+        value: 1:afd50fbb9a17affa
+      - key: word_count
+        value: 13763
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 2008 WI App 155
+        normalized_cite: 2008wiapp155
+        type: parallel
+      - category: null
+        cite: 761 N.W.2d 645
+        normalized_cite: 761nw2d645
+        type: official
+      court:
+        jurisdiction:
+          name: Wis.
+        name: Court of Appeals of Wisconsin
+        name_abbreviation: Wis. App. Ct.
+      decision_date_original: '2008-09-25'
+      docket_number: No. 2007AP2077.
+      docket_numbers:
+      - No. 2007AP2077.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/761/761NW2d645_1.xml
+      first_page: '645'
+      first_page_order: 645
+      frontend_url: /nw2d/761/645/
+      has_body_cache: true
+      jurisdiction:
+        name: Wis.
+      last_page: '672'
+      last_page_order: 672
+      name: "James COOK, Zachary Luckett and Quincle Cook, Plaintiffs-Respondents,\n\
+        Friebert, Finerty & St. John, S.C., Creditor-Respondent,\nv.\nPUBLIC STORAGE,\
+        \ INC., Defendant-Appellant.\u2020"
+      name_abbreviation: Cook v. Public Storage, Inc.
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '761'
+NW2d_777:
+  cases:
+    FC:NW2d/777/777NW2d266_1.xml:
+      analysis:
+      - key: cardinality
+        value: 3424
+      - key: char_count
+        value: 162901
+      - key: sha256
+        value: 0eadd8dc8dd2bc41baabc6a79ee68c6662f5220214ae15d9312aff045c6c9770
+      - key: simhash
+        value: 1:9b8ba113ee809ee2
+      - key: word_count
+        value: 25707
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 279 Neb. 94
+        normalized_cite: 279neb94
+        type: parallel
+      - category: null
+        cite: 777 N.W.2d 266
+        normalized_cite: 777nw2d266
+        type: official
+      court:
+        jurisdiction:
+          name: Neb.
+        name: Supreme Court of Nebraska
+        name_abbreviation: Neb.
+      decision_date_original: '2010-01-08'
+      docket_number: No. S-07-138.
+      docket_numbers:
+      - No. S-07-138.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/777/777NW2d266_1.xml
+      first_page: '266'
+      first_page_order: 266
+      frontend_url: /nw2d/777/266/
+      has_body_cache: true
+      jurisdiction:
+        name: Neb.
+      last_page: '321'
+      last_page_order: 321
+      name: 'STATE of Nebraska, appellee,
+
+        v.
+
+        Erick Fernando VELA, appellant.'
+      name_abbreviation: State v. Vela
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '777'
+NW2d_781:
+  cases:
+    FC:NW2d/781/781NW2d5512010WIApp33_29.xml:
+      analysis:
+      - key: cardinality
+        value: 22
+      - key: char_count
+        value: 165
+      - key: sha256
+        value: c31d5f64c661c943cfa6f3544a770b0410c87c924e1165677fe0131c684e7cb3
+      - key: simhash
+        value: 1:8430caa16f8f09d7
+      - key: word_count
+        value: 23
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 2010 WI App 33
+        normalized_cite: 2010wiapp33
+        type: parallel
+      - category: null
+        cite: 781 N.W.2d 551
+        normalized_cite: 781nw2d551
+        type: official
+      court:
+        jurisdiction:
+          name: Wis.
+        name: Court of Appeals of Wisconsin
+        name_abbreviation: Wis. App. Ct.
+      decision_date_original: '2010-01-12'
+      docket_number: No. 2009AP942.
+      docket_numbers:
+      - No. 2009AP942.
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/781/781NW2d5512010WIApp33_29.xml
+      first_page: '551'
+      first_page_order: 551
+      frontend_url: /nw2d/781/551/
+      has_body_cache: true
+      jurisdiction:
+        name: Wis.
+      last_page: '551'
+      last_page_order: 551
+      name: 'VISCUSI
+
+        v.
+
+        PROGRESSIVE UNIVERSAL INS. CO..'
+      name_abbreviation: VISCUSI v. PROGRESSIVE UNIVERSAL INS. CO.
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '781'
+NW2d_906:
+  cases:
+    FC:NW2d/906/906 N.W.2d 436_Replace.xml:
+      analysis:
+      - key: cardinality
+        value: 1589
+      - key: char_count
+        value: 47901
+      - key: sha256
+        value: f0bb469f86441b2fd7bdf5648007b1e24dd82356795dd95104a616094b0ea1d3
+      - key: simhash
+        value: 1:67e4412bcdccb754
+      - key: word_count
+        value: 7820
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 2018 WI 11
+        normalized_cite: 2018wi11
+        type: parallel
+      - category: null
+        cite: 379 Wis. 2d 439
+        normalized_cite: 379wis2d439
+        type: parallel
+      - category: null
+        cite: 906 N.W.2d 436
+        normalized_cite: 906nw2d436
+        type: official
+      court:
+        jurisdiction:
+          name: Wis.
+        name: Supreme Court of Wisconsin
+        name_abbreviation: Wis.
+      decision_date_original: '2018-02-06'
+      docket_number: No. 2016AP2214
+      docket_numbers:
+      - No. 2016AP2214
+      fastcase_import:
+        batch: test_batch
+        path: NW2d/906/906 N.W.2d 436_Replace.xml
+      first_page: '436'
+      first_page_order: 436
+      frontend_url: /nw2d/906/436/
+      has_body_cache: true
+      jurisdiction:
+        name: Wis.
+      last_page: '451'
+      last_page_order: 451
+      name: MADISON TEACHERS, INC., Plaintiff-Respondent, v. James R. SCOTT, Chairman
+        and Records Custodian, Wisconsin Employment Relations Commission, Defendant-Appellant
+      name_abbreviation: Madison Teachers, Inc. v. Scott
+      reporter:
+        short_name: N.W.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 892
+  volume_number: '906'
+P3d_332:
+  cases:
+    FC:P3d/332/332p3d688_Replace.xml:
+      analysis:
+      - key: cardinality
+        value: 1425
+      - key: char_count
+        value: 47325
+      - key: sha256
+        value: 5647a403875f7faba62a63fc2c7725edb26d1e9bda528cd5f384abcf388ca0c0
+      - key: simhash
+        value: 1:0d81bba7ecdfeeef
+      - key: word_count
+        value: 7408
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 134 Haw. 86
+        normalized_cite: 134haw86
+        type: parallel
+      - category: null
+        cite: 332 P.3d 688
+        normalized_cite: 332p3d688
+        type: official
+      court:
+        jurisdiction:
+          name: Haw.
+        name: Intermediate Court of Appeals of Hawaii
+        name_abbreviation: Haw. App. Ct.
+      decision_date_original: '2014-06-09'
+      docket_number: "No. CAAP\u201313\u20130000182."
+      docket_numbers:
+      - "No. CAAP\u201313\u20130000182."
+      fastcase_import:
+        batch: test_batch
+        path: P3d/332/332p3d688_Replace.xml
+      first_page: '688'
+      first_page_order: 688
+      frontend_url: /p3d/332/688/
+      has_body_cache: true
+      jurisdiction:
+        name: Haw.
+      last_page: '701'
+      last_page_order: 701
+      name: "KILAKILA \u2018O HALEAKALA, Plaintiff/Appellant\u2013Appellant, v. UNIVERSITY\
+        \ OF HAWAI\u2018I, and Thomas M. Apple, in his official capacity as Chancellor\
+        \ of the University of Hawai\u2018i at Manoa; Board of Land and Natural Resources,\
+        \ William Aila, in his capacity as the Interim Chairperson of the Board of\
+        \ Land and Natural Resources; and Department of Land and Natural Resources,\
+        \ Defendants/Appellees\u2013Appellees."
+      name_abbreviation: "Haleakal v. Univ. of Hawai\u2018i"
+      reporter:
+        short_name: P.3d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 894
+  volume_number: '332'
+SCt_134:
+  cases:
+    FC:SCt/134/134sct985_2.xml:
+      analysis:
+      - key: cardinality
+        value: 52
+      - key: char_count
+        value: 398
+      - key: sha256
+        value: 66f3922b9d01c10ef8e5ebea93842c362a96889fd796a125f0ef0a0932d05112
+      - key: simhash
+        value: 1:e92704d448af22f0
+      - key: word_count
+        value: 67
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 134 S. Ct. 985
+        normalized_cite: 134sct985
+        type: official
+      - category: null
+        cite: 187 L. Ed. 2d 773
+        normalized_cite: 187led2d773
+        type: parallel
+      - category: null
+        cite: 82 U.S.L.W. 3404
+        normalized_cite: 82uslw3404
+        type: vendor
+      court:
+        jurisdiction:
+          name: U.S.
+        name: Supreme Court of the United States
+        name_abbreviation: U.S.
+      decision_date_original: '2014-01-13'
+      docket_number: "No. 13\u20137320."
+      docket_numbers:
+      - "No. 13\u20137320."
+      fastcase_import:
+        batch: test_batch
+        path: SCt/134/134sct985_2.xml
+      first_page: '985'
+      first_page_order: 985
+      frontend_url: /s-ct/134/985/
+      has_body_cache: true
+      jurisdiction:
+        name: U.S.
+      last_page: '985'
+      last_page_order: 985
+      name: William GRONER, petitioner, v. Eric K. SHINSEKI, Secretary of Veterans
+        Affairs.
+      name_abbreviation: Groner v. Shinseki
+      reporter:
+        short_name: S. Ct.
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 1091
+  volume_number: '134'
+SE2d_590:
+  cases:
+    FC:SE2d/590/590SE2d53.xml:
+      analysis:
+      - key: cardinality
+        value: 629
+      - key: char_count
+        value: 15506
+      - key: sha256
+        value: 9eb89549b179067381a1763c8e2dd7d5911fe492f35bef43cdac06c6459687b0
+      - key: simhash
+        value: 1:fd8a802f7f06cde4
+      - key: word_count
+        value: 2449
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 42 Va. App. 1
+        normalized_cite: 42vaapp1
+        type: parallel
+      - category: null
+        cite: 590 S.E.2d 53
+        normalized_cite: 590se2d53
+        type: official
+      court:
+        jurisdiction:
+          name: Va.
+        name: Court of Appeals of Virginia, Salem
+        name_abbreviation: Va. App. Ct.
+      decision_date_original: '2003-12-23'
+      docket_number: Record No. 1544-03-3.
+      docket_numbers:
+      - Record No. 1544-03-3.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/590/590SE2d53.xml
+      first_page: '53'
+      first_page_order: 53
+      frontend_url: /se2d/590/53/
+      has_body_cache: true
+      jurisdiction:
+        name: Va.
+      last_page: '57'
+      last_page_order: 57
+      name: 'Darlee Frith Shelton FOWLKES
+
+        v.
+
+        Winford Calvin FOWLKES.'
+      name_abbreviation: Fowlkes v. Fowlkes
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+    FC:SE2d/590/590SE2d792_GA_Pag.xml:
+      analysis:
+      - key: cardinality
+        value: 834
+      - key: char_count
+        value: 19538
+      - key: sha256
+        value: a8d6711ad855bb87f9e37a0ccc97c6757dc86eaecf0945d5085f0d9cc72a83b4
+      - key: simhash
+        value: 1:e30d048c64dcd0c2
+      - key: word_count
+        value: 3093
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 264 Ga. App. 475
+        normalized_cite: 264gaapp475
+        type: parallel
+      - category: null
+        cite: 590 S.E.2d 792
+        normalized_cite: 590se2d792
+        type: official
+      court:
+        jurisdiction:
+          name: Ga.
+        name: Court of Appeals of Georgia
+        name_abbreviation: Ga. App. Ct.
+      decision_date_original: '2003-12-01'
+      docket_number: No. A03A1865.
+      docket_numbers:
+      - No. A03A1865.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/590/590SE2d792_GA_Pag.xml
+      first_page: '792'
+      first_page_order: 792
+      frontend_url: /se2d/590/792/
+      has_body_cache: true
+      jurisdiction:
+        name: Ga.
+      last_page: '798'
+      last_page_order: 798
+      name: In the Interest of K.N.C. et al., children.
+      name_abbreviation: IN RE KNC
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 895
+  volume_number: '590'
+SE2d_592:
+  cases:
+    FC:SE2d/592/592SE2d124_GA_Pag.xml:
+      analysis:
+      - key: cardinality
+        value: 1071
+      - key: char_count
+        value: 25321
+      - key: sha256
+        value: 582263d658024c188829156e488caaca75176669990e0de947b48240ea384828
+      - key: simhash
+        value: 1:d73d3119f58d2c56
+      - key: word_count
+        value: 4176
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 264 Ga. App. 730
+        normalized_cite: 264gaapp730
+        type: parallel
+      - category: null
+        cite: 592 S.E.2d 124
+        normalized_cite: 592se2d124
+        type: official
+      court:
+        jurisdiction:
+          name: Ga.
+        name: Court of Appeals of Georgia
+        name_abbreviation: Ga. App. Ct.
+      decision_date_original: '2003-11-25'
+      docket_number: No. A03A1064; No. A03A1065.
+      docket_numbers:
+      - No. A03A1064
+      - No. A03A1065.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/592/592SE2d124_GA_Pag.xml
+      first_page: '124'
+      first_page_order: 124
+      frontend_url: /se2d/592/124/
+      has_body_cache: true
+      jurisdiction:
+        name: Ga.
+      last_page: '132'
+      last_page_order: 132
+      name: 'DEPARTMENT OF HUMAN RESOURCES et al.
+
+        v.
+
+        JOHNSON et al.
+
+        Cobb et al.
+
+        v.
+
+        Johnson et al.'
+      name_abbreviation: Department of Human Resources v. Johnson
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 895
+  volume_number: '592'
+SE2d_698:
+  cases:
+    FC:SE2d/698/698SE2d424.xml:
+      analysis:
+      - key: cardinality
+        value: 1942
+      - key: char_count
+        value: 85452
+      - key: sha256
+        value: 3764fc0da4e5912a352d653a1794f3feeee0e26be78f31019a2208cf59d83039
+      - key: simhash
+        value: 1:fb8445c4a4dec69c
+      - key: word_count
+        value: 13751
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 698 S.E.2d 424
+        normalized_cite: 698se2d424
+        type: official
+      court:
+        jurisdiction:
+          name: N.C.
+        name: Court of Appeals of North Carolina
+        name_abbreviation: N.C. App. Ct.
+      decision_date_original: '2010-09-07'
+      docket_number: No. COA09-277.
+      docket_numbers:
+      - No. COA09-277.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/698/698SE2d424.xml
+      first_page: '424'
+      first_page_order: 424
+      frontend_url: /se2d/698/424/
+      has_body_cache: true
+      jurisdiction:
+        name: N.C.
+      last_page: '424'
+      last_page_order: 424
+      name: Alicia Danielle MOSTELLER, Plaintiff,v.DUKE ENERGY CORPORATION, a North
+        Carolina Corporation; Duke Energy Carolinas, LLC, a North Carolina Limited
+        Liability Company; and William Ray Walker, Defendants.
+      name_abbreviation: Mosteller v. Duke Energy Corp.
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 895
+  volume_number: '698'
+SE2d_708:
+  cases:
+    FC:SE2d/708/708se2d429.xml:
+      analysis:
+      - key: cardinality
+        value: 653
+      - key: char_count
+        value: 18317
+      - key: sha256
+        value: a407c04cc597b36fae730cab964849eb491e25450bbc4c3dcbd2a3fdf6b38aa9
+      - key: simhash
+        value: 1:b4434ac6396f9b7d
+      - key: word_count
+        value: 2904
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 58 Va. App. 244
+        normalized_cite: 58vaapp244
+        type: parallel
+      - category: null
+        cite: 708 S.E.2d 429
+        normalized_cite: 708se2d429
+        type: official
+      court:
+        jurisdiction:
+          name: Va.
+        name: Court of Appeals of Virginia,Lexington
+        name_abbreviation: Va. App. Ct.
+      decision_date_original: '2011-05-10'
+      docket_number: "Record No. 1824\u201310\u20133."
+      docket_numbers:
+      - "Record No. 1824\u201310\u20133."
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/708/708se2d429.xml
+      first_page: '429'
+      first_page_order: 429
+      frontend_url: /se2d/708/429/
+      has_body_cache: true
+      jurisdiction:
+        name: Va.
+      last_page: '435'
+      last_page_order: 435
+      name: Eric Lamont HODNETTv.STANCO MASONRY, INCORPORATED and Amerisure Mutual
+        Insurance Company.
+      name_abbreviation: Hodnett v.  Masonry
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+    FC:SE2d/708/708se2d750.xml:
+      analysis:
+      - key: cardinality
+        value: 784
+      - key: char_count
+        value: 16673
+      - key: sha256
+        value: 3ec33483293320b2bd28edda6b2d33072e56190e178f9e40354c702042f35bb7
+      - key: simhash
+        value: 1:4d99c76c3405b978
+      - key: word_count
+        value: 2752
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 392 S.C. 86
+        normalized_cite: 392sc86
+        type: parallel
+      - category: null
+        cite: 708 S.E.2d 750
+        normalized_cite: 708se2d750
+        type: official
+      court:
+        jurisdiction:
+          name: S.C.
+        name: Supreme Court of South Carolina
+        name_abbreviation: S.C.
+      decision_date_original: '2011-03-21'
+      docket_number: No. 26950.
+      docket_numbers:
+      - No. 26950.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/708/708se2d750.xml
+      first_page: '750'
+      first_page_order: 750
+      frontend_url: /se2d/708/750/
+      has_body_cache: true
+      jurisdiction:
+        name: S.C.
+      last_page: '755'
+      last_page_order: 755
+      name: The STATE, Petitioner,v.Ricky L. HATCHER, Respondent.
+      name_abbreviation: The State v.  Hatcher
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 895
+  volume_number: '708'
+SE2d_719:
+  cases:
+    FC:SE2d/719/719se2d830.xml:
+      analysis:
+      - key: cardinality
+        value: 1573
+      - key: char_count
+        value: 53029
+      - key: sha256
+        value: 83bbea59dc87c4048a033cf6ea465d05dbb325d4674692336ace1c890b1e18ec
+      - key: simhash
+        value: 1:1b1157caa477ec58
+      - key: word_count
+        value: 8511
+      batch: test_batch
+      citations:
+      - category: null
+        cite: 228 W. Va. 360
+        normalized_cite: 228wva360
+        type: parallel
+      - category: null
+        cite: 719 S.E.2d 830
+        normalized_cite: 719se2d830
+        type: official
+      court:
+        jurisdiction:
+          name: Va.
+        name: Supreme Court of Appeals of West Virginia
+        name_abbreviation: W.Va.
+      decision_date_original: '2011-11-18'
+      docket_number: No. 101414.
+      docket_numbers:
+      - No. 101414.
+      fastcase_import:
+        batch: test_batch
+        path: SE2d/719/719se2d830.xml
+      first_page: '830'
+      first_page_order: 830
+      frontend_url: /se2d/719/830/
+      has_body_cache: true
+      jurisdiction:
+        name: Va.
+      last_page: '844'
+      last_page_order: 844
+      name: WEST VIRGINIA EMPLOYERS' MUTUAL INSURANCE COMPANY, d/b/a Brickstreet Mutual
+        Insurance Company, d/b/a Brickstreet Insurance, Defendant Below, Petitioner
+        v. SUMMIT POINT RACEWAY ASSOCIATES, INC., Plaintiff Below, Respondent.
+      name_abbreviation: West Virginia Employers' Mut. Ins. Co. v. Summit Point Raceway
+        Assocs., Inc.
+      reporter:
+        short_name: S.E.2d
+      source: Fastcase
+  contributing_library: Fastcase
+  ingest_status: ingested
+  notes: Ingested from Fastcase, batch test_batch
+  reporter: 895
+  volume_number: '719'

@@ -1028,17 +1028,26 @@ def load_token_streams(replace_existing=False):
 
 
 @task
-def refresh_case_body_cache(last_run_before=None, rerender=True, volume=None):
+def refresh_case_body_cache(last_run_before=None, rerender=True, volume=None, if_missing=False):
     """ Recreate CaseBodyCache for all cases. Use `fab refresh_case_body_cache:rerender=false` to just regenerate text/json from html. """
-    volumes = VolumeMetadata.objects.exclude(xml_metadata=None)
+    volumes = VolumeMetadata.objects.filter(out_of_scope=False)
     if volume:
         volumes = volumes.filter(pk=volume)
+    if if_missing:
+        # get just volumes with in_scope cases that don't have a body_cache yet
+        volumes = volumes.filter(case_metadatas__body_cache=None, case_metadatas__in_scope=True).distinct()
     tasks.run_task_for_volumes(
         tasks.sync_case_body_cache_for_vol,
         volumes,
         last_run_before=last_run_before,
         rerender=rerender != 'false',
     )
+
+
+@task
+def update_elasticsearch_from_queue():
+    """Make sure all pending case changes have been recorded in elasticsearch."""
+    tasks.update_elasticsearch_from_queue()
 
 
 @task

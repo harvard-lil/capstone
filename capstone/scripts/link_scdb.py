@@ -10,7 +10,7 @@ from django.db import connections
 from tqdm import tqdm
 
 from capdb.models import Citation, EditLog, Reporter, CaseMetadata
-from scripts.helpers import group_by, normalize_cite
+from scripts.helpers import group_by, alphanum_lower
 
 r"""
     Usage: fab run_script:scripts.link_scdb
@@ -206,7 +206,7 @@ def main(dry_run='true', output_missing='false'):
                     new_cite.cite = cite_val
                     to_update.append(new_cite)
             else:
-                new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id, normalized_cite=normalize_cite(cite_val))
+                new_cite = Citation(cite=cite_val, type=cite_type, case_id=case_id, normalized_cite=alphanum_lower(cite_val))
                 to_create.append(new_cite)
                 edit_out.writerow([case_id, 'create', new_cite.type, new_cite.cite])
         if existing_cite_objs_by_reporter:

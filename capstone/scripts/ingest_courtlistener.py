@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 
 from tqdm import tqdm
 
-from scripts.helpers import normalize_cite
+from scripts.helpers import alphanum_lower
 from capapi.documents import ResolveDocument
 from scripts.simhash import get_simhash
 
@@ -52,7 +52,7 @@ def load_cluster(args):
             page_int = None
         citations.append({
             'cite': cite,
-            'normalized_cite': normalize_cite(cite),
+            'normalized_cite': alphanum_lower(cite),
             'type': c['type'],
             'volume': c['volume'],
             'reporter': c['reporter'],
