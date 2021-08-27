@@ -236,10 +236,11 @@ def pack_volumes(base_dir=default_base_dir, recreate=False):
 def get_reporters(base_dir, reporter_filter):
     out = []
     reporters = group_by(Reporter.objects.all(), lambda r: alphanum_lower(r.short_name))
+    base_dir = Path(base_dir)
 
     # filter dirs by reporter_filter
     if reporter_filter:
-        reporter_dir = Path(base_dir) / reporter_filter
+        reporter_dir = base_dir / reporter_filter
         if not reporter_dir.exists():
             raise ValueError(f"Unknown reporter dir: {reporter_dir}")
         reporter_dirs = [reporter_dir]
@@ -328,9 +329,6 @@ def main(batch=None, base_dir=default_base_dir, reporter_filter=None, volume_fil
     for _, reporter, volumes in reporters:
         for volume_number in volumes:
             query |= Q(reporter=reporter, volume_number=volume_number)
-    existing_volumes = group_by(
-        VolumeMetadata.objects.filter(query),
-        lambda v: (v.reporter, v.volume_number))
 
     cases_processed = 0
 
@@ -343,7 +341,7 @@ def main(batch=None, base_dir=default_base_dir, reporter_filter=None, volume_fil
         reporter_name_lower = reporter_dir.name.lower()
         for volume_dir, volume_number in volumes:
             print(f"ingesting {volume_dir}")
-            if (reporter, volume_number) in existing_volumes:
+            if VolumeMetadata.objects.filter(reporter=reporter, volume_number=volume_number).exists():
                 # Note we can't currently attempt a second ingest of an already ingested volume.
                 # Would need to figure out how to have the duplicate-case logic work
                 # even if some of the cases are already in the db and thus shouldn't be recreated.
@@ -550,7 +548,7 @@ def main(batch=None, base_dir=default_base_dir, reporter_filter=None, volume_fil
                             kept_reporters.add(cite['reporter'])
                             filtered_cites.append(cite)
                     citations = filtered_cites
-                    volume_stats["duplicate_cites"].append([case_path, [c['cite'] for c in citations]])
+                    volume_stats["duplicate_cites"].append([case_path, [c['attrs']['cite'] for c in citations]])
 
                 # check for cases having both appeals court and supreme court cites
                 # keep only the supreme court cite
