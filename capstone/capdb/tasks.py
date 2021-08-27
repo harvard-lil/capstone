@@ -137,16 +137,15 @@ def update_elasticsearch_for_vol(self, volume_id):
 @shared_task(acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
 def update_elasticsearch_from_queue():
     """
-        Index 100 cases that need to be indexed from CaseLastUpdate, in a loop, until we run out.
+        Index 100 cases that need to be indexed, in a loop, until we run out.
     """
     if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
         return
     batch_size = 100
-    have_more = True
-    while have_more:
-        have_more = False
+
+    # check for deletes
+    while True:
         with transaction.atomic(using='capdb'):
-            # check for deletes
             case_ids = list(CaseDeleted.objects.filter(indexed=False).select_for_update(skip_locked=True)[:batch_size].values_list('case_id', flat=True))
             if case_ids:
                 for case_id in case_ids:
@@ -159,17 +158,19 @@ def update_elasticsearch_from_queue():
                     except NotFoundError:
                         pass
                 CaseDeleted.objects.filter(case_id__in=case_ids).update(indexed=True)
-                if len(case_ids) == batch_size:
-                    have_more = True
+            if len(case_ids) < batch_size:
+                break
 
-            # check for updates
+    # check for updates
+    while True:
+        with transaction.atomic(using='capdb'):
             case_ids = list(CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:batch_size].values_list('case_id', flat=True))
             if case_ids:
                 cases = list(CaseMetadata.objects.filter(id__in=case_ids).for_indexing())
                 CaseMetadata.reindex_cases(cases)
                 CaseLastUpdate.objects.filter(case__in=cases).update(indexed=True)
-                if len(case_ids) == batch_size:
-                    have_more = True
+            if len(case_ids) < batch_size:
+                break
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail
