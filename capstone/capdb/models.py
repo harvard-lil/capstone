@@ -2558,6 +2558,13 @@ class CaseLastUpdate(models.Model):
     indexed = models.BooleanField(default=False, db_index=True)
 
 
+class CaseDeleted(models.Model):
+    """Tombstone so deleted cases are deleted from elasticsearch."""
+    case_id = models.IntegerField()
+    timestamp = models.DateTimeField()
+    indexed = models.BooleanField(default=False, db_index=True)
+
+
 class CaseAnalysis(models.Model):
     case = models.ForeignKey(CaseMetadata, related_name='analysis', on_delete=models.DO_NOTHING)
     timestamp = models.DateTimeField(auto_now=True)
