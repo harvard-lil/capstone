@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 from django.db import transaction
 
-from capdb.models import CaseMetadata
+from capdb.models import CaseMetadata, CaseDeleted, CaseLastUpdate
 from scripts.helpers import parse_xml, serialize_xml
 from test_data.test_fixtures.helpers import get_timestamp, check_timestamps_changed, check_timestamps_unchanged
 
@@ -106,3 +106,11 @@ def test_last_updated(case, extracted_citation_factory, elasticsearch):
         setattr(obj, no_change_field, 'foo')
         obj.save()
         check_timestamps_unchanged(case, timestamp)
+
+
+@pytest.mark.django_db(databases=['capdb'])
+def test_case_deleted(volume_metadata):
+    case = CaseMetadata.objects.create(volume=volume_metadata, reporter=volume_metadata.reporter)
+    CaseLastUpdate.objects.filter(case=case).delete()
+    CaseMetadata.objects.filter(id=case.id).delete()
+    assert CaseDeleted.objects.filter(case_id=case.id, indexed=False).exists()

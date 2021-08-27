@@ -4,11 +4,12 @@ from time import sleep
 
 from celery import shared_task
 from celery.exceptions import Reject
-from elasticsearch import ElasticsearchException
+from elasticsearch import ElasticsearchException, NotFoundError
 from urllib3.exceptions import ReadTimeoutError
 from django.db.models import Prefetch
 from django.utils import timezone
 
+from capapi.documents import CaseDocument, ResolveDocument
 from capdb.models import *
 
 
@@ -140,14 +141,35 @@ def update_elasticsearch_from_queue():
     """
     if not settings.MAINTAIN_ELASTICSEARCH_INDEX:
         return
-    while True:
+    batch_size = 100
+    have_more = True
+    while have_more:
+        have_more = False
         with transaction.atomic(using='capdb'):
-            case_ids = list(CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:100].values_list('case_id', flat=True))
-            if not case_ids:
-                break
-            cases = list(CaseMetadata.objects.filter(id__in=case_ids).for_indexing())
-            CaseMetadata.reindex_cases(cases)
-            CaseLastUpdate.objects.filter(case__in=cases).update(indexed=True)
+            # check for deletes
+            case_ids = list(CaseDeleted.objects.filter(indexed=False).select_for_update(skip_locked=True)[:batch_size].values_list('case_id', flat=True))
+            if case_ids:
+                for case_id in case_ids:
+                    try:
+                        CaseDocument().delete(id=case_id)
+                    except NotFoundError:
+                        pass
+                    try:
+                        ResolveDocument().delete(id=f'cap-{case_id}')
+                    except NotFoundError:
+                        pass
+                CaseDeleted.objects.filter(case_id__in=case_ids).update(indexed=True)
+                if len(case_ids) == batch_size:
+                    have_more = True
+
+            # check for updates
+            case_ids = list(CaseLastUpdate.objects.filter(indexed=False).select_for_update(skip_locked=True)[:batch_size].values_list('case_id', flat=True))
+            if case_ids:
+                cases = list(CaseMetadata.objects.filter(id__in=case_ids).for_indexing())
+                CaseMetadata.reindex_cases(cases)
+                CaseLastUpdate.objects.filter(case__in=cases).update(indexed=True)
+                if len(case_ids) == batch_size:
+                    have_more = True
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail

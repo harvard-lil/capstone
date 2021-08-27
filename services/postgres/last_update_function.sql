@@ -15,6 +15,14 @@ BEGIN
 
     -- get row object to use for case_id
     IF TG_OP = 'DELETE' THEN
+        -- special case if case itself is being deleted
+        IF TG_ARGV[0] = 'id' THEN
+            -- write to CaseDeleted
+            EXECUTE 'INSERT INTO capdb_casedeleted (case_id, timestamp, indexed) VALUES($1.' || TG_ARGV[0] || ', NOW(), false);'
+                USING OLD;
+            RETURN NULL;
+        END IF;
+
         row = OLD;
     ELSE
         row = NEW;

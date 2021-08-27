@@ -15,7 +15,8 @@ from elasticsearch import NotFoundError
 
 from capapi import api_reverse
 from capapi.documents import CaseDocument
-from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, CaseLastUpdate
+from capdb.models import CaseMetadata, Court, Reporter, Citation, ExtractedCitation, CaseBodyCache, CaseLastUpdate, \
+    CaseStructure
 from capdb.tasks import get_case_count_for_jur, get_court_count_for_jur, \
     get_reporter_count_for_jur, update_elasticsearch_for_vol, sync_case_body_cache_for_vol, \
     update_elasticsearch_from_queue, run_text_analysis_for_vol
@@ -545,6 +546,24 @@ def test_update_elasticsearch_from_queue(case, elasticsearch):
     # case gets removed when in_scope changes
     case.duplicative = True
     case.save()
+    update_elasticsearch_from_queue()
+    with pytest.raises(NotFoundError):
+        CaseDocument.get(case.pk)
+
+
+@pytest.mark.django_db(databases=['capdb'], transaction=True)
+def test_update_elasticsearch_from_queue_case_deleted(case, elasticsearch):
+    assert CaseDocument.get(case.pk).name_abbreviation == case.name_abbreviation
+
+    # (we don't usually delete cases, but occasionally we have to for manual cleanup. this simulates that.)
+    Citation.objects.filter(case=case).delete()
+    CaseStructure.objects.filter(metadata=case).delete()
+    ExtractedCitation.objects.filter(cited_by=case).delete()
+    CaseBodyCache.objects.filter(metadata=case).delete()
+    CaseLastUpdate.objects.filter(case=case).delete()
+    CaseMetadata.objects.filter(id=case.id).delete()
+
+    # case should now be gone from index
     update_elasticsearch_from_queue()
     with pytest.raises(NotFoundError):
         CaseDocument.get(case.pk)
