@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlencode
+from eyecite.models import CaseCitation
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -41,6 +42,7 @@ from capdb.models import Reporter, VolumeMetadata, CaseMetadata, Citation, CaseF
 from capweb.helpers import reverse, is_google_bot
 from cite.helpers import geolocate
 from config.logging import logger
+from scripts.extract_cites import extract_whole_cite
 from scripts.helpers import group_by
 
 
@@ -116,6 +118,17 @@ def robots(request):
 
 def series(request, series_slug):
     """ /<series_slug>/ -- list all volumes for each series with that slug (typically only one). """
+
+    # redirect if this seems to be a citation
+    cite = extract_whole_cite(series_slug, require_classes=None)
+    if cite:
+        if isinstance(cite, CaseCitation):
+            redirect_url = reverse('citation', args=[slugify(cite.groups['reporter']), slugify(cite.groups['volume']), slugify(cite.groups['page'])], host='cite')
+        else:
+            redirect_url = reverse('citations', host='cite') + '?' + urlencode({'q': series_slug})
+        return HttpResponseRedirect(redirect_url)
+
+
     # redirect if series slug is in the wrong format
     try:
         if slugify(series_slug) != series_slug:

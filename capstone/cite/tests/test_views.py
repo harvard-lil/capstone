@@ -4,6 +4,7 @@ import json
 from datetime import timedelta
 from difflib import unified_diff
 from pathlib import Path
+from urllib.parse import urlencode
 
 import mock
 import pytest
@@ -50,6 +51,16 @@ def test_series(client, django_assert_num_queries, volume_metadata_factory):
     # make sure we get 404 if bad series input
     response = client.get(reverse('series', args=['*'], host='cite'))
     check_response(response, status_code=404)
+
+
+@pytest.mark.django_db(databases=['capdb'])
+def test_series_as_citation(client):
+    # if series looks like a full case citation, redirect to case
+    response = client.get(reverse('series', args=['1 Mass. 1'], host='cite'))
+    check_response(response, redirect_to=reverse('citation', args=['mass', '1', '1'], host='cite'))
+    # if series looks like a full statutory citation, redirect to statute page
+    response = client.get(reverse('series', args=['11 U.S.C. § 550'], host='cite'))
+    check_response(response, redirect_to=reverse('citations', host='cite') + '?' + urlencode({'q': '11 U.S.C. § 550'}))
 
 
 @pytest.mark.django_db(databases=['capdb'])
