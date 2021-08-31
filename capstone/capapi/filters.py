@@ -194,6 +194,10 @@ class CaseFilter(SingleCaseFilter):
     name_abbreviation = filters.CharFilter(label='Name Abbreviation (contains)')
     name = filters.CharFilter(label='Full Name (contains)')
     jurisdiction = filters.ChoiceFilter(choices=jur_choices)
+    restricted = filters.ChoiceFilter(
+        label='Filter to cases with restricted or unrestricted case text',
+        choices=(('false', 'Unrestricted cases only'), ('true', 'Restricted cases only')),
+    )
     reporter = filters.ChoiceFilter(choices=reporter_choices, label='Reporter Series')
     decision_date__gte = filters.CharFilter(label='Earliest Decision Date (Format YYYY-MM-DD)')
     decision_date__lte = filters.CharFilter(label='Latest Decision Date (Format YYYY-MM-DD)')
@@ -226,6 +230,7 @@ class CaseFilter(SingleCaseFilter):
     page_size = filters.NumberFilter(min_value=1, max_value=10000, label='Results per page (1 to 10,000; default 100)')
     last_updated__gte = filters.CharFilter(label='last_updated greater than or equal to this prefix')
     last_updated__lte = filters.CharFilter(label='last_updated less than or equal to this prefix')
+    source = filters.ChoiceFilter(label='Case source (provenance)', choices=models.CaseMetadata._meta.get_field('source').choices)
 
     class Meta:
         model = models.CaseMetadata

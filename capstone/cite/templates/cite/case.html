@@ -65,7 +65,7 @@
                   {% if can_render_pdf %}
                     <li class="list-inline-item"><a class="btn" href="{{ db_case.get_pdf_url|elide:db_case|striptags }}">PDF</a></li>
                   {% endif %}
-                  <li class="list-inline-item" ><a class="btn" href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or es_case.jurisdiction.whitelisted %}?full_case=true{% endif %}">API</a></li>
+                  <li class="list-inline-item" ><a class="btn" href="{% api_url 'cases-detail' db_case.id %}{% if request.user.is_authenticated or not case_restricted %}?full_case=true{% endif %}">API</a></li>
                 </ul>
               </div>
             </div>
@@ -131,7 +131,7 @@
                 <div class="sidebar-section-contents">
                   <ul>
                     {% if request.user.is_staff %}<li><a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a></li>{% endif %}
-                    {% if perms.capdb.correct_ocr %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
+                    {% if perms.capdb.correct_ocr and db_case.source == 'CAP' %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
                   </ul>
                 </div>
               </div>
@@ -210,7 +210,7 @@
         "@id":"{{ db_case.get_full_frontend_url }}"
       },
       "headline": "{{ db_case.name_abbreviation|elide:db_case|striptags }}",
-      {% if not es_case.jurisdiction.whitelisted %}
+      {% if case_restricted %}
         "hasPart": {
           "@type": "WebPageElement",
           "isAccessibleForFree": "False",

@@ -1050,6 +1050,10 @@ class CaseMetadata(models.Model):
 
         super().save(*args, **kwargs)
 
+    def restricted(self):
+        """ Return True if case is restricted. """
+        return self.source == 'CAP' and not self.jurisdiction.whitelisted
+
     def full_cite(self):
         return "%s, %s%s" % (
             self.name_abbreviation,

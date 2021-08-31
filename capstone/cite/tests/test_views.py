@@ -17,9 +17,6 @@ from capweb.helpers import reverse
 from test_data.test_fixtures.helpers import set_case_text
 
 
-def full_url(document):
-    return "{}{}".format(reverse('cite_home'), document.frontend_url.replace('/', '', 1))
-
 @pytest.mark.django_db(databases=['capdb'])
 def test_home(client, django_assert_num_queries, reporter):
     """ Test / """
@@ -133,8 +130,8 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
         url = restricted_case.get_pdf_url()
         content_type = 'application/pdf'
     else:
-        unrestricted_url = full_url(unrestricted_case)
-        url = full_url(restricted_case)
+        unrestricted_url = unrestricted_case.get_full_frontend_url()
+        url = restricted_case.get_full_frontend_url()
         content_type = None
 
     ### can load whitelisted case
@@ -188,6 +185,13 @@ def test_single_case(client, auth_client, token_auth_client, case_factory, elast
         assert c.auth_user.case_allowance_remaining == previous_case_allowance - 1
 
 
+@pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
+def test_single_case_fastcase(client, fastcase_case_factory, elasticsearch):
+    case_text = "Case HTML"
+    case = fastcase_case_factory(body_cache__html=case_text, first_page_order=2, last_page_order=2)
+    check_response(client.get(case.get_full_frontend_url()), content_includes=[case_text, "Case text courtesy of Fastcase"])
+
+
 @pytest.mark.django_db(databases=['capdb'])
 def test_case_series_name_redirect(client, unrestricted_case, elasticsearch):
     """ Test /series/volume/case/ with series redirect when not slugified"""
@@ -221,24 +225,24 @@ def get_schema(response):
     return json.loads(script.string)
 
 @pytest.mark.django_db(databases=['default', 'capdb'])
-def test_schema_in_case(client, restricted_case, unrestricted_case, elasticsearch):
+def test_schema_in_case(client, restricted_case, unrestricted_case, fastcase_case, elasticsearch):
 
-    ### whitelisted case
+    ### unrestricted case
+    for case in (unrestricted_case, fastcase_case):
+        response = client.get(case.get_full_frontend_url())
+        check_response(response, content_includes=case.body_cache.html)
 
-    response = client.get(full_url(unrestricted_case))
-    check_response(response, content_includes=unrestricted_case.body_cache.html)
+        schema = get_schema(response)
+        assert schema["headline"] == case.name_abbreviation
+        assert schema["author"]["name"] == case.court.name
 
-    schema = get_schema(response)
-    assert schema["headline"] == unrestricted_case.name_abbreviation
-    assert schema["author"]["name"] == unrestricted_case.court.name
-
-    # if case is whitelisted, extra info about inaccessibility is not needed
-    # https://developers.google.com/search/docs/data-types/paywalled-content
-    assert "hasPart" not in schema
+        # if case is whitelisted, extra info about inaccessibility is not needed
+        # https://developers.google.com/search/docs/data-types/paywalled-content
+        assert "hasPart" not in schema
 
     ### blacklisted case
 
-    response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': full_url(restricted_case)}, follow=True)
+    response = client.post(reverse('set_cookie'), {'not_a_bot': 'yes', 'next': restricted_case.get_full_frontend_url()}, follow=True)
     check_response(response, content_includes=restricted_case.body_cache.html)
     schema = get_schema(response)
     assert schema["headline"] == restricted_case.name_abbreviation
@@ -259,7 +263,7 @@ def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
     assert session['case_allowance_remaining'] == 0
 
     with mock.patch('cite.views.is_google_bot', lambda request: True):
-        response = client.get(full_url(restricted_case), follow=True)
+        response = client.get(restricted_case.get_full_frontend_url(), follow=True)
     assert not is_cached(response)
 
     # show cases anyway
@@ -274,7 +278,7 @@ def test_schema_in_case_as_google_bot(client, restricted_case, elasticsearch):
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
 def test_no_index(auth_client, case_factory, elasticsearch):
     case = case_factory(no_index=True)
-    check_response(auth_client.get(full_url(case)), content_includes='content="noindex"')
+    check_response(auth_client.get(case.get_full_frontend_url()), content_includes='content="noindex"')
 
 
 @pytest.mark.django_db(databases=['capdb'])
@@ -306,7 +310,7 @@ def test_geolocation_log(client, unrestricted_case, elasticsearch, settings, cap
         # only test geolocation if database file is available
         return
     settings.GEOLOCATION_FEATURE = True
-    check_response(client.get(full_url(unrestricted_case), HTTP_X_FORWARDED_FOR='128.103.1.1'))
+    check_response(client.get(unrestricted_case.get_full_frontend_url(), HTTP_X_FORWARDED_FOR='128.103.1.1'))
     assert "Someone from Massachusetts, United States read a case" in caplog.text
 
 

@@ -345,8 +345,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
                 "page_number": page_number,
             })
 
-    # handle whitelisted case or logged-in user
-    if case.jurisdiction.whitelisted or request.user.is_authenticated:
+    # handle unrestricted case or logged-in user
+    if not case.restricted or request.user.is_authenticated:
         serializer = serializers.CaseDocumentSerializerWithCasebody
 
     # handle logged-out user with cookies set up already
@@ -372,7 +372,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
     elif is_google_bot(request):
         serializer = serializers.NoLoginCaseDocumentSerializer
 
-    # if non-whitelisted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
+    # if restricted case, not logged in, and no cookies set up, redirect to ?set_cookie=1
     else:
         request.session['case_allowance_remaining'] = settings.API_CASE_DAILY_ALLOWANCE
         request.session['case_allowance_last_updated'] = time.time()
@@ -398,8 +398,8 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     # meta tags
     meta_tags = []
-    if not case.jurisdiction.whitelisted:
-        # blacklisted cases shouldn't show cached version in google search results
+    if case.restricted:
+        # restricted cases shouldn't show cached version in google search results
         meta_tags.append({"name": "googlebot", "content": "noarchive"})
     if db_case.no_index:
         meta_tags.append({"name": "robots", "content": "noindex"})
@@ -439,6 +439,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
         'can_render_pdf': can_render_pdf,
         'db_case': db_case,
         'es_case': serialized_data,
+        'case_restricted': case.restricted,
         'status': serialized_data['casebody']['status'],
         'case_html': case_html,
         'full_citation': db_case.full_cite(),

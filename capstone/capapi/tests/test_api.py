@@ -87,21 +87,17 @@ def test_unauthorized_request(cap_user, client, restricted_case, elasticsearch):
     assert cap_user.case_allowance_remaining == cap_user.total_case_allowance
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, elasticsearch):
-    """
-    we should allow users to get full case without authentication
-    if case is whitelisted
-    we should allow users to see why they couldn't get full case
-    if case is blacklisted
-    """
-    case_url = api_reverse("cases-detail", args=[unrestricted_case.id])
+def test_unauthenticated_full_case(unrestricted_case, restricted_case, fastcase_case, client, elasticsearch):
+    # allow users to get full case without authentication if case is unrestricted
+    for case in (unrestricted_case, fastcase_case):
+        case_url = api_reverse("cases-detail", args=[case.id])
+        response = client.get(case_url, {"full_case": "true"})
+        check_response(response)
+        content = response.json()
+        assert "casebody" in content
+        assert type(content['casebody']['data']) is dict
 
-    response = client.get(case_url, {"full_case": "true"})
-    check_response(response)
-    content = response.json()
-    assert "casebody" in content
-    assert type(content['casebody']['data']) is dict
-
+    # allow users to see why they couldn't get full case if case is restricted
     case_url = api_reverse("cases-detail", args=[restricted_case.id])
     response = client.get(case_url, {"full_case": "true"})
     check_response(response)
@@ -112,25 +108,24 @@ def test_unauthenticated_full_case(unrestricted_case, restricted_case, client, e
 
 
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
-def test_authenticated_full_case_whitelisted(auth_user, auth_client, unrestricted_case, elasticsearch):
-    ### whitelisted jurisdiction should not be counted against the user
+def test_authenticated_full_case_unrestricted(auth_user, auth_client, unrestricted_case, fastcase_case, elasticsearch):
+    # unrestricted cases should not be counted against the user
+    for case in (unrestricted_case, fastcase_case):
+        response = auth_client.get(api_reverse("cases-detail", args=[case.id]), {"full_case": "true"})
+        check_response(response)
+        result = response.json()
+        casebody = result['casebody']
+        assert casebody['status'] == 'ok'
+        assert type(casebody['data']) is dict
 
-    response = auth_client.get(api_reverse("cases-detail", args=[unrestricted_case.id]), {"full_case": "true"})
-    check_response(response)
-    result = response.json()
-    casebody = result['casebody']
-    assert casebody['status'] == 'ok'
-    assert type(casebody['data']) is dict
-
-    # make sure the user's case download number has remained the same
-    auth_user.refresh_from_db()
-    assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
+        # make sure the user's case download number has remained the same
+        auth_user.refresh_from_db()
+        assert auth_user.case_allowance_remaining == auth_user.total_case_allowance
 
 
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
-def test_authenticated_full_case_blacklisted(auth_user, auth_client, restricted_case, elasticsearch):
-    ### blacklisted jurisdiction cases should be counted against the user
-
+def test_authenticated_full_case_restricted(auth_user, auth_client, restricted_case, elasticsearch):
+    # restricted cases should be counted against the user
     response = auth_client.get(api_reverse("cases-detail", args=[restricted_case.id]), {"full_case": "true"})
     check_response(response)
     result = response.json()
