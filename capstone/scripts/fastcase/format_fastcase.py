@@ -280,9 +280,13 @@ def prepare_html_for_tidy(fastcase_data):
 
 
 def html_tidy(html, **kwargs):
-    """
+    r"""
         Call the `tidy` command as a subprocess with the given html and flags.
         If tidy objects to any unrecognized tags, escape them and include in the returned warnings list.
+
+        >>> assert html_tidy('<P><i>foo<BAZ></i><p>&nbsp;bar<!-- comment -->') == (
+        ...     '<p>\n<em>foo&lt;BAZ&gt;</em>\n</p>\n<p>\n bar\n</p>\n',
+        ...     ["Escaped unrecognized tag 'baz'"])
     """
     tidy_flags = {
         'quiet': 'yes',
@@ -309,9 +313,9 @@ def html_tidy(html, **kwargs):
         # check for error -- tidy uses exit code 1 for warnings
         if result.returncode > 1:
             # attempt to recover from unrecognized tag by escaping tag
-            m = re.search(r'<(\w+)> is not recognized', result.stderr)
+            m = re.search(r'<(.+)> is not recognized', result.stderr)
             if m:
-                new_html = html.replace('<'+m[1], '&lt;'+m[1])
+                new_html = re.sub(rf'<({re.escape(m[1])})', r'&lt;\1', html, flags=re.I)
                 if new_html != html:
                     warnings.append(f"Escaped unrecognized tag {repr(m[1])}")
                     html = new_html
@@ -543,7 +547,7 @@ def label_paragraphs(root_el, fastcase_data):
             if name_clean is None or line_alphanum_chars == name_clean:
                 state = states["parties"]
                 add_el(el, state)
-            elif header_els and name_clean == alphanum_lower(inner_html(header_els[-1][0]) + line):
+            elif header_els and name_clean == alphanum_lower(inner_html(header_els[-1]) + line):
                 # handle edge case where name is split across two paragraphs
                 append_to_previous(line)
             elif line_alphanum_chars.startswith(name_clean) or similar_strings(line_text, fastcase_data['PartyHeader']):
@@ -706,7 +710,7 @@ def label_paragraphs(root_el, fastcase_data):
 
     # if we didn't find an author and the last line is unlabeled, assume that's the author with a typo --
     # e.g. NW2d/753/753NW2d552_1.xml , missing comma
-    if not authors and not opinion_starts and state >= states["judges"] and header_els[-1].attrib.get('class') is None:
+    if header_els and not authors and not opinion_starts and state >= states["judges"] and header_els[-1].attrib.get('class') is None:
         header_els[-1].attrib['class'] = "author"
         authors = [(len(header_els)-1, header_els[-1])]
 
