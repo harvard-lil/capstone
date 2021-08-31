@@ -258,7 +258,7 @@ PIPELINE = {
             # Example: adding 'base' here means there is a file named static/css/scss/base.scss that can be
             # embedded with {% stylesheet "base" %}:
             'base', 'index', 'about', 'bulk', 'gallery', 'contact', 'docs', 'registration', 'api', 'case_editor',
-            'case', 'case_cited_by', 'search', 'view_metadata', 'trends', 'cite', 'file_download', 'cite-grid',
+            'case', 'case_cited_by', 'search', 'trends', 'cite', 'file_download', 'cite-grid',
             'unified_docs', 'fetch', 'labs', 'labs-chronolawgic'
         ]
     },
@@ -382,9 +382,6 @@ CACHED_COUNT_TIMEOUT = 60*60*24*7  # 'count' value in API responses is cached fo
 CACHED_LIL_DATA_TIMEOUT = 60*60*24  # news and contributor data from LIL site is cached once a day
 LIVE_COUNT_TIME_LIMIT = 2  # number of seconds to try to generate a count while preparing an API response
 TASK_COUNT_TIME_LIMIT = 120  # number of seconds to try to generate a count in background task
-
-# DATA VISUALIZATION
-DATA_COUNT_DIR = '/tmp/count-data'
 
 # EMAIL
 EMAIL_USE_TLS = True

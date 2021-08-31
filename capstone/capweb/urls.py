@@ -20,10 +20,6 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
     path('fetch/', views.fetch, name='fetch'),
 
-    path('view/court/<int:court_id>/', views.view_court, name='view_court'),
-    path('view/reporter/<int:reporter_id>/', views.view_reporter, name='view_reporter'),
-    path('view/jurisdiction/<int:jurisdiction_id>/', views.view_jurisdiction, name='view_jurisdiction'),
-
     path('about/', views.AboutView.as_view(), name='about'),
     path('tools/', MarkdownView.as_view(template_name='tools.md'), name='tools'),
     path('terms', MarkdownView.as_view(template_name='terms-of-use.md'), name='terms'),
