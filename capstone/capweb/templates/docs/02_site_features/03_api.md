@@ -186,7 +186,7 @@ Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt
 * `ordering`
     * __data type:__    string
     * __description:__  A field name to sort your results in ascending order. Prepend with a minus 
-    sign to sort in reverse order. See [Search](#search) for more details.
+    sign to sort in reverse order. See [Sorting]({% docs_url 'in_depth' %}#sorting) for more details.
 * `reporter`
     * __data type:__    integer
     * __description:__  [reporter](#endpoint-reporters) id

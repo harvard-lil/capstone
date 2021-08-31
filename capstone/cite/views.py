@@ -4,9 +4,12 @@ import time
 import json
 from collections import defaultdict
 from contextlib import contextmanager
+from copy import copy
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlencode
+from natsort import natsorted
+from elasticsearch.exceptions import NotFoundError
 from eyecite.models import CaseCitation
 
 from django.conf import settings
@@ -26,11 +29,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
-from elasticsearch_dsl import SF
-from elasticsearch_dsl.query import FunctionScore
 from rest_framework.request import Request
-from elasticsearch.exceptions import NotFoundError
-from natsort import natsorted
 
 from capapi import serializers
 from capapi.documents import CaseDocument, ResolveDocument
@@ -94,18 +93,14 @@ def home(request):
 
 def random(request):
     """ Redirect to a random case over 1,000 words. """
-    s = CaseDocument.search().source(['frontend_url']).filter('range', analysis__word_count={'gte':1000})
-    s.query = FunctionScore(
-        query=s.query,  # omit this if not applying a filter first
-        functions=[
-            SF('random_score'),
-            # to weight by pagerank:
-            # SF('field_value_factor', field='analysis.pagerank.percentile', modifier="ln1p", missing=0)
-        ],
-        boost_mode='replace',
-    )
-    random_case = s[0].execute()[0]
-    return HttpResponseRedirect(random_case.frontend_url)
+    params = copy(request.GET)
+    params['ordering'] = 'random'
+    params['page_size'] = '1'
+    params.setdefault('analysis.word_count__gte', '1000')
+    data = api_request(request, CaseDocumentViewSet, 'list', get_params=params).data
+    if not data['results']:
+        raise Http404
+    return HttpResponseRedirect(data['results'][0]['frontend_url'])
 
 
 def robots(request):

@@ -426,7 +426,7 @@ def test_random_case(client, case_factory, elasticsearch):
     for i in range(2):
         case = case_factory()
         CaseAnalysis(case=case, key='word_count', value=2000).save()
-        cases.add(case.frontend_url)
+        cases.add(case.get_full_frontend_url())
     update_elasticsearch_from_queue()
 
     # try 20 times to get both
