@@ -316,6 +316,7 @@ class ESCursorPagination(ESPaginatorMixin, CursorPagination):
             return None
         return self.encode_cursor({'p': self.resp['hits']['hits'][0]['sort'], 'r':1})
 
+
 class CapESCursorPagination(ESCursorPagination):
     """
         CAP-specific customization of elasticsearch search_after pagination.
@@ -323,3 +324,9 @@ class CapESCursorPagination(ESCursorPagination):
     page_size_query_param = 'page_size'
     max_page_size = settings.MAX_PAGE_SIZE
     fallback_sort_field = "id"
+
+    def decode_cursor(self, request):
+        """Don't allow use of cursor with random ordering, because we can't provide consistent pagination."""
+        if request.query_params.get(self.cursor_query_param) and request.query_params.get('ordering') == 'random':
+            raise serializers.ValidationError({'cursor': ['Pagination is not currently supported with random ordering. For a larger random sample, consider increasing page_size.']})
+        return super().decode_cursor(request)

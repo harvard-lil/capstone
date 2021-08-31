@@ -4,7 +4,16 @@ from django.conf import settings
 from rest_framework.response import Response
 
 
-def check_response(response, status_code=200, content_type=None, content_includes=None, content_excludes=None):
+def check_response(response, status_code=None, content_type=None, content_includes=None, content_excludes=None, redirect_to=None):
+    # check redirect_to
+    if redirect_to:
+        assert response.url == redirect_to
+        if not status_code:
+            status_code = 302
+
+    # check status_code
+    if not status_code:
+        status_code = 200
     assert response.status_code == status_code
 
     # check content-type if not a redirect

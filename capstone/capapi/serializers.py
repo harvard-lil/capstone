@@ -342,7 +342,7 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         # check permissions for full-text access to this case
         if not check_permissions:
             status = 'ok'
-        elif not s['restricted']:
+        elif s['restricted'] is False:
             status = "ok"
         elif request.user.is_anonymous:
             status = "error_auth_required"

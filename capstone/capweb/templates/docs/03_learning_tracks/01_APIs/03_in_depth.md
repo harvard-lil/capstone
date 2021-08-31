@@ -86,7 +86,7 @@ To filter by fields not equal to a value, append `__exclude`. For example, to fe
 
     curl "{% api_url "cases-list" %}?jurisdiction__exclude=cal"
 
-## Sorting
+## Sorting {: #sorting }
   
 You can sort your search in the `/cases` endpoint using the `ordering` parameter. To sort your results in ascending order,
 supply the `ordering` parameter with the field on which you'd like to sort your results. For example, if you'd like to
@@ -98,7 +98,16 @@ You can also sort in descending order by adding a minus sign before the field on
 the same search sorted in descending order, that is, with the newest cases first, use this query:
 
     {% api_url "cases-list" %}?search=baronetcy&ordering=-decision_date
-    
+
+### Random sorting
+
+Sort order can be randomized using `ordering=random`. Random sorting comes with two caveats:
+
+* Random results cannot be paginated. Consider using `page_size` if you need a larger sample of random results.
+* Random results may be cached by CAP's content delivery network, meaning you may receive the same "random" results
+  when sending precisely the same query twice in a row. To avoid caching, make some modification to the query between
+  each request.
+
 ## Types of Data You Can Query
 
 We make data available through several API endpoints, the most popular being our `/cases` endpoint. It's the only endpoint

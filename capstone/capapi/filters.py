@@ -14,7 +14,8 @@ from django_elasticsearch_dsl_drf.filter_backends.search.query_backends import N
 from django_filters.rest_framework import filters, DjangoFilterBackend, FilterSet
 from django_filters.utils import translate_validation
 from django.http import QueryDict, HttpRequest
-from elasticsearch_dsl.query import Q
+from elasticsearch_dsl import SF
+from elasticsearch_dsl.query import Q, FunctionScore
 from rest_framework.exceptions import ValidationError
 
 from capapi.resources import parallel_execute
@@ -224,6 +225,7 @@ class CaseFilter(SingleCaseFilter):
             ('-name_abbreviation', 'Reverse name abbreviation'),
             ('id', 'id'),
             ('-id', 'Reverse id'),
+            ('random', 'Random ordering'),
             ('', '--- Analysis fields ---')
         ]+[choice for field in analysis_fields for choice in [[f'analysis.{field}', field], [f'-analysis.{field}', f'Reverse {field}']]],
     )
@@ -600,6 +602,21 @@ class MultiNestedFilteringFilterBackend(NestedFilteringFilterBackend):
 
 
 class CAPOrderingFilterBackend(OrderingFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        # special handling for ordering=random
+        if request.query_params.get(self.ordering_param) == 'random':
+            queryset = queryset._clone()
+            queryset.query = FunctionScore(
+                functions=[SF('random_score')],
+                boost_mode='replace',
+                **({'query': queryset.query} if queryset.query else {}),
+            )
+
+        else:
+            queryset = super().filter_queryset(request, queryset, view)
+
+        return queryset
+
     # NOTE: ordering in Elasticsearch falls back to the "internal Lucene doc id" for a given shard,
     # which means it is stable as long as we have only one shard. If we add additional shards, we will
     # need to bind each user to a single shard for pagination.
