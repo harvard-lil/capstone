@@ -312,6 +312,16 @@ class ExtractedCitationFactory(factory.DjangoModelFactory):
 
 
 @register
+class FastcaseImportFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = FastcaseImport
+
+    batch = '2021'
+    path = 'A3d/100/100a3d206_1_Replace2.html'
+    data = {}
+
+
+@register
 class CaseFactory(factory.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
@@ -351,6 +361,14 @@ class UnrestrictedCaseFactory(CaseFactory):
 @register
 class RestrictedCaseFactory(CaseFactory):
     jurisdiction = factory.SubFactory(JurisdictionFactory, whitelisted=False)
+
+
+@register
+class FastcaseCaseFactory(RestrictedCaseFactory):
+    # inherit from RestrictedCaseFactory so we know restriction test doesn't apply to fastcase source
+    source = 'Fastcase'
+    batch = '2021'
+    fastcase_import = factory.RelatedFactory(FastcaseImportFactory, 'case')
 
 
 _case_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()

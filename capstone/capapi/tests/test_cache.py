@@ -71,14 +71,15 @@ def test_cache_headers(request, elasticsearch,
     )
 
 @pytest.mark.django_db(databases=['default', 'capdb'])
-def test_cache_case_cite(client, unrestricted_case, restricted_case, elasticsearch):
-    """ Single-case cite.case.law page should be cached only if case is whitelisted. """
-    url = CaseMetadata.objects.get(pk=unrestricted_case.id).get_frontend_url()
+def test_cache_case_cite(client, unrestricted_case, fastcase_case, restricted_case, elasticsearch):
+    """ Single-case cite.case.law page should be cached only if case is unrestricted. """
 
-    # whitelisted case is cached
-    response = client.get(url)
-    check_response(response, content_includes=unrestricted_case.name)
-    assert is_cached(response)
+    # unrestricted case is cached
+    for case in (unrestricted_case, fastcase_case):
+        url = CaseMetadata.objects.get(pk=case.id).get_frontend_url()
+        response = client.get(url)
+        check_response(response, content_includes=case.name)
+        assert is_cached(response)
 
     # non-whitelisted case not cached
     url = CaseMetadata.objects.get(pk=restricted_case.id).get_frontend_url()

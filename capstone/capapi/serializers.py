@@ -229,7 +229,8 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
             "frontend_pdf_url": self._url_templates['frontend_pdf_url'] % s.get("frontend_pdf_url", None),
             "preview": preview,
             "analysis": s.get("analysis", {}),
-            "last_updated": s.get("last_updated"),  # can be changed to s["last_updated"] once new index is in place
+            "last_updated": s["last_updated"] or s["provenance"]["date_added"],
+            "provenance": s["provenance"],
         }
 
 
@@ -271,7 +272,7 @@ class CaseAllowanceMixin:
         user = request.user
 
         if user.is_anonymous:
-            # logged out users won't get any blacklisted case bodies, so nothing to update
+            # logged out users won't get any restricted case bodies, so nothing to update
             return super().data
 
         # set request.site_limits so it can be checked later in check_update_case_permissions()
@@ -290,10 +291,10 @@ class CaseAllowanceMixin:
                 user.update_case_allowance(save=False)  # for SiteLimits, make sure we start with up-to-date case_allowance_remaining
                 allowance_before = user.case_allowance_remaining
 
-            # pre-fetch IDs of any blacklisted cases in our results that this user has already accessed
+            # pre-fetch IDs of any restricted cases in our results that this user has already accessed
             if user.has_tracked_history:
                 if hasattr(self, 'many'):
-                    case_ids = [case["_source"]['id'] for case in self.instance if not case["_source"]['jurisdiction']['whitelisted']]
+                    case_ids = [case["_source"]['id'] for case in self.instance if case["_source"]["restricted"]]
                 else:
                     case_ids = [self.instance['id']]
                 allowed_case_ids = set(UserHistory.objects.filter(case_id__in=case_ids, user_id=user.id).values_list('case_id', flat=True).distinct())
@@ -336,13 +337,12 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
     def to_representation(self, instance, check_permissions=True):
         case = super().to_representation(instance)
         request = self.context.get('request')
+        s = self.s_from_instance(instance)
 
         # check permissions for full-text access to this case
         if not check_permissions:
             status = 'ok'
-        elif 'id' not in case['jurisdiction']:
-            status = "error_unknown"
-        elif case['jurisdiction']['whitelisted']:
+        elif not s['restricted']:
             status = "ok"
         elif request.user.is_anonymous:
             status = "error_auth_required"
@@ -361,11 +361,9 @@ class CaseDocumentSerializerWithCasebody(CaseAllowanceMixin, CaseDocumentSeriali
         data = None
         if status == 'ok':
             body_format = self.context.get('force_body_format') or request.query_params.get('body_format')
-
             if body_format not in ('html', 'xml'):
                 body_format = 'text'
-            source = instance['_source'] if '_source' in instance else instance
-            data = source['casebody_data'][body_format]
+            data = s['casebody_data'][body_format]
 
         case['casebody'] = {'status': status, 'data': data}
         return case

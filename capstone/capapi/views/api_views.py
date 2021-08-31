@@ -97,7 +97,10 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     serializer_class = CaseDocumentSerializer
     filterset_class = filters.CaseFilter
 
+    # filters that change which cases are returned
     query_filter_backends = [
+        filters.CitesToDynamicFilter,
+        filters.CaseFilterBackend,
         # queries that take full-text search operators:
         filters.MultiFieldFTSFilter,
         filters.NameFTSFilter,
@@ -106,15 +109,16 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         filters.NameAbbreviationFTSFilter,
         filters.MultiNestedFilteringFilterBackend,
         filters.DocketNumberFTSFilter,
-        filters.CitesToDynamicFilter,
-        filters.CaseFilterBackend,
     ]
+
+    # filters that change the formatting/order/metadata of the result
     result_filter_backends = [
         filters.CAPOrderingFilterBackend, # Orders Document
         filters.CAPFacetedSearchFilterBackend, # Aggregates Document
         HighlightBackend, # for search preview
         DefaultOrderingFilterBackend # Must be last
     ]
+
     filter_backends = query_filter_backends + result_filter_backends
 
     # Define filter fields
@@ -127,6 +131,8 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
         'cite': 'citations.normalized_cite',
         'decision_date': 'decision_date_original',
         'last_updated': 'last_updated',
+        'source': 'provenance.source',
+        'restricted': 'restricted',
 
         **{'analysis.'+k: 'analysis.'+k for k in filters.analysis_fields},
         # legacy fields:

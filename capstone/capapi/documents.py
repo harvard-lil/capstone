@@ -170,6 +170,8 @@ class CaseDocument(Document):
         "batch": fields.KeywordField(),
     })
 
+    restricted = fields.BooleanField()
+
     def prepare_provenance(self, instance):
         return {
             "date_added": instance.date_added.strftime('%Y-%m-%d'),
