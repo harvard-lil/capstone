@@ -354,7 +354,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
             })
 
     # handle unrestricted case or logged-in user
-    if not case.restricted or request.user.is_authenticated:
+    if case.restricted is False or request.user.is_authenticated:
         serializer = serializers.CaseDocumentSerializerWithCasebody
 
     # handle logged-out user with cookies set up already
@@ -406,7 +406,7 @@ def citation(request, series_slug, volume_number_slug, page_number, case_id=None
 
     # meta tags
     meta_tags = []
-    if case.restricted:
+    if case.restricted is not False:
         # restricted cases shouldn't show cached version in google search results
         meta_tags.append({"name": "googlebot", "content": "noarchive"})
     if db_case.no_index:

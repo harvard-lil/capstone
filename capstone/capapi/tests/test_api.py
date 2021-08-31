@@ -324,11 +324,10 @@ def test_harvard_access(request, restricted_case, client_fixture_name, elasticse
 
 
 @pytest.mark.django_db(databases=['default', 'capdb', 'user_data'])
-def test_authenticated_multiple_full_cases(auth_user, auth_client, case_factory, elasticsearch):
-    ### mixed requests should be counted only for blacklisted cases
+def test_authenticated_multiple_full_cases(auth_user, auth_client, unrestricted_case, restricted_case_factory, elasticsearch):
+    ### mixed requests should be counted only for restricted cases
 
-    [case_factory(jurisdiction__whitelisted=False) for i in range(2)]
-    [case_factory(jurisdiction__whitelisted=True) for i in range(1)]
+    [restricted_case_factory() for i in range(2)]
 
     response = auth_client.get(api_reverse("cases-list"), {"full_case": "true"})
     check_response(response)
