@@ -47,7 +47,7 @@ class CapStorageMixin(object):
 
 class CapS3Storage(CapStorageMixin, S3Boto3Storage):
     def _fix_path(self, path):
-        return self._encode_name(self._normalize_name(self._clean_name(path)))
+        return self._normalize_name(self._clean_name(path))
 
     def iter_files(self, path="", partial_path=False):
         """
@@ -82,9 +82,9 @@ class CapS3Storage(CapStorageMixin, S3Boto3Storage):
             path += '/'  # should end with exactly one slash
         entries = self.bucket.objects.filter(Prefix=self._fix_path(path))
         if with_md5:
-            return ((self.relpath(self._decode_name(entry.key)), entry.e_tag.strip('"')) for entry in entries)
+            return ((self.relpath(entry.key), entry.e_tag.strip('"')) for entry in entries)
         else:
-            return (self.relpath(self._decode_name(entry.key)) for entry in entries)
+            return (self.relpath(entry.key) for entry in entries)
 
     def tag_file(self, path, key, value):
         """ Tag S3 item at path with key=value. """
