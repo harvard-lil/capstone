@@ -15,6 +15,9 @@ services:
           - bootstrap.memory_lock=true
           - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
           - discovery.type=single-node
+          # Silence "Elasticsearch built-in security features are not enabled." warning message.
+          # This is safe because `ports` includes `127.0.0.1` to bind only to localhost.
+          - xpack.security.enabled=false
         ulimits:
           memlock:
             soft: -1
