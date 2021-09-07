@@ -18,21 +18,20 @@
   <div id="app" class="content"></div>
 
   <script>
-    // This is essentially each endpoint with its API interface
-    // eslint-disable-next-line
-    const urls = {
-      api_root: "{% api_url "api-root" %}v1/",
-      static: "{% static "" %}",
-      search_docs: "{% url 'search-docs' %}",
-      trends: "{% url 'trends' %}"
+    const config = {
+      urls: {
+        api_root: "{% api_url "api-root" %}v1/",
+        static: "{% static "" %}",
+        search_docs: "{% url 'search-docs' %}",
+        trends: "{% url 'trends' %}"
+      },
+      choices: {
+        "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
+        "reporter": {% snippet 'search_reporter_list' '[]' %},
+        "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]],
+      },
+      maxYear: {{ CASE_MAX_YEAR }},
     };
-
-    const choices = {
-      "jurisdiction": {% snippet 'search_jurisdiction_list' '[]' %},
-      "reporter": {% snippet 'search_reporter_list' '[]' %},
-      "whitelisted": [["true", "Whitelisted"], ["false", "Not Whitelisted"]],
-    };
-
   </script>
   <noscript>
     This search interface requires javascript, even for basic functionality. If you can not or will not use

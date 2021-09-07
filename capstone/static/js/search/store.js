@@ -5,8 +5,9 @@ import axios from "axios";
 import router from './router'
 
 // defined in template
-const importUrls = urls; // eslint-disable-line
-const importChoices = choices; // eslint-disable-line
+const importUrls = config.urls; // eslint-disable-line
+const importChoices = config.choices; // eslint-disable-line
+const caseMaxYear = config.maxYear; // eslint-disable-line
 const temp_court_list = require("./temp_court_list");
 
 // helpers
@@ -19,6 +20,7 @@ function cursorFromUrl(url) {
 Vue.use(Vuex);
 const store = new Vuex.Store({
   state: {
+    caseMaxYear,
     test: 'test',
     hitcount: null,
     page: 1,

@@ -144,6 +144,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'config.context_processors.settings',
             ],
             'builtins': [
                 'django_hosts.templatetags.hosts_override',
@@ -151,6 +152,10 @@ TEMPLATES = [
         },
     },
 ]
+
+TEMPLATE_VISIBLE_SETTINGS = (
+    'CASE_MAX_YEAR',
+)
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -585,3 +590,6 @@ HYPERSCAN_CACHE_DIR = os.path.join(BASE_DIR, '.hyperscan')
 
 # whether we are running tests
 TESTING = False
+
+# max year for which we have caselaw
+CASE_MAX_YEAR = 2019

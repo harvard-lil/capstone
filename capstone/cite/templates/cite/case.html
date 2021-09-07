@@ -234,9 +234,9 @@
         }
       },
       "image": "{% capweb_static "img/og_image/api.jpg" %}",
-      "datePublished": "{{ db_case.decision_date }}",
-      "dateModified": "2018-10-29",
-      "dateCreated": "{{ db_case.decision_date }}",
+      "datePublished": "{{ db_case.decision_date_original }}",
+      "dateModified": "{{ es_case.last_updated }}",
+      "dateCreated": "{{ db_case.date_added|date:"Y-m-d" }}",
       "description": "{{ formatted_name|elide:db_case|striptags }}"
     }
   </script>
