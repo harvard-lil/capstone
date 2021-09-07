@@ -484,7 +484,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         years_out = []
 
         for year, count in bucket_entries.items():
-            total = 0
             if jurisdiction == 'total':
                 total = total_dict[year]
             else:
