@@ -486,3 +486,16 @@ def group_by(collection, key):
 def alphanum_lower(text):
     """Return lowercase text with only alphanumeric characters."""
     return re.sub(r'[^0-9a-z]', '', text.lower())
+
+
+_clean_punctuation_table = str.maketrans("“”–—´‘’", "\"\"--'''")
+
+
+def clean_punctuation(text):
+    """Replace quotes and dashes with ascii versions."""
+    return text.translate(_clean_punctuation_table)
+
+
+def clean_whitespace(text):
+    """Replace whitespace in text with single space, and strip."""
+    return re.sub(r'[\s\u00a0\u180e\u2007\u200b-\u200f\u202f\u2060\ufeff]+', ' ', text).strip()

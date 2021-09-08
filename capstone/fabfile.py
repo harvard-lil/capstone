@@ -42,7 +42,8 @@ from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Cit
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
     validate_private_volumes as validate_private_volumes_script, export, update_snippets
-from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup
+from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup, \
+    clean_punctuation, clean_whitespace
 
 
 @contextmanager
@@ -1586,23 +1587,12 @@ def celery_remove_jobs(task_name, queue='celery'):
 def normalize_unicode(dry_run='true'):
     """Normalize characters in case fields."""
     fields = ['name', 'name_abbreviation']
-    replacements = [
-        [r'[\s\u00a0\u180e\u2007\u200b-\u200f\u202f\u2060\ufeff]+', ' '],
-        [r'[‘’ʼ]', "'"],
-        [r'[“”]', '"'],
-        [r'[—]', '-'],
-    ]
-    def normalize(s):
-        for regex, replacement in replacements:
-            s = re.sub(regex, replacement, s)
-        return s
-
     to_update = []
     for case in tqdm(CaseMetadata.objects.only(*fields).iterator()):
         changed = False
         for f in fields:
             old_val = getattr(case, f)
-            new_val = normalize(old_val)
+            new_val = clean_whitespace(clean_punctuation(old_val))
             if new_val != old_val:
                 if dry_run == 'true':
                     print(f"Would update {case.id} from {repr(old_val)} to {repr(new_val)}")

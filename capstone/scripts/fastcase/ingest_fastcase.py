@@ -18,7 +18,8 @@ from capdb.models import CaseMetadata, Court, Reporter, VolumeMetadata, Citation
 from fabfile import update_reporter_years
 from scripts.extract_cites import extract_whole_cite
 from scripts.fastcase.format_fastcase import format_fastcase_html_from_parts, strip_tags
-from scripts.helpers import group_by, alphanum_lower, jurisdiction_translation_long_name, postal_states
+from scripts.helpers import group_by, alphanum_lower, jurisdiction_translation_long_name, postal_states, \
+    clean_whitespace, clean_punctuation
 
 r"""
     This file imports an export of cases from Fastcase.
@@ -405,10 +406,7 @@ def main(batch=None, base_dir=default_base_dir, reporter_filter=None, volume_fil
                 # make case object
                 case = {
                     'case_id': f'FC:{case_path}',
-                    'name_abbreviation': case_dict['ShortName'],
-                    # PartyHeader can be empty, e.g. NE2d/939/939ne2d586.xml
-                    # Could possibly be recovered from text; unclear if this indicates case shouldn't be ingested
-                    'name': strip_tags(case_dict['PartyHeader'] or case_dict['ShortName']),
+                    'name_abbreviation': clean_whitespace(clean_punctuation(case_dict['ShortName'])),
                     'volume': volume,
                     'reporter': reporter,
                     'first_page': first_page,
@@ -418,6 +416,12 @@ def main(batch=None, base_dir=default_base_dir, reporter_filter=None, volume_fil
                     'last_page': first_page,
                     'last_page_order': first_page_order,
                 }
+                if case_dict['PartyHeader']:
+                    # PartyHeader can be empty, e.g. NE2d/939/939ne2d586.xml
+                    # Could possibly be recovered from text; unclear if this indicates case shouldn't be ingested
+                    case['name'] = clean_whitespace(clean_punctuation(strip_tags(case_dict['PartyHeader'])))
+                else:
+                    case['name'] = case['name_abbreviation']
 
                 # court and jurisdiction
                 court_abbv = case_dict['CourtAbbreviation']
