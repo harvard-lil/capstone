@@ -21,15 +21,17 @@
 {% block main_content %}
 <div id="app" class="content"></div>
 <script>
-  const urls = {
-    api_root: "{% api_url "api-root" %}v1/",
-    static: "{% static "" %}",
-    search_page: "{% url "search" %}#/cases",
-    docs_page: "{% url "trends-docs" %}"
-  };
-
-  const snippets = {
-    jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %}
+  const config = {
+    urls: {
+      api_root: "{% api_url "api-root" %}v1/",
+      static: "{% static "" %}",
+      search_page: "{% url "search" %}#/cases",
+      docs_page: "{% url "trends-docs" %}"
+    },
+    snippets: {
+      jurisdictions: {% snippet 'search_jurisdiction_list' '[]' %}
+    },
+    maxYear: {{ CASE_MAX_YEAR }},
   };
 </script>
 <noscript>

@@ -385,10 +385,10 @@ BR_590:
       last_page: '600'
       last_page_order: 600
       name: 'IN RE: The FINANCIAL OVERSIGHT AND MANAGEMENT BOARD FOR PUERTO RICO,
-        as representative of the Commonwealth of Puerto Rico, et al., Debtors.  The
+        as representative of the Commonwealth of Puerto Rico, et al., Debtors. The
         Financial Oversight and Management Board for Puerto Rico, as representative
         of the Employees Retirement System of the Government of the Commonwealth of
-        Puerto Rico, Debtors.  The Financial Oversight and Management Board for Puerto
+        Puerto Rico, Debtors. The Financial Oversight and Management Board for Puerto
         Rico, as representative of, the Employees Retirement System of the Government
         of the Commonwealth of Puerto Rico, Plaintiff, v. Altair Global Credit Opportunities
         Fund (a), LLC, et al., Defendants-Counterclaimants.'
@@ -501,7 +501,7 @@ CalRptr3d_217:
         name: Cal.
       last_page: '715'
       last_page_order: 715
-      name: IN RE A.V., a Person Coming Under the Juvenile Court Law.  The People,
+      name: IN RE A.V., a Person Coming Under the Juvenile Court Law. The People,
         Plaintiff and Respondent, v. A.V., Defendant and Appellant.
       name_abbreviation: People v. A.V. (In re A.V.)
       reporter:
@@ -563,7 +563,7 @@ NE2d_944:
       last_page_order: 1119
       name: Gretchen RIVERA, an Infant by Her Mother and Natural Guardian, Maria Rivera,
         et al., Appellants,v.Paul G. KLEINMAN, M.D., et al., Respondents.
-      name_abbreviation: Rivera v.  Kleinman
+      name_abbreviation: Rivera v. Kleinman
       reporter:
         short_name: N.E.2d
       source: Fastcase
@@ -729,8 +729,7 @@ NE2d_997:
         name: Ind.
       last_page: '393'
       last_page_order: 393
-      name: "Chaunsey L. FOX, Appellant\u2013Defendant, v. STATE of Indiana, Appellee\u2013\
-        Plaintiff."
+      name: Chaunsey L. FOX, Appellant-Defendant, v. STATE of Indiana, Appellee-Plaintiff.
       name_abbreviation: Fox v. State
       reporter:
         short_name: N.E.2d
@@ -899,14 +898,11 @@ NW2d_737:
         name: Mich.
       last_page: '771'
       last_page_order: 771
-      name: 'Geoffrey N. FIEGER, Fieger, Fieger, Kenny & Johnson, P.C., John L. Barlow,
+      name: Geoffrey N. FIEGER, Fieger, Fieger, Kenny & Johnson, P.C., John L. Barlow,
         John L. Barlow & Associates Advertising, Inc., and Nancy Fisher, Petitioners-Appellants,
-
-        v.
-
-        Michael A. COX, Individually and in his, Official Capacity as Attorney General,
-        Terri Lynn Land, Individually and in her Official Capacity as Secretary of
-        State, and Thomas Cameron, Respondents-Appellees.'
+        v. Michael A. COX, Individually and in his, Official Capacity as Attorney
+        General, Terri Lynn Land, Individually and in her Official Capacity as Secretary
+        of State, and Thomas Cameron, Respondents-Appellees.
       name_abbreviation: Fieger v. Cox
       reporter:
         short_name: N.W.2d
@@ -962,23 +958,11 @@ NW2d_740:
         name: Mich.
       last_page: '678'
       last_page_order: 678
-      name: 'GRISWOLD PROPERTIES, L.L.C., Plaintiff-Appellee,
-
-        v.
-
-        LEXINGTON INSURANCE COMPANY, Defendant-Appellant.
-
-        Gainors Meat Packing, Inc., Plaintiff-Appellant,
-
-        v.
-
-        Home-Owners Insurance Company, Defendant-Appellee.
-
-        Samuel C. Gardner and Cynthia A. Gardner, Plaintiffs-Appellants/Cross-Appellees,
-
-        v.
-
-        Harleysville Lake States Insurance Company, Defendant-Appellee/Cross-Appellant.'
+      name: GRISWOLD PROPERTIES, L.L.C., Plaintiff-Appellee, v. LEXINGTON INSURANCE
+        COMPANY, Defendant-Appellant. Gainors Meat Packing, Inc., Plaintiff-Appellant,
+        v. Home-Owners Insurance Company, Defendant-Appellee. Samuel C. Gardner and
+        Cynthia A. Gardner, Plaintiffs-Appellants/Cross-Appellees, v. Harleysville
+        Lake States Insurance Company, Defendant-Appellee/Cross-Appellant.
       name_abbreviation: Griswold Properties v. Lexington Ins. Co.
       reporter:
         short_name: N.W.2d
@@ -1032,7 +1016,7 @@ NW2d_753:
         name: Wis.
       last_page: '557'
       last_page_order: 557
-      name: "TOWN OF MERRIMAC, Plaintiff-Appellant,\u2020\nv.\nVILLAGE OF MERRIMAC,\
+      name: "TOWN OF MERRIMAC, Plaintiff-Appellant,\u2020 v. VILLAGE OF MERRIMAC,\
         \ Defendant-Respondent."
       name_abbreviation: Town of Merrimac v. Village of Merrimac
       reporter:
@@ -1088,11 +1072,7 @@ NW2d_760:
         name: Mich.
       last_page: '537'
       last_page_order: 537
-      name: 'ROBERT A. HANSEN FAMILY TRUST
-
-        v.
-
-        FGH INDUSTRIES, LLC.'
+      name: ROBERT A. HANSEN FAMILY TRUST v. FGH INDUSTRIES, LLC.
       name_abbreviation: Hansen Trust v. Fgh Industries
       reporter:
         short_name: N.W.2d
@@ -1146,8 +1126,8 @@ NW2d_761:
         name: Wis.
       last_page: '672'
       last_page_order: 672
-      name: "James COOK, Zachary Luckett and Quincle Cook, Plaintiffs-Respondents,\n\
-        Friebert, Finerty & St. John, S.C., Creditor-Respondent,\nv.\nPUBLIC STORAGE,\
+      name: "James COOK, Zachary Luckett and Quincle Cook, Plaintiffs-Respondents,\
+        \ Friebert, Finerty & St. John, S.C., Creditor-Respondent, v. PUBLIC STORAGE,\
         \ INC., Defendant-Appellant.\u2020"
       name_abbreviation: Cook v. Public Storage, Inc.
       reporter:
@@ -1202,11 +1182,7 @@ NW2d_777:
         name: Neb.
       last_page: '321'
       last_page_order: 321
-      name: 'STATE of Nebraska, appellee,
-
-        v.
-
-        Erick Fernando VELA, appellant.'
+      name: STATE of Nebraska, appellee, v. Erick Fernando VELA, appellant.
       name_abbreviation: State v. Vela
       reporter:
         short_name: N.W.2d
@@ -1260,11 +1236,7 @@ NW2d_781:
         name: Wis.
       last_page: '551'
       last_page_order: 551
-      name: 'VISCUSI
-
-        v.
-
-        PROGRESSIVE UNIVERSAL INS. CO..'
+      name: VISCUSI v. PROGRESSIVE UNIVERSAL INS. CO..
       name_abbreviation: VISCUSI v. PROGRESSIVE UNIVERSAL INS. CO.
       reporter:
         short_name: N.W.2d
@@ -1377,13 +1349,12 @@ P3d_332:
         name: Haw.
       last_page: '701'
       last_page_order: 701
-      name: "KILAKILA \u2018O HALEAKALA, Plaintiff/Appellant\u2013Appellant, v. UNIVERSITY\
-        \ OF HAWAI\u2018I, and Thomas M. Apple, in his official capacity as Chancellor\
-        \ of the University of Hawai\u2018i at Manoa; Board of Land and Natural Resources,\
-        \ William Aila, in his capacity as the Interim Chairperson of the Board of\
-        \ Land and Natural Resources; and Department of Land and Natural Resources,\
-        \ Defendants/Appellees\u2013Appellees."
-      name_abbreviation: "Haleakal v. Univ. of Hawai\u2018i"
+      name: KILAKILA 'O HALEAKALA, Plaintiff/Appellant-Appellant, v. UNIVERSITY OF
+        HAWAI'I, and Thomas M. Apple, in his official capacity as Chancellor of the
+        University of Hawai'i at Manoa; Board of Land and Natural Resources, William
+        Aila, in his capacity as the Interim Chairperson of the Board of Land and
+        Natural Resources; and Department of Land and Natural Resources, Defendants/Appellees-Appellees.
+      name_abbreviation: Haleakal v. Univ. of Hawai'i
       reporter:
         short_name: P.3d
       source: Fastcase
@@ -1495,11 +1466,7 @@ SE2d_590:
         name: Va.
       last_page: '57'
       last_page_order: 57
-      name: 'Darlee Frith Shelton FOWLKES
-
-        v.
-
-        Winford Calvin FOWLKES.'
+      name: Darlee Frith Shelton FOWLKES v. Winford Calvin FOWLKES.
       name_abbreviation: Fowlkes v. Fowlkes
       reporter:
         short_name: S.E.2d
@@ -1601,17 +1568,8 @@ SE2d_592:
         name: Ga.
       last_page: '132'
       last_page_order: 132
-      name: 'DEPARTMENT OF HUMAN RESOURCES et al.
-
-        v.
-
-        JOHNSON et al.
-
-        Cobb et al.
-
-        v.
-
-        Johnson et al.'
+      name: DEPARTMENT OF HUMAN RESOURCES et al. v. JOHNSON et al. Cobb et al. v.
+        Johnson et al.
       name_abbreviation: Department of Human Resources v. Johnson
       reporter:
         short_name: S.E.2d
@@ -1719,7 +1677,7 @@ SE2d_708:
       last_page_order: 435
       name: Eric Lamont HODNETTv.STANCO MASONRY, INCORPORATED and Amerisure Mutual
         Insurance Company.
-      name_abbreviation: Hodnett v.  Masonry
+      name_abbreviation: Hodnett v. Masonry
       reporter:
         short_name: S.E.2d
       source: Fastcase
@@ -1766,7 +1724,7 @@ SE2d_708:
       last_page: '755'
       last_page_order: 755
       name: The STATE, Petitioner,v.Ricky L. HATCHER, Respondent.
-      name_abbreviation: The State v.  Hatcher
+      name_abbreviation: The State v. Hatcher
       reporter:
         short_name: S.E.2d
       source: Fastcase

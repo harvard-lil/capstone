@@ -226,7 +226,7 @@ class CaseDocumentSerializer(BaseDocumentSerializer):
             },
             "cites_to": extracted_citations,
             "frontend_url": self._url_templates['frontend_url'] % s["frontend_url"],
-            "frontend_pdf_url": self._url_templates['frontend_pdf_url'] % s.get("frontend_pdf_url", None),
+            "frontend_pdf_url": self._url_templates['frontend_pdf_url'] % s["frontend_pdf_url"] if s["frontend_pdf_url"] else None,
             "preview": preview,
             "analysis": s.get("analysis", {}),
             "last_updated": s["last_updated"] or s["provenance"]["date_added"],

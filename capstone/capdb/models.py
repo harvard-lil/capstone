@@ -1179,6 +1179,8 @@ class CaseMetadata(models.Model):
         return re.sub(r'[\\/:*?"<>|]', '_', self.redact_obj(self.full_cite())) + ".pdf"
 
     def get_pdf_url(self, with_host=True):
+        if not self.pdf_available():
+            return None
         url = reverse('case_pdf', [self.pk, self.get_pdf_name()], host='cite')
         if not with_host:
             url = '/' + url.split('/', 3)[-1]

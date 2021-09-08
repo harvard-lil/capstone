@@ -363,7 +363,7 @@
                aria-label="start year"
                v-model.lazy.number="minYear"
                type="number"
-               min="1640" max="2018"/>
+               min="1640" :max="caseMaxYear"/>
         <vue-slider v-model="yearSlider"
                     class="col mr-3"
                     :enable-cross="false"
@@ -375,7 +375,7 @@
                aria-label="end year"
                v-model.lazy.number="maxYear"
                type="number"
-               min="1640" max="2018"/>
+               min="1640" :max="caseMaxYear"/>
       </div>
     </div>
     <search-results ref="searchResults" :urls="urls"></search-results>
@@ -420,10 +420,12 @@
       }),
     },
     beforeMount() {
-      this.jurisdictions = [["*", "Wildcard"]].concat(snippets.jurisdictions);  // eslint-disable-line
+      // get configuration values from HTML template
+      this.config = config;  // eslint-disable-line
+      this.jurisdictions = [["*", "Wildcard"]].concat(this.config.snippets.jurisdictions);
       for (const[k, v] of this.jurisdictions)
         this.jurisdictionLookup[k] = v;
-      this.urls = urls;  // eslint-disable-line
+      this.urls = this.config.urls;
       Chart.pluginService.register({
         beforeDraw: this.beforeDraw,
         afterLayout: this.afterLayout,
@@ -495,15 +497,16 @@
         this.chartStyles.height = `${newVal}px`;
       },
     },
-    data: function () {
+    data() {
       const chartHeight = 400;
+      const caseMaxYear = config.maxYear;  // eslint-disable-line
       // configure all the data values that have their state stored in the URL
       const urlValues = {
         textToGraph: {param: "q", default: "apple pie, baseball"},
         smoothingFactor: {param: "sf", default: 2},
         maxYear: {
           param: "xy",
-          default: 2018,
+          default: caseMaxYear,
           toValue: this.clampYear,
           isDefault: (value) => this.rawData && value === this.rawData.maxYear,
         },
@@ -524,9 +527,12 @@
         },
       };
       const out = {
+        config: {},
+
         // citation stuff
         baseUrl: window.location.origin + this.$router.options.base,
         currentYear: new Date().getFullYear(),
+        caseMaxYear: caseMaxYear,
         datasetVersion: "1.0",
         datasetDate: "June 6, 2019",
         datasetYear: "2019",

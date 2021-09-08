@@ -16,7 +16,7 @@ from eyecite.tokenizers import HyperscanTokenizer, EXTRACTORS
 from eyecite.utils import is_balanced_html
 
 from capweb.helpers import reverse
-from scripts.helpers import serialize_xml, parse_xml, serialize_html, alphanum_lower, parse_html
+from scripts.helpers import serialize_xml, parse_xml, serialize_html, alphanum_lower, parse_html, clean_punctuation
 
 
 ### ENTRY POINTS ###
@@ -325,16 +325,13 @@ def get_cite_extractor():
     return partial(get_citations, tokenizer=tokenizer)
 
 
-_clean_text_table = str.maketrans("“”–—´‘’", "\"\"--'''")
-
-
 def clean_text(text):
     """
         Prepare text for cite extraction by normalizing punctuation and unicode characters.
         >>> assert clean_text("“”–—´ ‘ ’ñâüÍí") == '''""--' ' 'nauIi'''
     """
     # normalize punctuation
-    text = text.translate(_clean_text_table)
+    text = clean_punctuation(text)
     # strip unicode Nonspacing Marks (umlauts, accents, etc., usually OCR speckles)
     text = ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
     return text

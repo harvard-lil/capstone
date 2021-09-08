@@ -232,11 +232,11 @@
         </div>
         <div class="search-disclaimer">
           <p>
-            Searching U.S. caselaw published through mid-2018. <a
+            Searching U.S. caselaw published through {{ caseMaxYear }}. <a
               :href="$store.getters.urls.search_docs">Documentation</a>.<br>
           </p>
           <p>
-            <span class="bold">Need legal advice?</span> This is not your best option! Read about
+            <span class="bold">Need legal advice?</span> Read about
             <a :href="$store.getters.urls.search_docs + '#research'">our limitations and alternatives</a>.
           </p>
         </div>
@@ -247,11 +247,13 @@
 <script>
   import QueryExplainer from './query-explainer';
   import FieldItem from './field-item';
+  import { mapState } from 'vuex';
 
   export default {
     components: {
       QueryExplainer,
       FieldItem
     },
+    computed: mapState(['caseMaxYear']),
   }
 </script>
