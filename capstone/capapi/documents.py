@@ -86,6 +86,7 @@ class CaseDocument(Document):
     docket_numbers = fields.TextField(multi=True)
     docket_number = fields.TextField()
     last_updated = fields.KeywordField()
+    #whitelisted =  fields.BooleanField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
