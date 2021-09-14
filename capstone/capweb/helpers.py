@@ -317,6 +317,7 @@ def get_toc_by_url():
     context = {
         'email': settings.DEFAULT_FROM_EMAIL,
         'news': get_data_from_lil_site(section="news"),
+        'scheme': 'https' if settings.MAKE_HTTPS_URLS else 'http',
     }
     try:
         case = CaseDocument.get(id=settings.API_DOCS_CASE_ID)
