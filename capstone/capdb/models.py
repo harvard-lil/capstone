@@ -958,7 +958,7 @@ class CaseMetadataQuerySet(TemporalQuerySet):
 
 class CaseMetadata(models.Model):
     # provenance
-    source = models.CharField(max_length=10, choices=(('CAP', 'CAP'), ('Fastcase', 'Fastcase')), default='CAP')
+    source = models.CharField(max_length=10, choices=(('Harvard', 'Harvard'), ('Fastcase', 'Fastcase')), default='Harvard')
     batch = models.CharField(max_length=255, default='2018')
     date_added = models.DateTimeField(null=True, blank=True, auto_now_add=True)
 
@@ -1052,7 +1052,7 @@ class CaseMetadata(models.Model):
 
     def restricted(self):
         """ Return True if case is restricted. """
-        return self.source == 'CAP' and not self.jurisdiction.whitelisted
+        return self.source == 'Harvard' and not self.jurisdiction.whitelisted
 
     def full_cite(self):
         return "%s, %s%s" % (

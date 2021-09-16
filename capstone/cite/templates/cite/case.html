@@ -131,7 +131,7 @@
                 <div class="sidebar-section-contents">
                   <ul>
                     {% if request.user.is_staff %}<li><a href="{% url 'admin:capdb_casemetadata_change' db_case.id %}">Django admin</a></li>{% endif %}
-                    {% if perms.capdb.correct_ocr and db_case.source == 'CAP' %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
+                    {% if perms.capdb.correct_ocr and db_case.source == 'Harvard' %}<li><a href="{% url 'case_editor' db_case.id host 'cite' %}">Case editor</a></li>{% endif %}
                   </ul>
                 </div>
               </div>
@@ -148,7 +148,7 @@
                 </p>
                 <p>
                   <ul>
-                    <li>Source: {{ db_case.source }}</li>
+                    <li>Source: {% if db_case.source == 'Harvard' %}Harvard Law School Library{% else %}{{ db_case.source }}{% endif %}</li>
                     <li>Batch: {{ db_case.batch }}</li>
                     <li>Date added: {{ db_case.date_added }}</li>
                   </ul>

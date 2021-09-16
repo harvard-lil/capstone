@@ -169,6 +169,11 @@ Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt
 * `docket_number`
     * __data type:__    string
     * __description:__  [full-text search](#case-fts)
+* `facet`
+    * __data type:__    string
+    * __description:__  A field name to aggregate results given a particular field. Currently, only the values 
+    "jurisdiction" and "decision\_date" are supported. This endpoint supports ordered sub-aggregations; to split by 
+    jurisdiction and then decision\_date per jurisdiction, set facet to "jurisdiction,decision\_date".
 * `full_case`
     * __data type:__    "true" or "false"
     * __default:__      "false"
@@ -193,9 +198,6 @@ Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt
 * `search`
     * __data type:__    string
     * __description:__  [full-text search](#case-fts)
-* `facet`
-    * __data type:__    string
-    * __description:__  A field name to aggregate results given a particular field. Currently, only the values "jurisdiction" and "decision\_date" are supported. This endpoint supports ordered sub-aggregations; to split by jurisdiction and then decision\_date per jurisdiction, set facet to "jurisdiction,decision\_date".
 
 ### Single Case Endpoint {: id="endpoint-case" }
 
