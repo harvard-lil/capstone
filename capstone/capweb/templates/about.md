@@ -6,35 +6,72 @@ explainer: The Caselaw Access Project (“CAP”) expands public access to U.S. 
 top_section_style: bg-black
 row_style: bg-tan
 
-# What data do we have? {: class="subtitle" data-toc-label='Our Data' } 
+# What data do we have?
 
-CAP includes all official, book-published United States case law — every volume designated as an official report of 
-decisions by a court within the United States.
+CAP includes all official, book-published state and federal United States case law — every volume or case designated as
+an official report of decisions by a court within the United States.
 
 Our scope includes all state courts, federal courts, and territorial courts for American Samoa, Dakota Territory, Guam, 
-Native American Courts, Navajo Nation, and the Northern Mariana Islands. Our earliest case is from 1658, and our most 
-recent cases are from 2018.
+Native American Courts, Navajo Nation, and the Northern Mariana Islands.
+
+Our earliest case is from 1658, and we currently include all volumes published through {{ CASE_MAX_YEAR }}, with new 
+data releases on a rolling basis at the beginning of each year.
 
 Each volume has been converted into structured, case-level data broken out by majority and dissenting opinion, with 
 human-checked metadata for party names, docket number, citation, and date.
 
-We also offer PDFs with selectable OCR text for each case. 
+We also offer PDFs with selectable OCR text for each case published up to 2018.
 
+# Data sources
 
-# Scope limits {: class="subtitle" } 
+## Harvard Law School Collection
 
-CAP does not include:
+We created CAP's initial collection by digitizing roughly 40 million pages of court decisions contained in roughly 
+40,000 bound volumes owned by the Harvard Law School Library.
 
-* New cases as they are published. We currently include volumes published through June, 2018, and may or may not include
- additional volumes in the future.
+The Harvard Law School Collection includes volumes published through 2018.
+
+The Harvard Law School Collection was digitized on site at Langdell Hall. Members of our team created metadata for each
+volume, including a unique barcode, reporter name, title, jurisdiction, 
+publication date and other volume-level information. We then used a high-speed scanner to produce JP2 and TIF images of
+every page. A vendor then used OCR to extract the text of every case, creating case-level XML files. Key metadata 
+fields, like case name, citation, court and decision date, were corrected for accuracy, while the text of each case was
+left as raw OCR output. In addition, for cases from volumes not yet in the public domain, our vendor redacted any 
+headnotes.
+
+### Harvard Law School Collection scope limits:
+
+The Harvard Law School Collection does not include:
+
 * Cases not designated as officially published, such as most lower court decisions.
 * Non-published trial documents such as party filings, orders, and exhibits.
 * Parallel versions of cases from regional reporters, unless those cases were designated by a court as official.
 * Cases officially published in digital form, such as recent cases from Illinois, Arkansas, New Mexico, and North Carolina.
-{: add_list_class="spacious-list bullets" }
+* Copyrighted material such as headnotes, for cases still under copyright.
 
-Cases published after 1922 do not include headnotes.
+## Fastcase Collection
 
+Our collection is augmented with yearly caselaw donations courtesy of [Fastcase](https://www.fastcase.com/).
+
+Fastcase provides updates, on a yearly basis, of all caselaw volumes published more than one year ago that is not yet
+in the case.law corpus. We currently provide Fastcase cases for volumes published through {{ CASE_MAX_YEAR }}.
+
+Fastcase volumes are delivered to us in an internal XML/HTML format, and we process each case to match the
+Harvard Law School Collection data formats, so researchers can write consistent code across both collections.
+
+### Fastcase Collection scope limits:
+
+The Fastcase Collection includes only:
+
+* Cases published in the reporters A.3d, B.R., Cal. Rptr. 3d, F.3d, F. Supp. 3d, N.E.3d,
+N.W.2d, P.3d, S.Ct., S.E.2d, So.3d, S.W.3d, and U.S.
+* Cases published in volumes during or before {{ CASE_MAX_YEAR }}.
+* Cases not otherwise published in the Harvard Law School Collection.
+
+The Fastcase Collection does not include:
+
+* PDF page images.
+* Copyrighted material such as headnotes.
 
 # By the numbers {: class="subtitle" }
 
@@ -45,32 +82,18 @@ API:
 * [Case Count by Jurisdiction]({% static "downloads/cases_by_jurisdiction.tsv" %})
 * [Case Count by Decision Date]({% static "downloads/cases_by_decision_date.tsv" %})
 
-# Digitization Process {: class="subtitle" data-toc-label='Digitization' } 
-
-We created this data by digitizing roughly 40 million pages of court decisions contained in roughly 40,000 bound volumes
-owned by the Harvard Law School Library.
-
-Members of our team created metadata for each volume, including a unique barcode, reporter name, title, jurisdiction, 
-publication date and other volume-level information. We then used a high-speed scanner to produce JP2 and TIF images of
-every page. A vendor then used OCR to extract the text of every case, creating case-level XML files. Key metadata 
-fields, like case name, citation, court and decision date, were corrected for accuracy, while the text of each case was
-left as raw OCR output. In addition, for cases from volumes not yet in the public domain, our vendor redacted any 
-headnotes.
-
 # Data quality {: class="subtitle" }
 
-Our data inevitably includes countless errors as part of the digitization process. **The public launch of this project 
-is only the start of discovering errors, and we hope you will help us in finding and 
-fixing them.**{: class="highlighted" } 
-
-Some parts of our data are higher quality than others. Case metadata, such as the party names, docket number, citation, 
+Harvard Law School Collection data is generated by OCR from page scans, using ABBYY FineReader. Case metadata, such as
+the party names, docket number, citation, 
 and date, has received human review. Case text and general head matter has been generated by machine OCR and has not 
 received human review.
 
-You can report errors of all kinds at our Github issue tracker, where you can also see currently known issues. We 
-particularly welcome metadata corrections, feature requests, and suggestions for large-scale algorithmic changes. We are
-not currently able to process individual OCR corrections, but welcome general suggestions on the OCR correction process.
-
+You can report errors of all kinds at our [contact form]({% url "contact" %}), or view existing issues at our [Github
+issue tracker](https://github.com/harvard-lil/capstone/issues/). We 
+particularly welcome volume-level metadata corrections, feature requests, and suggestions for large-scale algorithmic
+changes. We are not currently able to process individual OCR corrections, but welcome general suggestions on the OCR
+correction process.
 
 # Data citation {: class="subtitle" } 
 
@@ -87,7 +110,7 @@ The President and Fellows of Harvard University. "Caselaw Access Project." 2018,
 Caselaw Access Project. "Caselaw Access Project." Last modified [date], [url].
 
 Have you used Caselaw Access Project data in your research?
-[Tell us about it](mailto:{{ email }}){: class="contact_email" }.
+[Tell us about it]({% url "contact" %}).
 
 # Usage & access {: class="subtitle" } 
 
@@ -101,7 +124,7 @@ agreeing to certain use and redistribution restrictions. You can request a bulk 
 and then visiting your account page.
 
 Access limitations on full text and bulk data are a component of Harvard’s collaboration agreement with Ravel Law, Inc. 
-(now part of Lexis-Nexis). These limitations will end, at the latest, in March of 2024. In addition, these limitations 
+(now part of Lexis-Nexis). These limitations will end, at the latest, in February of 2024. In addition, these limitations 
 apply only to cases from jurisdictions that continue to publish their official case law in print form. Once a 
 jurisdiction transitions from print-first publishing to digital-first publishing, these limitations cease. Thus far, 
 Illinois, Arkansas, New Mexico, and North Carolina have made this important and positive shift and, as a result,
