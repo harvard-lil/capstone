@@ -24,7 +24,7 @@ When downloading bulk files, you may find that the download times out on the lar
 In that case, use `wget`, which retries when it encounters a network problem. Here's an example for the
 U.S. file with case body in text format:
 
-    wget --header="Authorization: Token your-api-token" "{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"
+    wget --header="Authorization: Token your-api-token" "{{ scheme }}:{% url "download-files" "bulk_exports/latest/by_jurisdiction/case_text_restricted/us_text.zip" %}"
 
 Because this is a restricted file it requires an Authorization header.
 Replace `your-api-token` with your API token from the [user details]({% url "user-details" %}) page.
