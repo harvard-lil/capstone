@@ -109,6 +109,7 @@ ROOT_URLCONF = 'config.urls'
 ### subdomain settings
 ROOT_HOSTCONF = 'config.hosts'
 PARENT_HOST = 'case.test:8000'
+CACHED_PARENT_HOST = 'case.test:8000'  # domain to use in cached links, such as CaseBodyCache and Elasticsearch. useful when generating html on beta.
 SESSION_COOKIE_DOMAIN = '.case.test'  # make sure cookies are visible from all hosts
 DEFAULT_HOST = 'default'  # which key from HOSTS is used by default if no host is specified for reverse()
 # used in config.hosts to set up our subdomains:
