@@ -19,7 +19,8 @@ TECHNICAL_500_TEXT_TEMPLATE = (""""""
 {% firstof exception_value 'No exception message supplied' %}
 {% if request %}
 Request Method: {{ request.META.REQUEST_METHOD }}
-Request URL: {{ request.get_raw_uri }}{% endif %}
+Request URL: {{ request.get_raw_uri }}
+{% if 'HTTP_REFERER' in request.META %}Referer: {{ request.META.HTTP_REFERER }}{% endif %}{% endif %}
 Django Version: {{ django_version_info }}
 Python Executable: {{ sys_executable }}
 Python Version: {{ sys_version_info }}
