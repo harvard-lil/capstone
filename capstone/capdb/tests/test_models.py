@@ -290,7 +290,8 @@ def test_set_volume_number(reset_sequences, case, elasticsearch):
     assert old_frontend_url_vols != new_frontend_url_vols
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory):
+def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory, settings):
+    settings.CACHED_PARENT_HOST = 'case.law'
     set_case_text(case, "Foo v. Bar, 1 U.S. 1. ", "Case text 2")
     target_case = case_factory(citations__cite="1 U.S. 1")
     # verify case contents
@@ -302,7 +303,7 @@ def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory
         '    <h4 class="parties" id="b81-4">Case text 0</h4>\n'
         '  </section>\n'
         '  <article class="opinion" data-type="majority">\n'
-        f'    <p id="b83-6">Foo v. Bar, <a href="http://cite.case.test:8000/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}">1 U.S. 1</a>. Case text 2</p>\n'
+        f'    <p id="b83-6">Foo v. Bar, <a href="http://cite.case.law/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}">1 U.S. 1</a>. Case text 2</p>\n'
         '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
         '      <a href="#ref_footnote_1_1">1</a>\n'
         '      <p id="b83-11">Case text 3</p>\n'
@@ -331,7 +332,7 @@ def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory
         '<casebody firstpage="4" lastpage="8" xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1">\n'
         '  <parties id="b81-4">Case text 0</parties>\n'
         '  <opinion type="majority">\n'
-        f'    <p id="b83-6">Foo v. Bar, <extracted-citation url="http://cite.case.test:8000/us/1/1/" index="0" case-ids="{target_case.id}">1 U.S. 1</extracted-citation>. Case text 2</p>\n'
+        f'    <p id="b83-6">Foo v. Bar, <extracted-citation url="http://cite.case.law/us/1/1/" index="0" case-ids="{target_case.id}">1 U.S. 1</extracted-citation>. Case text 2</p>\n'
         '    <footnote label="1">\n'
         '      <p id="b83-11">Case text 3</p>\n'
         '    </footnote>\n'

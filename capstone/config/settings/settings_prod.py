@@ -113,3 +113,6 @@ RESOLVE_FRONTEND_PREFIX = 'https://cite.case.law'
 # for production, compress static files and add hashes to file names for permanent caching.
 # this takes about 8x as long as plain pipeline.storage.PipelineStorage
 STATICFILES_STORAGE = 'capdb.storages.WhitenoisePipelineStorage'
+
+PARENT_HOST = 'case.law'
+CACHED_PARENT_HOST = 'case.law'

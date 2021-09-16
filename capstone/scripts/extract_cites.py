@@ -162,6 +162,7 @@ def extract_citations(case, html, xml):
                             slugify(first_cite.corrected_reporter()),
                             slugify(first_cite.groups.get('volume') or '1'),
                             first_cite.groups.get('page')])
+            target_url = target_url.replace(settings.PARENT_HOST, settings.CACHED_PARENT_HOST)
 
             # get tag text for link annotation
             span = eyecite_cite.span()
