@@ -93,7 +93,7 @@ A3d_100:
     FC:A3d/100/100a3d1091_Replace2.xml:
       analysis:
       - key: cardinality
-        value: 690
+        value: 691
       - key: char_count
         value: 11030
       - key: sha256
@@ -101,7 +101,7 @@ A3d_100:
       - key: simhash
         value: 1:8e21c776eec5b667
       - key: word_count
-        value: 1772
+        value: 1771
       batch: test_batch
       citations:
       - category: null
@@ -136,7 +136,7 @@ A3d_100:
     FC:A3d/100/100a3d1112_Replace_3.xml:
       analysis:
       - key: cardinality
-        value: 1979
+        value: 1978
       - key: char_count
         value: 85670
       - key: sha256
@@ -144,7 +144,7 @@ A3d_100:
       - key: simhash
         value: 1:4b945bc69492fde9
       - key: word_count
-        value: 13633
+        value: 13615
       batch: test_batch
       citations:
       - category: null
@@ -354,7 +354,7 @@ BR_590:
       - key: simhash
         value: 1:7589cabab091d7cb
       - key: word_count
-        value: 10939
+        value: 10933
       batch: test_batch
       citations:
       - category: null
@@ -855,7 +855,7 @@ NW2d_737:
     FC:NW2d/737/737NW2d768_3New.xml:
       analysis:
       - key: cardinality
-        value: 613
+        value: 612
       - key: char_count
         value: 10077
       - key: sha256
@@ -863,7 +863,7 @@ NW2d_737:
       - key: simhash
         value: 1:9f96f53f7b4a5e36
       - key: word_count
-        value: 1648
+        value: 1647
       batch: test_batch
       citations:
       - category: null
@@ -1259,7 +1259,7 @@ NW2d_906:
       - key: simhash
         value: 1:67e4412bcdccb754
       - key: word_count
-        value: 7820
+        value: 7819
       batch: test_batch
       citations:
       - category: null
@@ -1310,7 +1310,7 @@ P3d_332:
     FC:P3d/332/332p3d688_Replace.xml:
       analysis:
       - key: cardinality
-        value: 1425
+        value: 1424
       - key: char_count
         value: 47325
       - key: sha256
@@ -1318,7 +1318,7 @@ P3d_332:
       - key: simhash
         value: 1:0d81bba7ecdfeeef
       - key: word_count
-        value: 7408
+        value: 7407
       batch: test_batch
       citations:
       - category: null
@@ -1636,7 +1636,7 @@ SE2d_708:
     FC:SE2d/708/708se2d429.xml:
       analysis:
       - key: cardinality
-        value: 653
+        value: 652
       - key: char_count
         value: 18317
       - key: sha256
@@ -1644,7 +1644,7 @@ SE2d_708:
       - key: simhash
         value: 1:b4434ac6396f9b7d
       - key: word_count
-        value: 2904
+        value: 2903
       batch: test_batch
       citations:
       - category: null
@@ -1738,7 +1738,7 @@ SE2d_719:
     FC:SE2d/719/719se2d830.xml:
       analysis:
       - key: cardinality
-        value: 1573
+        value: 1574
       - key: char_count
         value: 53029
       - key: sha256
@@ -1746,7 +1746,7 @@ SE2d_719:
       - key: simhash
         value: 1:1b1157caa477ec58
       - key: word_count
-        value: 8511
+        value: 8510
       batch: test_batch
       citations:
       - category: null
