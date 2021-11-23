@@ -29,7 +29,7 @@
       </div>
       <div class="row">
         <div class="col-4 offset-2 p-0">
-          <div class="bottom-text bottom-text-border pl-1 pt-4">Reporters</div>
+          <div class="bottom-text bottom-text-border pl-1 pt-4">Reporter<span v-show="reporterCount() !== '1'">s</span></div>
         </div>
         <div class="col-6 p-0">
           <div class="bottom-text pt-4 pl-2">Pages scanned</div>
@@ -64,7 +64,7 @@
 
               <div class="number-set d-lg-block d-md-none p-0">
                 <p class="boxcontainer-text figure mb-0 num_reporters">{{ reporterCount() }}</p>
-                <p class="boxcontainer-text label">Reporters</p>
+                <p class="boxcontainer-text label">Reporter<span v-show="reporterCount() !== '1'">s</span></p>
               </div>
 
               <div class="number-set p-0">
@@ -87,7 +87,7 @@
 
               <div class="number-set d-lg-block d-md-none">
                 <p class="boxcontainer-text figure mb-0">{{ federal_reporters.toLocaleString() }}</p>
-                <p class="boxcontainer-text label">Reporters</p>
+                <p class="boxcontainer-text label">Reporter<span v-show="reporterCount() !== '1'">s</span></p>
               </div>
 
               <div class="number-set">
