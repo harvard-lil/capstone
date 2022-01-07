@@ -5,7 +5,7 @@ from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
-from capapi import filters
+from capapi.filters import MultiFieldFTSFilter
 from capdb.models import CaseMetadata, CaseLastUpdate
 from scripts.helpers import alphanum_lower
 from scripts.simhash import get_distance
@@ -231,7 +231,7 @@ class CaseDocument(Document):
         # It seems more efficient to pull the search fields manually, 
         # as casebody and jurisdiction data is extracted differently 
         # from the other fields.
-        filterset = filters.MultiFieldFTSFilter.fields + filters.MultiFieldFTSFilter.nested_query_fields
+        filterset = MultiFieldFTSFilter.fields + MultiFieldFTSFilter.nested_query_fields
 
         raise Exception(self._fields)
 
