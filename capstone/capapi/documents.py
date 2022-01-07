@@ -5,6 +5,7 @@ from django_elasticsearch_dsl import Document, Index, fields
 from django.conf import settings
 from elasticsearch_dsl import Search, Q
 
+from capapi import filters
 from capdb.models import CaseMetadata, CaseLastUpdate
 from scripts.helpers import alphanum_lower
 from scripts.simhash import get_distance
@@ -172,6 +173,8 @@ class CaseDocument(Document):
 
     restricted = fields.BooleanField()
 
+    search = FTSField()
+
     def prepare_provenance(self, instance):
         return {
             "date_added": instance.date_added.strftime('%Y-%m-%d'),
@@ -223,6 +226,17 @@ class CaseDocument(Document):
 
     def prepare_name_abbreviation(self, instance):
         return instance.redact_obj(instance.name_abbreviation)
+
+    def prepare_search(self, instance):
+        # It seems more efficient to pull the search fields manually, 
+        # as casebody and jurisdiction data is extracted differently 
+        # from the other fields.
+        filterset = filters.MultiFieldFTSFilter.fields + filters.MultiFieldFTSFilter.nested_query_fields
+
+        raise Exception(self._fields)
+
+        buffer = ""
+        return instance.redact_obj(buffer)
 
     class Django:
         model = CaseMetadata

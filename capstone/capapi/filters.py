@@ -491,23 +491,8 @@ class NestedFTSFilter(BaseSearchFilterBackend):
 
 class MultiFieldFTSFilter(BaseSearchFilterBackend):
     search_param = 'search'
-    fields = (
-        'name',
-        'name_abbreviation',
-        'jurisdiction.name_long',
-        'court.name',
-        'casebody_data.text.head_matter',
-        'casebody_data.text.corrections',
-        'docket_number',
-    )
-
-    nested_query_fields = (
-        'casebody_data.text.opinions.author',
-        'casebody_data.text.opinions.text',
-    )
 
     query_backends = [
-        NestedSimpleStringQueryBackend,
         SimpleQueryStringQueryBackend,
     ]
 
