@@ -490,7 +490,9 @@ class NestedFTSFilter(BaseSearchFilterBackend):
 
 
 class MultiFieldFTSFilter(BaseSearchFilterBackend):
+    # Query fields are prepared in CaseDocument.prepare_search()
     search_param = 'search'
+    fields = ('search',)
 
     query_backends = [
         SimpleQueryStringQueryBackend,
