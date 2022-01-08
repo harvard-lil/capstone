@@ -91,7 +91,7 @@
         this.showLoading = true;
         Vue.nextTick().then(() => { this.$refs.loadingMessage.focus() });
         this.error = null;
-        const url = getApiUrl(urls.api_root,"cases", searchParams, true);  // eslint-disable-line
+        const url = getApiUrl(this.urls.api_root,"cases", searchParams, true);  // eslint-disable-line
         jsonQuery(url).then((resp)=>{
           this.results = resp.results;
           this.term = term;
