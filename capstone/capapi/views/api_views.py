@@ -469,7 +469,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         except Exception:
             raise ValidationError({'error': 'Query is not in a URL parameter format.'})
 
-        are_filters = self.query_params_are_filters(query_body)
+        self.query_params_are_filters(query_body)
 
         query_body['page_size'] = 1
         query_body['facet'] = 'decision_date'
@@ -573,7 +573,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if api_query_body:
             try:
                 results = self.get_citation_data(request, api_query_body, q)
-            except filters.TooManyJoinedResultsException as e:
+            except filters.TooManyJoinedResultsException:
                 raise ValidationError({'error': 'The set of cases to cite to is too large. Consider \
                     narrowing this group to contain less than 20000 cases.'})
             pairs = []
