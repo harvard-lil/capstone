@@ -4,6 +4,7 @@ import six
 import re
 import uuid
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.functional import partition
 from django.utils.functional import SimpleLazyObject
@@ -47,6 +48,9 @@ class NoopMixin():
     """
     def noop(self, qs, name, value):
         return qs
+
+class TooManyJoinedResultsException(Exception):
+    pass
 
 ### FILTERS ###
 
@@ -334,6 +338,9 @@ class CitesToDynamicFilter(BaseFTSFilter):
             search = init_view.filter_queryset(init_view.get_queryset()).source(False)
 
             cites_to_ids = parallel_execute(search, remove_keys=['highlight'])
+
+            if len(cites_to_ids) > settings.MAX_JOINED_RESULTS:
+                raise TooManyJoinedResultsException("Hit too many joined results")
 
             request.GET._mutable = True
             _ = [request.GET.pop(key) for key in search_fields if key in request.GET.keys()]

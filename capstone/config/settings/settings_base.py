@@ -562,6 +562,7 @@ ELASTICSEARCH_INDEXES={
 }
 MAX_PAGE_SIZE = 10000
 MAX_RESULT_WINDOW = 50000  # must be at least MAX_PAGE_SIZE+1, or number needed for parallel_execute()
+MAX_JOINED_RESULTS = 20000 # max for cites_to parallel_execute search
 
 SCREENSHOT_DEFAULT_TIMEOUT = 30  # seconds
 

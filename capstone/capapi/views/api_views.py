@@ -451,9 +451,9 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             if key not in CaseDocumentViewSet.filter_fields \
                 and key not in CaseDocumentViewSet.search_nested_fields \
                 and key not in additional_filter_fields:
-                return (False, f'{key} is not a valid API parameter.')
+                raise ValidationError({'error': f'{key} is not a valid API parameter.'})
 
-        return (True, True)
+        return True
 
 
     def get_query_data_from_api_query(self, q):
@@ -461,22 +461,20 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         # validate whether a case ID exists in the corpus
         # check if the supplied item is a valid case id
         if not q or not (q.startswith('api(') and q.endswith(')')):
-            return (False, False)
+            return False
     
         query_body = None
         try:
             query_body = QueryDict(q[4:-1], mutable=True)
         except Exception:
-            return (False, 'Query is not in a URL parameter format.')
+            raise ValidationError({'error': 'Query is not in a URL parameter format.'})
 
-        err, msg = self.query_params_are_filters(query_body)
-        if not err:
-            return (False, msg)
+        self.query_params_are_filters(query_body)
 
         query_body['page_size'] = 1
         query_body['facet'] = 'decision_date'
 
-        return (query_body, False)
+        return query_body
 
     @staticmethod
     def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
@@ -525,7 +523,7 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             query_params['jurisdiction'] = jurisdiction
 
         # set up request caller and make API requests with facet parameter
-        # These queries should always return valid JSON
+        # These queries should always return valid JSON 
         query_results = api_request(request, CaseDocumentViewSet, 'list', get_params=query_params).data
 
         # fail if there are no results. There should be _something_ in the page results if 
@@ -565,18 +563,20 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         # check if we're querying for a case as opposed to a word
         # default to keyword search if value is empty 
-        api_query_body, err_msg = self.get_query_data_from_api_query(q)
+        api_query_body = self.get_query_data_from_api_query(q)
 
         # prepend word count as first byte. only applicable for n-grams
         words = q.lower().split(' ')[:3]  # use first 3 words
         q_len = len(words)
         q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
 
-        if api_query_body and not err_msg:
-            results = self.get_citation_data(request, api_query_body, q)
+        if api_query_body:
+            try:
+                results = self.get_citation_data(request, api_query_body, q)
+            except filters.TooManyJoinedResultsException:
+                raise ValidationError({'error': 'The set of cases to cite to is too large. Consider \
+                    narrowing this group to contain less than 20000 cases.'})
             pairs = []
-        elif not api_query_body and err_msg:
-            raise ValidationError({"error": err_msg})
         elif q_sig.endswith(b' *'):
             results = {}
             # wildcard search
