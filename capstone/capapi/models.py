@@ -206,7 +206,8 @@ AnonymousUser.unlimited_access_in_effect = lambda self: False
 
 
 class ResearchRequest(models.Model):
-    """ Request for research access submitted by an unaffiliated user. """
+    """ Request for research access submitted by an unaffiliated user.
+    Legacy model, as we no longer treat these separately from affiliated requests."""
     user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_requests')
     submitted_date = models.DateTimeField(auto_now_add=True)
 
@@ -225,14 +226,14 @@ class ResearchRequest(models.Model):
 
 
 class ResearchContract(models.Model):
-    """ Signed application for access submitted by an affiliated researcher. """
+    """ Signed application for access submitted by a (proposed) research scholar. """
     user = models.ForeignKey(CapUser, on_delete=models.CASCADE, related_name='research_contracts')
     user_signature_date = models.DateTimeField(auto_now_add=True)
 
     name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255)
-    institution = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
     area_of_interest = models.TextField(blank=True, null=True)
 
     contract_html = models.TextField(blank=True, null=True)

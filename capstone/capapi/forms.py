@@ -7,7 +7,7 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy
 
-from capapi.models import CapUser, ResearchRequest, ResearchContract, HarvardContract, EmailBlocklist
+from capapi.models import CapUser, ResearchContract, HarvardContract, EmailBlocklist
 from capweb.helpers import reverse, reverse_lazy
 from config.logging import logger
 
@@ -83,26 +83,6 @@ class RegisterUserForm(UserCreationForm):
         return user
 
 
-class ResearchRequestForm(forms.ModelForm):
-    name = forms.CharField(label='Full name of researcher')
-    institution = forms.CharField(label='Academic or non-profit research institution')
-    title = forms.CharField(label='Title or Affiliation')
-    area_of_interest = forms.CharField(label='Research area of interest (optional)', widget=forms.Textarea, required=False)
-
-    class Meta:
-        model = ResearchRequest
-        fields = ["name", "email", "institution", "title", "area_of_interest"]
-
-
-class UnaffiliatedResearchRequestForm(forms.ModelForm):
-    name = forms.CharField(label='Full name of research scholar')
-    area_of_interest = forms.CharField(label='Your qualifications and intended uses of CAP data as an independent research scholar', widget=forms.Textarea, required=False)
-
-    class Meta:
-        model = ResearchRequest
-        fields = ["name", "email", "area_of_interest"]
-
-
 class ResearchContractForm(forms.ModelForm):
     name = forms.CharField(label='Full name of researcher')
     email = forms.EmailField(
@@ -111,8 +91,8 @@ class ResearchContractForm(forms.ModelForm):
             "For faster approval, make sure you are applying from a CAP account with an email address "
             "provided by your institution. If this is the wrong email address, <a href='{}'>create an account</a> "
             "with the correct address before applying.", reverse_lazy('register')))
-    institution = forms.CharField(label='Academic or non-profit research institution')
-    title = forms.CharField(label='Title or Affiliation')
+    institution = forms.CharField(label='Academic or non-profit research institution (if any)', required=False)
+    title = forms.CharField(label='Title or Affiliation', required=False)
     area_of_interest = forms.CharField(label='Research area of interest (optional and non-binding)', widget=forms.Textarea, required=False)
 
     class Meta:

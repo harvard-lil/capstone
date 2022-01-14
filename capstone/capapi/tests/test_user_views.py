@@ -267,29 +267,6 @@ def test_case_export_download(request, client_fixture, export_fixture, status_co
 ### research access request ###
 
 @pytest.mark.django_db(databases=['default'])
-def test_unaffiliated_research_access_request(auth_client, mailoutbox):
-    # can view form
-    response = auth_client.get(reverse('unaffiliated-research-request'))
-    check_response(response)
-
-    # can submit form
-    values = {
-        'name': 'First Last',
-        'email': 'foo@example.com',
-        'area_of_interest': 'Foo Area of Interest'
-    }
-    response = auth_client.post(reverse('unaffiliated-research-request'), values)
-    check_response(response, status_code=302)
-    assert response.url == reverse('unaffiliated-research-request-success')
-
-    # check created request and email message
-    research_request = auth_client.auth_user.research_requests.first()
-    message = mailoutbox[0].body
-    for k, v in values.items():
-        assert getattr(research_request, k) == v
-        assert v in message
-
-@pytest.mark.django_db(databases=['default'])
 def test_harvard_research_access_request(auth_client, mailoutbox):
     user = auth_client.auth_user
 
@@ -325,11 +302,11 @@ def test_harvard_research_access_request(auth_client, mailoutbox):
     assert user.harvard_access is True
 
 @pytest.mark.django_db(databases=['default'])
-def test_affiliated_research_access_request(auth_client, contract_approver_auth_client, mailoutbox):
+def test_research_access_request(auth_client, contract_approver_auth_client, mailoutbox):
     user = auth_client.auth_user
 
     # can view form
-    response = auth_client.get(reverse('affiliated-research-request'))
+    response = auth_client.get(reverse('research-request'))
     check_response(response)
 
     # can submit form
@@ -340,9 +317,9 @@ def test_affiliated_research_access_request(auth_client, contract_approver_auth_
         'title': 'Foo Title',
         'area_of_interest': 'Foo Area of Interest'
     }
-    response = auth_client.post(reverse('affiliated-research-request'), values)
+    response = auth_client.post(reverse('research-request'), values)
     check_response(response, status_code=302)
-    assert response.url == reverse('affiliated-research-request-success')
+    assert response.url == reverse('research-request-success')
     contract = user.research_contracts.first()
     assert contract
 
