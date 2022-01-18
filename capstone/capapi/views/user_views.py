@@ -17,13 +17,12 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 from capapi import resources
-from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, \
-    HarvardContractForm, UnaffiliatedResearchRequestForm, ResearchRequestForm
+from capapi.forms import RegisterUserForm, ResendVerificationForm, ResearchContractForm, HarvardContractForm
 from capapi.models import SiteLimits, CapUser, ResearchContract
 from capapi.resources import form_for_request
 from capapi.views.api_views import UserHistoryViewSet
 from capdb.models import CaseExport
-from capweb.helpers import reverse, send_contact_email, user_has_harvard_email
+from capweb.helpers import reverse, user_has_harvard_email
 from config.logging import logger
 from user_data.models import UserHistory
 
@@ -203,53 +202,7 @@ def request_harvard_research_access(request):
 
 
 @login_required
-def request_legacy_research_access(request):
-    """ Submit request for unaffiliated research access """
-    name = "%s %s" % (request.user.first_name, request.user.last_name)
-    form = form_for_request(request, ResearchRequestForm, initial={'name': name, 'email': request.user.email})
-
-    if request.method == 'POST' and form.is_valid():
-        # save request object
-        form.instance.user = request.user
-        form.save()
-
-        # send notice emails
-        message = loader.get_template('research_request/emails/legacy_request_email.txt').render({
-            'data': form.cleaned_data,
-        })
-        subject = 'CAP research scholar application for {}'.format(name)
-        send_contact_email(subject, message, request.user.email)
-
-        return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
-
-    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
-
-
-@login_required
-def request_unaffiliated_research_access(request):
-    """ Submit request for unaffiliated research access """
-    name = "%s %s" % (request.user.first_name, request.user.last_name)
-    form = form_for_request(request, UnaffiliatedResearchRequestForm, initial={'name': name, 'email': request.user.email})
-
-    if request.method == 'POST' and form.is_valid():
-        # save request object
-        form.instance.user = request.user
-        form.save()
-
-        # send notice emails
-        message = loader.get_template('research_request/emails/unaffiliated_request_email.txt').render({
-            'data': form.cleaned_data,
-        })
-        subject = 'CAP independent research scholar application for {}'.format(name)
-        send_contact_email(subject, message, request.user.email)
-
-        return HttpResponseRedirect(reverse('unaffiliated-research-request-success'))
-
-    return render(request, 'research_request/unaffiliated_research_request.html', {'form': form})
-
-
-@login_required
-def request_affiliated_research_access(request):
+def request_research_access(request):
     """ Sign academic/nonprofit based contract """
     name = "%s %s" % (request.user.first_name, request.user.last_name)
     form = form_for_request(request, ResearchContractForm, initial={'name': name, 'email': request.user.email})
@@ -257,7 +210,7 @@ def request_affiliated_research_access(request):
     if request.method == 'POST' and form.is_valid():
         # save contract object
         form.instance.user = request.user
-        form.instance.contract_html = loader.get_template('research_request/contracts/affiliated_rendered.html').render({
+        form.instance.contract_html = loader.get_template('research_request/contracts/scholar_rendered.html').render({
             'form': form
         })
         form.save()
@@ -272,9 +225,9 @@ def request_affiliated_research_access(request):
         subject = 'CAP research scholar application for {}'.format(name)
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
-        return HttpResponseRedirect(reverse('affiliated-research-request-success'))
+        return HttpResponseRedirect(reverse('research-request-success'))
 
-    return render(request, 'research_request/affiliated_research_request.html', {'form': form})
+    return render(request, 'research_request/research_request.html', {'form': form})
 
 
 @login_required

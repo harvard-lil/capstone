@@ -1,14 +1,14 @@
 {% extends "registration/base.html" %}
 {% load bootstrap4 %}
 
-{% block title %}Request Unmetered Access{% endblock %}
-{% block meta_description %}Request unmetered access to the cases made available by the Caselaw Access
+{% block title %}Request Unrestricted Access{% endblock %}
+{% block meta_description %}Request unrestricted access to the cases made available by the Caselaw Access
   Project{% endblock %}
 
 {% block main_content %}
   <p>
     If you are a research scholar and your work requires access to the full text of more than 500 cases per day,
-    you may apply for unmetered access to the full text of all cases made available by the Caselaw Access Project.
+    you may apply for unrestricted access to the full text of all cases made available by the Caselaw Access Project.
   </p>
   <p>
     To be eligible, you must demonstrate that you are a research scholar and you must enter into a special bulk access
@@ -17,7 +17,7 @@
     (2) sharing bulk caselaw with others.
   </p>
   <p>
-    We offer several ways to obtain unmetered access:
+    We offer several ways to obtain unrestricted access:
   </p>
 
   <h2 class="simple-subtitle">Harvard community members</h2>
@@ -27,17 +27,10 @@
     and you will immediately have full access from Harvard IP addresses.
   </p>
 
-  <h2 class="simple-subtitle">Educational or non-profit affiliates</h2>
+  <h2 class="simple-subtitle">Other research scholars</h2>
   <p>
-    If you are officially affiliated with an educational or non-profit research institution,
-    <a href="{% url "affiliated-research-request" %}">sign this application to request access</a> and your application
+    <a href="{% url "research-request" %}">Sign this application to request access</a> and your application
     will be reviewed shortly.
   </p>
-  <h2 class="simple-subtitle">Other researchers</h2>
-  <p>
-    If you do not otherwise qualify for unmetered access, <a href="{% url "unaffiliated-research-request" %}">fill out
-    this form</a> to explain your standing as an independent research scholar and we will do our best to work with you
-    or refer you to an appropriate organization.
-  </p>
-  <p>Please <a href="{% url "contact" %}">contact us</a> with any questions.</p>
+  <p>If you would like to explore commercial use of unrestricted data or have other questions, please <a href="{% url "contact" %}">contact us</a>.</p>
 {% endblock %}

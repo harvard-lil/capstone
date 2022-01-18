@@ -97,28 +97,12 @@ You must enter into a special bulk access agreement with LexisNexis, which prohi
 
 ## Eligibility
 
-To be eligible, you must demonstrate that you are a research scholar.
+To be eligible, you must demonstrate that you are a research scholar. This is easiest to demonstrate via academic
+affiliation, but we welcome independent research scholars to apply as long as your uses and outputs are not commercial
+and could be characterized as scholarship.
 
 ## Where do I apply?
  
-Once you have an account:
- 
-### Harvard community members {: data-toc-label='Harvard' }
-
-If you are a member of the Harvard community with a Harvard email address, you can 
-[sign the Harvard bulk access agreement]({% url "harvard-research-request-intro" %}) and you will immediately have full 
-access from Harvard IP addresses.
-
-### Other Educational or non-profit affiliates {: data-toc-label='Other Institutions' }
-
-If you are officially affiliated with an educational or non-profit research institution, 
-[sign this application to request access]({% url "affiliated-research-request" %}) and your application will be 
-reviewed shortly.
-
-### Other researchers {: data-toc-label='Others' }
-
-If you do not otherwise qualify for unmetered access, [fill out this form]({% url "unaffiliated-research-request" %}) 
-to explain your standing as an independent research scholar and we will do our best to work with you or refer you to an 
-appropriate organization.
+Once you have an account, go to your account page and click on the "Request access" link.
 
 Please [contact us]({% url "contact" %}) with any questions.

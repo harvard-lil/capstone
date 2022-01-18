@@ -6,13 +6,13 @@
 
 {% block main_content %}
   <div class="alert alert-info">
-    The following agreement is your application for unmetered CAP access as an educational or non-profit-affiliated
+    <p>The following agreement is your application for unmetered CAP access as a
     research scholar. Please read the contract carefully before signing. Your application will be reviewed and approved
-    by LexisNexis.
+      by LexisNexis.</p>
   </div>
   <form class="form" method="post">
     {% csrf_token %}
-    {% include "research_request/contracts/affiliated.html" %}
+    {% include "research_request/contracts/scholar.html" %}
     <button type="submit" class="btn btn-primary">
       Sign Agreement and Submit Application
     </button>
