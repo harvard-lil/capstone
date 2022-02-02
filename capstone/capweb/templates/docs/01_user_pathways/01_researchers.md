@@ -87,7 +87,7 @@ at the top of the page.
 # How do I apply for researcher access?
 
 If you are a research scholar and your work requires access to the full text of more than 500 cases per day, you may 
-apply for unmetered access via your account page.
+apply for unrestricted access via your account page.
 
 ## Important Caveats
 You must enter into a special bulk access agreement with LexisNexis, which prohibits you from:

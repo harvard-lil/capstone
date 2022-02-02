@@ -269,7 +269,7 @@ def approve_research_access(request):
                 message = loader.get_template('research_request/emails/contract_welcome_email.html').render({
                     'contact_url': reverse('contact', scheme='https'),
                 })
-                send_mail('Your CAP unmetered access application is approved!', message, settings.DEFAULT_FROM_EMAIL, [contract.user.email])
+                send_mail('Your CAP unrestricted access application is approved!', message, settings.DEFAULT_FROM_EMAIL, [contract.user.email])
 
                 # show status message
                 approver_message = "Research access for %s approved" % contract.name
@@ -285,7 +285,7 @@ def approve_research_access(request):
             })
             emails = [contract.user.email, settings.DEFAULT_FROM_EMAIL] + \
                      [user.email for user in CapUser.objects.filter(groups__name='contract_approvers')]
-            subject = 'CAP unmetered access application denied for {} {}'.format(contract.user.first_name,
+            subject = 'CAP unrestricted access application denied for {} {}'.format(contract.user.first_name,
                                                                                  contract.user.last_name)
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, emails)
 
