@@ -27,7 +27,7 @@
     </div>
     {% if request.user.unlimited_access or request.user.harvard_access %}
       <div class="row">
-        <div class="h5 col-sm-12">Unmetered access</div>
+        <div class="h5 col-sm-12">Unrestricted access</div>
         <div class="col-sm-12">
           {% if request.user.unlimited_access_until %}
             {% if request.user.unlimited_access_in_effect %}expires{% else %}expired{% endif %}
@@ -37,7 +37,7 @@
           {% endif %}
           {% if request.user.harvard_access and not request.user.harvard_ip %}
             <div>
-              Your Harvard unmetered access will only work when accessing this website from a Harvard IP address.
+              Your Harvard unrestricted access will only work when accessing this website from a Harvard IP address.
               Your current IP address of {{ request.user.ip_address }} is not a Harvard IP address.
             </div>
           {% endif %}
@@ -54,10 +54,10 @@
         </div>
       </div>
       <div class="row">
-        <div class="h5 col-sm-12">Unmetered access</div>
+        <div class="h5 col-sm-12">Unrestricted access</div>
         <div class="col-sm-12">
           {% if research_contract %}
-            You submitted an application for unmetered access on
+            You submitted an application for unrestricted access on
             {{ research_contract.user_signature_date|date:"F j, Y" }}.
             {% if research_contract.status == "denied" %}
               Your application was denied by LexisNexis. Please contact us if you would like to discuss further options.
@@ -65,7 +65,7 @@
               Your application is pending.
             {% endif %}
           {% elif research_request %}
-            You submitted a request for unmetered access on {{ research_request.submitted_date }}
+            You submitted a request for unrestricted access on {{ research_request.submitted_date }}
           {% else %}
             Are you a research scholar? <br/>
             <a href="{% url 'research-options' %}">Request access</a>

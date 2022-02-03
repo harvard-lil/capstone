@@ -1,4 +1,4 @@
-A user has submitted a signed application for unmetered research-scholar access to the CAP database.
+A user has submitted a signed application for unrestricted research-scholar access to the CAP database.
 
 Name: {{ data.name }}
 Email: {{ data.email }}

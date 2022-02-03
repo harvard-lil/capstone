@@ -92,7 +92,7 @@ class CapUserAdmin(UserAdmin):
     def unlimited_access_in_effect(self, instance):
         instance._is_harvard_ip = True  # show unlimited access if user would have access given Harvard IP
         return instance.unlimited_access_in_effect()
-    unlimited_access_in_effect.short_description = "Unmetered Access"
+    unlimited_access_in_effect.short_description = "Unrestricted Access"
 
 
 @admin.register(models.SiteLimits)
