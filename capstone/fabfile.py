@@ -100,7 +100,7 @@ def update_docker_image_version():
     import re
 
     # get hash of Dockerfile input files
-    # if this list changes, also update .circleci/config.yml
+    # if this list changes, also update .github/workflows/tests.yml
     paths = ['Dockerfile', 'requirements.txt', 'yarn.lock']
     hasher = hashlib.sha256()
     for path in paths:
@@ -113,7 +113,7 @@ def update_docker_image_version():
     if hash not in docker_compose:
 
         # if hash not found, increment image version number, append new hash, and insert
-        current_version = re.findall(r'image: capstone:(.*)', docker_compose)[0]
+        current_version = re.findall(r'image: harvardlil/capstone:(.*)', docker_compose)[0]
         digits = current_version.split('-')[0].split('.')
         digits[-1] = str(int(digits[-1])+1)
         new_version = "%s-%s" % (".".join(digits), hash)

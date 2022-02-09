@@ -1,6 +1,9 @@
 FROM python:3.7-buster
 ENV PYTHONUNBUFFERED 1
 
+ARG BUILDARCH
+ENV BUILDARCH=${BUILDARCH:-amd64}
+
 # Enable apt-get -t buster-backports
 RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
 
@@ -42,7 +45,7 @@ RUN echo "--modules-folder /node_modules" > /.yarnrc
 COPY package.json /app
 COPY yarn.lock /app
 # pin node version -- see https://github.com/nodesource/distributions/issues/33
-RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.19.0-1nodesource1_amd64.deb \
+RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.19.0-1nodesource1_${BUILDARCH}.deb \
     && dpkg -i ./nodejs.deb \
     && rm nodejs.deb \
     && npm install -g yarn@1.22.5 \
