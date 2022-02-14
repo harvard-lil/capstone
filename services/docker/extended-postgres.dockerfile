@@ -1,4 +1,4 @@
-FROM postgres:11.13
+FROM postgres:11.15
 
 RUN apt-get update && \
     apt-get install -y libpq-dev
