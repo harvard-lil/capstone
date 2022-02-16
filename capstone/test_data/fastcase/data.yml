@@ -917,7 +917,7 @@ NW2d_740:
     FC:NW2d/740/740NW2d659_1.xml:
       analysis:
       - key: cardinality
-        value: 1576
+        value: 1583
       - key: char_count
         value: 59557
       - key: sha256
@@ -1032,7 +1032,7 @@ NW2d_760:
     FC:NW2d/760/760NW2d526_1.xml:
       analysis:
       - key: cardinality
-        value: 1061
+        value: 1063
       - key: char_count
         value: 34832
       - key: sha256
