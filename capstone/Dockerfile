@@ -24,7 +24,7 @@ RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
     && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
     && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
-    && apt-get -t buster-backports install -y libhyperscan-dev \
+    && echo libhyperscan5 libhyperscan/cpu-ssse3 boolean true | debconf-set-selections && apt-get -t buster-backports install -y libhyperscan-dev \
     && apt-get install -y tidy
 
 # pip
