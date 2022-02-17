@@ -28,7 +28,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: harvardlil/capstone:183-b1acdf854c6363b99fc1c247cee3882c
+        image: harvardlil/capstone:184-73d3b373394f3e02f403a97f490eed79
         platform: linux/amd64
         volumes:
             # NAMED VOLUMES
