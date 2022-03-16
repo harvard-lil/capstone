@@ -594,4 +594,4 @@ HYPERSCAN_CACHE_DIR = os.path.join(BASE_DIR, '.hyperscan')
 TESTING = False
 
 # max year for which we have caselaw
-CASE_MAX_YEAR = 2019
+CASE_MAX_YEAR = 2020
