@@ -10,7 +10,7 @@ getting started with APIs and then using our API to query caselaw data.
 {# ==============> AUTHENTICATION <============== #}
 # Authentication
 
-Note: many API queries don't require registration! Check our [access limits]({% docs_url "access_limits" }) 
+Note: many API queries don't require registration! Check our [access limits]({% docs_url "access_limits" %}) 
 section for more details.
 
 ## Get an API Key
