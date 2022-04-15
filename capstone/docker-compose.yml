@@ -1,7 +1,7 @@
 version: '2.2'
 services:
     db:
-        image: registry.lil.tools/harvardlil/cap-db:0.6-nohash
+        image: registry.lil.tools/harvardlil/cap-db:0.7-5e7a93b6b2b854643d0bab06de439b6d
         platform: linux/amd64
         environment:
             POSTGRES_PASSWORD: password
@@ -28,7 +28,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: registry.lil.tools/harvardlil/cap-web:186-nohash
+        image: registry.lil.tools/harvardlil/cap-web:187-487e0c88a08b16d5cc59827fcf47e95a
         platform: linux/amd64
         volumes:
             # NAMED VOLUMES
