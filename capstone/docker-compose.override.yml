@@ -1,9 +1,24 @@
 version: '2.2'
 services:
-    db:
-        build:
-          context: ../services/docker
-          dockerfile: extended-postgres.dockerfile
-    web:
-        build:
-            context: .
+  db:
+    build:
+      context: ../services/docker
+      dockerfile: extended-postgres.dockerfile
+      x-bake:
+        tags:
+          - registry.lil.tools/harvardlil/cap-db:0.6-nohash
+        platforms:
+          - linux/amd64
+      x-hash-paths:
+        - extended-postgres.dockerfile
+  web:
+    build:
+      context: .
+      x-bake:
+        tags:
+          - registry.lil.tools/harvardlil/cap-web:186-nohash
+        platforms:
+          - linux/amd64
+      x-hash-paths:
+        - requirements.txt
+        - yarn.lock

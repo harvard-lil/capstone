@@ -17,22 +17,12 @@ jobs:
 
       ### build docker images ###
 
-      - name: Rebuild harvardlil/capstone-postgres if necessary
+      - name: Rebuild docker images
+        id: rebuild
         uses: harvard-lil/docker-compose-update-action@main
         with:
           working-directory: capstone
-          image: "harvardlil/capstone-postgres"
-          docker-file: "../services/docker/extended-postgres.dockerfile"
-          rebuild-if-changed: "../services/docker/extended-postgres.dockerfile"
-          registry-user: ${{ secrets.REPOSITORY_USER }}
-          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
-
-      - name: Rebuild harvardlil/capstone if necessary
-        uses: harvard-lil/docker-compose-update-action@main
-        with:
-          working-directory: capstone
-          image: "harvardlil/capstone"
-          rebuild-if-changed: "Dockerfile requirements.txt yarn.lock"
+          registry: "registry.lil.tools"
           registry-user: ${{ secrets.REPOSITORY_USER }}
           registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
 

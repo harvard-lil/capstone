@@ -1,7 +1,7 @@
 version: '2.2'
 services:
     db:
-        image: harvardlil/capstone-postgres:0.6-db4d5dc41ff0371933fb6e4e7ffd051e
+        image: registry.lil.tools/harvardlil/cap-db:0.6-nohash
         platform: linux/amd64
         environment:
             POSTGRES_PASSWORD: password
@@ -28,7 +28,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: harvardlil/capstone:186-961af45c62e4fde35a03f9524a635f8b
+        image: registry.lil.tools/harvardlil/cap-web:186-nohash
         platform: linux/amd64
         volumes:
             # NAMED VOLUMES
