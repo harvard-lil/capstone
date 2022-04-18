@@ -7,7 +7,7 @@ defaults:
     working-directory: capstone
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-20.04
     # don't run on pushes to forks
     if: github.event_name == 'pull_request' || github.repository == 'harvard-lil/capstone'
@@ -15,16 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      ### build docker images ###
+      ### build docker images locally ###
 
       - name: Rebuild docker images
         id: rebuild
         uses: harvard-lil/docker-compose-update-action@main
         with:
           working-directory: capstone
-          registry: "registry.lil.tools"
-          registry-user: ${{ secrets.REPOSITORY_USER }}
-          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
 
       ### run tests ###
 
@@ -86,3 +83,15 @@ jobs:
           export DEPLOY_CONTENT='{"GITHUB_RUN_NUMBER":"'$GITHUB_RUN_NUMBER'","GITHUB_SHA":"'$GITHUB_SHA'","GITHUB_REF":"'$GITHUB_REF'","GITHUB_REPOSITORY":"'$GITHUB_REPOSITORY'","GITHUB_ACTOR":"'$GITHUB_ACTOR'"}' ;
           export DEPLOY_SIG="sha1=`echo -n "$DEPLOY_CONTENT" | openssl sha1 -hmac $DEPLOY_KEY | sed 's/^.* //'`" ;
           curl -X POST "$DEPLOY_URL" --data "$DEPLOY_CONTENT" -H "Content-Type: application/json" -H "$DEPLOY_HEADER: $DEPLOY_SIG"
+
+      ### push docker images to registry, from main branch, once tests pass ###
+
+      - name: Push docker images
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        uses: harvard-lil/docker-compose-update-action@main
+        with:
+          working-directory: capstone
+          registry: "registry.lil.tools"
+          registry-user: ${{ secrets.REPOSITORY_USER }}
+          registry-pass: ${{ secrets.REPOSITORY_TOKEN }}
+          bake-action: "push"
