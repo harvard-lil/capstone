@@ -70,8 +70,8 @@ jobs:
           git config user.email "lil@law.harvard.edu"
           git config user.name "Github Actions"
           docker-compose exec web yarn build
-          if [[ `git status docker-compose.yml --porcelain` ]] ; then
-            git add docker-compose.yml
+          if [[ `git status docker-compose.yml docker-compose.override.yml --porcelain` ]] ; then
+            git add docker-compose.yml docker-compose.override.yml
             git commit -m "Bump image version"
             git push origin develop || exit 1
           fi
