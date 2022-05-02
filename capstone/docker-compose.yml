@@ -28,7 +28,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: registry.lil.tools/harvardlil/cap-web:187-487e0c88a08b16d5cc59827fcf47e95a
+        image: registry.lil.tools/harvardlil/cap-web:188-55642bdd290edf64b3c0b6e227530284
         platform: linux/amd64
         volumes:
             # NAMED VOLUMES
