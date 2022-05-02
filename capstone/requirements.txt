@@ -1066,8 +1066,9 @@ pyparsing==2.4.7 \
     --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1 \
     --hash=sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b
     # via packaging
-pypdf2==1.26.0 \
-    --hash=sha256:e28f902f2f0a1603ea95ebe21dff311ef09be3d0f0ef29a3e44a932729564385
+pypdf2==1.27.11 \
+    --hash=sha256:7162b07462542e92674d493195c1473632c1921a2986caba059c1c92a2bda8df \
+    --hash=sha256:c882229e0eb49ecf57288f9774eea06aacb49d1f79aa95c306c65eb08d6e47a6
     # via -r requirements.in
 pyquery @ https://github.com/gawel/pyquery/archive/ca82465e8c049ea5f0c18586a32169338125cffe.zip \
     --hash=sha256:8ac1b26883cf93019bc927bea2172eb1702a35c392dea24a31289763534a1173
