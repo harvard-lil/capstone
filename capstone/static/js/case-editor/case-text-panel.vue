@@ -23,7 +23,7 @@
 </template>
 
 <script>
-  import Paragraph from './case-text-paragraph'
+  import Paragraph from './case-text-paragraph.vue'
 
   export default {
     components: {Paragraph},

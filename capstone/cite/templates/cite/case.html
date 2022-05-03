@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 {% load pipeline %}
 {% load static %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% load api_url %}
 {% load redaction %}
 {% load humanize %}
@@ -27,7 +27,7 @@
       caseId: {{ db_case.id }}
     };
   </script>
-  {% render_bundle 'case' %}
+  {% vite_asset 'static/js/case/main.js' %}
 {% endblock %}
 
 {% block title_section %}

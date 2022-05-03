@@ -1,8 +1,13 @@
+// temp workaround for https://github.com/vitejs/vite/issues/4786
+if (import.meta.env.MODE !== 'development') {
+  import('vite/modulepreload-polyfill')  // https://vitejs.dev/config/#build-polyfillmodulepreload
+}
+
 import Vue from 'vue'
 import VueRouter from "vue-router";
-import Timeline from './timeline'
-import Admin from './admin'
-import App from './app'
+import Timeline from './timeline.vue'
+import Admin from './admin.vue'
+import App from './app.vue'
 import store from "./store";
 
 Vue.config.devtools = true;

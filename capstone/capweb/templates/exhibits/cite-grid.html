@@ -3,7 +3,7 @@
 {% load pipeline %}
 {% load api_url %}
 {% load snippet %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% block row_style %}bg-tan{% endblock %}
 
 {% block base_css %}
@@ -36,5 +36,5 @@
   <noscript>
     This interface requires javascript.
   </noscript>
-{% render_bundle 'cite-grid' %}
+{% vite_asset 'static/js/cite-grid/main.js' %}
 {% endblock %}

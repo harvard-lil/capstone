@@ -245,9 +245,8 @@ or ingest a single volume downloaded from that section with the command `fab imp
 
 ### Working with javascript <a id="working-with-javascript"></a>
 
-We use [Vue CLI 3](https://cli.vuejs.org/) to compile javascript files, so you can use modern javascript and it will be
-transpiled to support the browsers listed in package.json. New javascript entrypoints can be added to vue.config.js and
-included in templates with `{% render_bundle %}`.
+We use Vite to compile javascript files. New javascript entrypoints can be added to vite.config.js and
+included in templates with `{% vite_asset %}`.
 
 To see javascript changes live, run the dev server with
 

@@ -162,8 +162,8 @@ import axios from "axios";
 import store from "./store";
 import vSelect from 'vue-select';
 import CaseResult from '../../search/case-result.vue';
-import SearchButton from '../../vue-shared/search-button';
-import ShapeComponent from './shape-component';
+import SearchButton from '../../vue-shared/search-button.vue';
+import ShapeComponent from './shape-component.vue';
 
 export default {
   name: "add-case-modal",

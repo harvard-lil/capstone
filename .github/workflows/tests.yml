@@ -75,8 +75,8 @@ jobs:
             git commit -m "Bump image version"
             git push origin develop || exit 1
           fi
-          if [[ `git status static/dist/ webpack-stats.json --porcelain` ]] ; then
-              git add static/dist/ webpack-stats.json
+          if [[ `git status static/dist/ --porcelain` ]] ; then
+              git add static/dist/
               git commit -m "Add built JS"
               git push origin develop || exit 1
           fi

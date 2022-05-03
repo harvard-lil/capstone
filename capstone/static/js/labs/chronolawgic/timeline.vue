@@ -138,7 +138,7 @@ import KeyIcon from '../../../../static/img/icons/key.svg';
 import AddCaseModal from './add-case-modal.vue';
 import AddEventModal from './add-event-modal.vue';
 import ReadonlyModal from './readonly-modal.vue';
-import Year from './year';
+import Year from './year.vue';
 import Categories from './categories.vue';
 import Sidebar from './sidebar.vue';
 import ChevronRight from '../../../../static/img/icons/chevron-right.svg';

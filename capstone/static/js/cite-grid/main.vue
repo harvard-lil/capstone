@@ -105,7 +105,7 @@
 </template>
 
 <script>
-  import csvStringify from 'csv-stringify/lib/sync';
+  import {stringify} from 'csv-stringify/browser/esm/sync';
   import {jsonQuery} from '../api';
   import USMap from '../../../capweb/templates/includes/usa_territories_white.svg';
 
@@ -250,7 +250,7 @@
         for (const fromJur of this.jurisdictions) {
           payload.push([fromJur.name_long, ...this.jurisdictions.map((toJur)=>this.citePercentage(fromJur, toJur))]);
         }
-        payload = "data:text/csv;base64," + btoa(csvStringify(payload));
+        payload = "data:text/csv;base64," + btoa(stringify(payload));
         event.currentTarget.href = payload;
       },
     },

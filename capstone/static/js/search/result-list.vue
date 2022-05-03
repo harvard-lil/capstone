@@ -141,7 +141,7 @@
 import CaseResult from './case-result.vue'
 import CloseIcon from '../../../static/img/icons/close.svg';
 import DownloadIcon from '../../../static/img/icons/download.svg';
-import FieldItem from './field-item';
+import FieldItem from './field-item.vue';
 
 export default {
   data: function () {

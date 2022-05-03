@@ -1,7 +1,7 @@
 {% extends "layouts/wide.html" %}
 {% load pipeline %}
 {% load static %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% load api_url %}
 {% load capweb_static %}
 
@@ -24,5 +24,5 @@
         opinions: {{ opinions_json|safe }},
       };
     </script>
-    {% render_bundle 'case-editor' %}
+    {% vite_asset 'static/js/case-editor/main.js' %}
 {% endblock %}

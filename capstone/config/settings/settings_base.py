@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from copy import deepcopy
 
@@ -51,7 +52,7 @@ INSTALLED_APPS = [
     'bootstrap4',   # bootstrap form rendering
     'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
-    'webpack_loader',   # webpack assets
+    'django_vite',  # vite assets
     'elasticsearch_dsl',
     'django_elasticsearch_dsl',
     'django_elasticsearch_dsl_drf',
@@ -273,6 +274,18 @@ PIPELINE = {
     'CSS_COMPRESSOR': None,
     'JS_COMPRESSOR': None,
 }
+
+
+# Whitenoise checks for immutable files (which can be cached forever) by checking if "foo.somehash.extension" has
+# a "foo.extension" file next to it. This doesn't work for vite outputs, which don't have unhashed versions.
+# Instead, check for files with a dotted segment consisting of 8 to 12 hex characters.
+# See https://github.com/MrBin99/django-vite#notes
+
+def immutable_file_test(path, url):
+    return re.match(r"^.+\.[0-9a-f]{8,12}\..+$", url)
+
+WHITENOISE_IMMUTABLE_FILE_TEST = immutable_file_test
+
 
 # define storages
 # each of these can be imported from capdb.storages, e.g. `from capdb.storages import ingest_storage`
@@ -532,12 +545,9 @@ HARVARD_IP_RANGES = [
     '134.174.0.0/16',
 ]
 
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'dist/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-    }
-}
+DJANGO_VITE_ASSETS_PATH = os.path.join(STATICFILES_DIRS[0], 'dist')
+DJANGO_VITE_DEV_SERVER_HOST = 'case.test'
+DJANGO_VITE_DEV_SERVER_PORT = 8080
 
 # used for encrypting redacted text -- this should usually not be set, but only entered on demand
 REDACTION_KEY = None

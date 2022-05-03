@@ -385,17 +385,17 @@
 
 <script>
   import Chart from 'chart.js';
-  import csvStringify from 'csv-stringify/lib/sync';
+  import {stringify} from 'csv-stringify/browser/esm/sync';
   import debounce from 'lodash.debounce';
-  import Tone from 'tone/Tone/core/Tone';
-  import Synth from 'tone/Tone/instrument/Synth';
+  import {Tone} from 'tone/Tone/core/Tone';
+  import {Synth} from 'tone/Tone/instrument/Synth';
   import Vue from 'vue';
   import VueSlider from 'vue-slider-component';
   import 'vue-slider-component/theme/default.css';
 
   import LineExample from './LineChart.vue';
   import LoadingButton from '../vue-shared/search-button.vue';
-  import Panelset from '../vue-shared/panelset';
+  import Panelset from '../vue-shared/panelset.vue';
   import SearchResults from './search-results.vue';
   import {getApiUrl, jsonQuery} from '../api'
 
@@ -993,7 +993,7 @@
               return [data.doc_count[0], data.doc_count[1], data.count[0], data.count[1]];
           })]);
         }
-        payload = "data:text/csv;base64," + btoa(csvStringify(payload));
+        payload = "data:text/csv;base64," + btoa(stringify(payload));
         event.currentTarget.href = payload;
       },
       chartKeyDown(event) {

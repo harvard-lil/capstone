@@ -43,7 +43,7 @@
 </template>
 
 <script>
-  module.exports = {
+  export default {
     props: [
       'result'
     ],

@@ -1,7 +1,7 @@
 {% extends "./labs_base.html" %}
 {% load static %}
 {% load pipeline %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% load api_url %}
 {% load snippet %}
 
@@ -58,5 +58,5 @@
 <noscript>
   This experimental interface requires javascript, even for basic functionality.
 </noscript>
-{% render_bundle 'labs-chronolawgic' %}
+{% vite_asset 'static/js/labs/chronolawgic/main.js' %}
 {% endblock %}

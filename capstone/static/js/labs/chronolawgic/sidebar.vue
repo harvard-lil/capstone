@@ -38,7 +38,7 @@
   </div>
 </template>
 <script>
-import Minimap from './minimap';
+import Minimap from './minimap.vue';
 import ArrowLeftCircle from '../../../../static/img/icons/arrow-left-circle.svg';
 import DownloadIcon from '../../../../static/img/icons/download.svg';
 
