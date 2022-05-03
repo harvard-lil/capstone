@@ -37,7 +37,7 @@
     "lodash.debounce": "^4.0.8",
     "mark.js": "^8.11.1",
     "minimist": "^1.2.6",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "popper.js": "^1.14.7",
     "sass-loader": "^10.0.2",
     "scroll-into-view-if-needed": "^2.2.25",
@@ -107,6 +107,8 @@
     "**/node-sass": "^7.0.0",
     "**/moment": "^2.29.2",
     "**/ansi-html": "^0.0.8",
-    "**/async": "^2.6.4"
+    "**/async": "^2.6.4",
+    "**/minimist": "^1.2.6",
+    "**/ejs": "^3.1.7"
   }
 }
