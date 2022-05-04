@@ -110,6 +110,7 @@ Load dev data:
     # fab init_dev_db
     # fab ingest_fixtures
     # fab import_web_volumes
+    # fab refresh_case_body_cache
     # fab rebuild_search_index
 
 Run the dev server:
