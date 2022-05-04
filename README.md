@@ -112,6 +112,11 @@ Load dev data:
     # fab import_web_volumes
     # fab refresh_case_body_cache
     # fab rebuild_search_index
+    
+To get ngrams working, run:
+
+    # mkdir test_data/ngrams
+    # fab ngram_jurisdictions
 
 Run the dev server:
 
