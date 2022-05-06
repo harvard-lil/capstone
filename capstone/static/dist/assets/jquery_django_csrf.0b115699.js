@@ -1,0 +1,2 @@
+import{$ as i}from"./jquery.dbd78d0d.js";function u(e){var t=null;if(document.cookie&&document.cookie!=="")for(var n=document.cookie.split(";"),o=0;o<n.length;o++){var r=n[o].trim();if(r.substring(0,e.length+1)===e+"="){t=decodeURIComponent(r.substring(e.length+1));break}}return t}var c=u("csrftoken");function f(e){return/^(GET|HEAD|OPTIONS|TRACE)$/.test(e)}i.ajaxSetup({beforeSend:function(e,t){!f(t.type)&&!this.crossDomain&&e.setRequestHeader("X-CSRFToken",c)}});
+//# sourceMappingURL=jquery_django_csrf.0b115699.js.map
