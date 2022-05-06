@@ -1,11 +1,11 @@
 {% extends "layouts/wide.html" %}
 {% load pipeline %}
 {% load static %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 
 {% block extra_head %}
   <script src="{% static "js/limerick_lines.js" %}"></script>
-  {% render_bundle 'limericks' %}
+  {% vite_asset 'static/js/generate_limericks.js' %}
   {% stylesheet 'gallery' %}
 {% endblock %}
 

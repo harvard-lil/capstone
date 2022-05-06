@@ -3,7 +3,7 @@
 {% load pipeline %}
 {% load api_url %}
 {% load format_number %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% load bootstrap4 %}
 {% load snippet %}
 
@@ -16,7 +16,7 @@
     };
     const jurData = {% snippet 'map_numbers' '{}' %};
   </script>
-  {% render_bundle 'map' %}
+  {% vite_asset 'static/js/homepage-map/main.js' %}
 {% endblock %}
 
 {% block title_suffix %}Caselaw Access Project{% endblock title_suffix %}

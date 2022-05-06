@@ -55,7 +55,7 @@ import Category from './category.vue'
 import AddIcon from '../../../../static/img/icons/plus-circle.svg';
 import store from "./store";
 import {EventBus} from "./event-bus.js";
-import ShapeComponent from "./shape-component";
+import ShapeComponent from "./shape-component.vue";
 
 export default {
   name: "categories",

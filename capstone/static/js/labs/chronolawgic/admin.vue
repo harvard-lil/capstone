@@ -121,7 +121,7 @@
               </div>
               <div class="stat">
                 <div class="label">Events</div>
-                <div class="event_count value" v-text="timeline.event_count">0</div>
+                <div class="event_count value" v-text="timeline.event_count"></div>
               </div>
             </aside>
           </div>

@@ -245,8 +245,8 @@
   </div>
 </template>
 <script>
-  import QueryExplainer from './query-explainer';
-  import FieldItem from './field-item';
+  import QueryExplainer from './query-explainer.vue';
+  import FieldItem from './field-item.vue';
   import { mapState } from 'vuex';
 
   export default {

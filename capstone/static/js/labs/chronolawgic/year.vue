@@ -42,8 +42,8 @@
 </template>
 
 <script>
-import TimeLineSlice from './timeline-slice';
-import Case from './case';
+import TimeLineSlice from './timeline-slice.vue';
+import Case from './case.vue';
 import MoreVertical from '../../../../static/img/icons/more-vertical.svg';
 import MoreHorizontal from '../../../../static/img/icons/more-horizontal.svg';
 import YearLabel from './year-label'

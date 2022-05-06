@@ -30,3 +30,5 @@ capstone/.hyperscan
 *.lprof
 
 node_modules/
+# yarn build bundle profile:
+capstone/stats.html

@@ -60,8 +60,6 @@
   import $ from "jquery";
   import '../jquery_django_csrf';
 
-  // this polyfill can be dropped if we're targeting Safari >= 13.1 and post-IE
-  import * as clipboard from "clipboard-polyfill/dist/text/clipboard-polyfill.text.js";
   import {getApiUrl, jsonQuery} from "../api";
 
   export default {
@@ -200,7 +198,7 @@
         // Copies: "Selected quotation" name_abbreviation, official_citation, (<year>)
         // TODO: add pin cite to citation
         const toCopy = `"${this.selectedText}" ${this.templateVars.fullCite}`;
-        clipboard.writeText(toCopy).then(
+        navigator.clipboard.writeText(toCopy).then(
             () => this.copyStatus = "copied",
             () => this.copyStatus = "copy failed",
         );

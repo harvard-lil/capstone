@@ -45,7 +45,7 @@
 import LinkCase from '../../../../static/img/icons/open_in_new-24px.svg';
 import {EventBus} from "./event-bus.js";
 import store from "./store";
-import ShapeComponent from './shape-component';
+import ShapeComponent from './shape-component.vue';
 
 export default {
   name: "Case",

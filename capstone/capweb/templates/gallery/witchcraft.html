@@ -1,6 +1,6 @@
 {% extends "layouts/wide.html" %}
 {% load pipeline %}
-{% load render_bundle from webpack_loader %}
+{% load django_vite %}
 {% load api_url %}
 
 {% block extra_head %}
@@ -12,7 +12,7 @@
       caseApi: "{% load api_url %}"
     };
   </script>
-  {% render_bundle 'witchcraft' %}
+  {% vite_asset 'static/js/witchcraft/main.js' %}
 {% endblock %}
 
 {% block title %}Witchcraft in Law{% endblock %}

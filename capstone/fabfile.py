@@ -33,6 +33,7 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.conf import settings
 from fabric.api import local
+from fabric.context_managers import shell_env
 from fabric.decorators import task
 
 from capapi.models import CapUser, EmailBlocklist
@@ -72,7 +73,7 @@ def run_django(port="127.0.0.1:8000"):
 
 @task
 def run_frontend(port=None):
-    with open_subprocess("npm run serve"):
+    with open_subprocess("yarn run dev"), shell_env(RUN_FRONTEND="1"):
         run_django(port)
 
 

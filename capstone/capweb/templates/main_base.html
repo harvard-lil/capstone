@@ -1,4 +1,4 @@
-{% load static %}{% load pipeline %}{% load capweb_static %}{% load render_bundle from webpack_loader %}{% load capture_tags %}<!DOCTYPE html>
+{% load static %}{% load pipeline %}{% load capweb_static %}{% load django_vite %}{% load capture_tags %}<!DOCTYPE html>
 <html lang="en">
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="utf-8">
@@ -61,8 +61,7 @@
 
     {# if a stylesheet has to import base.scss, it should override this block instead of going in extra_head to avoid double import #}
     {% block base_css %}{% stylesheet "base" %}{% endblock %}
-    {% render_bundle 'chunk-common' %}
-    {% render_bundle 'base' %}
+    {% vite_asset 'static/js/base.js' %}
     {% if extra_head %}{{ extra_head }}{% endif %}
     {% block extra_head %}{% endblock %}
   </head>

@@ -1,3 +1,8 @@
+// temp workaround for https://github.com/vitejs/vite/issues/4786
+if (import.meta.env.MODE !== 'development') {
+  import('vite/modulepreload-polyfill')  // https://vitejs.dev/config/#build-polyfillmodulepreload
+}
+
 import 'bootstrap/js/dist/util'
 import 'bootstrap/js/dist/collapse'
 import 'bootstrap/js/dist/dropdown'
@@ -5,7 +10,13 @@ import 'bootstrap/js/dist/modal'
 
 import $ from "jquery"
 import * as utils from './utils.js'
-import './analytics.js'
+
+// analytics may be blocked by a browser extension
+try {
+  import('./analytics.js')
+} catch (e) {
+  console.log('skipping analytics.js', e)
+}
 
 // force link elements serving the role of buttons to respond correctly
 let patchAnchorTagButtons = function () {

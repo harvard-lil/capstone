@@ -23,7 +23,7 @@
 </template>
 
 <script>
-  import {FAKE_SOFT_HYPHEN} from "static/js/case-editor/helpers";
+  import {FAKE_SOFT_HYPHEN} from "./helpers";
 
   export default {
     props: ['paragraph'],

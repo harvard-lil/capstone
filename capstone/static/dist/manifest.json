@@ -1,0 +1,259 @@
+{
+  "static/js/base.js": {
+    "file": "assets/base.5773cf39.js",
+    "src": "static/js/base.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_jquery.9c517ada.js",
+      "_popper.e79938a8.js",
+      "_utils.814d5bc1.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill",
+      "static/js/analytics.js"
+    ]
+  },
+  "static/js/homepage-map/main.js": {
+    "file": "assets/map.20873545.js",
+    "src": "static/js/homepage-map/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_usa_territories_white.c3990beb.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ]
+  },
+  "static/js/generate_limericks.js": {
+    "file": "assets/limericks.4221f979.js",
+    "src": "static/js/generate_limericks.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_jquery.9c517ada.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ]
+  },
+  "static/js/witchcraft/main.js": {
+    "file": "assets/witchcraft.1b582f7c.js",
+    "src": "static/js/witchcraft/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_usa_territories_white.c3990beb.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ]
+  },
+  "static/js/search/main.js": {
+    "file": "assets/search.2652ee52.js",
+    "src": "static/js/search/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_index.2ff0cdb0.js",
+      "_vuex.esm.9e31915e.js",
+      "_case-result.ab265073.js",
+      "_utils.814d5bc1.js",
+      "_vue-router.esm.636d16a2.js",
+      "_jquery.9c517ada.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ]
+  },
+  "static/js/trends/main.js": {
+    "file": "assets/trends.da0c5295.js",
+    "src": "static/js/trends/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_vue-router.esm.636d16a2.js",
+      "_search-button.560b0fc1.js",
+      "_sync.94c5b92d.js",
+      "_index.d63aab2b.js",
+      "_case-result.ab265073.js",
+      "_api.b6932234.js",
+      "_utils.814d5bc1.js",
+      "_jquery.9c517ada.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ],
+    "css": [
+      "assets/trends.04903590.css"
+    ]
+  },
+  "static/js/case/main.js": {
+    "file": "assets/case.4a32fec4.js",
+    "src": "static/js/case/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_index.d63aab2b.js",
+      "_jquery.9c517ada.js",
+      "_jquery_django_csrf.700bc2be.js",
+      "_api.b6932234.js",
+      "_utils.814d5bc1.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ]
+  },
+  "static/js/cite-grid/main.js": {
+    "file": "assets/cite-grid.2e6c6e4d.js",
+    "src": "static/js/cite-grid/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_vue-router.esm.636d16a2.js",
+      "_sync.94c5b92d.js",
+      "_api.b6932234.js",
+      "_usa_territories_white.c3990beb.js",
+      "_utils.814d5bc1.js",
+      "_jquery.9c517ada.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ],
+    "css": [
+      "assets/cite-grid.129e95ee.css"
+    ]
+  },
+  "static/js/case-editor/main.js": {
+    "file": "assets/case-editor.12f2d7a1.js",
+    "src": "static/js/case-editor/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_vuex.esm.9e31915e.js",
+      "_popper.e79938a8.js",
+      "_jquery.9c517ada.js",
+      "_jquery_django_csrf.700bc2be.js",
+      "_index.d63aab2b.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ],
+    "css": [
+      "assets/case-editor.bb67e5ff.css"
+    ]
+  },
+  "static/js/labs/chronolawgic/main.js": {
+    "file": "assets/labs-chronolawgic.35ffd6a2.js",
+    "src": "static/js/labs/chronolawgic/main.js",
+    "isEntry": true,
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js",
+      "_vue-router.esm.636d16a2.js",
+      "_index.2ff0cdb0.js",
+      "_vuex.esm.9e31915e.js",
+      "_case-result.ab265073.js",
+      "_search-button.560b0fc1.js",
+      "_jquery.9c517ada.js"
+    ],
+    "dynamicImports": [
+      "vite/modulepreload-polyfill"
+    ],
+    "css": [
+      "assets/labs-chronolawgic.d7b64223.css"
+    ]
+  },
+  "__commonjsHelpers.9baf49e8.js": {
+    "file": "assets/_commonjsHelpers.9baf49e8.js"
+  },
+  "_jquery.9c517ada.js": {
+    "file": "assets/jquery.9c517ada.js",
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js"
+    ]
+  },
+  "_utils.814d5bc1.js": {
+    "file": "assets/utils.814d5bc1.js",
+    "imports": [
+      "_jquery.9c517ada.js",
+      "__commonjsHelpers.9baf49e8.js"
+    ]
+  },
+  "_popper.e79938a8.js": {
+    "file": "assets/popper.e79938a8.js"
+  },
+  "_vueComponentNormalizer.bf45ea69.js": {
+    "file": "assets/vueComponentNormalizer.bf45ea69.js",
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js"
+    ]
+  },
+  "_usa_territories_white.c3990beb.js": {
+    "file": "assets/usa_territories_white.c3990beb.js"
+  },
+  "_vue-router.esm.636d16a2.js": {
+    "file": "assets/vue-router.esm.636d16a2.js"
+  },
+  "_vuex.esm.9e31915e.js": {
+    "file": "assets/vuex.esm.9e31915e.js"
+  },
+  "_index.2ff0cdb0.js": {
+    "file": "assets/index.2ff0cdb0.js",
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js"
+    ]
+  },
+  "_case-result.ab265073.js": {
+    "file": "assets/case-result.ab265073.js",
+    "imports": [
+      "_vueComponentNormalizer.bf45ea69.js"
+    ]
+  },
+  "_search-button.560b0fc1.js": {
+    "file": "assets/search-button.560b0fc1.js",
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js",
+      "_vueComponentNormalizer.bf45ea69.js"
+    ]
+  },
+  "_sync.94c5b92d.js": {
+    "file": "assets/sync.94c5b92d.js"
+  },
+  "_index.d63aab2b.js": {
+    "file": "assets/index.d63aab2b.js",
+    "imports": [
+      "__commonjsHelpers.9baf49e8.js"
+    ]
+  },
+  "_api.b6932234.js": {
+    "file": "assets/api.b6932234.js",
+    "imports": [
+      "_utils.814d5bc1.js"
+    ]
+  },
+  "_jquery_django_csrf.700bc2be.js": {
+    "file": "assets/jquery_django_csrf.700bc2be.js",
+    "imports": [
+      "_jquery.9c517ada.js"
+    ]
+  },
+  "vite/modulepreload-polyfill": {
+    "file": "assets/modulepreload-polyfill.b7f2da20.js",
+    "src": "vite/modulepreload-polyfill",
+    "isDynamicEntry": true
+  },
+  "static/js/analytics.js": {
+    "file": "assets/analytics.9fd7f974.js",
+    "src": "static/js/analytics.js",
+    "isDynamicEntry": true
+  }
+}

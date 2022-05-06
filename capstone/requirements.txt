@@ -356,6 +356,7 @@ django==3.2.13 \
     #   django-model-utils
     #   django-redis
     #   django-storages
+    #   django-vite
     #   djangorestframework
     #   drf-yasg
 django-bootstrap4==3.0.0 \
@@ -415,9 +416,9 @@ django-storages==1.11.1 \
     --hash=sha256:c823dbf56c9e35b0999a13d7e05062b837bae36c518a40255d522fbe3750fbb4 \
     --hash=sha256:f28765826d507a0309cfaa849bd084894bc71d81bf0d09479168d44785396f80
     # via -r requirements.in
-django-webpack-loader==0.6.0 \
-    --hash=sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520 \
-    --hash=sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a
+django-vite==2.0.2 \
+    --hash=sha256:5a2e11a9f08a2a0a69c9a7c637a3254ad0c8dd01e07cb40de09a3a180ed99791 \
+    --hash=sha256:f11f4747183b884ee4e6c2ea12f0aa96a846574ee7344c05ac96b4fa89309535
     # via -r requirements.in
 djangorestframework==3.12.2 \
     --hash=sha256:0209bafcb7b5010fdfec784034f059d512256424de2a0f084cb82b096d6dd6a7 \
