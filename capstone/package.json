@@ -35,5 +35,8 @@
     "vue-template-compiler": "^2.6.11",
     "vuex": "^3.5.1",
     "vuex-map-fields": "^1.4.0"
+  },
+  "resolutions": {
+    "**/nth-check": "^2.0.1"
   }
 }
