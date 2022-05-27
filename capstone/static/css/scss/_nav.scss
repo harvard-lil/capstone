@@ -7,14 +7,14 @@
   display: inline-block;
   line-height: inherit;
   white-space: nowrap;
-  transition: .2s;
+  //transition: .2s;
 
   .nav-branding {
     background: url("../../img/logos/cap-logo-harvard-white.svg") no-repeat;
     background-size: contain;
     width: 146px;
     height: 63px;
-    transition: .2s;
+    //transition: .2s;
     display: block;
     background-position-x: 0;
 
@@ -41,7 +41,7 @@
   z-index: 999;
   user-select: none;
   font-size: 1.1rem;
-  transition: .2s;
+  //transition: .2s;
   justify-content: space-between;
 
   a {
@@ -50,6 +50,18 @@
 
   ul {
     margin-bottom: 0;
+    display: block;
+    overflow: auto;
+    // Add smooth fade-in animation on desktop
+    @include media-breakpoint-up(md) {
+      animation: main-nav-ul-fade-in ease-in 0.3s 1;
+    }
+  }
+
+  @keyframes main-nav-ul-fade-in {
+    0% { opacity: 0; }
+    50% { opacity: 0; }
+    100% { opacity: 1 }
   }
 
   form {
