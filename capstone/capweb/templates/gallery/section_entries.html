@@ -11,7 +11,7 @@
            title="{{ entry.title }} homepage"
            id="{{ entry.title|slugify }}"
            target="_blank">
-          <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
+          <img class="gallery-thumbnail" loading="lazy" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
         </a>
       {% elif entry.repo_link %}
         <a href="{{ entry.repo_link }}"
@@ -19,10 +19,10 @@
            title="{{ entry.title }} repository"
            id="{{ entry.title|slugify }}"
            target="_blank">
-          <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
+          <img class="gallery-thumbnail" loading="lazy" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
         </a>
       {% else %}
-        <img class="gallery-thumbnail" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
+        <img class="gallery-thumbnail" loading="lazy" alt="" src="{% if entry.image %}{{ entry.image.url }}{% else %}{% static 'img/gallery-default.jpg' %}{% endif %}">
       {% endif %}
 
     </div>

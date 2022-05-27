@@ -26,7 +26,9 @@
   <div class="main-content bg-black">
 
     <!-- START MAP -->
-    <div id="app"></div>
+    <div class="map-section-layout-shift-buffer">
+      <div id="app"></div>
+    </div>
     <!-- END MAP -->
     <!-- START DIVE-IN -->
 
@@ -172,12 +174,14 @@
         <div class="col-3 d-none d-lg-block pl-5 pt-4">
           <div class="boxcontainer image-boxcontainer mb-3">
             <img class="boxcontainer-img"
+                 loading="lazy"
                  alt="a technician holding disbound pages from a case reporter in front of a high speed scanner"
                  src='{% static "img/book-scan.jpg" %}'>
             <div class="boxcontainer-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
           </div>
           <div class="boxcontainer image-boxcontainer ">
             <img class="boxcontainer-img"
+                 loading="lazy"
                  alt="case reporter books in in stacks"
                  src='{% static "img/reporters.jpg" %}'/>
             <div class="boxcontainer-footer item-credit mt-2">Image: Brooks Kraft/Harvard Law School</div>
