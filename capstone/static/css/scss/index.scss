@@ -146,11 +146,9 @@ p.section-subtitle {
 * == Map Section ==
 *
 ***************************************************************/
-.map-section-layout-shift-buffer {
-
-  // Reduce layout shift while the map / stats block displays
+// This wrapper allows to apply a minimal height on elements whose rendering is delayed (JS) as to reduce layout shift.
+.layout-shift-buffer {
   min-height: 286px;
-
   @include media-breakpoint-up(md) {
     min-height: 90vh;
   }

@@ -8,6 +8,14 @@
 @import "search_results";
 @import "vue-select/vue-select.scss";
 
+// This wrapper allows to apply a minimal height on elements whose rendering is delayed (JS) as to reduce layout shift.
+.layout-shift-buffer {
+  min-height: 100vh;
+  @include media-breakpoint-up(md) {
+    min-height: 1020px;
+  }
+}
+
 $color-search-gray-light: #ced4da;
 .top-section {
   padding-bottom: 0 !important;
@@ -38,6 +46,10 @@ input, textarea,
 
 .form-label-group {
   font-family: $font-sans-title;
+
+  @include media-breakpoint-down(md) {
+    padding: 0.1rem;
+  }
 
   .queryfield, .vs__dropdown-toggle {
     margin-bottom: 0;
@@ -229,6 +241,11 @@ label.dropdown-label {
     color: $color-black;
     text-transform: none;
     border-radius: 0;
+
+    @include media-breakpoint-down(md) {
+      position: relative;
+      top: 1px;
+    }
   }
   input.vs__search::placeholder {
       color: $color-black;
