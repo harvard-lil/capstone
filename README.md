@@ -112,6 +112,13 @@ Load dev data:
     # fab import_web_volumes
     # fab refresh_case_body_cache
     # fab rebuild_search_index
+
+> ⚠️ **Note:** If `rebuild_search_index` crashes, make sure that Docker has sufficient resources allocated to run Elastic Search.
+> _Recommended minimum:_
+> - CPUs: 6
+> - Memory: 10 GB
+> - Swap: 1 GB
+> - Disk image: ~256 GB
     
 To get ngrams working, run:
 
