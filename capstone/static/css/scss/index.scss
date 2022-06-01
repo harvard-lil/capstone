@@ -146,6 +146,12 @@ p.section-subtitle {
 * == Map Section ==
 *
 ***************************************************************/
+.map-section-layout-shift-buffer {
+  // Reduce layout shift on desktop while the map loads
+  @include media-breakpoint-up(md) {
+    min-height: 90vh;
+  }
+}
 
 .map-section {
   background-color: $color-black;
