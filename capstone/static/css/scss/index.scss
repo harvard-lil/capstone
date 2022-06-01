@@ -147,7 +147,10 @@ p.section-subtitle {
 *
 ***************************************************************/
 .map-section-layout-shift-buffer {
-  // Reduce layout shift on desktop while the map loads
+
+  // Reduce layout shift while the map / stats block displays
+  min-height: 286px;
+
   @include media-breakpoint-up(md) {
     min-height: 90vh;
   }
