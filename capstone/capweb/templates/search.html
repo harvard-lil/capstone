@@ -15,7 +15,9 @@
 {% block sidebar_menu %}{% endblock %}
 
 {% block main_content %}
-  <div id="app" class="content"></div>
+  <div class="layout-shift-buffer">
+    <div id="app" class="content"></div>
+  </div>
 
   <script>
     const config = {

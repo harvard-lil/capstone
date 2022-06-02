@@ -20,6 +20,13 @@
   cursor: text;
   transition: all .1s ease-in-out;
   pointer-events: none;
+
+  @include media-breakpoint-down(sm) {
+    top: -36px;
+    line-height: 1.25;
+    padding-right: 1ch;
+  }
+  
   @include media-breakpoint-up(lg) {
     font-size: 0.8em;
   }
