@@ -1465,7 +1465,7 @@ class CaseMetadata(models.Model):
             CaseImage.objects.filter(case=self, hash__in=known_hashes).delete()
 
     def pdf_available(self):
-        return not self.no_index_redacted and bool(self.volume.pdf_file)
+        return not self.no_index_redacted and not self.withdrawn and bool(self.volume.pdf_file)
 
     def get_pdf(self):
         """
