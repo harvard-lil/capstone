@@ -4,6 +4,12 @@ services:
     build:
       context: ../services/docker
       dockerfile: extended-postgres.dockerfile
+      cache_from:
+        - type: registry
+        - ref: "registry.lil.tools/harvardlil/cap-db:buildcache"
+      cache_to:
+        - type: registry
+        - ref: "registry.lil.tools/harvardlil/cap-db:buildcache,type=max"
       x-bake:
         tags:
           - registry.lil.tools/harvardlil/cap-db:0.8-bc582483e3741366137113cb651ba221
@@ -14,6 +20,12 @@ services:
   web:
     build:
       context: .
+      cache_from:
+        - type: registry
+        - ref: "registry.lil.tools/harvardlil/cap-web:buildcache"
+      cache_to:
+        - type: registry
+        - ref: "registry.lil.tools/harvardlil/cap-web:buildcache,type=max"
       x-bake:
         tags:
           - registry.lil.tools/harvardlil/cap-web:194-676f1f8b50689e7bada6324a4afff03f
