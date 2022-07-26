@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SERVICES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'services')
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '.test', '.web']
 
 ADMINS = [('Caselaw Access Project', 'info@case.law')]
 

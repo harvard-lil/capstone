@@ -55,6 +55,16 @@ services:
         cap_add:
             - SYS_PTRACE
 
+    playwright:
+      build:
+        context: ../services/playwright
+        dockerfile: extended-playwright.dockerfile
+        x-hash-paths:
+          - extended-playwright.dockerfile
+      depends_on:
+        - web
+      command: /bin/bash
+  
 volumes:
     db_data_11:
     node_modules:
