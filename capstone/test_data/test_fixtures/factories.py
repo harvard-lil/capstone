@@ -48,13 +48,13 @@ def register(cls):
 
 
 @register
-class EmailBlocklistFactory(factory.DjangoModelFactory):
+class EmailBlocklistFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = EmailBlocklist
 
 
 @register
-class TokenFactory(factory.DjangoModelFactory):
+class TokenFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Token
 
@@ -64,7 +64,7 @@ class TokenFactory(factory.DjangoModelFactory):
 
 
 @register
-class CapUserFactory(factory.DjangoModelFactory):
+class CapUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CapUser
 
@@ -102,7 +102,7 @@ class ContractApproverUserFactory(AuthUserFactory):
 
 
 @register
-class TrackingToolUserFactory(factory.DjangoModelFactory):
+class TrackingToolUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TrackingToolUser
 
@@ -113,7 +113,7 @@ class TrackingToolUserFactory(factory.DjangoModelFactory):
 
 
 @register
-class JurisdictionFactory(factory.DjangoModelFactory):
+class JurisdictionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Jurisdiction
         django_get_or_create = ('name',)
@@ -124,7 +124,7 @@ class JurisdictionFactory(factory.DjangoModelFactory):
 
 
 @register
-class ReporterFactory(factory.DjangoModelFactory):
+class ReporterFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Reporter
 
@@ -145,7 +145,7 @@ class ReporterFactory(factory.DjangoModelFactory):
 
 
 @register
-class VolumeMetadataFactory(factory.DjangoModelFactory):
+class VolumeMetadataFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = VolumeMetadata
     barcode = factory.Faker('ean', length=13)
@@ -157,7 +157,7 @@ class VolumeMetadataFactory(factory.DjangoModelFactory):
 _volume_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/32044057892259_redacted_METS.xml").read_text()
 
 @register
-class VolumeXMLFactory(factory.DjangoModelFactory):
+class VolumeXMLFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = VolumeXML
 
@@ -167,7 +167,7 @@ class VolumeXMLFactory(factory.DjangoModelFactory):
 
 
 @register
-class CourtFactory(factory.DjangoModelFactory):
+class CourtFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Court
 
@@ -177,7 +177,7 @@ class CourtFactory(factory.DjangoModelFactory):
 
 
 @register
-class CitationFactory(factory.DjangoModelFactory):
+class CitationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Citation
 
@@ -189,7 +189,7 @@ class CitationFactory(factory.DjangoModelFactory):
 
 
 @register
-class CaseBodyCacheFactory(factory.DjangoModelFactory):
+class CaseBodyCacheFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CaseBodyCache
 
@@ -220,7 +220,7 @@ class CaseBodyCacheFactory(factory.DjangoModelFactory):
 
 
 @register
-class TarFileFactory(factory.DjangoModelFactory):
+class TarFileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = TarFile
     volume = factory.SubFactory(VolumeMetadataFactory)
@@ -229,7 +229,7 @@ class TarFileFactory(factory.DjangoModelFactory):
 
 
 @register
-class PageStructureFactory(factory.DjangoModelFactory):
+class PageStructureFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PageStructure
 
@@ -269,7 +269,7 @@ class PageStructureFactory(factory.DjangoModelFactory):
 
 
 @register
-class CaseStructureFactory(factory.DjangoModelFactory):
+class CaseStructureFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CaseStructure
 
@@ -302,7 +302,7 @@ class CaseStructureFactory(factory.DjangoModelFactory):
 
 
 @register
-class ExtractedCitationFactory(factory.DjangoModelFactory):
+class ExtractedCitationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExtractedCitation
 
@@ -312,7 +312,7 @@ class ExtractedCitationFactory(factory.DjangoModelFactory):
 
 
 @register
-class FastcaseImportFactory(factory.DjangoModelFactory):
+class FastcaseImportFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = FastcaseImport
 
@@ -322,7 +322,7 @@ class FastcaseImportFactory(factory.DjangoModelFactory):
 
 
 @register
-class CaseFactory(factory.DjangoModelFactory):
+class CaseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CaseMetadata
 
@@ -374,7 +374,7 @@ class FastcaseCaseFactory(RestrictedCaseFactory):
 _case_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/casemets/32044057892259_redacted_CASEMETS_0001.xml").read_text()
 
 @register
-class CaseXMLFactory(factory.DjangoModelFactory):
+class CaseXMLFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CaseXML
 
@@ -392,7 +392,7 @@ class CaseXMLFactory(factory.DjangoModelFactory):
 _page_xml = Path(settings.BASE_DIR, "test_data/from_vendor/32044057892259_redacted/alto/32044057892259_redacted_ALTO_00008_0.xml").read_text()
 
 @register
-class PageXMLFactory(factory.DjangoModelFactory):
+class PageXMLFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PageXML
 
@@ -402,7 +402,7 @@ class PageXMLFactory(factory.DjangoModelFactory):
 
 
 @register
-class CaseExportFactory(factory.DjangoModelFactory):
+class CaseExportFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CaseExport
 
