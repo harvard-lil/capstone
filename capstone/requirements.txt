@@ -63,9 +63,9 @@ async-timeout==3.0.1 \
     --hash=sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f \
     --hash=sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3
     # via aiohttp
-attrs==18.2.0 \
-    --hash=sha256:10cbf6e27dbce8c30807caf056c8eb50917e0eaafe86347671b57254006c3e69 \
-    --hash=sha256:ca4be454458f9dec299268d472aaa5a11f67a4ff70093396e1ceae9c76cf4bbb
+attrs==22.1.0 \
+    --hash=sha256:29adc2665447e5191d0e7c568fde78b21f9672d344281d0c6e1ab085429b22b6 \
+    --hash=sha256:86efa402f67bf2df34f51a335487cf46b1ec130d02b8d39fd248abfd30da551c
     # via
     #   aiohttp
     #   jsonschema
@@ -774,9 +774,7 @@ more-itertools==5.0.0 \
     --hash=sha256:38a936c0a6d98a38bcc2d03fdaaedaba9f412879461dd2ceff8d37564d6522e4 \
     --hash=sha256:c0a5785b1109a6bd7fac76d6837fd1feca158e54e521ccd2ae8bfe393cc9d4fc \
     --hash=sha256:fe7a7cae1ccb57d33952113ff4fa1bc5f879963600ed74918f1236e212ee50b9
-    # via
-    #   moto
-    #   pytest
+    # via moto
 moto==2.0.8 \
     --hash=sha256:812dcfdb460e6d43236f2c0f7774ede038716daef6db8a09dc5c16ea7e4de931 \
     --hash=sha256:b5b4c596d6f44fe1f658429d0313a649d0861d7df91b2dbdb5cc20d1bb8daf39
@@ -1147,9 +1145,9 @@ pyquery @ https://github.com/gawel/pyquery/archive/ca82465e8c049ea5f0c18586a3216
 pyrsistent==0.15.4 \
     --hash=sha256:34b47fa169d6006b32e99d4b3c4031f155e6e68ebcc107d6454852e8e0ee6533
     # via jsonschema
-pytest==6.0.1 \
-    --hash=sha256:85228d75db9f45e06e57ef9bf4429267f81ac7c0d742cc9ed63d09886a9fe6f4 \
-    --hash=sha256:8b6007800c53fdacd5a5c192203f4e531eb2a1540ad9c752e052ec0f7143dbad
+pytest==7.1.2 \
+    --hash=sha256:13d0e3ccfc2b6e26be000cb6568c832ba67ba32e719443bfe725814d3c42433c \
+    --hash=sha256:a06a0425453864a270bc45e71f783330a7428defb4230fb5e6a731fde06ecd45
     # via
     #   -r requirements.in
     #   pytest-base-url
@@ -1430,9 +1428,11 @@ text-unidecode==1.3 \
 toml==0.10.1 \
     --hash=sha256:926b612be1e5ce0634a2ca03470f95169cf16f939018233a670519cb4ac58b0f \
     --hash=sha256:bda89d5935c2eac546d648028b9901107a595863cb36bae0c73ac804a9b4ce88
-    # via
-    #   pep517
-    #   pytest
+    # via pep517
+tomli==2.0.1 \
+    --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
+    --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
+    # via pytest
 tornado==5.1.1 \
     --hash=sha256:0662d28b1ca9f67108c7e3b77afabfb9c7e87bde174fbda78186ecedc2499a9d \
     --hash=sha256:4e5158d97583502a7e2739951553cbd88a72076f152b4b11b64b9a10c4c49409 \
