@@ -63,8 +63,14 @@ services:
           - extended-playwright.dockerfile
       depends_on:
         - web
+      volumes:
+         # MOUNTS
+         - .:/app
+         - ../services/playwright:/tests
       command: /bin/bash
-  
+      tty: true
+      
+
 volumes:
     db_data_11:
     node_modules:
