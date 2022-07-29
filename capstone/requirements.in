@@ -63,6 +63,7 @@ pytest-django
 pytest-xdist       # run tests in parallel with pytest -n
 pytest-cov         # record code coverage
 pytest-redis       # redisdb fixture
+pytest-playwright  # playwright tests
 moto
 flake8
 factory-boy        # mocking

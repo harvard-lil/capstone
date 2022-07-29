@@ -49,3 +49,7 @@ RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/n
     && yarn install --frozen-lockfile \
     && rm package.json \
     && rm yarn.lock
+
+# Install Playwright browsers for integration tests
+RUN apt install --no-install-recommends libdbus-glib-1-2
+RUN playwright install chromium firefox
