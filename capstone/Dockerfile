@@ -25,7 +25,9 @@ RUN apt-get update \
     && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
     && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
     && echo libhyperscan5 libhyperscan/cpu-ssse3 boolean true | debconf-set-selections && apt-get -t buster-backports install -y libhyperscan-dev \
-    && apt-get install -y tidy
+    && apt-get install -y tidy \
+    && apt-get install -y libdrm2 libgbm-dev \
+    && apt-get install --no-install-recommends libdbus-glib-1-2
 
 # pip
 RUN mkdir /app
@@ -51,5 +53,4 @@ RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/n
     && rm yarn.lock
 
 # Install Playwright browsers for integration tests
-RUN apt install --no-install-recommends libdbus-glib-1-2
 RUN playwright install chromium firefox
