@@ -1,4 +1,4 @@
-FROM postgres:11.16
+FROM postgres:11.17-bullseye
 
 RUN apt-get update && \
     apt-get install -y libpq-dev
