@@ -68,12 +68,12 @@ jobs:
           docker-compose exec web yarn build
           if [[ `git status docker-compose.yml docker-compose.override.yml --porcelain` ]] ; then
             git add docker-compose.yml docker-compose.override.yml
-            git commit -m "Bump image version"
+            git commit -m "Bump image version [skip ci]"
             git push origin develop || exit 1
           fi
           if [[ `git status static/dist/ --porcelain` ]] ; then
               git add static/dist/
-              git commit -m "Add built JS"
+              git commit -m "Add built JS [skip ci]"
               git push origin develop || exit 1
           fi
 
