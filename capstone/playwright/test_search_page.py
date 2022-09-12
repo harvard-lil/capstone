@@ -2,8 +2,15 @@ from playwright.sync_api import Page, expect
 url = "http://case.test:8000/search/"
 
 
+def test_search_button_works_aka_updates_url_onclick(page: Page):
+  page.goto(url)
+  page.locator("button", has_text="Search").click()
+  assert(page.url) == 'http://case.test:8000/search/#/?page=1&ordering=relevance'
+  
 def test_search_no_results_shows_no_results_message(page: Page):
-  pass
+  page.goto(url)
+  search_btn = page.locator("button", has_text="Search")
+  search_input = page.locator('#search')
 
 # use greg
 def test_search_results_show_correct_count(page: Page):
