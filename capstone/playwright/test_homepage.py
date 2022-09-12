@@ -17,7 +17,7 @@ def test_each_state_on_map_contains_valid_url(page: Page, ordered_list_state_abb
         expect(loc).to_have_attribute('href', expected_url)
 
 
-def test_alabamba_map_link(page, ordered_list_state_abbreviations):
+def test_svg_map_links_work_when_clicked(page, ordered_list_state_abbreviations):
     page.on('response', lambda r: r)
     for _state in ordered_list_state_abbreviations:
       if _state in skip:
