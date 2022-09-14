@@ -24,7 +24,7 @@
     "split-grid": "^1.0.9",
     "tone": "^14.8.39",
     "url-polyfill": "^1.1.3",
-    "vite": "^2.9.5",
+    "vite": "^2.9.13",
     "vite-plugin-vue2": "^1.9.3",
     "vite-plugin-vue2-svg": "^0.1.8",
     "vue": "^2.6.10",
