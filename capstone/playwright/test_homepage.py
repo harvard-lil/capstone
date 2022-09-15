@@ -44,7 +44,7 @@ def test_map_links(page, urls, map_data):
         state_name = link.get_attribute('aria-label')
         left_side_menu = page.locator('.jur_name')
         expect(left_side_menu).to_have_text(state_name)
-        link.press('Enter');
+        link.press('Enter')
 
         # The link successfully takes you to the expected subsection of the "browse" page
         assert page.url == f'{urls["cite_home"]}#{jurisdiction_id}'
