@@ -21,9 +21,9 @@ def test_cases_by_decision_date(case_factory):
     update_snippets.cases_by_decision_date_tsv()
     cases_by_decision_date = Snippet.objects.get(label='cases_by_decision_date')
     assert cases_by_decision_date.contents == (
-        '"2000"\t4\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000&decision_date__lte=2000-12-31"\r\n'
-        '"2000-04"\t3\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000-04&decision_date__lte=2000-04-31"\r\n'
-        '"2000-04-15"\t1\t"https://api.case.test:8000/v1/cases/?decision_date__gte=2000-04-15&decision_date__lte=2000-04-15"\r\n'
+        '"2000"\t4\t"http://api.case.test:8000/v1/cases/?decision_date__gte=2000&decision_date__lte=2000-12-31"\r\n'
+        '"2000-04"\t3\t"http://api.case.test:8000/v1/cases/?decision_date__gte=2000-04&decision_date__lte=2000-04-31"\r\n'
+        '"2000-04-15"\t1\t"http://api.case.test:8000/v1/cases/?decision_date__gte=2000-04-15&decision_date__lte=2000-04-15"\r\n'
     )
 
 @pytest.mark.django_db(databases=['capdb'])

@@ -9,6 +9,7 @@ from moto import mock_s3
 from retry.api import retry_call
 from elasticsearch.exceptions import ConnectionError
 
+from django.core import management
 from django.core.signals import request_started, request_finished
 from django.core.cache import cache as django_cache
 import django.apps
@@ -19,6 +20,7 @@ from rest_framework.test import APIRequestFactory, APIClient
 # Do this here so anything that gets imported later will get the mocked versions.
 import capdb.storages
 from capapi.documents import indexes
+from capweb.helpers import reverse
 
 capdb.storages.redis_client = SimpleLazyObject(lambda: None)
 capdb.storages.redis_ingest_client = SimpleLazyObject(lambda: None)
@@ -393,67 +395,18 @@ def elasticsearch(request, settings):
     for index in indexes.values():
         index.delete(ignore=404)
 
-@pytest.fixture()
-def ordered_list_state_abbreviations():
-  return ['ala',
-  'alaska',
-  'am-samoa',
-  'ariz',
-  'ark',
-  'cal',
-  'colo',
-  'conn',
-  'dakota-territory',
-  'dc',
-  'del',
-  'fla',
-  'ga',
-  'guam',
-  'haw',
-  'idaho',
-  'ill',
-  'ind',
-  'iowa',
-  'kan',
-  'ky',
-  'la',
-  'mass',
-  'md',
-  'me',
-  'mich',
-  'minn',
-  'miss',
-  'mo',
-  'mont',
-  #'native-american',
-  #'navajo-nation',
-  'nc',
-  'nd',
-  'neb',
-  'nev',
-  'nh',
-  'nj',
-  'nm',
-  'n-mar-i',
-  'ny',
-  'ohio',
-  'okla',
-  'or',
-  'pa',
-  'pr',
-  #'regional',
-  'ri',
-  'sc',
-  'sd',
-  'tenn',
-  'tex',
-  #'us',
-  'utah',
-  'va',
-  'vi',
-  'vt',
-  'wash',
-  'wis',
-  'w-va',
-  'wyo']
 
+### for playwright tests ###
+
+@pytest.fixture
+def urls(live_server):
+    return {
+        'home': reverse('home'),
+        'cite_home': reverse('cite_home'),
+        'search': reverse('search')
+    }
+
+
+@pytest.fixture
+def map_data():
+    management.call_command('loaddata', ('jurisdiction', 'reporter', 'snippet'), database='capdb')

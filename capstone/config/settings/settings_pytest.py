@@ -22,3 +22,6 @@ PASSWORD_HASHERS = [
 
 # avoid test errors when running tests locally, since pytest-django sets DEBUG=False and staticfiles/ doesn't exist
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+
+# https://github.com/pytest-dev/pytest-django/blob/fba51531f067a985ec6b6be4aec9a2ed5766d69c/pytest_django/live_server_helper.py#L35
+INSTALLED_APPS.remove('django.contrib.staticfiles')

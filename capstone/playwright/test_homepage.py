@@ -1,47 +1,51 @@
-from playwright.sync_api import Page, expect
+from playwright.sync_api import expect
+import pytest
 
-url = "http://case.test:8000"
-# states that fail, usually the ones where you have to scroll down to click the map
-# or states that are too small on the map
-# there are errors like "playwright._impl._api_types.Error: Element is outside of the viewport"
-# idaho is not at the bottom but playwright clicks "montana" (right above idaho)
-# maryland also being too small, playwright clicks "virginia" instead of "montana"
-skip = ['dakota-territory', 'am-samoa', 'fla', 'guam', 'haw', 'idaho', 'md', 'mich', 'nj', 'n-mar-i', 'pr', 'vi']
-
-def test_each_state_on_map_contains_valid_url(page: Page, ordered_list_state_abbreviations):
-    page.goto(url)
-    for _state in ordered_list_state_abbreviations:
-        expected_url = '//cite.case.test:8000/#' + _state
-        selector = '#' + _state
-        loc = page.locator(selector)
-        expect(loc).to_have_attribute('href', expected_url)
+from capdb.models import Jurisdiction
 
 
-def test_svg_map_links_work_when_clicked(page, ordered_list_state_abbreviations):
-    page.on('response', lambda r: r)
-    for _state in ordered_list_state_abbreviations:
-      if _state in skip:
-        continue
-      page.goto("http://case.test:8000")
-      #page.evaluate("window.scroll(1,1000);")
-      selector = 'a#' + _state
-      #if selector[1:] == '#mont' or selector[1:] == '#idaho':
-      #  import pdb; pdb.set_trace()
-      page.locator(selector).click(force=True)
-      assert page.url == "http://cite.case.test:8000/" + selector[1:]
+@pytest.mark.django_db(databases=['default', 'capdb'])
+def test_map_links(page, urls, map_data):
+    # We run in a loop, rather than parameterizing the test so that:
+    # - fixtures only need to be loaded once
+    # - the jurisdiction list can be populated from the DB (since tests are parameterized during the collection phase, DB access isn't possible there)
+    #
+    # Run pytest with -s to print each jurisdiction's slug to the terminal, as it is tested.
+    jurisdiction_ids = [
+        j.slug for j in Jurisdiction.objects.all() if j.slug not in [
+            'native-american',
+            'navajo-nation',
+            'regional',
+            'us',
+            'tribal',
+            'uk'
+       ]
+   ]
 
+    for jurisdiction_id in jurisdiction_ids:
+        print(f'Checking {jurisdiction_id}')
+        page.goto(urls['home'])
 
-"""
-doesn't work because pointer event is intercepted by the svg map, so hovering over a state first triggers the svg point event
-def test_jurisdiction_name_matches_state_hovered(page: Page, ordered_list_state_abbreviations):
-    page.goto(url)
-    for _state in ordered_list_state_abbreviations:
-        selector = '#' + _state
-        # getting 1st element in array since all the g tags besides the 0th index are nested inside 0th index g tag.
-        link = page.locator(selector)
-        loc = page.locator('g', has=link).nth(1)
-        _state_name = loc.all_text_contents()[0]
-        link.hover()
+        # The map has a link for this jurisdiction
+        link = page.locator(f'#{jurisdiction_id}')
+
+        # locator.hover() and locator.click() select an X and Y coordinate inside
+        # the element's bounding box. That doesn't work well for complex shapes like these,
+        # which include islands and lots of concave edges: hover() and click() may miss,
+        # or may catch a neighboring jurisdiction. For example, inspect a#vi.state-link
+        # and observe how big the box is... and how small the actual clickable target, the land, is.
+        # https://playwright.dev/docs/api/class-locator#locator-click-option-position
+        #
+        # In lieu of finding coordinates that work for each jurisdiction, and hovering and clicking,
+        # we send keyboard focus there, observe that the content updates, and then press enter.
+        link.focus()
+
+        # When you hover or focus on the link, the left sidebar content updates
+        state_name = link.get_attribute('aria-label')
         left_side_menu = page.locator('.jur_name')
-        expect(left_side_menu).to_have_text(_state_name) 
-"""
+        expect(left_side_menu).to_have_text(state_name)
+        link.press('Enter')
+
+        # The link successfully takes you to the expected subsection of the "browse" page
+        assert page.url == f'{urls["cite_home"]}#{jurisdiction_id}'
+        expect(page.locator(f'h2#{jurisdiction_id}')).to_be_visible()
