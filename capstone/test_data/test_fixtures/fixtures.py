@@ -402,7 +402,8 @@ def elasticsearch(request, settings):
 def urls(live_server):
     return {
         'home': reverse('home'),
-        'cite_home': reverse('cite_home')
+        'cite_home': reverse('cite_home'),
+        'search': reverse('search')
     }
 
 
