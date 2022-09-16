@@ -3,6 +3,7 @@ url = "http://case.test:8000/search/"
 default_search_url = 'http://case.test:8000/search/#/?page=1&ordering=relevance'
 # this search term should produce "No results"
 no_results_search_term = 'lil_cap_test'
+valid_search_label = 'greg'
 
 
 def test_search_button_works_aka_updates_url_onclick(page: Page):
@@ -15,7 +16,6 @@ def test_search_pressing_enter_on_fulltextsearch_makes_search(page: Page):
   page.fill('#search','')
   page.keyboard.press('Enter') 
   assert page.url == default_search_url
-
   
 def test_search_when_no_results_shows_no_results_message(page: Page):
   page.goto(url)
@@ -27,7 +27,6 @@ def test_search_when_no_results_shows_no_results_message(page: Page):
   expect(results_locator).to_have_text(expected_result)
 
 
-# use greg
 def test_search_results_show_correct_count(page: Page):
   pass
 
