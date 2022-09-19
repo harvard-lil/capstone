@@ -125,7 +125,7 @@ def api_reverse(viewname, args=None, kwargs=None, request=None, format=None, **e
     if format is not None:
         kwargs = kwargs or {}
         kwargs['format'] = format
-    scheme = 'http' if settings.DEBUG else 'https'
+    scheme = 'https' if settings.MAKE_HTTPS_URLS else 'http'
     out = django_hosts_reverse(viewname, args=args, kwargs=kwargs, host='api', scheme=scheme, **extra)
 
     # for debugging, replace 'http://api.case.test:8000' with value of settings.API_HOST_OVERRIDE

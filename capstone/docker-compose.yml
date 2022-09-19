@@ -44,9 +44,18 @@ services:
         environment:
             # let Django load Docker-specific settings conditionally
             - DOCKERIZED=True
+            - DJANGO_ALLOW_ASYNC_UNSAFE=true
+            - DJANGO_LIVE_TEST_SERVER_ADDRESS=0.0.0.0:8000
         extra_hosts:
           - "case.test:127.0.0.1"
           - "api.case.test:127.0.0.1"
+          - "cite.case.test:127.0.0.1"
+        networks:
+          default:
+            aliases:
+              - 'case.test'
+              - 'api.case.test'
+              - 'cite.case.test'
         ports:
             - 127.0.0.1:8000:8000
             - 127.0.0.1:8080:8080
@@ -60,3 +69,6 @@ volumes:
     node_modules:
     esdata02:
       driver: local
+
+networks:
+  default:
