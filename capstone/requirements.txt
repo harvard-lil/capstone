@@ -606,9 +606,9 @@ jmespath==0.9.3 \
     # via
     #   boto3
     #   botocore
-joblib==0.16.0 \
-    --hash=sha256:8f52bf24c64b608bf0b2563e0e47d6fcf516abc8cfafe10cfd98ad66d94f92d6 \
-    --hash=sha256:d348c5d4ae31496b2aa060d6d9b787864dd204f9480baaa52d18850cb43e9f49
+joblib==1.2.0 \
+    --hash=sha256:091138ed78f800342968c523bdde947e7a305b8594b910a0fea2ab83c3c6d385 \
+    --hash=sha256:e1cee4a79e4af22881164f218d4311f60074197fb707e082e803b61f6d137018
     # via nltk
 jsonschema==3.0.2 \
     --hash=sha256:5f9c0a719ca2ce14c5de2fd350a64fd2d13e8539db29836a86adc990bb1a068f \
