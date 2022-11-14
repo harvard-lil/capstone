@@ -6,7 +6,7 @@ services:
       dockerfile: extended-postgres.dockerfile
       x-bake:
         tags:
-          - registry.lil.tools/harvardlil/cap-db:0.9-6a3784e44e500935d6ce57e13b485d78
+          - registry.lil.tools/harvardlil/cap-db:0.10-4d7eb06f5ae57e2b0b7686a3415bf165
         platforms:
           - linux/amd64
       x-hash-paths:
