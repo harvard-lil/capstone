@@ -137,18 +137,6 @@ If you are working on javascript files, frontend, use `fab run_frontend`:
     # fab run_frontend
 
 ## Administering and Developing Capstone <a id="administering-and-developing-capstone"></a>
-- [Capstone](#capstone)
-  - [Project Background ](#project-background-)
-  - [The Data ](#the-data-)
-    - [Format Documentation and Samples ](#format-documentation-and-samples-)
-    - [Obtaining Real Data ](#obtaining-real-data-)
-    - [Reporting Data Errors ](#reporting-data-errors-)
-    - [Errata ](#errata-)
-  - [The Capstone Application ](#the-capstone-application-)
-  - [Installing Capstone and CAPAPI ](#installing-capstone-and-capapi-)
-    - [Hosts Setup ](#hosts-setup-)
-    - [Docker Setup ](#docker-setup-)
-  - [Administering and Developing Capstone ](#administering-and-developing-capstone-)
     - [Testing ](#testing-)
     - [Requirements ](#requirements-)
     - [Applying model changes ](#applying-model-changes-)
@@ -160,7 +148,6 @@ If you are working on javascript files, frontend, use `fab run_frontend`:
     - [Download real data locally ](#download-real-data-locally-)
     - [Working with javascript ](#working-with-javascript-)
     - [Elasticsearch ](#elasticsearch-)
-  - [Code examples ](#code-examples-)
 
 ### Testing <a id="testing"></a>
 
