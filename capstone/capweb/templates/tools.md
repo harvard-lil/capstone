@@ -33,6 +33,7 @@ Browse and cite all of our cases sorted by jurisdiction, series, and volume.
 Our downloads directory includes derivative datasets, bulk exports, and summaries from the Caselaw Access Project. 
 
 [DOWNLOADS]({% url "download-files" "" %}){: class="btn-primary" }
+[DOCS]({% url "bulk-docs" %}){: class="btn-secondary" }
 {: class="btn-group" }
 
 # Historical Trends {: class="subtitle" }
