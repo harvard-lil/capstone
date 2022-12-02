@@ -108,7 +108,7 @@ From now on all commands starting with `#` are assumed to be run from within `do
 
 Load dev data:
 
-> ⚠️ **Note:** Make sure that Docker has sufficient resources allocated to run Elastic Search. Lower allocations may cause `rebuild_search_index` to crash.
+> ⚠️ **Note:** Make sure that Docker has sufficient resources allocated to run Elasticsearch. Lower allocations may cause `rebuild_search_index` to crash.
 > _Recommended minimum:_
 > - CPUs: 6
 > - Memory: 10 GB
