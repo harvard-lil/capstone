@@ -185,11 +185,9 @@ def case_pdf(request, case_id, pdf_name):
     )
     pdf_url = case.get_pdf_url(with_host=False)
     if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
-        try:
-            return HttpResponseRedirect(pdf_url+"?redirect=1")
-        except TypeError:
-            # there is no pdf_url
+        if pdf_url is None:
             raise Http404
+        return HttpResponseRedirect(pdf_url+"?redirect=1")
 
     return citation(request, None, None, None, case_id, pdf=True, db_case=case)
 
