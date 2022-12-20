@@ -173,7 +173,7 @@ def volume(request, series_slug, volume_number_slug):
     })
 
 
-def case_pdf(request, case_id, pdf_name):
+def case_pdf(request, case_id):
     """
         Return the PDF for a case. This wraps citation() so that all rules about quotas and anonymous users can be
         applied before we return the case.
@@ -184,12 +184,12 @@ def case_pdf(request, case_id, pdf_name):
         pk=case_id
     )
     pdf_url = case.get_pdf_url(with_host=False)
-    if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
-        if pdf_url is None:
-            raise Http404
-        return HttpResponseRedirect(pdf_url+"?redirect=1")
+    pdf = pdf_url is not None
+    if pdf:
+        if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
+            return HttpResponseRedirect(pdf_url+"?redirect=1")
 
-    return citation(request, None, None, None, case_id, pdf=True, db_case=case)
+    return citation(request, None, None, None, case_id, pdf=pdf, db_case=case)
 
 
 @permission_required('capdb.correct_ocr')
