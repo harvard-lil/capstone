@@ -32,11 +32,7 @@ images.
 Technical notes
 ---------------
 We extracted the images themselves from an HTML representation of our
-raw case body data with [this
-code](https://github.com/harvard-lil/capstone/blob/develop/capstone/capdb/tasks.py#L326-L346)
-and [this
-code](https://github.com/harvard-lil/capstone/blob/develop/capstone/capdb/models.py#L1190-L1226). We
-then separated the files with
+raw case body data, then separated the files with
 
     find case-images -type f -size -1k -exec cp -an {} case-images-small/ \;
 
