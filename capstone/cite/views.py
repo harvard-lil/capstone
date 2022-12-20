@@ -179,12 +179,17 @@ def case_pdf(request, case_id, pdf_name):
         applied before we return the case.
     """
     # check that we are at the canonical URL
-    case = get_object_or_404(CaseMetadata.objects.select_related('volume').prefetch_related('citations'), pk=case_id)
+    case = get_object_or_404(
+        CaseMetadata.objects.select_related('volume').prefetch_related('citations'),
+        pk=case_id
+    )
     pdf_url = case.get_pdf_url(with_host=False)
-    if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
-        return HttpResponseRedirect(pdf_url+"?redirect=1")
+    pdf = pdf_url is not None
+    if pdf:
+        if iri_to_uri(request.path) != pdf_url and not request.GET.get('redirect'):
+            return HttpResponseRedirect(pdf_url+"?redirect=1")
 
-    return citation(request,None, None, None, case_id, pdf=True, db_case=case)
+    return citation(request, None, None, None, case_id, pdf=pdf, db_case=case)
 
 
 @permission_required('capdb.correct_ocr')
