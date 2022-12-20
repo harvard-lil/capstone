@@ -173,7 +173,7 @@ def volume(request, series_slug, volume_number_slug):
     })
 
 
-def case_pdf(request, case_id):
+def case_pdf(request, case_id, pdf_name):
     """
         Return the PDF for a case. This wraps citation() so that all rules about quotas and anonymous users can be
         applied before we return the case.
