@@ -16,7 +16,7 @@ services:
       context: .
       x-bake:
         tags:
-          - registry.lil.tools/harvardlil/cap-web:206-c72927a492378d5316f726187a600874
+          - registry.lil.tools/harvardlil/cap-web:207-5ebece6422c66715a8aa5cf7ddd8ed9b
         platforms:
           - linux/amd64
       x-hash-paths:
