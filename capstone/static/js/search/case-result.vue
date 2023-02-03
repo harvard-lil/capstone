@@ -22,15 +22,11 @@
       <span class="court"
             v-if="result.court">
       &nbsp;&middot;
-        <a class="simple" target="_blank" :href="result.court.url">
           {{ result.court.name }}
-        </a>
       </span>
       <span class="jurisdiction">
         &nbsp;&middot;
-        <a class="simple" target="_blank" :href="result.jurisdiction.url">
           {{result.jurisdiction.name_long}}
-        </a>
       </span>
     </div>
     <div class="row" v-if="result.preview.length > 0">
