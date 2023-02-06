@@ -53,7 +53,7 @@
     ]
   },
   "static/js/search/main.js": {
-    "file": "assets/search.58407b18.js",
+    "file": "assets/search.f050f6f1.js",
     "src": "static/js/search/main.js",
     "isEntry": true,
     "imports": [
@@ -61,7 +61,7 @@
       "_vueComponentNormalizer.7ffcf611.js",
       "_index.0047c737.js",
       "_vuex.esm.b9640af0.js",
-      "_case-result.5b9393b5.js",
+      "_case-result.54033f46.js",
       "_utils.988e2790.js",
       "_vue-router.esm.c100b6d5.js",
       "_jquery.dbd78d0d.js"
@@ -71,7 +71,7 @@
     ]
   },
   "static/js/trends/main.js": {
-    "file": "assets/trends.a046e198.js",
+    "file": "assets/trends.a15354c8.js",
     "src": "static/js/trends/main.js",
     "isEntry": true,
     "imports": [
@@ -81,7 +81,7 @@
       "_search-button.f6f4499b.js",
       "_sync.2ea07b3f.js",
       "_index.7519ad19.js",
-      "_case-result.5b9393b5.js",
+      "_case-result.54033f46.js",
       "_api.7ca8e714.js",
       "_utils.988e2790.js",
       "_jquery.dbd78d0d.js"
@@ -152,7 +152,7 @@
     ]
   },
   "static/js/labs/chronolawgic/main.js": {
-    "file": "assets/labs-chronolawgic.551a466c.js",
+    "file": "assets/labs-chronolawgic.c571864b.js",
     "src": "static/js/labs/chronolawgic/main.js",
     "isEntry": true,
     "imports": [
@@ -161,7 +161,7 @@
       "_vue-router.esm.c100b6d5.js",
       "_index.0047c737.js",
       "_vuex.esm.b9640af0.js",
-      "_case-result.5b9393b5.js",
+      "_case-result.54033f46.js",
       "_search-button.f6f4499b.js",
       "_jquery.dbd78d0d.js"
     ],
@@ -212,8 +212,8 @@
       "__commonjsHelpers.9baf49e8.js"
     ]
   },
-  "_case-result.5b9393b5.js": {
-    "file": "assets/case-result.5b9393b5.js",
+  "_case-result.54033f46.js": {
+    "file": "assets/case-result.54033f46.js",
     "imports": [
       "_vueComponentNormalizer.7ffcf611.js"
     ]
