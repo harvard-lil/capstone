@@ -89,6 +89,10 @@ def test_volume(client, django_assert_num_queries, case_factory, elasticsearch):
     response = client.get(reverse('volume', args=['Mass.', '1'], host='cite'), follow=True)
     check_response(response, status_code=200)
 
+    # make sure we get 404 if bad volume input
+    response = client.get(reverse('volume', args=['Mass.', '*'], host='cite'))
+    check_response(response, status_code=404)
+
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_case_not_found(client, django_assert_num_queries, elasticsearch):

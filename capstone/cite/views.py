@@ -147,8 +147,11 @@ def volume(request, series_slug, volume_number_slug):
 
     # redirect if series slug or volume number slug is in the wrong format
 
-    if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
-        return HttpResponseRedirect(reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
+    try:
+        if slugify(series_slug) != series_slug or slugify(volume_number_slug) != volume_number_slug:
+            return HttpResponseRedirect(reverse('volume', args=[slugify(series_slug), slugify(volume_number_slug)], host='cite'))
+    except NoReverseMatch:
+        raise Http404
 
     vols = list(VolumeMetadata.objects
         .select_related('reporter')
