@@ -20,8 +20,6 @@ dictdiffer          # supports a hack to avoid clobbering timelines with outdate
 celery[redis,sqs]   # task queue
 pycurl              # let celery talk to SQS queue
 flower              # monitoring
-watchdog            # restart celery in dev (via 'watchmedo' command)
-argh                # needed by watchdog
 
 # xml
 lxml

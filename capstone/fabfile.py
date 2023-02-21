@@ -64,7 +64,8 @@ def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
     # run celerybeat in background for elasticsearch indexing
-    with open_subprocess("watchmedo auto-restart -d ./ -p '*.py' -R -- celery worker -A config.celery.app -c 1 -B"):
+    # this function uses Django's autoreload
+    with open_subprocess("python manage.py run_celery_worker"):
         # This was `management.call_command('runserver', port)`, but then the Django autoreloader
         # itself calls fab run and we get two copies of everything!
         # --nostatic so whitenoise is used in dev
