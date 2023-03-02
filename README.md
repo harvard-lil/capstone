@@ -111,7 +111,7 @@ Load dev data:
 > ⚠️ **Note:** Make sure that Docker has sufficient resources allocated to run Elasticsearch. Lower allocations may cause `rebuild_search_index` to crash.
 > _Recommended minimum:_
 > - CPUs: 6
-> - Memory: 10 GB
+> - Memory: 16 GB
 > - Swap: 1 GB
 > - Disk image: ~256 GB
 
