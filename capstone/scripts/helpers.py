@@ -302,7 +302,7 @@ def copy_file(from_path, to_path, from_storage=None, to_storage=None):
     """
     from_storage = from_storage or _root_file_system_storage
     to_storage = to_storage or _root_file_system_storage
-    to_storage.save(str(to_path), from_storage.open(str(from_path)))
+    return to_storage.save(str(to_path), from_storage.open(str(from_path)))
 
 
 def ordered_query_iterator(queryset, chunk_size=1000):

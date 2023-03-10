@@ -1,3 +1,4 @@
+from io import StringIO
 from textwrap import dedent
 
 import pytest
@@ -6,6 +7,7 @@ import re
 from django.utils.text import slugify
 
 from capdb.models import CaseMetadata, CaseImage, fetch_relations, Court, EditLog, CaseBodyCache, VolumeMetadata
+from capdb.storages import CapFileStorage
 from capdb.tasks import retrieve_images_from_cases, update_elasticsearch_from_queue
 from test_data.test_fixtures.helpers import xml_equal, set_case_text, html_equal
 from capapi.documents import CaseDocument
@@ -91,9 +93,10 @@ def test_volume_save_slug_update(volume_metadata):
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_volume_unredact(reset_sequences, case_factory):
+def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
+
     # set up a redacted case
-    case = case_factory(volume__redacted=True, volume__pdf_file='')
+    case = case_factory(volume__redacted=True, volume__pdf_file='redacted_volume.pdf')
     structure = case.structure
     page = structure.pages.first()
     structure.opinions = [
@@ -136,6 +139,15 @@ def test_volume_unredact(reset_sequences, case_factory):
     page.encrypt()
     page.save()
 
+    # set up volume pdfs
+    volume = case.volume
+    download_files_storage = CapFileStorage(location=str(tmp_path))
+    pdf_storage = CapFileStorage(location=str(tmp_path))
+    monkeypatch.setattr("capdb.models.download_files_storage", download_files_storage)
+    monkeypatch.setattr("capdb.models.pdf_storage", pdf_storage)
+    pdf_storage.save(f"unredacted/{volume.pk}.pdf", StringIO("unredacted"))
+    download_files_storage.save(volume.pdf_file.name, StringIO("redacted"))
+
     # verify redacted case contents
     case.sync_case_body_cache()
     case.refresh_from_db()
@@ -147,7 +159,6 @@ def test_volume_unredact(reset_sequences, case_factory):
         '</section>')
 
     # unredact
-    volume = case.volume
     volume.unredact()
     volume.refresh_from_db()
     case.body_cache.refresh_from_db()
@@ -169,6 +180,7 @@ def test_volume_unredact(reset_sequences, case_factory):
             </aside>
           </article>
         </section>\n"""))
+    assert download_files_storage.contents(volume.pdf_file.name) == 'unredacted'
 
 
 ### BaseXMLModel ###
