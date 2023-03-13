@@ -4,6 +4,7 @@ import json
 import math
 import re
 import random
+import shutil
 from contextlib import contextmanager
 import struct
 import base64
@@ -37,7 +38,7 @@ from scripts.fastcase.format_fastcase import format_fastcase_html
 from scripts.fix_court_tag.fix_court_tag import fix_court_tag
 from scripts.helpers import (special_jurisdiction_cases, jurisdiction_translation, parse_xml,
                              serialize_xml, jurisdiction_translation_long_name,
-                             short_id_from_s3_key, copy_file, alphanum_lower, parse_html)
+                             short_id_from_s3_key, alphanum_lower, parse_html)
 from scripts.process_metadata import get_case_metadata, parse_decision_date
 
 from elasticsearch.helpers import BulkIndexError
@@ -761,10 +762,11 @@ class VolumeMetadata(models.Model):
         for case in self.case_metadatas.all():
             case.sync_case_body_cache()
 
-        # replace PDF
+        # overwrite redacted PDF with unredacted PDF
         if self.pdf_file:
-            copy_file("unredacted/%s.pdf" % self.pk, self.pdf_file, from_storage=pdf_storage,
-                      to_storage=download_files_storage)
+            with pdf_storage.open(f"unredacted/{self.pk}.pdf", "rb") as source, \
+                 download_files_storage.open(self.pdf_file.name, "wb") as target:
+                shutil.copyfileobj(source, target)
 
         # update flag
         self.redacted = False
