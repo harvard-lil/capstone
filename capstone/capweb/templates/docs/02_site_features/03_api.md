@@ -118,7 +118,7 @@ case in our system, you can append it to the [path]({% docs_url 'glossary' %}#de
 
 ### Endpoint Parameters
 
-Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering](#case-filtering).
+Many parameters can be appended with `__in`, `__exclude`, `__gt`, `__gte`, `__lt`, or `__lte`. See [Filtering]({% docs_url 'in_depth' %}#case-filtering).
 
 * `analysis.<key>`
 {: add_list_class="parameter-list" }
