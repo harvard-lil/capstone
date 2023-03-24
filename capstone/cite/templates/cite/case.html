@@ -3,6 +3,7 @@
 {% load static %}
 {% load django_vite %}
 {% load api_url %}
+{% load docs_url %}
 {% load redaction %}
 {% load humanize %}
 
@@ -108,7 +109,7 @@
               <div class="sidebar-section d-none d-lg-block" id="analysis-section">
                 <h3>
                   Analysis
-                  <a class="analysis-link" href="{% url "api" %}#analysis-fields">
+                  <a class="analysis-link" href="{% docs_url "data_formats" %}#analysis-fields">
                     <img class="analysis-info" alt="More information about analysis fields" src="{% static "img/icons/question.svg" %}">
                   </a>
                 </h3>

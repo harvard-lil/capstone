@@ -158,6 +158,8 @@ to transform our XML-formatted data to semantic HTML ready for CSS formatting of
     
 ### Analysis Fields
 
+Analysis fields are values calculated by processing the raw case text. They can be searched with [filters]({% docs_url 'in_depth' %}#case-filtering).
+
 Each case result in the API returns an analysis section, such as:
 
     "analysis": { 
@@ -172,8 +174,6 @@ Each case result in the API returns an analysis section, such as:
         "cardinality": 390,
         "simhash": "1:3459aad720da314e" 
     }
-
-Analysis fields are values calculated by processing the raw case text. They can be searched with [filters](#case-filtering).
 
 All analysis fields are optional, and may or may not appear for a given case.
 
