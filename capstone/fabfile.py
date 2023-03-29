@@ -1188,9 +1188,12 @@ def export_citation_graph(output_folder="graph"):
                 capdb_casemetadata target_case on ec.target_case_id = target_case.id
             inner join
                 capdb_casemetadata cited_by on ec.cited_by_id = cited_by.id
+            inner join
+                capdb_volumemetadata target_volume on target_case.volume_id = target_volume.barcode
         where 
             cited_by.in_scope is true
             and target_case.in_scope is true
+            and target_volume.out_of_scope is false
             and cited_by.decision_date_original >= target_case.decision_date_original
             and cited_by.id != target_case.id
         group by cited_by.id;
