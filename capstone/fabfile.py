@@ -373,13 +373,6 @@ def export_cases_by_reporter():
     convert_s3.export_cases_by_reporter(True, '528')
 
 @task
-def export_cases_by_volume():
-    """
-        Export one case at a time.
-    """
-    convert_s3.export_cases_by_volume(True, {'32044078687696': 'ill-2d/88/', '32044057651523': 'us/367/'})
-
-@task
 def export_single_case():
     """
         Export one case at a time.
