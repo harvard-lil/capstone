@@ -71,15 +71,21 @@ def export_cases_by_reporter(redacted, reporter_id):
     # get volumes in reporter
     volumes = VolumeMetadata.objects.select_related().filter(reporter = reporter_id)
     # VolumeMetadata.raw_search().filter("term", reporter__id=reporter_id)
-   
-    # export volume metadata/url
-    export_cases_by_volume(volumes, cases_search, frontend_url, bucket)
+    for volume in volumes:
+        # export volume metadata/url
 
-def export_cases_by_volume(volumes, cases_search, frontend_url, bucket):
+        export_cases_by_volume(volumes, cases_search, frontend_url, bucket)
+
+def export_cases_by_volume(volume, cases_search, frontend_url, bucket):
     """
         Write a .jsonl file with all cases per volume.
     """
-    
+    cases = CaseMetadata.objects.select_related().filter(volume__barcode = volume.barcode)
+    if cases.count() == 0:
+        print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
+        return
+
+    volume_prefix = '/'.join(frontend_url.rsplit('/')[1:-2])
     formats = {
         'text': {
             'serializer': NoLoginCaseDocumentSerializer,
@@ -98,38 +104,28 @@ def export_cases_by_volume(volumes, cases_search, frontend_url, bucket):
             query_params=vars['query_params'],
             accepted_renderer=None,
         )
-        # open each volume and content into appropriate format file
+        if format_name == 'metadata':
+            key = f'{volume_prefix}/Metadata.json'
+        else:
+            key = f'{volume_prefix}/Cases.jsonl'
+        
+        # Store the serialized data
         with tempfile.NamedTemporaryFile() as file:
-            for volume in volumes:
-                cases = CaseMetadata.objects.select_related().filter(volume__barcode = volume.barcode)
-                if cases.count() == 0:
-                    print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
-                    return
+            for item in cases_search.scan():
+                serializer = vars['serializer'](item['_source'], context={'request': vars['fake_request']})
+                file.write(json.dumps(serializer.data).encode('utf-8') + b'\n')
+            file.flush()
 
-                volume_prefix = '/'.join(frontend_url.rsplit('/')[1:-2])
-                if format_name == 'metadata':
-                    key = f'{volume_prefix}/Metadata.json'
-                else:
-                    key = f'{volume_prefix}/Cases.jsonl'
-                
-                # Store the serialized data
-                
-                    for item in cases_search.scan():
-                        serializer = vars['serializer'](item['_source'], context={'request': vars['fake_request']})
-                        file.write(json.dumps(serializer.data).encode('utf-8') + b'\n')
-
-                # # Export each case in the volume
-                # for case in cases:
-                #     case_search = CaseDocument.raw_search().filter("term", id=case.id)
-                #     # Get volume keys per volume dict
-                #     export_single_case(case, case_search, f'{volume_prefix}/case', bucket)
-        s3_client.upload_file(
-            Filename=file.name,
-            Bucket=bucket,
-            Key=key
-        )
-        file.flush()
-
+            s3_client.upload_file(
+                Filename=file.name,
+                Bucket=bucket,
+                Key=key
+            )
+    # Export each case in the volume
+    for case in cases:
+        case_search = CaseDocument.raw_search().filter("term", id=case.id)
+        # Get volume keys per volume dict
+        export_single_case(case, case_search, f'{volume_prefix}/case', bucket)
 
 
 def export_single_case(case, case_search, case_prefix, bucket):
