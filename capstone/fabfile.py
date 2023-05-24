@@ -43,6 +43,7 @@ from capdb.models import VolumeXML, VolumeMetadata, SlowQuery, Jurisdiction, Cit
 import capdb.tasks as tasks
 from scripts import set_up_postgres, data_migrations, \
     validate_private_volumes as validate_private_volumes_script, export, update_snippets
+from scripts import convert_s3
 from scripts.helpers import copy_file, volume_barcode_from_folder, up_to_date_volumes, storage_lookup, \
     clean_punctuation, clean_whitespace
 
@@ -364,6 +365,26 @@ def retry_export_cases(version_string):
     """
     export.export_all(version_string)
 
+@task
+def export_cases_by_reporter():
+    """
+        Create a version of all the cases, exported, unfiltered, for S3.
+    """
+    convert_s3.export_cases_by_reporter(True, '528')
+
+@task
+def export_cases_by_volume():
+    """
+        Export one case at a time.
+    """
+    convert_s3.export_cases_by_volume(True, {'32044078687696': 'ill-2d/88/', '32044057651523': 'us/367/'})
+
+@task
+def export_single_case():
+    """
+        Export one case at a time.
+    """
+    convert_s3.export_single_case('051723', '3083052')
 
 @task
 def make_latest_folder(target_path, latest_path=None):
