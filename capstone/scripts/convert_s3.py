@@ -20,7 +20,7 @@ def put_volumes_reporters_on_s3(redacted):
     else:
         bucket = "cap-unredacted"
 
-    for file_type in ["volumes", "reporters"]:
+    for file_type in ["reporters", "volumes"]:
         current_endpoint = f"https://api.case.law/v1/{file_type}/"
         previous_cursor = None
         current_cursor = ""
@@ -28,9 +28,12 @@ def put_volumes_reporters_on_s3(redacted):
             while current_endpoint:
                 response = requests.get(current_endpoint)
                 results = response.json()
-                # write each line into jsonl
+                # write each entry into jsonl
                 for result in results["results"]:
                     file.write(json.dumps(result).encode("utf-8") + b"\n")
+                    # for each reporter, kick off cascading export to S3
+                    if file_type == "reporters":
+                        export_cases_to_s3(redacted, result["id"])
 
                 # update cursor to access next endpoint
                 current_cursor = results["next"]
@@ -55,8 +58,15 @@ def export_cases_to_s3(redacted, reporter_id):
     """
     Write a .jsonl file with all cases per reporter.
     """
-    # determine prefix based on a case's frontend_url
     reporter = Reporter.objects.get(pk=reporter_id)
+
+    # Make sure there are cases in the reporter
+    cases_search = CaseDocument.raw_search().filter("term", reporter__id=reporter.id)
+    if cases_search.count() == 0:
+        print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
+        return
+
+    # determine prefix based on a case's frontend_url
     sample_case_obj = CaseMetadata.objects.select_related().filter(
         reporter=reporter_id
     )[0]
@@ -68,12 +78,6 @@ def export_cases_to_s3(redacted, reporter_id):
         bucket = "cap-redacted"
     else:
         bucket = "cap-unredacted"
-
-    # find the search object for all cases
-    cases_search = CaseDocument.raw_search().filter("term", reporter__id=reporter_id)
-    if cases_search.count() == 0:
-        print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
-        return
 
     formats = {
         "text": {
