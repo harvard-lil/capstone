@@ -1,3 +1,4 @@
+import base64
 import boto3
 import hashlib
 import json
@@ -119,7 +120,7 @@ def export_cases_to_s3(redacted, reporter_id):
                 file_data = file.read()
             # Calculate the SHA256 hash of the file data
             hash_object = hashlib.sha256(file_data)
-            sha256_hash = hash_object.hexdigest()
+            sha256_hash = base64.b64encode(hash_object.digest()).decode()
 
             # RETURN TO ADDRESS checksum that blows up if the tempfile created is not the same as the object uploaded
             try:
@@ -195,10 +196,24 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
                     )
                     file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
                 file.flush()
+                with open(file.name, "rb") as file:
+                    # read the file's contents
+                    file_data = file.read()
+                # Calculate the SHA256 hash of the file data
+                hash_object = hashlib.sha256(file_data)
+                sha256_hash = base64.b64encode(hash_object.digest()).decode()
 
                 # upload file to S3
-                # RETURN TO ADDRESS checksum that blows up if the tempfile created is not the same as the object uploaded
-                s3_client.upload_file(Filename=file.name, Bucket=dest_bucket, Key=key)
+                try:
+                    s3_client.put_object(
+                        Body=file_data,
+                        Bucket=dest_bucket,
+                        Key=key,
+                        ChecksumSHA256=sha256_hash,
+                        ContentType="application/jsonl",
+                    )
+                except ClientError as err:
+                    raise Exception(f"Error uploading {key}: %s" % err)
 
             # uploads each volume PDF to same location
             if s3_client.head_object(
@@ -242,21 +257,24 @@ def export_single_case(case, case_prefix, bucket):
                 item["_source"], context={"request": vars["fake_request"]}
             )
             file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-        # read the file's contents
-        file_data = file.read()
-        # Calculate the SHA256 hash of the file data
-        hash_object = hashlib.sha256(file_data)
-        sha256_hash = hash_object.hexdigest()
         # Close the file
         file.flush()
 
+        with open(file.name, "rb") as file:
+            # read the file's contents
+            file_data = file.read()
+        # Calculate the SHA256 hash of the file data
+        hash_object = hashlib.sha256(file_data)
+        sha256_hash = base64.b64encode(hash_object.digest()).decode()
+
+        # upload file to S3
         try:
-            s3_client.put_file(
-                Filename=file,
+            s3_client.put_object(
+                Body=file_data,
                 Bucket=bucket,
                 Key=key,
-                ContentType="application/jsonl",
                 ChecksumSHA256=sha256_hash,
+                ContentType="application/jsonl",
             )
         except ClientError as err:
             raise Exception(f"Error uploading {key}: %s" % err)
