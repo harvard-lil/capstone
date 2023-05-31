@@ -9,7 +9,7 @@ from collections import namedtuple
 
 from capapi.documents import CaseDocument
 from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
-from capdb.models import Reporter, VolumeMetadata, CaseMetadata, CaseStructure
+from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 
 s3_client = boto3.client("s3")
 
@@ -101,7 +101,6 @@ def export_cases_to_s3(redacted, reporter_id):
         )
         # based on the format, create appropriate prefix
         if format_name == "metadata":
-            # Add a [] around and , between for metadata
             key = f"{reporter_prefix}/Metadata.jsonl"
         else:
             key = f"{reporter_prefix}/Cases.jsonl"
@@ -122,7 +121,6 @@ def export_cases_to_s3(redacted, reporter_id):
             hash_object = hashlib.sha256(file_data)
             sha256_hash = base64.b64encode(hash_object.digest()).decode()
 
-            # RETURN TO ADDRESS checksum that blows up if the tempfile created is not the same as the object uploaded
             try:
                 s3_client.put_object(
                     Body=file_data,
@@ -137,7 +135,6 @@ def export_cases_to_s3(redacted, reporter_id):
 
     # get volumes in reporter
     volumes = VolumeMetadata.objects.select_related().filter(reporter=reporter_id)
-    breakpoint()
     # export volume metadata/url
     export_cases_by_volume(volumes, bucket, redacted)
 
@@ -156,7 +153,6 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
             "query_params": {},
         },
     }
-
     # set up vars for text format
     for format_name, vars in list(formats.items()):
         # fake Request object used for serializing cases with DRF's serializer
@@ -183,7 +179,6 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
 
             volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
             if format_name == "metadata":
-                # Add a [] around and , between for metadata
                 key = f"{volume_prefix}/Metadata.jsonl"
             else:
                 key = f"{volume_prefix}/Cases.jsonl"
@@ -215,14 +210,8 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
                 except ClientError as err:
                     raise Exception(f"Error uploading {key}: %s" % err)
 
-            # uploads each volume PDF to same location
-            if s3_client.head_object(
-                Bucket=dest_bucket, Key=f"{volume_prefix}/Volume.pdf"
-            ):
-                print(f"{dest_bucket}/{volume_prefix}/Volume.pdf already uploaded!")
-                pass
-            else:
-                upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted)
+            # uploads each volume PDF to same location if it doesn't already exist
+            upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted)
 
             # export each case in the volume
             for case in cases:
@@ -231,10 +220,8 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
 
 def export_single_case(case, case_prefix, bucket):
     # find name of the paragraph that is tied to the case order from the volume PDF
-    case_structure = CaseStructure.objects.select_related().filter(metadata_id=case.id)[
-        0
-    ]
-    case_name = case_structure.opinions[0]["paragraphs"][0]["id"]
+    breakpoint()
+    case_name = build_unique_case_name(case.first_page, bucket, case_prefix)
 
     # set up vars for text format
     vars = {
@@ -280,25 +267,56 @@ def export_single_case(case, case_prefix, bucket):
             raise Exception(f"Error uploading {key}: %s" % err)
 
 
+# Copy PDF volume from original location to destination bucket
 def upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted):
     if redacted:
         source_prefix = "pdf/redacted"
     else:
         source_prefix = "pdf/unredacted"
 
-    # RETURN TO ADDRESS checksum that blows up if the object downloaded is not the same as the object uploaded
     try:
-        source_pdf = s3_client.get_object(
-            Bucket="harvard-cap-archive",
-            Key=f"{source_prefix}/{volume.barcode}.pdf",
-            ChecksumMode="ENABLED",
-        )
+        s3_client.head_object(Bucket=dest_bucket, Key=f"{volume_prefix}/Volume.pdf")
+        print(f"{dest_bucket}/{volume_prefix}/Volume.pdf already uploaded!")
     except ClientError as err:
-        raise Exception(f"Error retrieving {source_prefix}/{volume.barcode}: %s" % err)
+        if err.response["Error"]["Code"] == "404":
+            # "With a copy command, the checksum of the object is a direct checksum of the full object."
+            # https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html
+            copy_source = {
+                "Bucket": "harvard-cap-archive",
+                "Key": f"{source_prefix}/{volume.barcode}.pdf",
+            }
+            copy_object_params = {
+                "Bucket": dest_bucket,
+                "Key": f"{volume_prefix}/Volume.pdf",
+                "CopySource": copy_source,
+            }
 
-    s3_client.put_object(
-        Body=source_pdf["Body"].read(),
-        Bucket=dest_bucket,
-        Key=f"{volume_prefix}/Volume.pdf",
-    )
+            s3_client.copy_object(**copy_object_params)
+        else:
+            raise Exception(
+                f"Cannot upload {source_prefix}/{volume.barcode}.pdf to {volume_prefix}/Volume.pdf: %s"
+                % err
+            )
+
     print(f"Completed {volume_prefix}/{volume.barcode}.pdf")
+
+
+def build_unique_case_name(first_page, bucket, case_prefix):
+    suffix = 1
+    first_page = int(first_page)
+    case_name = f"{first_page:04d}-{suffix:02d}"
+
+    while case_name_exists(case_name, bucket, case_prefix):
+        suffix += 1
+        case_name = f"{first_page:04d}-{suffix:02d}"
+
+    return case_name
+
+
+def case_name_exists(case_name, bucket, case_prefix):
+    # find out if the case name exists in S3
+    response = s3_client.list_objects_v2(
+        Bucket=bucket, Prefix=f"{case_prefix}/{case_name}"
+    )
+    objects = response.get("Contents", [])
+    return bool(objects)
