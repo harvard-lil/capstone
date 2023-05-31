@@ -112,15 +112,9 @@ def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
     Write a .jsonl file with all cases per volume.
     Write a .jsonl file with all volume metadata for this collection.
     """
-    formats = {
-        "text": {
-            "serializer": NoLoginCaseDocumentSerializer,
-            "query_params": {"body_format": "text"},
-        },
-        "metadata": {
-            "serializer": CaseDocumentSerializer,
-            "query_params": {},
-        },
+    vars = {
+        "serializer": CaseDocumentSerializer,
+        "query_params": {},
     }
     # TODO: Add in if we want to have the mid-level metadata accessible
     # put_volumes_metadata(volumes, dest_bucket, reporter_prefix)
@@ -141,31 +135,26 @@ def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
 
         volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
         put_volume_metadata(dest_bucket, volume, volume_prefix)
-        # set up vars for text format
-        for format_name, vars in list(formats.items()):
-            # fake Request object used for serializing cases with DRF's serializer
-            vars["fake_request"] = namedtuple(
-                "Request", ["query_params", "accepted_renderer"]
-            )(
-                query_params=vars["query_params"],
-                accepted_renderer=None,
-            )
-            # based on the format, create appropriate prefix
-            if format_name == "metadata":
-                key = f"{reporter_prefix}/CasesMetadata.jsonl"
-            else:
-                key = f"{reporter_prefix}/Cases.jsonl"
 
-            # store the serialized case data in tempfile
-            with tempfile.NamedTemporaryFile() as file:
-                for item in cases_search.scan():
-                    serializer = vars["serializer"](
-                        item["_source"], context={"request": vars["fake_request"]}
-                    )
-                    file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-                file.flush()
+        # fake Request object used for serializing cases with DRF's serializer
+        vars["fake_request"] = namedtuple(
+            "Request", ["query_params", "accepted_renderer"]
+        )(
+            query_params=vars["query_params"],
+            accepted_renderer=None,
+        )
+        key = f"{reporter_prefix}/CasesMetadata.jsonl"
 
-                hash_and_upload(file, dest_bucket, key, "application/jsonl")
+        # store the serialized case data in tempfile
+        with tempfile.NamedTemporaryFile() as file:
+            for item in cases_search.scan():
+                serializer = vars["serializer"](
+                    item["_source"], context={"request": vars["fake_request"]}
+                )
+                file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
+            file.flush()
+
+            hash_and_upload(file, dest_bucket, key, "application/jsonl")
 
         # copies each volume PDF to new location if it doesn't already exist
         copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
