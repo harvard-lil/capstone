@@ -16,10 +16,7 @@ s3_client = boto3.client("s3")
 
 # Doing this with the API because there are many fewer than cases
 def put_volumes_reporters_on_s3(redacted):
-    if redacted:
-        bucket = "cap-redacted"
-    else:
-        bucket = "cap-unredacted"
+    bucket = get_bucket_name(redacted)
 
     for file_type in ["reporters", "volumes"]:
         current_endpoint = f"https://api.case.law/v1/{file_type}/"
@@ -57,7 +54,7 @@ def put_volumes_reporters_on_s3(redacted):
 
 def export_cases_to_s3(redacted, reporter_id):
     """
-    Write a .jsonl file with all cases per reporter.
+    Write .jsonl file with all cases per reporter.
     """
     reporter = Reporter.objects.get(pk=reporter_id)
 
@@ -75,73 +72,45 @@ def export_cases_to_s3(redacted, reporter_id):
     reporter_prefix = "/".join(frontend_url.rsplit("/")[1:2])
 
     # set bucket name for all operations
-    if redacted:
-        bucket = "cap-redacted"
-    else:
-        bucket = "cap-unredacted"
+    bucket = get_bucket_name(redacted)
 
-    formats = {
-        "text": {
-            "serializer": NoLoginCaseDocumentSerializer,
-            "query_params": {"body_format": "text"},
-        },
-        "metadata": {
-            "serializer": CaseDocumentSerializer,
-            "query_params": {},
-        },
+    # upload reporter metadata
+    put_reporter_metadata(bucket, reporter_id, reporter_prefix)
+
+    vars = {
+        "serializer": NoLoginCaseDocumentSerializer,
+        "query_params": {"body_format": "text"},
     }
-    # set up vars for text format
-    for format_name, vars in list(formats.items()):
-        # fake Request object used for serializing cases with DRF's serializer
-        vars["fake_request"] = namedtuple(
-            "Request", ["query_params", "accepted_renderer"]
-        )(
-            query_params=vars["query_params"],
-            accepted_renderer=None,
-        )
-        # based on the format, create appropriate prefix
-        if format_name == "metadata":
-            key = f"{reporter_prefix}/Metadata.jsonl"
-        else:
-            key = f"{reporter_prefix}/Cases.jsonl"
 
-        # store the serialized data
-        with tempfile.NamedTemporaryFile() as file:
-            for item in cases_search.scan():
-                serializer = vars["serializer"](
-                    item["_source"], context={"request": vars["fake_request"]}
-                )
-                file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-            file.flush()
+    # fake Request object used for serializing cases with DRF's serializer
+    vars["fake_request"] = namedtuple("Request", ["query_params", "accepted_renderer"])(
+        query_params=vars["query_params"],
+        accepted_renderer=None,
+    )
+    # based on the format, create appropriate prefix
+    key = f"{reporter_prefix}/Cases.jsonl"
 
-            with open(file.name, "rb") as file:
-                # read the file's contents
-                file_data = file.read()
-            # Calculate the SHA256 hash of the file data
-            hash_object = hashlib.sha256(file_data)
-            sha256_hash = base64.b64encode(hash_object.digest()).decode()
-
-            try:
-                s3_client.put_object(
-                    Body=file_data,
-                    Bucket=bucket,
-                    Key=key,
-                    ChecksumSHA256=sha256_hash,
-                    ContentType="application/jsonl",
-                )
-            except ClientError as err:
-                raise Exception(f"Error uploading {key}: %s" % err)
-        print(f"Completed {key}")
+    # store the serialized data
+    with tempfile.NamedTemporaryFile() as file:
+        for item in cases_search.scan():
+            serializer = vars["serializer"](
+                item["_source"], context={"request": vars["fake_request"]}
+            )
+            file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
+        file.flush()
+        hash_and_upload(file, bucket, key, "application/jsonl")
+    print(f"Completed {key}")
 
     # get volumes in reporter
     volumes = VolumeMetadata.objects.select_related().filter(reporter=reporter_id)
-    # export volume metadata/url
-    export_cases_by_volume(volumes, bucket, redacted)
+    # export volume metadata/cases
+    export_cases_by_volume(volumes, bucket, reporter_prefix, redacted)
 
 
-def export_cases_by_volume(volumes, dest_bucket, redacted):
+def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
     """
     Write a .jsonl file with all cases per volume.
+    Write a .jsonl file with all volume metadata for this collection.
     """
     formats = {
         "text": {
@@ -153,35 +122,39 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
             "query_params": {},
         },
     }
-    # set up vars for text format
-    for format_name, vars in list(formats.items()):
-        # fake Request object used for serializing cases with DRF's serializer
-        vars["fake_request"] = namedtuple(
-            "Request", ["query_params", "accepted_renderer"]
-        )(
-            query_params=vars["query_params"],
-            accepted_renderer=None,
+    # TODO: Add in if we want to have the mid-level metadata accessible
+    # put_volumes_metadata(volumes, dest_bucket, reporter_prefix)
+
+    for volume in volumes:
+        # open each volume and put case text or metadata into file based on format
+        cases_search = CaseDocument.raw_search().filter(
+            "term", volume__barcode=volume.barcode
         )
+        cases = CaseMetadata.objects.select_related().filter(
+            volume__barcode=volume.barcode
+        )
+        frontend_url = cases[0].frontend_url
 
-        for volume in volumes:
-            # open each volume and put case text or metadata into file based on format
-            cases_search = CaseDocument.raw_search().filter(
-                "term", volume__barcode=volume.barcode
+        if cases.count() == 0:
+            print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
+            return
+
+        volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
+        put_volume_metadata(dest_bucket, volume, volume_prefix)
+        # set up vars for text format
+        for format_name, vars in list(formats.items()):
+            # fake Request object used for serializing cases with DRF's serializer
+            vars["fake_request"] = namedtuple(
+                "Request", ["query_params", "accepted_renderer"]
+            )(
+                query_params=vars["query_params"],
+                accepted_renderer=None,
             )
-            cases = CaseMetadata.objects.select_related().filter(
-                volume__barcode=volume.barcode
-            )
-            frontend_url = cases[0].frontend_url
-
-            if cases.count() == 0:
-                print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
-                return
-
-            volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
+            # based on the format, create appropriate prefix
             if format_name == "metadata":
-                key = f"{volume_prefix}/Metadata.jsonl"
+                key = f"{reporter_prefix}/CasesMetadata.jsonl"
             else:
-                key = f"{volume_prefix}/Cases.jsonl"
+                key = f"{reporter_prefix}/Cases.jsonl"
 
             # store the serialized case data in tempfile
             with tempfile.NamedTemporaryFile() as file:
@@ -191,36 +164,22 @@ def export_cases_by_volume(volumes, dest_bucket, redacted):
                     )
                     file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
                 file.flush()
-                with open(file.name, "rb") as file:
-                    # read the file's contents
-                    file_data = file.read()
-                # Calculate the SHA256 hash of the file data
-                hash_object = hashlib.sha256(file_data)
-                sha256_hash = base64.b64encode(hash_object.digest()).decode()
 
-                # upload file to S3
-                try:
-                    s3_client.put_object(
-                        Body=file_data,
-                        Bucket=dest_bucket,
-                        Key=key,
-                        ChecksumSHA256=sha256_hash,
-                        ContentType="application/jsonl",
-                    )
-                except ClientError as err:
-                    raise Exception(f"Error uploading {key}: %s" % err)
+                hash_and_upload(file, dest_bucket, key, "application/jsonl")
 
-            # uploads each volume PDF to same location if it doesn't already exist
-            upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted)
+        # copies each volume PDF to new location if it doesn't already exist
+        copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
 
-            # export each case in the volume
-            for case in cases:
-                export_single_case(case, f"{volume_prefix}/case", dest_bucket)
+        # export each case in the volume
+        for case in cases:
+            export_single_case(case, f"{volume_prefix}/case", dest_bucket)
 
 
 def export_single_case(case, case_prefix, bucket):
+    """
+    Put full text plus metadata of each case in reporterX/volumeX/case/caseX.jsonl.
+    """
     # find name of the paragraph that is tied to the case order from the volume PDF
-    breakpoint()
     case_name = build_unique_case_name(case.first_page, bucket, case_prefix)
 
     # set up vars for text format
@@ -247,28 +206,65 @@ def export_single_case(case, case_prefix, bucket):
         # Close the file
         file.flush()
 
-        with open(file.name, "rb") as file:
-            # read the file's contents
-            file_data = file.read()
-        # Calculate the SHA256 hash of the file data
-        hash_object = hashlib.sha256(file_data)
-        sha256_hash = base64.b64encode(hash_object.digest()).decode()
+        hash_and_upload(file, bucket, key, "application/jsonl")
 
-        # upload file to S3
-        try:
-            s3_client.put_object(
-                Body=file_data,
-                Bucket=bucket,
-                Key=key,
-                ChecksumSHA256=sha256_hash,
-                ContentType="application/jsonl",
+
+# Reporter-specific helper functions
+
+
+def put_reporter_metadata(bucket, reporter_id, key):
+    """
+    Write a .json file with just the reporter metadata.
+    """
+    response = requests.get(f"https://api.case.law/v1/reporters/{reporter_id}/")
+    results = response.json()
+
+    with tempfile.NamedTemporaryFile() as file:
+        file.write(json.dumps(results).encode("utf-8") + b"\n")
+        file.flush()
+        hash_and_upload(
+            file, bucket, f"{key}/ReporterMetadata.json", "application/json"
+        )
+
+
+# Volume-specific helper functions
+
+
+def put_volumes_metadata(volumes, bucket, key):
+    """
+    Write a .jsonl file with the volume metadata for each volume in collection.
+    """
+    with tempfile.NamedTemporaryFile() as file:
+        for volume in volumes:
+            response = requests.get(
+                f"https://api.case.law/v1/volumes/{volume.barcode}/"
             )
-        except ClientError as err:
-            raise Exception(f"Error uploading {key}: %s" % err)
+            results = response.json()
+
+            file.write(json.dumps(results).encode("utf-8") + b"\n")
+            file.flush()
+            hash_and_upload(
+                file, bucket, f"{key}/VolumesMetadata.jsonl", "application/jsonl"
+            )
 
 
-# Copy PDF volume from original location to destination bucket
-def upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted):
+def put_volume_metadata(bucket, volume, key):
+    """
+    Write a .json file with just the single volume metadata.
+    """
+    response = requests.get(f"https://api.case.law/v1/volumes/{volume.barcode}/")
+    results = response.json()
+
+    with tempfile.NamedTemporaryFile() as file:
+        file.write(json.dumps(results).encode("utf-8") + b"\n")
+        file.flush()
+        hash_and_upload(file, bucket, f"{key}/VolumeMetadata.json", "application/json")
+
+
+def copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted):
+    """
+    Copy PDF volume from original location to destination bucket
+    """
     if redacted:
         source_prefix = "pdf/redacted"
     else:
@@ -292,16 +288,23 @@ def upload_volume_to_s3(volume, volume_prefix, dest_bucket, redacted):
             }
 
             s3_client.copy_object(**copy_object_params)
+            print(
+                f"Copied {source_prefix}/{volume.barcode}.pdf to {volume_prefix}/Volume.pdf"
+            )
         else:
             raise Exception(
                 f"Cannot upload {source_prefix}/{volume.barcode}.pdf to {volume_prefix}/Volume.pdf: %s"
                 % err
             )
 
-    print(f"Completed {volume_prefix}/{volume.barcode}.pdf")
+
+# Case-specific helper functions
 
 
 def build_unique_case_name(first_page, bucket, case_prefix):
+    """
+    Create unique case name based on first page
+    """
     suffix = 1
     first_page = int(first_page)
     case_name = f"{first_page:04d}-{suffix:02d}"
@@ -314,9 +317,48 @@ def build_unique_case_name(first_page, bucket, case_prefix):
 
 
 def case_name_exists(case_name, bucket, case_prefix):
-    # find out if the case name exists in S3
+    """
+    Find out whether the case name exists in S3
+    """
     response = s3_client.list_objects_v2(
         Bucket=bucket, Prefix=f"{case_prefix}/{case_name}"
     )
     objects = response.get("Contents", [])
     return bool(objects)
+
+
+# General helper functions
+
+
+def hash_and_upload(file, bucket, key, content_type):
+    """
+    Hash created file and upload to S3
+    """
+    with open(file.name, "rb") as file:
+        # read the file's contents
+        file_data = file.read()
+    # Calculate the SHA256 hash of the file data
+    hash_object = hashlib.sha256(file_data)
+    sha256_hash = base64.b64encode(hash_object.digest()).decode()
+    # upload file to S3
+    try:
+        s3_client.put_object(
+            Body=file_data,
+            Bucket=bucket,
+            Key=key,
+            ChecksumSHA256=sha256_hash,
+            ContentType=f"{content_type}",
+        )
+    except ClientError as err:
+        raise Exception(f"Error uploading {key}: %s" % err)
+
+
+def get_bucket_name(redacted):
+    """
+    Create bucket name based on redaction status
+    """
+    if redacted:
+        bucket = "cap-redacted"
+    else:
+        bucket = "cap-unredacted"
+    return bucket
