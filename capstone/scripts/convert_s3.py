@@ -181,21 +181,30 @@ def export_single_case(case, case_prefix, bucket):
         query_params=vars["query_params"],
         accepted_renderer=None,
     )
-    key = f"{case_prefix}/{case_name}.json"
+    case_key = f"{case_prefix}/{case_name}.json"
 
     # select corresponding case search obj
     case_search = CaseDocument.raw_search().filter("term", id=case.id)
-    # Store the serialized data
-    with tempfile.NamedTemporaryFile() as file:
-        for item in case_search.scan():
-            serializer = vars["serializer"](
-                item["_source"], context={"request": vars["fake_request"]}
-            )
-            file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-        # Close the file
-        file.flush()
+    serialized_data = []
 
-        hash_and_upload(file, bucket, key, "application/jsonl")
+    # Store the serialized data
+    for item in case_search.scan():
+        serializer = vars["serializer"](
+            item["_source"], context={"request": vars["fake_request"]}
+        )
+        serialized_data.append(json.dumps(serializer.data).encode("utf-8") + b"\n")
+
+        # Check if the content already exists in S3
+        if case_content_exists_in_s3(bucket, serialized_data):
+            print(f"Skipping {case_key}. Duplicate content.")
+            return
+
+        # Write the serialized data
+        with tempfile.NamedTemporaryFile() as file:
+            for data in serialized_data:
+                file.write(data)
+            file.flush()
+        hash_and_upload(file, bucket, case_key, "application/jsonl")
 
 
 # Reporter-specific helper functions
@@ -314,6 +323,23 @@ def case_name_exists(case_name, bucket, case_prefix):
     )
     objects = response.get("Contents", [])
     return bool(objects)
+
+
+def case_content_exists_in_s3(bucket, data):
+    """
+    Check if the serialized case content already exists in S3
+    Slows this function WAY down
+    """
+    serialized_content = b"".join(data)
+    existing_objects = s3_client.list_objects_v2(Bucket=bucket)["Contents"]
+
+    for obj in existing_objects:
+        response = s3_client.get_object(Bucket=bucket, Key=obj["Key"])
+        existing_content = response["Body"].read()
+        if serialized_content == existing_content:
+            return True
+
+    return False
 
 
 # General helper functions
