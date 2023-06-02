@@ -98,6 +98,7 @@ def export_cases_to_s3(redacted, reporter_id):
             )
             file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
         file.flush()
+        # not closing with loop so I can continue using file for upload
         hash_and_upload(file, bucket, key, "application/jsonl")
     print(f"Completed {key}")
 
@@ -153,7 +154,7 @@ def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
                 )
                 file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
             file.flush()
-
+            # not closing with loop so I can continue using file for upload
             hash_and_upload(file, dest_bucket, key, "application/jsonl")
 
         # copies each volume PDF to new location if it doesn't already exist
@@ -169,7 +170,6 @@ def export_single_case(case, case_prefix, bucket):
     Put full text plus metadata of each case in reporterX/volumeX/case/caseX.jsonl.
     """
     # find name of the paragraph that is tied to the case order from the volume PDF
-    case_name = build_unique_case_name(case.first_page, bucket, case_prefix)
 
     # set up vars for text format
     vars = {
@@ -181,30 +181,26 @@ def export_single_case(case, case_prefix, bucket):
         query_params=vars["query_params"],
         accepted_renderer=None,
     )
-    case_key = f"{case_prefix}/{case_name}.json"
 
     # select corresponding case search obj
     case_search = CaseDocument.raw_search().filter("term", id=case.id)
-    serialized_data = []
-
     # Store the serialized data
-    for item in case_search.scan():
-        serializer = vars["serializer"](
-            item["_source"], context={"request": vars["fake_request"]}
-        )
-        serialized_data.append(json.dumps(serializer.data).encode("utf-8") + b"\n")
-
-        # Check if the content already exists in S3
-        if case_content_exists_in_s3(bucket, serialized_data):
-            print(f"Skipping {case_key}. Duplicate content.")
+    with tempfile.NamedTemporaryFile() as file:
+        for item in case_search.scan():
+            serializer = vars["serializer"](
+                item["_source"], context={"request": vars["fake_request"]}
+            )
+            file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
+        # not closing with loop so I can continue using file for upload
+        file.flush()
+        # go back to the beginning so the hash generation works on the whole file
+        file.seek(0)
+        case_name = build_unique_case_name(case.first_page, bucket, case_prefix, file)
+        if case_name is None:
             return
-
-        # Write the serialized data
-        with tempfile.NamedTemporaryFile() as file:
-            for data in serialized_data:
-                file.write(data)
-            file.flush()
-        hash_and_upload(file, bucket, case_key, "application/jsonl")
+        else:
+            key = f"{case_prefix}/{case_name}.json"
+            hash_and_upload(file, bucket, key, "application/jsonl")
 
 
 # Reporter-specific helper functions
@@ -220,6 +216,7 @@ def put_reporter_metadata(bucket, reporter_id, key):
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
         file.flush()
+        # not closing with loop so I can continue using file for upload
         hash_and_upload(
             file, bucket, f"{key}/ReporterMetadata.json", "application/json"
         )
@@ -241,6 +238,7 @@ def put_volumes_metadata(volumes, bucket, key):
 
             file.write(json.dumps(results).encode("utf-8") + b"\n")
             file.flush()
+            # not closing with loop so I can continue using file for upload
             hash_and_upload(
                 file, bucket, f"{key}/VolumesMetadata.jsonl", "application/jsonl"
             )
@@ -256,6 +254,7 @@ def put_volume_metadata(bucket, volume, key):
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
         file.flush()
+        # not closing with loop so I can continue using file for upload
         hash_and_upload(file, bucket, f"{key}/VolumeMetadata.json", "application/json")
 
 
@@ -299,7 +298,35 @@ def copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted):
 # Case-specific helper functions
 
 
-def build_unique_case_name(first_page, bucket, case_prefix):
+def case_content_exists_in_s3(bucket, key, file):
+    """
+    Check whether file with the same content already exists in S3 using
+    ChecksumSHA256 hash comparison.
+    """
+    try:
+        # Calculate the SHA256 hash of the file content
+        file_data = file.read()
+        hash_object = hashlib.sha256(file_data)
+        sha256_hash = base64.b64encode(hash_object.digest()).decode()
+
+        # Get the object's metadata
+        response = s3_client.get_object_attributes(
+            Bucket=bucket, Key=key, ObjectAttributes=["Checksum"]
+        )
+
+        existing_hash = response.get("Checksum", {}).get("ChecksumSHA256")
+
+        # Compare the hashes
+        return existing_hash == sha256_hash
+
+    except ClientError as err:
+        if err.response["Error"]["Code"] == "404":
+            return False
+        else:
+            raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
+
+
+def build_unique_case_name(first_page, bucket, case_prefix, file):
     """
     Create unique case name based on first page
     """
@@ -308,6 +335,9 @@ def build_unique_case_name(first_page, bucket, case_prefix):
     case_name = f"{first_page:04d}-{suffix:02d}"
 
     while case_name_exists(case_name, bucket, case_prefix):
+        if case_content_exists_in_s3(bucket, f"{case_prefix}/{case_name}.json", file):
+            print(f"Skipping {case_prefix}/{case_name}. Duplicate content.")
+            return None
         suffix += 1
         case_name = f"{first_page:04d}-{suffix:02d}"
 
@@ -325,21 +355,15 @@ def case_name_exists(case_name, bucket, case_prefix):
     return bool(objects)
 
 
-def case_content_exists_in_s3(bucket, data):
-    """
-    Check if the serialized case content already exists in S3
-    Slows this function WAY down
-    """
-    serialized_content = b"".join(data)
-    existing_objects = s3_client.list_objects_v2(Bucket=bucket)["Contents"]
-
-    for obj in existing_objects:
-        response = s3_client.get_object(Bucket=bucket, Key=obj["Key"])
-        existing_content = response["Body"].read()
-        if serialized_content == existing_content:
-            return True
-
-    return False
+def case_content_exists(bucket, key):
+    try:
+        s3_client.head_object(Bucket=bucket, Key=key)
+        return True
+    except ClientError as err:
+        if err.response["Error"]["Code"] == "404":
+            return False
+        else:
+            raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
 
 
 # General helper functions
@@ -361,8 +385,8 @@ def hash_and_upload(file, bucket, key, content_type):
             Body=file_data,
             Bucket=bucket,
             Key=key,
+            ContentType=content_type,
             ChecksumSHA256=sha256_hash,
-            ContentType=f"{content_type}",
         )
     except ClientError as err:
         raise Exception(f"Error uploading {key}: %s" % err)
