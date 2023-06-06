@@ -12,14 +12,18 @@ from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerial
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 
 s3_client = boto3.client("s3")
+api_endpoint = 'https://api.case.law/v1/'
 
 
-# Doing this with the API because there are many fewer than cases
-def put_volumes_reporters_on_s3(redacted):
+def put_volumes_reporters_on_s3(redacted: bool) -> None:
+    """
+    Save all reporter and volume metadata to files on S3.
+    Kicks off the full cascading file creation series.
+    """
     bucket = get_bucket_name(redacted)
 
     for file_type in ["reporters", "volumes"]:
-        current_endpoint = f"https://api.case.law/v1/{file_type}/"
+        current_endpoint = f"{api_endpoint}{file_type}/"
         previous_cursor = None
         current_cursor = ""
         with tempfile.NamedTemporaryFile() as file:
@@ -52,7 +56,7 @@ def put_volumes_reporters_on_s3(redacted):
                 raise Exception(f"Error uploading {file_type}.jsonl: %s" % err)
 
 
-def export_cases_to_s3(redacted, reporter_id):
+def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     """
     Write .jsonl file with all cases per reporter.
     """
@@ -108,7 +112,8 @@ def export_cases_to_s3(redacted, reporter_id):
     export_cases_by_volume(volumes, bucket, reporter_prefix, redacted)
 
 
-def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
+def export_cases_by_volume(volumes: list, dest_bucket: str,
+                           reporter_prefix: str, redacted: bool) -> None:
     """
     Write a .jsonl file with all cases per volume.
     Write a .jsonl file with all volume metadata for this collection.
@@ -165,7 +170,7 @@ def export_cases_by_volume(volumes, dest_bucket, reporter_prefix, redacted):
             export_single_case(case, f"{volume_prefix}/case", dest_bucket)
 
 
-def export_single_case(case, case_prefix, bucket):
+def export_single_case(case: object, case_prefix: str, bucket: str) -> None:
     """
     Put full text plus metadata of each case in reporterX/volumeX/case/caseX.jsonl.
     """
@@ -206,11 +211,11 @@ def export_single_case(case, case_prefix, bucket):
 # Reporter-specific helper functions
 
 
-def put_reporter_metadata(bucket, reporter_id, key):
+def put_reporter_metadata(bucket: str, reporter_id: str, key: str) -> None:
     """
     Write a .json file with just the reporter metadata.
     """
-    response = requests.get(f"https://api.case.law/v1/reporters/{reporter_id}/")
+    response = requests.get(f"{api_endpoint}reporters/{reporter_id}/")
     results = response.json()
 
     with tempfile.NamedTemporaryFile() as file:
@@ -225,14 +230,14 @@ def put_reporter_metadata(bucket, reporter_id, key):
 # Volume-specific helper functions
 
 
-def put_volumes_metadata(volumes, bucket, key):
+def put_volumes_metadata(volumes: list, bucket: str, key: str) -> None:
     """
     Write a .jsonl file with the volume metadata for each volume in collection.
     """
     with tempfile.NamedTemporaryFile() as file:
         for volume in volumes:
             response = requests.get(
-                f"https://api.case.law/v1/volumes/{volume.barcode}/"
+                f"{api_endpoint}volumes/{volume.barcode}/"
             )
             results = response.json()
 
@@ -244,11 +249,11 @@ def put_volumes_metadata(volumes, bucket, key):
             )
 
 
-def put_volume_metadata(bucket, volume, key):
+def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     """
     Write a .json file with just the single volume metadata.
     """
-    response = requests.get(f"https://api.case.law/v1/volumes/{volume.barcode}/")
+    response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
     results = response.json()
 
     with tempfile.NamedTemporaryFile() as file:
@@ -258,7 +263,8 @@ def put_volume_metadata(bucket, volume, key):
         hash_and_upload(file, bucket, f"{key}/VolumeMetadata.json", "application/json")
 
 
-def copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted):
+def copy_volume_pdf(volume: object, volume_prefix: str, dest_bucket: str,
+                    redacted: bool) -> None:
     """
     Copy PDF volume from original location to destination bucket
     """
@@ -286,11 +292,13 @@ def copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted):
 
             s3_client.copy_object(**copy_object_params)
             print(
-                f"Copied {source_prefix}/{volume.barcode}.pdf to {volume_prefix}/Volume.pdf"
+                f"Copied {source_prefix}/{volume.barcode}.pdf to \
+                {volume_prefix}/Volume.pdf"
             )
         else:
             raise Exception(
-                f"Cannot upload {source_prefix}/{volume.barcode}.pdf to {volume_prefix}/Volume.pdf: %s"
+                f"Cannot upload {source_prefix}/{volume.barcode}.pdf to \
+                {volume_prefix}/Volume.pdf: %s"
                 % err
             )
 
@@ -298,7 +306,8 @@ def copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted):
 # Case-specific helper functions
 
 
-def case_content_exists_in_s3(bucket, key, file):
+def case_content_exists_in_s3(bucket: str, key: str,
+                              file: tempfile.TemporaryFile) -> bool:
     """
     Check whether file with the same content already exists in S3 using
     ChecksumSHA256 hash comparison.
@@ -326,7 +335,8 @@ def case_content_exists_in_s3(bucket, key, file):
             raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
 
 
-def build_unique_case_name(first_page, bucket, case_prefix, file):
+def build_unique_case_name(first_page: str, bucket: str, case_prefix: str,
+                           file: tempfile.TemporaryFile) -> str:
     """
     Create unique case name based on first page
     """
@@ -344,7 +354,7 @@ def build_unique_case_name(first_page, bucket, case_prefix, file):
     return case_name
 
 
-def case_name_exists(case_name, bucket, case_prefix):
+def case_name_exists(case_name: str, bucket: str, case_prefix: str) -> bool:
     """
     Find out whether the case name exists in S3
     """
@@ -355,7 +365,7 @@ def case_name_exists(case_name, bucket, case_prefix):
     return bool(objects)
 
 
-def case_content_exists(bucket, key):
+def case_content_exists(bucket: str, key: str) -> bool:
     try:
         s3_client.head_object(Bucket=bucket, Key=key)
         return True
@@ -369,7 +379,8 @@ def case_content_exists(bucket, key):
 # General helper functions
 
 
-def hash_and_upload(file, bucket, key, content_type):
+def hash_and_upload(file: tempfile.NamedTemporaryFile, bucket: str,
+                    key: str, content_type: str) -> None:
     """
     Hash created file and upload to S3
     """
@@ -392,7 +403,7 @@ def hash_and_upload(file, bucket, key, content_type):
         raise Exception(f"Error uploading {key}: %s" % err)
 
 
-def get_bucket_name(redacted):
+def get_bucket_name(redacted: bool) -> str:
     """
     Create bucket name based on redaction status
     """
