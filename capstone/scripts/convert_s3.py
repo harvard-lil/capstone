@@ -85,47 +85,29 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     # upload reporter metadata
     put_reporter_metadata(bucket, reporter_id, reporter_prefix)
 
-    vars = {
-        "serializer": NoLoginCaseDocumentSerializer,
-        "query_params": {"body_format": "text"},
-    }
-
-    # fake Request object used for serializing cases with DRF's serializer
-    vars["fake_request"] = namedtuple("Request", ["query_params", "accepted_renderer"])(
-        query_params=vars["query_params"],
-        accepted_renderer=None,
-    )
-    # based on the format, create appropriate prefix
-    key = f"{reporter_prefix}/Cases.jsonl"
-
-    # store the serialized data
-    with tempfile.NamedTemporaryFile() as file:
-        for item in cases_search.scan():
-            serializer = vars["serializer"](
-                item["_source"], context={"request": vars["fake_request"]}
-            )
-            file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-        file.flush()
-        # not closing with loop so I can continue using file for upload
-        hash_and_upload(file, bucket, key, "application/jsonl")
-    print(f"Completed {key}")
-
     # get volumes in reporter
     volumes = VolumeMetadata.objects.select_related().filter(reporter=reporter_id)
     # export volume metadata/cases
-    export_cases_by_volume(volumes, bucket, reporter_prefix, redacted)
+    export_cases_by_volume(volumes, bucket, redacted)
 
 
 def export_cases_by_volume(
-    volumes: list, dest_bucket: str, reporter_prefix: str, redacted: bool
+    volumes: list, dest_bucket: str, redacted: bool
 ) -> None:
     """
     Write a .jsonl file with all cases per volume.
+    Write a .jsonl file with all cases' metadata per volume.
     Write a .jsonl file with all volume metadata for this collection.
     """
-    vars = {
-        "serializer": CaseDocumentSerializer,
-        "query_params": {},
+    formats = {
+        "text": {
+            "serializer": NoLoginCaseDocumentSerializer,
+            "query_params": {"body_format": "text"},
+        },
+        "metadata": {
+            "serializer": CaseDocumentSerializer,
+            "query_params": {},
+        },
     }
     # TODO: Add in if we want to have the mid-level metadata accessible
     # put_volumes_metadata(volumes, dest_bucket, reporter_prefix)
@@ -147,25 +129,31 @@ def export_cases_by_volume(
         volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
         put_volume_metadata(dest_bucket, volume, volume_prefix)
 
-        # fake Request object used for serializing cases with DRF's serializer
-        vars["fake_request"] = namedtuple(
-            "Request", ["query_params", "accepted_renderer"]
-        )(
-            query_params=vars["query_params"],
-            accepted_renderer=None,
-        )
-        key = f"{volume_prefix}/CasesMetadata.jsonl"
+        for format_name, vars in list(formats.items()):
+            # fake Request object used for serializing cases with DRF's serializer
+            vars["fake_request"] = namedtuple(
+                "Request", ["query_params", "accepted_renderer"]
+            )(
+                query_params=vars["query_params"],
+                accepted_renderer=None,
+            )
 
-        # store the serialized case data in tempfile
-        with tempfile.NamedTemporaryFile() as file:
-            for item in cases_search.scan():
-                serializer = vars["serializer"](
-                    item["_source"], context={"request": vars["fake_request"]}
-                )
-                file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-            file.flush()
-            # not closing with loop so I can continue using file for upload
-            hash_and_upload(file, dest_bucket, key, "application/jsonl")
+            if format_name == "metadata":
+                key = f"{volume_prefix}/CasesMetadata.jsonl"
+            else:
+                key = f"{volume_prefix}/Cases.jsonl"
+
+            # store the serialized case data in tempfile
+            with tempfile.NamedTemporaryFile() as file:
+                for item in cases_search.scan():
+                    serializer = vars["serializer"](
+                        item["_source"], context={"request": vars["fake_request"]}
+                    )
+                    file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
+                file.flush()
+                # not closing with loop so I can continue using file for upload
+                hash_and_upload(file, dest_bucket, key, "application/jsonl")
+                print(f"Completed {key}")
 
         # copies each volume PDF to new location if it doesn't already exist
         copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
