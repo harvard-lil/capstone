@@ -12,7 +12,11 @@ from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerial
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 
 s3_client = boto3.client("s3")
-api_endpoint = 'https://api.case.law/v1/'
+api_endpoint = "https://api.case.law/v1/"
+
+"""
+This script must be run with boto3 1.26+ rather than the default 1.17.
+"""
 
 
 def put_volumes_reporters_on_s3(redacted: bool) -> None:
@@ -112,8 +116,9 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     export_cases_by_volume(volumes, bucket, reporter_prefix, redacted)
 
 
-def export_cases_by_volume(volumes: list, dest_bucket: str,
-                           reporter_prefix: str, redacted: bool) -> None:
+def export_cases_by_volume(
+    volumes: list, dest_bucket: str, reporter_prefix: str, redacted: bool
+) -> None:
     """
     Write a .jsonl file with all cases per volume.
     Write a .jsonl file with all volume metadata for this collection.
@@ -149,7 +154,7 @@ def export_cases_by_volume(volumes: list, dest_bucket: str,
             query_params=vars["query_params"],
             accepted_renderer=None,
         )
-        key = f"{reporter_prefix}/CasesMetadata.jsonl"
+        key = f"{volume_prefix}/CasesMetadata.jsonl"
 
         # store the serialized case data in tempfile
         with tempfile.NamedTemporaryFile() as file:
@@ -236,9 +241,7 @@ def put_volumes_metadata(volumes: list, bucket: str, key: str) -> None:
     """
     with tempfile.NamedTemporaryFile() as file:
         for volume in volumes:
-            response = requests.get(
-                f"{api_endpoint}volumes/{volume.barcode}/"
-            )
+            response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
             results = response.json()
 
             file.write(json.dumps(results).encode("utf-8") + b"\n")
@@ -263,8 +266,9 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         hash_and_upload(file, bucket, f"{key}/VolumeMetadata.json", "application/json")
 
 
-def copy_volume_pdf(volume: object, volume_prefix: str, dest_bucket: str,
-                    redacted: bool) -> None:
+def copy_volume_pdf(
+    volume: object, volume_prefix: str, dest_bucket: str, redacted: bool
+) -> None:
     """
     Copy PDF volume from original location to destination bucket
     """
@@ -306,14 +310,16 @@ def copy_volume_pdf(volume: object, volume_prefix: str, dest_bucket: str,
 # Case-specific helper functions
 
 
-def case_content_exists_in_s3(bucket: str, key: str,
-                              file: tempfile.TemporaryFile) -> bool:
+def case_content_exists_in_s3(
+    bucket: str, key: str, file: tempfile.TemporaryFile
+) -> bool:
     """
     Check whether file with the same content already exists in S3 using
     ChecksumSHA256 hash comparison.
     """
     try:
         # Calculate the SHA256 hash of the file content
+        file.seek(0)
         file_data = file.read()
         hash_object = hashlib.sha256(file_data)
         sha256_hash = base64.b64encode(hash_object.digest()).decode()
@@ -335,8 +341,9 @@ def case_content_exists_in_s3(bucket: str, key: str,
             raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
 
 
-def build_unique_case_name(first_page: str, bucket: str, case_prefix: str,
-                           file: tempfile.TemporaryFile) -> str:
+def build_unique_case_name(
+    first_page: str, bucket: str, case_prefix: str, file: tempfile.TemporaryFile
+) -> str:
     """
     Create unique case name based on first page
     """
@@ -365,22 +372,12 @@ def case_name_exists(case_name: str, bucket: str, case_prefix: str) -> bool:
     return bool(objects)
 
 
-def case_content_exists(bucket: str, key: str) -> bool:
-    try:
-        s3_client.head_object(Bucket=bucket, Key=key)
-        return True
-    except ClientError as err:
-        if err.response["Error"]["Code"] == "404":
-            return False
-        else:
-            raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
-
-
 # General helper functions
 
 
-def hash_and_upload(file: tempfile.NamedTemporaryFile, bucket: str,
-                    key: str, content_type: str) -> None:
+def hash_and_upload(
+    file: tempfile.NamedTemporaryFile, bucket: str, key: str, content_type: str
+) -> None:
     """
     Hash created file and upload to S3
     """
