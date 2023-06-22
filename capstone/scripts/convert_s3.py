@@ -91,9 +91,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     export_cases_by_volume(volumes, bucket, redacted)
 
 
-def export_cases_by_volume(
-    volumes: list, dest_bucket: str, redacted: bool
-) -> None:
+def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> None:
     """
     Write a .jsonl file with all cases per volume.
     Write a .jsonl file with all cases' metadata per volume.
@@ -246,6 +244,8 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     """
     response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
     results = response.json()
+    # Change "barcode" key to "id" key
+    results["id"] = results.pop("barcode")
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
