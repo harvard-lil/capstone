@@ -1209,8 +1209,12 @@ class CaseMetadata(models.Model):
         """
             Update self.body_cache with new values based on the current value of self.structure.
             blocks_by_id and fonts_by_id can be provided for efficiency if updating a bunch of cases from the same volume.
-        """
 
+            Return value:
+                If case contents have changed, return (True, analyses, cites_to_delete, cites_to_create)
+                    These return values are useful if using save=False and bulk saving results in the caller.
+                Else return False, [], [], []
+        """
         # if rerender is false, just regenerate json and text attributes from existing html
         if not rerender:
             try:
@@ -2258,7 +2262,8 @@ class PageStructure(models.Model):
         blocks = {}
         for page in pages:
             for block in page.blocks:
-                blocks[block['id']] = block
+                # include page_order in block so we can use it when rendering HTML
+                blocks[block['id']] = {**block, 'page_order': page.order}
         return blocks
 
     @staticmethod
