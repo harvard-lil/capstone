@@ -161,7 +161,6 @@ def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> N
                 file.flush()
                 # not closing with loop so I can continue using file for upload
                 hash_and_upload(file, dest_bucket, key, "application/jsonl")
-                print(f"Completed {key}")
 
         # copies each volume PDF to new location if it doesn't already exist
         copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
@@ -254,8 +253,18 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     """
     response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
     results = response.json()
-    # Change "barcode" key to "id" key
+    # change "barcode" key to "id" key
     results["id"] = results.pop("barcode")
+    # remove unnecessary fields
+    results.pop("reporter")
+    results.pop("reporter_url")
+    # add additional fields from model
+    results["hollis_number"] = volume.hollis_number
+    results["spine_start_year"] = volume.spine_start_year
+    results["spine_end_year"] = volume.spine_end_year
+    results["publication_city"] = volume.publication_city
+    results["second_part_of_id"] = volume.second_part_of_id
+    results["nominative_reporter_id"] = volume.nominative_reporter_id
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
@@ -394,6 +403,7 @@ def hash_and_upload(
             ContentType=content_type,
             ChecksumSHA256=sha256_hash,
         )
+        print(f"Completed {key}")
     except ClientError as err:
         raise Exception(f"Error uploading {key}: %s" % err)
 
