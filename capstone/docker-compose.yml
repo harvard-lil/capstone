@@ -1,75 +1,74 @@
 version: '2.2'
 services:
-    db:
-        image: registry.lil.tools/harvardlil/cap-db:0.11-87b1f75e23108920085920c6784796ff
-        platform: linux/amd64
-        environment:
-            POSTGRES_PASSWORD: password
-        volumes:
-          - db_data_11:/var/lib/postgresql/data:delegated
-    redis:
-        image: redis:6.0.15
-    elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
-        environment:
-          - node.name=es01
-          - bootstrap.memory_lock=true
-          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-          - discovery.type=single-node
-          # Silence "Elasticsearch built-in security features are not enabled." warning message.
-          # This is safe because `ports` includes `127.0.0.1` to bind only to localhost.
-          - xpack.security.enabled=false
-        ulimits:
-          memlock:
-            soft: -1
-            hard: -1
-        volumes:
-          - esdata02:/usr/share/elasticsearch/data
-        ports:
-          - 127.0.0.1:9200:9200
-    web:
-        image: registry.lil.tools/harvardlil/cap-web:210-b0a8fbe7b105b2b9a26c4fa42fdb380f
-        platform: linux/amd64
-        volumes:
-            # NAMED VOLUMES
-            - node_modules:/app/node_modules:delegated
-            # MOUNTS
-            - .:/app
-            - ../services:/services
-            - ~/.aws/credentials:/root/.aws/credentials:ro
-        depends_on:
-            - redis
-            - db
-        command: /bin/bash
-        tty: true
-        environment:
-            # let Django load Docker-specific settings conditionally
-            - DOCKERIZED=True
-            - DJANGO_ALLOW_ASYNC_UNSAFE=true
-            - DJANGO_LIVE_TEST_SERVER_ADDRESS=0.0.0.0:8000
-        extra_hosts:
-          - "case.test:127.0.0.1"
-          - "api.case.test:127.0.0.1"
-          - "cite.case.test:127.0.0.1"
-        networks:
-          default:
-            aliases:
-              - 'case.test'
-              - 'api.case.test'
-              - 'cite.case.test'
-        ports:
-            - 127.0.0.1:8000:8000
-            - 127.0.0.1:8080:8080
-        # allow profiling with py-spy
-        # https://github.com/benfred/py-spy#how-do-i-run-py-spy-in-docker
-        cap_add:
-            - SYS_PTRACE
+  db:
+    image: registry.lil.tools/harvardlil/cap-db:0.11-87b1f75e23108920085920c6784796ff
+    platform: linux/amd64
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data_11:/var/lib/postgresql/data:delegated
+  redis:
+    image: redis:6.0.15
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    environment:
+      - node.name=es01
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - discovery.type=single-node
+      # Silence "Elasticsearch built-in security features are not enabled." warning message.
+      # This is safe because `ports` includes `127.0.0.1` to bind only to localhost.
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata02:/usr/share/elasticsearch/data
+    ports:
+      - 127.0.0.1:9200:9200
+  web:
+    image: registry.lil.tools/harvardlil/cap-web:210-b0a8fbe7b105b2b9a26c4fa42fdb380f
+    platform: linux/amd64
+    volumes:
+      # NAMED VOLUMES
+      - node_modules:/app/node_modules:delegated
+      # MOUNTS
+      - .:/app
+      - ../services:/services
+    depends_on:
+      - redis
+      - db
+    command: /bin/bash
+    tty: true
+    environment:
+      # let Django load Docker-specific settings conditionally
+      - DOCKERIZED=True
+      - DJANGO_ALLOW_ASYNC_UNSAFE=true
+      - DJANGO_LIVE_TEST_SERVER_ADDRESS=0.0.0.0:8000
+    extra_hosts:
+      - "case.test:127.0.0.1"
+      - "api.case.test:127.0.0.1"
+      - "cite.case.test:127.0.0.1"
+    networks:
+      default:
+        aliases:
+          - 'case.test'
+          - 'api.case.test'
+          - 'cite.case.test'
+    ports:
+      - 127.0.0.1:8000:8000
+      - 127.0.0.1:8080:8080
+    # allow profiling with py-spy
+    # https://github.com/benfred/py-spy#how-do-i-run-py-spy-in-docker
+    cap_add:
+      - SYS_PTRACE
 
 volumes:
-    db_data_11:
-    node_modules:
-    esdata02:
-      driver: local
+  db_data_11:
+  node_modules:
+  esdata02:
+    driver: local
 
 networks:
   default:
