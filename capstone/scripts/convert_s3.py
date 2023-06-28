@@ -8,7 +8,10 @@ from botocore.exceptions import ClientError
 from collections import namedtuple
 
 from capapi.documents import CaseDocument
-from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
+from capapi.serializers import (
+    ConvertCaseDocumentSerializer,
+    NoLoginCaseDocumentSerializer,
+)
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 
 s3_client = boto3.client("s3")
@@ -103,7 +106,7 @@ def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> N
             "query_params": {"body_format": "text"},
         },
         "metadata": {
-            "serializer": CaseDocumentSerializer,
+            "serializer": ConvertCaseDocumentSerializer,
             "query_params": {},
         },
     }
@@ -144,8 +147,15 @@ def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> N
             # store the serialized case data in tempfile
             with tempfile.NamedTemporaryFile() as file:
                 for item in cases_search.scan():
+                    # pass case in to add additional data to the CaseDocument
+                    case = CaseMetadata.objects.get(pk=item["_source"]["id"])
                     serializer = vars["serializer"](
-                        item["_source"], context={"request": vars["fake_request"]}
+                        item["_source"],
+                        context={
+                            "request": vars["fake_request"],
+                            "first_page_order": case.first_page_order,
+                            "last_page_order": case.last_page_order,
+                        },
                     )
                     file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
                 file.flush()
