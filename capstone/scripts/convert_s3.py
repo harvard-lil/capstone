@@ -218,6 +218,13 @@ def put_reporter_metadata(bucket: str, reporter_id: str, key: str) -> None:
     response = requests.get(f"{api_endpoint}reporters/{reporter_id}/")
     results = response.json()
 
+    # remove unnecessary fields
+    results.pop("url")
+    for jurisdiction in results["jurisdictions"]:
+        jurisdiction.pop("slug")
+        jurisdiction.pop("whitelisted")
+        jurisdiction.pop("url")
+
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
         file.flush()
