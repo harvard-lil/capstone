@@ -258,6 +258,9 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     # remove unnecessary fields
     results.pop("reporter")
     results.pop("reporter_url")
+    for jurisdiction in results["jurisdictions"]:
+        jurisdiction.pop("slug")
+        jurisdiction.pop("whitelisted")
     # add additional fields from model
     results["hollis_number"] = volume.hollis_number
     results["spine_start_year"] = volume.spine_start_year
