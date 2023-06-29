@@ -36,7 +36,6 @@ services:
       # MOUNTS
       - .:/app
       - ../services:/services
-      - ~/.aws/credentials:/root/.aws/credentials:ro
     depends_on:
       - redis
       - db
