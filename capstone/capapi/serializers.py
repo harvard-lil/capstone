@@ -584,21 +584,33 @@ class ConvertNoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
         last_page_order = self.context.get("last_page_order")
 
         data = super().to_representation(instance, check_permissions=check_permissions)
-        data["casebody"] = data["casebody"]["data"]
+        try:
+            data["casebody"] = data["casebody"]["data"]
+        except KeyError:
+            print("No casebody field in case.")
+            pass
 
-        data.pop("reporter")
-        data.pop("volume")
-        data.pop("url")
-        data.pop("frontend_url")
-        data.pop("frontend_pdf_url")
-        data["court"].pop("slug")
-        data["court"].pop("url")
-        data["jurisdiction"].pop("slug")
-        data["jurisdiction"].pop("whitelisted")
-        data["jurisdiction"].pop("url")
+        data.pop("reporter", None)
+        data.pop("volume", None)
+        data.pop("url", None)
+        data.pop("frontend_url", None)
+        data.pop("frontend_pdf_url", None)
 
-        if "preview" in data:
-            data.pop("preview")
+        try:
+            data["court"].pop("slug", None)
+            data["court"].pop("url", None)
+        except KeyError:
+            print("Cannot pop fields because 'court' doesn't exist")
+            pass
+        try:
+            data["jurisdiction"].pop("slug", None)
+            data["jurisdiction"].pop("whitelisted", None)
+            data["jurisdiction"].pop("url", None)
+        except KeyError:
+            print("Cannot pop fields because 'jurisdiction' doesn't exist")
+            pass
+
+        data.pop("preview", None)
 
         data["first_page_order"] = first_page_order
         data["last_page_order"] = last_page_order
