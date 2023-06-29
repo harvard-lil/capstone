@@ -254,7 +254,7 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
     results = response.json()
     # change "barcode" key to "id" key
-    results["id"] = results.pop("barcode")
+    results["id"] = results.pop("barcode", None)
 
     # add additional fields from model
     results["harvard_hollis_id"] = volume.hollis_number
@@ -277,15 +277,15 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         results["nominative_reporter"] = volume.nominative_reporter_id
 
     # remove unnecessary fields
-    results.pop("reporter")
-    results.pop("reporter_url")
-    results.pop("url")
-    results.pop("pdf_url")
-    results.pop("frontend_url")
+    results.pop("reporter", None)
+    results.pop("reporter_url", None)
+    results.pop("url", None)
+    results.pop("pdf_url", None)
+    results.pop("frontend_url", None)
     for jurisdiction in results["jurisdictions"]:
-        jurisdiction.pop("slug")
-        jurisdiction.pop("whitelisted")
-        jurisdiction.pop("url")
+        jurisdiction.pop("slug", None)
+        jurisdiction.pop("whitelisted", None)
+        jurisdiction.pop("url", None)
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
