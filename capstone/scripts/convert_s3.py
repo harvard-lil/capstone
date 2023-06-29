@@ -305,7 +305,6 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
             jurisdiction.pop("url", None)
     except KeyError:
         print("Cannot pop fields because 'jurisdictions' doesn't exist")
-        pass
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
