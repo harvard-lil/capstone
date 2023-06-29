@@ -566,14 +566,12 @@ class ConvertCaseDocumentSerializer(CaseDocumentSerializer):
             data["court"].pop("url", None)
         except KeyError:
             print("Cannot pop fields because 'court' doesn't exist")
-            pass
         try:
             data["jurisdiction"].pop("slug", None)
             data["jurisdiction"].pop("whitelisted", None)
             data["jurisdiction"].pop("url", None)
         except KeyError:
             print("Cannot pop fields because 'jurisdiction' doesn't exist")
-            pass
 
         if "preview" in data:
             data.pop("preview")
