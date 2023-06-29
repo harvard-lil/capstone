@@ -223,12 +223,16 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
     results["nominative_for_id"] = reporter.nominative_for_id
 
     # remove unnecessary fields
-    results.pop("url")
-    results.pop("frontend_url")
-    for jurisdiction in results["jurisdictions"]:
-        jurisdiction.pop("slug")
-        jurisdiction.pop("whitelisted")
-        jurisdiction.pop("url")
+    results.pop("url", None)
+    results.pop("frontend_url", None)
+    try:
+        for jurisdiction in results["jurisdictions"]:
+            jurisdiction.pop("slug", None)
+            jurisdiction.pop("whitelisted", None)
+            jurisdiction.pop("url", None)
+    except KeyError:
+        print("Cannot pop fields because 'jurisdictions' doesn't exist")
+        pass
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
