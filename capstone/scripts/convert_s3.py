@@ -230,8 +230,8 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
             jurisdiction.pop("slug", None)
             jurisdiction.pop("whitelisted", None)
             jurisdiction.pop("url", None)
-    except KeyError:
-        print("Cannot pop fields because 'jurisdictions' doesn't exist")
+    except KeyError as err:
+        print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
@@ -302,8 +302,8 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
             jurisdiction.pop("slug", None)
             jurisdiction.pop("whitelisted", None)
             jurisdiction.pop("url", None)
-    except KeyError:
-        print("Cannot pop fields because 'jurisdictions' doesn't exist")
+    except KeyError as err:
+        print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
