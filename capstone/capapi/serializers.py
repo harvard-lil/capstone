@@ -556,16 +556,24 @@ class ConvertCaseDocumentSerializer(CaseDocumentSerializer):
 
         data = super().to_representation(instance)
 
-        data.pop("reporter")
-        data.pop("volume")
-        data.pop("url")
-        data.pop("frontend_url")
-        data.pop("frontend_pdf_url")
-        data["court"].pop("slug")
-        data["court"].pop("url")
-        data["jurisdiction"].pop("slug")
-        data["jurisdiction"].pop("whitelisted")
-        data["jurisdiction"].pop("url")
+        data.pop("reporter", None)
+        data.pop("volume", None)
+        data.pop("url", None)
+        data.pop("frontend_url", None)
+        data.pop("frontend_pdf_url", None)
+        try:
+            data["court"].pop("slug", None)
+            data["court"].pop("url", None)
+        except KeyError:
+            print("Cannot pop fields because 'court' doesn't exist")
+            pass
+        try:
+            data["jurisdiction"].pop("slug", None)
+            data["jurisdiction"].pop("whitelisted", None)
+            data["jurisdiction"].pop("url", None)
+        except KeyError:
+            print("Cannot pop fields because 'jurisdiction' doesn't exist")
+            pass
 
         if "preview" in data:
             data.pop("preview")
