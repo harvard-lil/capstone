@@ -267,19 +267,37 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     results = response.json()
     # change "barcode" key to "id" key
     results["id"] = results.pop("barcode")
-    # remove unnecessary fields
-    results.pop("reporter")
-    results.pop("reporter_url")
-    for jurisdiction in results["jurisdictions"]:
-        jurisdiction.pop("slug")
-        jurisdiction.pop("whitelisted")
+
     # add additional fields from model
-    results["hollis_number"] = volume.hollis_number
+    results["harvard_hollis_id"] = volume.hollis_number
     results["spine_start_year"] = volume.spine_start_year
     results["spine_end_year"] = volume.spine_end_year
     results["publication_city"] = volume.publication_city
     results["second_part_of_id"] = volume.second_part_of_id
-    results["nominative_reporter_id"] = volume.nominative_reporter_id
+
+    # add information about volume's nominative_reporter
+    if volume.nominative_reporter_id:
+        reporter = Reporter.objects.get(pk=volume.nominative_reporter_id)
+        results["nominative_reporter"] = {}
+        results["nominative_reporter"]["id"] = volume.nominative_reporter_id
+        results["nominative_reporter"]["short_name"] = reporter.short_name
+        results["nominative_reporter"]["full_name"] = reporter.full_name
+        results["nominative_reporter"][
+            "volume_number"
+        ] = volume.nominative_volume_number
+    else:
+        results["nominative_reporter"] = volume.nominative_reporter_id
+
+    # remove unnecessary fields
+    results.pop("reporter")
+    results.pop("reporter_url")
+    results.pop("url")
+    results.pop("pdf_url")
+    results.pop("frontend_url")
+    for jurisdiction in results["jurisdictions"]:
+        jurisdiction.pop("slug")
+        jurisdiction.pop("whitelisted")
+        jurisdiction.pop("url")
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")

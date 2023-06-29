@@ -558,6 +558,14 @@ class ConvertCaseDocumentSerializer(CaseDocumentSerializer):
 
         data.pop("reporter")
         data.pop("volume")
+        data.pop("url")
+        data.pop("frontend_url")
+        data.pop("frontend_pdf_url")
+        data["court"].pop("slug")
+        data["court"].pop("url")
+        data["jurisdiction"].pop("slug")
+        data["jurisdiction"].pop("whitelisted")
+        data["jurisdiction"].pop("url")
 
         if "preview" in data:
             data.pop("preview")
