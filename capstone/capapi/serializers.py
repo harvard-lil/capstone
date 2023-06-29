@@ -604,14 +604,14 @@ class ConvertNoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
         try:
             data["court"].pop("slug", None)
             data["court"].pop("url", None)
-        except KeyError:
-            print("Cannot pop fields because 'court' doesn't exist")
+        except KeyError as err:
+            print(f"Cannot pop field {err} because 'court' doesn't exist")
         try:
             data["jurisdiction"].pop("slug", None)
             data["jurisdiction"].pop("whitelisted", None)
             data["jurisdiction"].pop("url", None)
-        except KeyError:
-            print("Cannot pop fields because 'jurisdiction' doesn't exist")
+        except KeyError as err:
+            print(f"Cannot pop field {err} because 'jurisdiction' doesn't exist")
 
         data.pop("preview", None)
 
