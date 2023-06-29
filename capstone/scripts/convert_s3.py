@@ -86,7 +86,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     bucket = get_bucket_name(redacted)
 
     # upload reporter metadata
-    put_reporter_metadata(bucket, reporter_id, reporter_prefix)
+    put_reporter_metadata(bucket, reporter, reporter_prefix)
 
     # get volumes in reporter
     volumes = VolumeMetadata.objects.select_related().filter(reporter=reporter_id)
@@ -211,15 +211,20 @@ def export_single_case(case: object, case_prefix: str, bucket: str) -> None:
 # Reporter-specific helper functions
 
 
-def put_reporter_metadata(bucket: str, reporter_id: str, key: str) -> None:
+def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
     """
     Write a .json file with just the reporter metadata.
     """
-    response = requests.get(f"{api_endpoint}reporters/{reporter_id}/")
+    response = requests.get(f"{api_endpoint}reporters/{reporter.id}/")
     results = response.json()
+
+    # add additional fields from reporter obj
+    results["harvard_hollis_id"] = reporter.hollis
+    results["nominative_for_id"] = reporter.nominative_for_id
 
     # remove unnecessary fields
     results.pop("url")
+    results.pop("frontend_url")
     for jurisdiction in results["jurisdictions"]:
         jurisdiction.pop("slug")
         jurisdiction.pop("whitelisted")
