@@ -340,9 +340,9 @@ diff-match-patch-python==1.0.2 \
     # via
     #   -r requirements.in
     #   eyecite
-django==3.2.17 \
-    --hash=sha256:59c39fc342b242fb42b6b040ad8b1b4c15df438706c1d970d416d63cdd73e7fd \
-    --hash=sha256:644288341f06ebe4938eec6801b6bd59a6534a78e4aedde2a153075d11143894
+django==3.2.20 \
+    --hash=sha256:a477ab326ae7d8807dc25c186b951ab8c7648a3a23f9497763c37307a2b5ef87 \
+    --hash=sha256:dec2a116787b8e14962014bf78e120bba454135108e1af9e9b91ade7b2964c40
     # via
     #   -r requirements.in
     #   django-bootstrap4
