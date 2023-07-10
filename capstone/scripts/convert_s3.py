@@ -10,7 +10,7 @@ from collections import namedtuple
 from capapi.documents import CaseDocument
 from capapi.serializers import (
     ConvertCaseDocumentSerializer,
-    NoLoginCaseDocumentSerializer,
+    ConvertNoLoginCaseDocumentSerializer,
 )
 from capdb.models import Reporter, VolumeMetadata, CaseMetadata
 
@@ -102,7 +102,7 @@ def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> N
     """
     formats = {
         "text": {
-            "serializer": NoLoginCaseDocumentSerializer,
+            "serializer": ConvertNoLoginCaseDocumentSerializer,
             "query_params": {"body_format": "text"},
         },
         "metadata": {
@@ -178,7 +178,7 @@ def export_single_case(case: object, case_prefix: str, bucket: str) -> None:
 
     # set up vars for text format
     vars = {
-        "serializer": NoLoginCaseDocumentSerializer,
+        "serializer": ConvertNoLoginCaseDocumentSerializer,
         "query_params": {"body_format": "text"},
     }
     # fake Request object used for serializing case with DRF's serializer
