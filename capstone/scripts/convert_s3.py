@@ -161,7 +161,6 @@ def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> N
                 file.flush()
                 # not closing with loop so I can continue using file for upload
                 hash_and_upload(file, dest_bucket, key, "application/jsonl")
-                print(f"Completed {key}")
 
         # copies each volume PDF to new location if it doesn't already exist
         copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
@@ -254,8 +253,42 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     """
     response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
     results = response.json()
-    # Change "barcode" key to "id" key
-    results["id"] = results.pop("barcode")
+    # change "barcode" key to "id" key
+    results["id"] = results.pop("barcode", None)
+
+    # add additional fields from model
+    results["harvard_hollis_id"] = volume.hollis_number
+    results["spine_start_year"] = volume.spine_start_year
+    results["spine_end_year"] = volume.spine_end_year
+    results["publication_city"] = volume.publication_city
+    results["second_part_of_id"] = volume.second_part_of_id
+
+    # add information about volume's nominative_reporter
+    if volume.nominative_reporter_id:
+        reporter = Reporter.objects.get(pk=volume.nominative_reporter_id)
+        results["nominative_reporter"] = {}
+        results["nominative_reporter"]["id"] = volume.nominative_reporter_id
+        results["nominative_reporter"]["short_name"] = reporter.short_name
+        results["nominative_reporter"]["full_name"] = reporter.full_name
+        results["nominative_reporter"][
+            "volume_number"
+        ] = volume.nominative_volume_number
+    else:
+        results["nominative_reporter"] = volume.nominative_reporter_id
+
+    # remove unnecessary fields
+    results.pop("reporter", None)
+    results.pop("reporter_url", None)
+    results.pop("url", None)
+    results.pop("pdf_url", None)
+    results.pop("frontend_url", None)
+    try:
+        for jurisdiction in results["jurisdictions"]:
+            jurisdiction.pop("slug", None)
+            jurisdiction.pop("whitelisted", None)
+            jurisdiction.pop("url", None)
+    except KeyError as err:
+        print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
     with tempfile.NamedTemporaryFile() as file:
         file.write(json.dumps(results).encode("utf-8") + b"\n")
@@ -394,6 +427,7 @@ def hash_and_upload(
             ContentType=content_type,
             ChecksumSHA256=sha256_hash,
         )
+        print(f"Completed {key}")
     except ClientError as err:
         raise Exception(f"Error uploading {key}: %s" % err)
 
