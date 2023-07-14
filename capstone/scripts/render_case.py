@@ -1,3 +1,4 @@
+import json
 from contextlib import contextmanager
 from copy import deepcopy
 
@@ -425,6 +426,8 @@ class VolumeRenderer:
                 continue
             tag_stack = []
             open_tags = set()
+            tag = None
+            blocks_attr = []
 
             # opening tag
             if self.format == 'xml':
@@ -449,6 +452,10 @@ class VolumeRenderer:
             # write each block in the paragraph
             for block_id in par['block_ids']:
                 block = self.blocks_by_id[block_id]
+
+                # for each block, store [<block_id>, <page.order>, [<block_rect>]] in data-blocks so paragraph
+                # text can be connected back to its bounding rectangles in the PDF
+                blocks_attr.append([block_id, block['page_order'], [int(i) for i in block['rect']]])
 
                 # write <page-number> or <a class='page-label'> between blocks
                 if not self.original_xml:
@@ -521,6 +528,10 @@ class VolumeRenderer:
                                 with self.wrap_font_tags(tag_stack, open_font_tags):
                                     tag_stack.append((sax_end, (token_name[1:] if self.format == 'xml' else 'a',)))
                                 open_tags.remove(tag_name)
+
+            # add data-blocks attribute to tag
+            if self.format == 'html':
+                tag[1]['data-blocks'] = json.dumps(blocks_attr).replace(' ', '')
 
             # remove empty tags, which would typically be created by redacted spans
             par_el = self.render_sax_tags(tag_stack)
