@@ -64,7 +64,8 @@ def run_django(port="127.0.0.1:8000"):
     if os.environ.get('DOCKERIZED'):
         port = "0.0.0.0:8000"
     # run celerybeat in background for elasticsearch indexing
-    with open_subprocess("watchmedo auto-restart -d ./ -p '*.py' -R -- celery worker -A config.celery.app -c 1 -B"):
+    # this function uses Django's autoreload
+    with open_subprocess("python manage.py run_celery_worker"):
         # This was `management.call_command('runserver', port)`, but then the Django autoreloader
         # itself calls fab run and we get two copies of everything!
         # --nostatic so whitenoise is used in dev
@@ -1187,9 +1188,12 @@ def export_citation_graph(output_folder="graph"):
                 capdb_casemetadata target_case on ec.target_case_id = target_case.id
             inner join
                 capdb_casemetadata cited_by on ec.cited_by_id = cited_by.id
+            inner join
+                capdb_volumemetadata target_volume on target_case.volume_id = target_volume.barcode
         where 
             cited_by.in_scope is true
             and target_case.in_scope is true
+            and target_volume.out_of_scope is false
             and cited_by.decision_date_original >= target_case.decision_date_original
             and cited_by.id != target_case.id
         group by cited_by.id;

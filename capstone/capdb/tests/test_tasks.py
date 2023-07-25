@@ -286,8 +286,9 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client,
     update_elasticsearch_from_queue()
 
     # check html
-    assert """
-    <p id="b83-6">
+    assert (
+        """
+    <p id="b83-6" data-blocks=\'[["BL_83.6",3,[226,1320,752,926]],["BL_83.7",3,[226,1320,752,926]]]\'>
         correct: Foo v. Bar, <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="0" data-case-ids="1">1 U.S. 1</a>, 12 (2000) (overruling).
         extra cruft matched: <a href="http://cite.case.test:8000/citations/?q=2%20F.%20Supp.%202" class="citation" data-index="1">2 F.-'Supp.- 2</a>
         custom reporters: <a href="http://cite.case.test:8000/citations/?q=125%20Vt.%20152" class="citation" data-index="2">125 Yt. 152</a>
@@ -296,13 +297,15 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client,
     </p>
     <aside data-label="1" class="footnote" id="footnote_1_1">
       <a href="#ref_footnote_1_1">1</a>
-      <p id="b83-11">
+      <p id="b83-11" data-blocks=\'[["BL_83.16",3,[226,1320,752,926]]]\'>
         normalized: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="5" data-case-ids="2,3">2 US 2</a>
         short cites: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="6" data-case-ids="2,3">id.</a> <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="7" data-case-ids="1">1 U.S. at 153</a>.
         ignored, too much cruft: 125 f. supp.-' 152
     </p>
     </aside>
-    """.strip() in case.body_cache.html
+    """.strip()
+        in case.body_cache.html
+    )
 
     # check ExtractedCites entries
     extracted_cites_fields = [
@@ -414,15 +417,16 @@ def test_run_text_analysis(reset_sequences, case):
 
 
 @pytest.mark.django_db(databases=['capdb'])
-def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_factory, jurisdiction_factory):
+def test_export_citation_graph(case_factory, tmpdir, citation_factory, jurisdiction_factory, volume_metadata_factory):
     output_folder = Path(str(tmpdir))
 
     (
         cite_from, cite_to, different_jur_cite, cite_to_aka, another_cite_to,
-        cite_not_in_cap, duplicate_cite, future_cite
-    ) = ["%s U.S. %s" % (i, i) for i in range(1, 9)]
+        cite_not_in_cap, duplicate_cite, future_cite, duplicate_volume_cite
+    ) = ["%s U.S. %s" % (i, i) for i in range(1, 10)]
 
     jur1, jur2, jur3 = [jurisdiction_factory() for _ in range(3)]
+    out_of_scope_vol = volume_metadata_factory(out_of_scope=True, scope_reason='Duplicate')
 
     # cases
     case_from = case_factory(citations__cite=cite_from, decision_date=datetime(2000, 1, 1), jurisdiction=jur1)
@@ -432,16 +436,18 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
     different_jur_case = case_factory(citations__cite=different_jur_cite, decision_date=datetime(2000, 1, 1), jurisdiction=jur2)
     [case_factory(citations__cite=duplicate_cite, jurisdiction=jur1) for _ in range(3)]  # ambiguous cases
     case_factory(citations__cite=future_cite, decision_date=datetime(2010, 1, 1), jurisdiction=jur1)  # future case
-
+    case_factory(citations__cite=duplicate_volume_cite, decision_date=datetime(1989, 1, 1), jurisdiction=jur3,
+                                         volume=out_of_scope_vol) # volume out of scope due to duplication
     # case text to extract
     set_case_text(case_from, f"""
         Cite to self ignored during extraction: {cite_from}
         Parallel cite to another case included once: {cite_to}, {cite_to_aka}
         Cite to another case: {another_cite_to}
         Duplicate cite to another case: {another_cite_to}
-        Ambiguous cites not included: {duplicate_cite}
+        Ambiguous cites excluded: {duplicate_cite}
         Unknown cites excluded: {cite_not_in_cap}
         Cites into the future excluded: {future_cite}
+        Cites to cases in out of scope volumes excluded: {duplicate_volume_cite}
     """)
     set_case_text(different_jur_case, f"""
         Cite to case: {cite_to}
@@ -455,7 +461,8 @@ def test_export_citation_graph(case_factory, tmpdir, elasticsearch, citation_fac
     extracted = case_from.extracted_citations.all()
     assert set(e.cite for e in extracted) == {
         cite_to, another_cite_to,
-        duplicate_cite, cite_not_in_cap, future_cite
+        duplicate_cite, cite_not_in_cap,
+        future_cite, duplicate_volume_cite
     }
 
     # perform export
