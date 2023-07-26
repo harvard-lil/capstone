@@ -108,15 +108,15 @@ beautifulsoup4==4.9.3 \
 billiard==3.6.0.0 \
     --hash=sha256:756bf323f250db8bf88462cd042c992ba60d8f5e07fc5636c24ba7d6f4261d84
     # via celery
-boto3==1.17.86 \
-    --hash=sha256:4f15867701b28ca78eb56cfc4ff5f0e5ee7db42558dbc445f1a7395e467ac3e9 \
-    --hash=sha256:85c1875ab17c36ffb3ad1b0f4b52e3418e0fd1ef7d167ff4e545fb052b7cc1f8
+boto3==1.28.11 \
+    --hash=sha256:0fe7a35cf0041145c8eefebd3ae2ddf41baed62d7c963e5042b8ed8c297f648f \
+    --hash=sha256:e24460d50001b517c6734dcf1c879feb43aa2062d88d9bdbb8703c986cb05941
     # via
     #   celery
     #   moto
-botocore==1.20.86 \
-    --hash=sha256:2a48154fd7d61a67d861b0781e204918508aa8af094391f03ad4047c979dc9c7 \
-    --hash=sha256:bbdfd2adedb0cc9117cf411ef51cbd8fc19798e21e414f831ad9781e507ff1da
+botocore==1.31.11 \
+    --hash=sha256:b17ff973bb70b02b227928c2abe4992f1cfc46d13aee0228516c8f32572b88c6 \
+    --hash=sha256:d3cbffe554c9a1ba2ac6973734c43c21b8e7985a2ac4a4c31a09811b8029445c
     # via
     #   boto3
     #   moto
@@ -1479,9 +1479,9 @@ ruamel.yaml==0.15.87 \
     --hash=sha256:fbd301680a3563e84d667042dac1c5d50ef402ecf1f4b1763507a6877b8181ad \
     --hash=sha256:fc67e79e2f5083be6fd1000c4646e13a891585772a503f56f51f845b547fe621
     # via drf-yasg
-s3transfer==0.4.2 \
-    --hash=sha256:9b3752887a2880690ce628bc263d6d13a3864083aeacff4890c1c9839a5eb0bc \
-    --hash=sha256:cb022f4b16551edebbb31a377d3f09600dbada7363d8c5db7976e7f47732e1b2
+s3transfer==0.6.1 \
+    --hash=sha256:3c0da2d074bf35d6870ef157158641178a4204a6e689e82546083e31e0311346 \
+    --hash=sha256:640bb492711f4c0c0905e1f62b6aaeb771881935ad27884852411f8e9cacbca9
     # via boto3
 shortuuid==1.0.1 \
     --hash=sha256:3c11d2007b915c43bee3e10625f068d8a349e04f0d81f08f5fa08507427ebf1f \
