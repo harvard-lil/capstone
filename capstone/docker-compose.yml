@@ -10,7 +10,7 @@ services:
     redis:
         image: redis:6.0.15
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.11
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
@@ -28,7 +28,7 @@ services:
         ports:
           - 127.0.0.1:9200:9200
     web:
-        image: registry.lil.tools/harvardlil/cap-web:211-d75ed07b6a4a25ff4116f90f215ccb52
+        image: registry.lil.tools/harvardlil/cap-web:214-82d86588eb8b851870e5b15d8ab0be89
         platform: linux/amd64
         volumes:
             # NAMED VOLUMES
