@@ -9,10 +9,9 @@ from collections import namedtuple
 
 from capapi.documents import CaseDocument
 from capapi.serializers import (
-    ConvertCaseDocumentSerializer,
     ConvertNoLoginCaseDocumentSerializer,
 )
-from capdb.models import Reporter, VolumeMetadata, CaseMetadata
+from capdb.models import Reporter
 
 s3_client = boto3.client("s3")
 api_endpoint = "https://api.case.law/v1/"
@@ -76,9 +75,10 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
         return
 
     # determine prefix based on a case's frontend_url
-    sample_case_obj = CaseMetadata.objects.select_related().filter(
-        reporter=reporter_id
+    sample_case_obj = list(
+        reporter.case_metadatas.select_related().order_by("case_id")
     )[0]
+
     frontend_url = sample_case_obj.frontend_url
     reporter_prefix = "/".join(frontend_url.rsplit("/")[1:2])
 
@@ -89,123 +89,135 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     put_reporter_metadata(bucket, reporter, reporter_prefix)
 
     # get volumes in reporter
-    volumes = VolumeMetadata.objects.select_related().filter(reporter=reporter_id)
-    # export volume metadata/cases
-    export_cases_by_volume(volumes, bucket, redacted)
+    volumes = list(reporter.volumes.select_related())
+    for volume in volumes:
+        # export volume metadata/cases
+        export_cases_by_volume(volume, bucket, redacted)
 
 
-def export_cases_by_volume(volumes: list, dest_bucket: str, redacted: bool) -> None:
+def export_cases_by_volume(volume: object, dest_bucket: str, redacted: bool) -> None:
     """
-    Write a .jsonl file with all cases per volume.
+    Write a .json file for each case per volume.
     Write a .jsonl file with all cases' metadata per volume.
     Write a .jsonl file with all volume metadata for this collection.
     """
-    formats = {
-        "text": {
-            "serializer": ConvertNoLoginCaseDocumentSerializer,
-            "query_params": {"body_format": "text"},
-        },
-        "metadata": {
-            "serializer": ConvertCaseDocumentSerializer,
-            "query_params": {},
-        },
-    }
-    # TODO: Add in if we want to have the mid-level metadata accessible
-    # put_volumes_metadata(volumes, dest_bucket, reporter_prefix)
 
-    for volume in volumes:
-        # open each volume and put case text or metadata into file based on format
-        cases_search = CaseDocument.raw_search().filter(
-            "term", volume__barcode=volume.barcode
-        )
-        cases = CaseMetadata.objects.select_related().filter(
-            volume__barcode=volume.barcode
-        )
-        frontend_url = cases[0].frontend_url
+    case_file_name_index = 1
+    prev_case_first_page = None
 
-        if cases.count() == 0:
-            print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
-            return
-
-        volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
-        put_volume_metadata(dest_bucket, volume, volume_prefix)
-
-        for format_name, vars in list(formats.items()):
-            # fake Request object used for serializing cases with DRF's serializer
-            vars["fake_request"] = namedtuple(
-                "Request", ["query_params", "accepted_renderer"]
-            )(
-                query_params=vars["query_params"],
-                accepted_renderer=None,
-            )
-
-            if format_name == "metadata":
-                key = f"{volume_prefix}/CasesMetadata.jsonl"
-            else:
-                key = f"{volume_prefix}/Cases.jsonl"
-
-            # store the serialized case data in tempfile
-            with tempfile.NamedTemporaryFile() as file:
-                for item in cases_search.scan():
-                    # pass case in to add additional data to the CaseDocument
-                    case = CaseMetadata.objects.get(pk=item["_source"]["id"])
-                    serializer = vars["serializer"](
-                        item["_source"],
-                        context={
-                            "request": vars["fake_request"],
-                            "first_page_order": case.first_page_order,
-                            "last_page_order": case.last_page_order,
-                        },
-                    )
-                    file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
-                file.flush()
-                # not closing with loop so I can continue using file for upload
-                hash_and_upload(file, dest_bucket, key, "application/jsonl")
-
-        # copies each volume PDF to new location if it doesn't already exist
-        copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
-
-        # export each case in the volume
-        for case in cases:
-            export_single_case(case, f"{volume_prefix}/case", dest_bucket)
-
-
-def export_single_case(case: object, case_prefix: str, bucket: str) -> None:
-    """
-    Put full text plus metadata of each case in reporterX/volumeX/case/caseX.jsonl.
-    """
-    # find name of the paragraph that is tied to the case order from the volume PDF
-
-    # set up vars for text format
     vars = {
         "serializer": ConvertNoLoginCaseDocumentSerializer,
         "query_params": {"body_format": "text"},
     }
+
+    # open each volume and put case text or metadata into file based on format
+    cases_search = CaseDocument.raw_search().filter(
+        "term", volume__barcode=volume.barcode
+    )
+    cases = list(volume.case_metadatas.select_related().order_by("case_id"))
+
+    cases_by_id = {case.pk: case for case in cases}
+    frontend_url = cases[0].frontend_url
+
+    if len(cases) == 0:
+        print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
+        return
+
+    volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
+
+    put_volume_metadata(dest_bucket, volume, volume_prefix)
+
+    cases_key = f"{volume_prefix}/Cases/"
+
+    # fetch existing files to compare to what we have
+    s3_contents_hash = fetch_s3_files(dest_bucket, cases_key)
+
     # fake Request object used for serializing case with DRF's serializer
     vars["fake_request"] = namedtuple("Request", ["query_params", "accepted_renderer"])(
         query_params=vars["query_params"],
         accepted_renderer=None,
     )
+    # fake Request object used for serializing cases with DRF's serializer
+    vars["fake_request"] = namedtuple("Request", ["query_params", "accepted_renderer"])(
+        query_params={"body_format": "text"},
+        accepted_renderer=None,
+    )
 
-    # select corresponding case search obj
-    case_search = CaseDocument.raw_search().filter("term", id=case.id)
-    # Store the serialized data
-    with tempfile.NamedTemporaryFile() as file:
-        for item in case_search.scan():
+    # create a metadata contents string to append case metadata content
+    metadata_contents = b""
+
+    # store the serialized case data in tempfile
+    for item in cases_search.scan():
+        with tempfile.NamedTemporaryFile() as file:
+            # pass case in to add additional data to the CaseDocument
+            case = cases_by_id[item["_source"]["id"]]
+
             serializer = vars["serializer"](
-                item["_source"], context={"request": vars["fake_request"]}
+                item["_source"],
+                context={
+                    "request": vars["fake_request"],
+                    "first_page_order": case.first_page_order,
+                    "last_page_order": case.last_page_order,
+                },
             )
-            file.write(json.dumps(serializer.data).encode("utf-8") + b"\n")
+
+            # add data to metadata_contents string without 'casebody'
+            metadata_data = serializer.data
+            metadata_data.pop("casebody", None)
+            metadata_contents += json.dumps(metadata_data).encode("utf-8") + b"\n"
+
+            # compose each case file with a hash
+            case_contents = json.dumps(serializer.data).encode("utf-8") + b"\n"
+            hash_object = hashlib.sha256(case_contents)
+            case_contents_hash = base64.b64encode(hash_object.digest()).decode()
+
+            # calculate case file name
+            if prev_case_first_page == case.first_page:
+                case_file_name_index += 1
+            else:
+                case_file_name_index = 1
+            case_file_name = (
+                f"{case.first_page.zfill(4)}-{str(case_file_name_index).zfill(2)}.json"
+            )
+
+            # set so we can use to determine multiple cases on single page
+            prev_case_first_page = case.first_page
+
+            # ignore cases that have already been uploaded
+            if (
+                case_contents_hash in s3_contents_hash
+                and s3_contents_hash[case_contents_hash] == case_file_name
+            ):
+                s3_contents_hash.pop(case_contents_hash, None)
+                print(f"Skipped {cases_key}{case_file_name}")
+                continue
+            else:
+                file.write(case_contents)
+                file.flush()
+                hash_and_upload(
+                    file,
+                    dest_bucket,
+                    f"{cases_key}{case_file_name}",
+                    "application/jsonl",
+                )
+
+    with tempfile.NamedTemporaryFile() as file:
+        file.write(metadata_contents)
         # not closing with loop so I can continue using file for upload
         file.flush()
-        # go back to the beginning so the hash generation works on the whole file
-        file.seek(0)
-        case_name = build_unique_case_name(case.first_page, bucket, case_prefix, file)
-        if case_name is None:
-            return
-        else:
-            key = f"{case_prefix}/{case_name}.json"
-            hash_and_upload(file, bucket, key, "application/jsonl")
+        hash_and_upload(
+            file,
+            dest_bucket,
+            f"{volume_prefix}/CasesMetadata.jsonl",
+            "application/jsonl",
+        )
+
+    # copies each volume PDF to new location if it doesn't already exist
+    copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
+
+    # export each case in the volume
+    # for case in cases:
+    #     export_single_case(case, f"{volume_prefix}/case", dest_bucket)
 
 
 # Reporter-specific helper functions
@@ -245,23 +257,6 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
 # Volume-specific helper functions
 
 
-def put_volumes_metadata(volumes: list, bucket: str, key: str) -> None:
-    """
-    Write a .jsonl file with the volume metadata for each volume in collection.
-    """
-    with tempfile.NamedTemporaryFile() as file:
-        for volume in volumes:
-            response = requests.get(f"{api_endpoint}volumes/{volume.barcode}/")
-            results = response.json()
-
-            file.write(json.dumps(results).encode("utf-8") + b"\n")
-            file.flush()
-            # not closing with loop so I can continue using file for upload
-            hash_and_upload(
-                file, bucket, f"{key}/VolumesMetadata.jsonl", "application/jsonl"
-            )
-
-
 def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     """
     Write a .json file with just the single volume metadata.
@@ -280,11 +275,14 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
 
     # add information about volume's nominative_reporter
     if volume.nominative_reporter_id:
-        reporter = Reporter.objects.get(pk=volume.nominative_reporter_id)
         results["nominative_reporter"] = {}
         results["nominative_reporter"]["id"] = volume.nominative_reporter_id
-        results["nominative_reporter"]["short_name"] = reporter.short_name
-        results["nominative_reporter"]["full_name"] = reporter.full_name
+        results["nominative_reporter"][
+            "short_name"
+        ] = volume.nominative_reporter.short_name
+        results["nominative_reporter"][
+            "full_name"
+        ] = volume.nominative_reporter.full_name
         results["nominative_reporter"][
             "volume_number"
         ] = volume.nominative_volume_number
@@ -356,66 +354,29 @@ def copy_volume_pdf(
 # Case-specific helper functions
 
 
-def case_content_exists_in_s3(
-    bucket: str, key: str, file: tempfile.TemporaryFile
-) -> bool:
-    """
-    Check whether file with the same content already exists in S3 using
-    ChecksumSHA256 hash comparison.
-    """
+def fetch_s3_files(bucket: str, key: str) -> dict:
     try:
-        # Calculate the SHA256 hash of the file content
-        file.seek(0)
-        file_data = file.read()
-        hash_object = hashlib.sha256(file_data)
-        sha256_hash = base64.b64encode(hash_object.digest()).decode()
-
-        # Get the object's metadata
-        response = s3_client.get_object_attributes(
-            Bucket=bucket, Key=key, ObjectAttributes=["Checksum"]
-        )
-
-        existing_hash = response.get("Checksum", {}).get("ChecksumSHA256")
-
-        # Compare the hashes
-        return existing_hash == sha256_hash
-
+        s3_contents_hash = {}
+        response = s3_client.list_objects_v2(Bucket=bucket, Prefix=key)
     except ClientError as err:
-        if err.response["Error"]["Code"] == "404":
-            return False
-        else:
-            raise Exception(f"Cannot check file {bucket}/{key}: %s" % err)
+        raise Exception(f"Cannot list objects {bucket}/{key}: %s" % err)
+    if "Contents" not in response:
+        return s3_contents_hash
+    else:
+        for case in response["Contents"]:
+            case_file_name = case["Key"].split("/")[-1]
+            # Get the object's metadata
+            try:
+                response = s3_client.get_object_attributes(
+                    Bucket=bucket, Key=case["Key"], ObjectAttributes=["Checksum"]
+                )
 
+                existing_hash = response.get("Checksum", {}).get("ChecksumSHA256")
+                s3_contents_hash[existing_hash] = case_file_name
+            except ClientError as err:
+                raise Exception(f"Cannot check file {bucket}/{case['Key']}: %s" % err)
 
-def build_unique_case_name(
-    first_page: str, bucket: str, case_prefix: str, file: tempfile.TemporaryFile
-) -> str:
-    """
-    Create unique case name based on first page
-    """
-    suffix = 1
-    first_page = int(first_page)
-    case_name = f"{first_page:04d}-{suffix:02d}"
-
-    while case_name_exists(case_name, bucket, case_prefix):
-        if case_content_exists_in_s3(bucket, f"{case_prefix}/{case_name}.json", file):
-            print(f"Skipping {case_prefix}/{case_name}. Duplicate content.")
-            return None
-        suffix += 1
-        case_name = f"{first_page:04d}-{suffix:02d}"
-
-    return case_name
-
-
-def case_name_exists(case_name: str, bucket: str, case_prefix: str) -> bool:
-    """
-    Find out whether the case name exists in S3
-    """
-    response = s3_client.list_objects_v2(
-        Bucket=bucket, Prefix=f"{case_prefix}/{case_name}"
-    )
-    objects = response.get("Contents", [])
-    return bool(objects)
+    return s3_contents_hash
 
 
 # General helper functions
