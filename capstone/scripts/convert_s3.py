@@ -3,7 +3,6 @@ import boto3
 import hashlib
 import json
 import requests
-import tempfile
 from botocore.exceptions import ClientError
 from collections import namedtuple
 
@@ -32,34 +31,31 @@ def put_volumes_reporters_on_s3(redacted: bool) -> None:
         current_endpoint = f"{api_endpoint}{file_type}/"
         previous_cursor = None
         current_cursor = ""
-        with tempfile.NamedTemporaryFile() as file:
-            while current_endpoint:
-                response = requests.get(current_endpoint)
-                results = response.json()
-                # write each entry into jsonl
-                for result in results["results"]:
-                    file.write(json.dumps(result).encode("utf-8") + b"\n")
-                    # for each reporter, kick off cascading export to S3
-                    if file_type == "reporters":
-                        export_cases_to_s3(redacted, result["id"])
 
-                # update cursor to access next endpoint
-                current_cursor = results["next"]
-                if current_cursor != previous_cursor:
-                    print("Update next to: ", current_cursor)
+        while current_endpoint:
+            response = requests.get(current_endpoint)
+            results = response.json()
+            # write each entry into jsonl
+            for result in results["results"]:
+                metadata_content = (json.dumps(result) + "\n")
+                # for each reporter, kick off cascading export to S3
+                if file_type == "reporters":
+                    export_cases_to_s3(redacted, result["id"])
 
-                previous_cursor = current_cursor
-                current_endpoint = current_cursor
-            file.flush()
-            with open(file.name, "rb") as file:
-                # read the file's contents
-                file_data = file.read()
-            try:
-                s3_client.put_object(
-                    Body=file_data, Bucket=bucket, Key=f"{file_type}.jsonl"
-                )
-            except ClientError as err:
-                raise Exception(f"Error uploading {file_type}.jsonl: %s" % err)
+            # update cursor to access next endpoint
+            current_cursor = results["next"]
+            if current_cursor != previous_cursor:
+                print("Update next to: ", current_cursor)
+
+            previous_cursor = current_cursor
+            current_endpoint = current_cursor
+
+        try:
+            s3_client.put_object(
+                Body=metadata_content, Bucket=bucket, Key=f"{file_type}.jsonl"
+            )
+        except ClientError as err:
+            raise Exception(f"Error uploading {file_type}.jsonl: %s" % err)
 
 
 def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
@@ -136,73 +132,66 @@ def export_cases_by_volume(volume: object, reporter_prefix: str, dest_bucket: st
     )
 
     # create a metadata contents string to append case metadata content
-    metadata_contents = b""
+    metadata_contents = ""
 
-    # store the serialized case data in tempfile
+    # store the serialized case data
     for item in cases_search.scan():
-        with tempfile.NamedTemporaryFile() as file:
-            # pass case in to add additional data to the CaseDocument
-            case = cases_by_id[item["_source"]["id"]]
+        # pass case in to add additional data to the CaseDocument
+        case = cases_by_id[item["_source"]["id"]]
 
-            serializer = vars["serializer"](
-                item["_source"],
-                context={
-                    "request": vars["fake_request"],
-                    "first_page_order": case.first_page_order,
-                    "last_page_order": case.last_page_order,
-                },
-            )
-
-            # add data to metadata_contents string without 'casebody'
-            metadata_data = serializer.data
-            metadata_data.pop("casebody", None)
-            metadata_contents += json.dumps(metadata_data).encode("utf-8") + b"\n"
-
-            # compose each case file with a hash
-            case_contents = json.dumps(serializer.data).encode("utf-8") + b"\n"
-            hash_object = hashlib.sha256(case_contents)
-            case_contents_hash = base64.b64encode(hash_object.digest()).decode()
-
-            # calculate case file name
-            if prev_case_first_page == case.first_page:
-                case_file_name_index += 1
-            else:
-                case_file_name_index = 1
-            case_file_name = (
-                f"{case.first_page.zfill(4)}-{str(case_file_name_index).zfill(2)}.json"
-            )
-
-            # set so we can use to determine multiple cases on single page
-            prev_case_first_page = case.first_page
-
-            # ignore cases that have already been uploaded
-            if (
-                case_contents_hash in s3_contents_hash
-                and s3_contents_hash[case_contents_hash] == case_file_name
-            ):
-                s3_contents_hash.pop(case_contents_hash, None)
-                print(f"Skipped {cases_key}{case_file_name}")
-                continue
-            else:
-                file.write(case_contents)
-                file.flush()
-                hash_and_upload(
-                    file,
-                    dest_bucket,
-                    f"{cases_key}{case_file_name}",
-                    "application/jsonl",
-                )
-
-    with tempfile.NamedTemporaryFile() as file:
-        file.write(metadata_contents)
-        # not closing with loop so I can continue using file for upload
-        file.flush()
-        hash_and_upload(
-            file,
-            dest_bucket,
-            f"{volume_prefix}/CasesMetadata.jsonl",
-            "application/jsonl",
+        serializer = vars["serializer"](
+            item["_source"],
+            context={
+                "request": vars["fake_request"],
+                "first_page_order": case.first_page_order,
+                "last_page_order": case.last_page_order,
+            },
         )
+
+        # add data to metadata_contents string without 'casebody'
+        metadata_data = serializer.data
+        metadata_data.pop("casebody", None)
+        metadata_contents += json.dumps(metadata_data) + "\n"
+
+        # compose each casefile with a hash
+        case_contents = json.dumps(serializer.data) + "\n"
+        hash_object = hashlib.sha256(case_contents.encode("utf-8"))
+        case_contents_hash = base64.b64encode(hash_object.digest()).decode()
+
+        # calculate casefile name
+        if prev_case_first_page == case.first_page:
+            case_file_name_index += 1
+        else:
+            case_file_name_index = 1
+        case_file_name = (
+            f"{case.first_page.zfill(4)}-{str(case_file_name_index).zfill(2)}.json"
+        )
+
+        # set so we can use to determine multiple cases on single page
+        prev_case_first_page = case.first_page
+
+        # ignore cases that have already been uploaded
+        if (
+            case_contents_hash in s3_contents_hash
+            and s3_contents_hash[case_contents_hash] == case_file_name
+        ):
+            s3_contents_hash.pop(case_contents_hash, None)
+            print(f"Skipped {cases_key}{case_file_name}")
+            continue
+        else:
+            hash_and_upload(
+                case_contents,
+                dest_bucket,
+                f"{cases_key}{case_file_name}",
+                "application/jsonl",
+            )
+
+    hash_and_upload(
+        metadata_contents,
+        dest_bucket,
+        f"{volume_prefix}/CasesMetadata.jsonl",
+        "application/jsonl",
+    )
 
     # copies each volume PDF to new location if it doesn't already exist
     copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
@@ -233,13 +222,11 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
     except KeyError as err:
         print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
-    with tempfile.NamedTemporaryFile() as file:
-        file.write(json.dumps(results).encode("utf-8") + b"\n")
-        file.flush()
-        # not closing with loop so I can continue using file for upload
-        hash_and_upload(
-            file, bucket, f"{key}/ReporterMetadata.json", "application/json"
-        )
+    reporter_metadata = json.dumps(results) + "\n"
+    # not closing with loop so I can continue using file for upload
+    hash_and_upload(
+        reporter_metadata, bucket, f"{key}/ReporterMetadata.json", "application/json"
+    )
 
 
 # Volume-specific helper functions
@@ -291,11 +278,8 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     except KeyError as err:
         print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
-    with tempfile.NamedTemporaryFile() as file:
-        file.write(json.dumps(results).encode("utf-8") + b"\n")
-        file.flush()
-        # not closing with loop so I can continue using file for upload
-        hash_and_upload(file, bucket, f"{key}/VolumeMetadata.json", "application/json")
+    volume_metadata = json.dumps(results) + "\n"
+    hash_and_upload(volume_metadata, bucket, f"{key}/VolumeMetadata.json", "application/json")
 
 
 def copy_volume_pdf(
@@ -371,21 +355,18 @@ def fetch_s3_files(bucket: str, key: str) -> dict:
 
 
 def hash_and_upload(
-    file: tempfile.NamedTemporaryFile, bucket: str, key: str, content_type: str
+    contents: str, bucket: str, key: str, content_type: str
 ) -> None:
     """
     Hash created file and upload to S3
     """
-    with open(file.name, "rb") as file:
-        # read the file's contents
-        file_data = file.read()
-    # Calculate the SHA256 hash of the file data
-    hash_object = hashlib.sha256(file_data)
+    # Calculate the SHA256 hash of the contents data
+    hash_object = hashlib.sha256(contents.encode("utf-8"))
     sha256_hash = base64.b64encode(hash_object.digest()).decode()
     # upload file to S3
     try:
         s3_client.put_object(
-            Body=file_data,
+            Body=contents,
             Bucket=bucket,
             Key=key,
             ContentType=content_type,
