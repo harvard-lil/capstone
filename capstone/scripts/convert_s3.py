@@ -74,7 +74,8 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
         return
 
-    reporter_prefix = f'{reporter.short_name_slug}-{reporter.id}'
+    # TODO: address reporters that share slug
+    reporter_prefix = f'{reporter.short_name_slug}'
 
     # set bucket name for all operations
     bucket = get_bucket_name(redacted)
