@@ -74,13 +74,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
         return
 
-    # determine prefix based on a case's frontend_url
-    sample_case_obj = list(
-        reporter.case_metadatas.select_related().order_by("case_id")
-    )[0]
-
-    frontend_url = sample_case_obj.frontend_url
-    reporter_prefix = "/".join(frontend_url.rsplit("/")[1:2])
+    reporter_prefix = f'{reporter.short_name_slug}-{reporter.id}'
 
     # set bucket name for all operations
     bucket = get_bucket_name(redacted)
@@ -88,14 +82,13 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     # upload reporter metadata
     put_reporter_metadata(bucket, reporter, reporter_prefix)
 
-    # get volumes in reporter
-    volumes = list(reporter.volumes.select_related())
-    for volume in volumes:
+    # get in-scope volumes with volume numbers in each reporter
+    for volume in reporter.volumes.exclude(volume_number=None).exclude(volume_number='').exclude(out_of_scope=True):
         # export volume metadata/cases
-        export_cases_by_volume(volume, bucket, redacted)
+        export_cases_by_volume(volume, reporter_prefix, bucket, redacted)
 
 
-def export_cases_by_volume(volume: object, dest_bucket: str, redacted: bool) -> None:
+def export_cases_by_volume(volume: object, reporter_prefix: str, dest_bucket: str, redacted: bool) -> None:
     """
     Write a .json file for each case per volume.
     Write a .jsonl file with all cases' metadata per volume.
@@ -116,15 +109,13 @@ def export_cases_by_volume(volume: object, dest_bucket: str, redacted: bool) -> 
     )
     cases = list(volume.case_metadatas.select_related().order_by("case_id"))
 
-    cases_by_id = {case.pk: case for case in cases}
-    frontend_url = cases[0].frontend_url
-
     if len(cases) == 0:
         print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
         return
 
-    volume_prefix = "/".join(frontend_url.rsplit("/")[1:3])
+    cases_by_id = {case.pk: case for case in cases}
 
+    volume_prefix = f'{reporter_prefix}/{volume.volume_number}'
     put_volume_metadata(dest_bucket, volume, volume_prefix)
 
     cases_key = f"{volume_prefix}/Cases/"
@@ -214,10 +205,6 @@ def export_cases_by_volume(volume: object, dest_bucket: str, redacted: bool) -> 
 
     # copies each volume PDF to new location if it doesn't already exist
     copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
-
-    # export each case in the volume
-    # for case in cases:
-    #     export_single_case(case, f"{volume_prefix}/case", dest_bucket)
 
 
 # Reporter-specific helper functions
