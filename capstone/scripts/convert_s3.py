@@ -37,7 +37,7 @@ def put_volumes_reporters_on_s3(redacted: bool) -> None:
             results = response.json()
             # write each entry into jsonl
             for result in results["results"]:
-                metadata_content = (json.dumps(result) + "\n")
+                metadata_content = json.dumps(result) + "\n"
                 # for each reporter, kick off cascading export to S3
                 if file_type == "reporters":
                     export_cases_to_s3(redacted, result["id"])
@@ -64,6 +64,11 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     """
     reporter = Reporter.objects.get(pk=reporter_id)
 
+    # Make sure there are volumes in the reporter
+    if reporter.volume_count == None or reporter.volume_count == "":
+        print("WARNING: Reporter '{}' contains NO VOLUMES.".format(reporter.full_name))
+        return
+
     # Make sure there are cases in the reporter
     cases_search = CaseDocument.raw_search().filter("term", reporter__id=reporter.id)
     if cases_search.count() == 0:
@@ -71,7 +76,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
         return
 
     # TODO: address reporters that share slug
-    reporter_prefix = f'{reporter.short_name_slug}'
+    reporter_prefix = f"{reporter.short_name_slug}"
 
     # set bucket name for all operations
     bucket = get_bucket_name(redacted)
@@ -80,12 +85,18 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     put_reporter_metadata(bucket, reporter, reporter_prefix)
 
     # get in-scope volumes with volume numbers in each reporter
-    for volume in reporter.volumes.exclude(volume_number=None).exclude(volume_number='').exclude(out_of_scope=True):
+    for volume in (
+        reporter.volumes.exclude(volume_number=None)
+        .exclude(volume_number="")
+        .exclude(out_of_scope=True)
+    ):
         # export volume metadata/cases
         export_cases_by_volume(volume, reporter_prefix, bucket, redacted)
 
 
-def export_cases_by_volume(volume: object, reporter_prefix: str, dest_bucket: str, redacted: bool) -> None:
+def export_cases_by_volume(
+    volume: object, reporter_prefix: str, dest_bucket: str, redacted: bool
+) -> None:
     """
     Write a .json file for each case per volume.
     Write a .jsonl file with all cases' metadata per volume.
@@ -112,13 +123,13 @@ def export_cases_by_volume(volume: object, reporter_prefix: str, dest_bucket: st
 
     cases_by_id = {case.pk: case for case in cases}
 
-    volume_prefix = f'{reporter_prefix}/{volume.volume_number}'
+    volume_prefix = f"{reporter_prefix}/{volume.volume_number}"
     put_volume_metadata(dest_bucket, volume, volume_prefix)
 
     cases_key = f"{volume_prefix}/Cases/"
 
     # fetch existing files to compare to what we have
-    s3_contents_hash = fetch_s3_files(dest_bucket, cases_key)
+    s3_contents_hashes = fetch_s3_files(dest_bucket, cases_key)
 
     # fake Request object used for serializing case with DRF's serializer
     vars["fake_request"] = namedtuple("Request", ["query_params", "accepted_renderer"])(
@@ -170,21 +181,24 @@ def export_cases_by_volume(volume: object, reporter_prefix: str, dest_bucket: st
         # set so we can use to determine multiple cases on single page
         prev_case_first_page = case.first_page
 
-        # ignore cases that have already been uploaded
-        if (
-            case_contents_hash in s3_contents_hash
-            and s3_contents_hash[case_contents_hash] == case_file_name
-        ):
-            s3_contents_hash.pop(case_contents_hash, None)
-            print(f"Skipped {cases_key}{case_file_name}")
-            continue
-        else:
+        # identify key: hash pair for current case
+        dest_key = f"{cases_key}{case_file_name}"
+        s3_key_hash = s3_contents_hashes.pop(dest_key, None)
+
+        if s3_key_hash is None or s3_key_hash != case_contents_hash:
             hash_and_upload(
                 case_contents,
                 dest_bucket,
-                f"{cases_key}{case_file_name}",
+                dest_key,
                 "application/jsonl",
             )
+
+    # remove files from S3 that would otherwise create repeats
+    for s3_case_key in s3_contents_hashes:
+        s3_client.delete_object(
+            Bucket=dest_bucket,
+            Key=s3_case_key,
+        )
 
     hash_and_upload(
         metadata_contents,
@@ -279,7 +293,9 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         print(f"Cannot pop field {err} because 'jurisdictions' doesn't exist")
 
     volume_metadata = json.dumps(results) + "\n"
-    hash_and_upload(volume_metadata, bucket, f"{key}/VolumeMetadata.json", "application/json")
+    hash_and_upload(
+        volume_metadata, bucket, f"{key}/VolumeMetadata.json", "application/json"
+    )
 
 
 def copy_volume_pdf(
@@ -327,6 +343,9 @@ def copy_volume_pdf(
 
 
 def fetch_s3_files(bucket: str, key: str) -> dict:
+    """
+    Return a dictionary of bucket contents format key: hash
+    """
     try:
         s3_contents_hash = {}
         response = s3_client.list_objects_v2(Bucket=bucket, Prefix=key)
@@ -336,7 +355,6 @@ def fetch_s3_files(bucket: str, key: str) -> dict:
         return s3_contents_hash
     else:
         for case in response["Contents"]:
-            case_file_name = case["Key"].split("/")[-1]
             # Get the object's metadata
             try:
                 response = s3_client.get_object_attributes(
@@ -344,7 +362,7 @@ def fetch_s3_files(bucket: str, key: str) -> dict:
                 )
 
                 existing_hash = response.get("Checksum", {}).get("ChecksumSHA256")
-                s3_contents_hash[existing_hash] = case_file_name
+                s3_contents_hash[case["Key"]] = existing_hash
             except ClientError as err:
                 raise Exception(f"Cannot check file {bucket}/{case['Key']}: %s" % err)
 
@@ -354,9 +372,7 @@ def fetch_s3_files(bucket: str, key: str) -> dict:
 # General helper functions
 
 
-def hash_and_upload(
-    contents: str, bucket: str, key: str, content_type: str
-) -> None:
+def hash_and_upload(contents: str, bucket: str, key: str, content_type: str) -> None:
     """
     Hash created file and upload to S3
     """
