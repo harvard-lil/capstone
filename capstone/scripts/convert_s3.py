@@ -65,7 +65,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     reporter = Reporter.objects.get(pk=reporter_id)
 
     # Make sure there are volumes in the reporter
-    if reporter.volume_count == None or reporter.volume_count == "":
+    if reporter.volume_count is None or reporter.volume_count == "":
         print("WARNING: Reporter '{}' contains NO VOLUMES.".format(reporter.full_name))
         return
 
