@@ -65,10 +65,10 @@ services:
             - SYS_PTRACE
 
 volumes:
-    db_data_11:
-    node_modules:
-    esdata02:
-      driver: local
+  db_data_11:
+  node_modules:
+  esdata02:
+    driver: local
 
 networks:
   default:
