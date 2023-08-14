@@ -457,7 +457,8 @@ def export_cases_to_s3():
     Export a version to S3 of all cases' texts and metadata
     by reporter and volume.
     """
-    convert_s3.export_cases_to_s3(True, "528")
+    redacted = True
+    convert_s3.export_cases_to_s3(redacted, "996")
 
 
 @task
@@ -465,7 +466,7 @@ def export_volumes_reporters_to_s3():
     """
     Run export of all volumes and all reporters, unfiltered, to S3.
     """
-    convert_s3.put_volumes_reporters_on_s3(True)
+    convert_s3.put_volumes_reporters_on_s3(redacted=True)
 
 
 @task

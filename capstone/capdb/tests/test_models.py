@@ -92,49 +92,94 @@ def test_volume_save_slug_update(volume_metadata):
     assert slugify(volume_metadata.volume_number) == volume_metadata.volume_number_slug
 
 
-@pytest.mark.django_db(databases=['capdb'])
+@pytest.mark.django_db(databases=["capdb"])
 def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
-
     # set up a redacted case
-    case = case_factory(volume__redacted=True, volume__pdf_file='redacted_volume.pdf')
+    case = case_factory(volume__redacted=True, volume__pdf_file="redacted_volume.pdf")
     structure = case.structure
     page = structure.pages.first()
     structure.opinions = [
         # redacted paragraph
         {
-            'type': 'head',
-            'paragraphs': [
-                {'class': 'parties', 'block_ids': ['BL_1.1'], 'id': 'b1-1', 'redacted': True}
-            ],
-        }, {
-            'type': 'majority',
-            'paragraphs': [
-                # redacted content blocks
-                {'class': 'p', 'block_ids': ['BL_1.2', 'BL_1.3'], 'id': 'b1-2'},
-                # redacted image block
-                {'class': 'image', 'block_ids': ['BL_1.4'], 'id': 'b1-3'},
-            ],
-            # redacted footnote
-            'footnotes': [
+            "type": "head",
+            "paragraphs": [
                 {
-                    # redacted footnote paragraph
-                    'paragraphs': [
-                        {'class': 'p', 'block_ids': ['BL_1.5'], 'id': 'b1-4'}
-                    ],
-                    'label': '1',
-                    'id': 'footnote_1_1',
-                    'redacted': True,
+                    "class": "parties",
+                    "block_ids": ["BL_1.1"],
+                    "id": "b1-1",
+                    "redacted": True,
                 }
             ],
-        }
+        },
+        {
+            "type": "majority",
+            "paragraphs": [
+                # redacted content blocks
+                {
+                    "class": "p",
+                    "block_ids": ["BL_1.2", "BL_1.3"],
+                    "id": "b1-2",
+                },
+                # redacted image block
+                {
+                    "class": "image",
+                    "block_ids": ["BL_1.4"],
+                    "id": "b1-3",
+                },
+            ],
+            # redacted footnote
+            "footnotes": [
+                {
+                    # redacted footnote paragraph
+                    "paragraphs": [
+                        {
+                            "class": "p",
+                            "block_ids": ["BL_1.5"],
+                            "id": "b1-4",
+                        }
+                    ],
+                    "label": "1",
+                    "id": "footnote_1_1",
+                    "redacted": True,
+                }
+            ],
+        },
     ]
     structure.save()
     page.blocks = [
-        {"id": "BL_1.1", "class": "p", "tokens": ["Text 1"]},
-        {"id": "BL_1.2", "class": "p", "tokens": ["Text 2"], "redacted": True},
-        {"id": "BL_1.3", "class": "p", "tokens": [["redact"], "Text 3", ["/redact"]]},
-        {"id": "BL_1.4", "format": "image", "redacted": True, "class": "image", "data": "image data", "rect": [0, 0, 100, 100]},
-        {"id": "BL_1.5", "class": "p", "tokens": ["Text 4"]},
+        {
+            "id": "BL_1.1",
+            "class": "p",
+            "tokens": ["Text 1"],
+            "rect": [25, 11, 300, 490],
+        },
+        {
+            "id": "BL_1.2",
+            "class": "p",
+            "tokens": ["Text 2"],
+            "redacted": True,
+            "rect": [4, 32, 100, 100],
+        },
+        {
+            "id": "BL_1.3",
+            "class": "p",
+            "tokens": [["redact"], "Text 3", ["/redact"]],
+            "rect": [225, 11, 430, 290],
+        },
+        {
+            "id": "BL_1.4",
+            "format": "image",
+            "redacted": True,
+            "class": "image",
+            "data": "image data",
+            "rect": [0, 0, 100, 100],
+        },
+        {
+            "id": "BL_1.5",
+            "class": "p",
+            "tokens": ["Text 4"],
+            "rect": [190, 312, 330, 490],
+        },
     ]
     page.encrypt()
     page.save()
@@ -151,36 +196,43 @@ def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
     # verify redacted case contents
     case.sync_case_body_cache()
     case.refresh_from_db()
-    assert case.body_cache.text == '\n\n'
-    assert xml_equal(case.body_cache.html,
+    assert case.body_cache.text == "\n\n"
+    assert xml_equal(
+        case.body_cache.html,
         '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
         '  <section class="head-matter"/>\n'
         '  <article class="opinion" data-type="majority"/>\n'
-        '</section>')
+        "</section>",
+    )
 
     # unredact
     volume.unredact()
     volume.refresh_from_db()
     case.body_cache.refresh_from_db()
     assert volume.redacted is False
-    assert case.body_cache.text == 'Text 1\nText 2Text 3\nText 4\n'
-    assert html_equal(case.body_cache.html, dedent("""\
+    assert case.body_cache.text == "Text 1\nText 2Text 3\nText 4\n"
+    assert html_equal(
+        case.body_cache.html,
+        dedent(
+            """\
         <section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">
           <section class="head-matter">
-            <h4 class="parties" id="b1-1">Text 1</h4>
+            <h4 class="parties" id="b1-1" data-blocks='[["BL_1.1",0,[25,11,300,490]]]'>Text 1</h4>
           </section>
           <article class="opinion" data-type="majority">
-            <p id="b1-2">Text 2Text 3</p>
-            <p class="image" id="b1-3">
+            <p id="b1-2" data-blocks='[["BL_1.2",0,[4,32,100,100]],["BL_1.3",0,[225,11,430,290]]]'>Text 2Text 3</p>
+            <p class="image" id="b1-3" data-blocks='[["BL_1.4",0,[0,0,100,100]]]'>
               <img src="data:image%20data" class="image" width="100" height="100">
             </p>
             <aside data-label="1" class="footnote" id="footnote_1_1">
               <a href="#ref_footnote_1_1">1</a>
-              <p id="b1-4">Text 4</p>
+              <p id="b1-4" data-blocks='[["BL_1.5",0,[190,312,330,490]]]'>Text 4</p>
             </aside>
           </article>
-        </section>\n"""))
-    assert download_files_storage.contents(volume.pdf_file.name) == 'unredacted'
+        </section>\n"""
+        ),
+    )
+    assert download_files_storage.contents(volume.pdf_file.name) == "unredacted"
 
 
 ### BaseXMLModel ###
@@ -301,55 +353,62 @@ def test_set_volume_number(reset_sequences, case, elasticsearch):
     assert list(new_frontend_url_vols)[0] == new_volume_number
     assert old_frontend_url_vols != new_frontend_url_vols
 
-@pytest.mark.django_db(databases=['capdb'])
-def test_sync_case_body_cache(reset_sequences, case, elasticsearch, case_factory, settings):
-    settings.CACHED_PARENT_HOST = 'case.law'
+@pytest.mark.django_db(databases=["capdb"])
+def test_sync_case_body_cache(
+    reset_sequences, case, elasticsearch, case_factory, settings
+):
+    settings.CACHED_PARENT_HOST = "case.law"
     set_case_text(case, "Foo v. Bar, 1 U.S. 1. ", "Case text 2")
     target_case = case_factory(citations__cite="1 U.S. 1")
     # verify case contents
     case.sync_case_body_cache()
-    assert case.body_cache.text == 'Case text 0\nFoo v. Bar, 1 U.S. 1. Case text 2\nCase text 3\n'
-    assert xml_equal(case.body_cache.html,
+
+    assert (
+        case.body_cache.text
+        == "Case text 0\nFoo v. Bar, 1 U.S. 1. Case text 2\nCase text 3\n"
+    )
+    assert xml_equal(
+        case.body_cache.html,
         '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
         '  <section class="head-matter">\n'
-        '    <h4 class="parties" id="b81-4">Case text 0</h4>\n'
-        '  </section>\n'
+        '    <h4 class="parties" id="b81-4" data-blocks=\'[["BL_81.3",0,[226,1320,752,926]]]\'>Case text 0</h4>\n'
+        "  </section>\n"
         '  <article class="opinion" data-type="majority">\n'
-        f'    <p id="b83-6">Foo v. Bar, <a href="http://cite.case.law/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}">1 U.S. 1</a>. Case text 2</p>\n'
+        f'    <p id="b83-6" data-blocks=\'[["BL_83.6",0,[226,1320,752,926]],["BL_83.7",0,[226,1320,752,926]]]\'>Foo v. Bar, <a href="http://cite.case.law/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}">1 U.S. 1</a>. Case text 2</p>\n'
         '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
         '      <a href="#ref_footnote_1_1">1</a>\n'
-        '      <p id="b83-11">Case text 3</p>\n'
-        '    </aside>\n'
-        '  </article>\n'
-        '</section>\n')
+        '      <p id="b83-11" data-blocks=\'[["BL_83.16",0,[226,1320,752,926]]]\'>Case text 3</p>\n'
+        "    </aside>\n"
+        "  </article>\n"
+        "</section>\n",
+    )
     assert case.body_cache.json == {
-        'attorneys': [],
-        'parties': ['Case text 0'],
-        'judges': [],
-        'opinions': [
+        "attorneys": [],
+        "parties": ["Case text 0"],
+        "judges": [],
+        "opinions": [
+            {"type": "head_matter", "author": "head_matter", "text": "Case text 0"},
             {
-                'type': 'head_matter',
-                'author': 'head_matter',
-                'text': 'Case text 0'
+                "type": "majority",
+                "author": None,
+                "text": "Foo v. Bar, 1 U.S. 1. Case text 2\nCase text 3",
             },
-            {
-                'type': 'majority',
-                'author': None,
-                'text': 'Foo v. Bar, 1 U.S. 1. Case text 2\nCase text 3'
-            }],
-        'corrections': ''
+        ],
+        "corrections": "",
     }
-    assert xml_equal(case.body_cache.xml,
-        '<?xml version=\'1.0\' encoding=\'utf-8\'?>\n'
+    assert xml_equal(
+        case.body_cache.xml,
+        "<?xml version='1.0' encoding='utf-8'?>\n"
         '<casebody firstpage="4" lastpage="8" xmlns="http://nrs.harvard.edu/urn-3:HLS.Libr.US_Case_Law.Schema.Case_Body:v1">\n'
         '  <parties id="b81-4">Case text 0</parties>\n'
         '  <opinion type="majority">\n'
         f'    <p id="b83-6">Foo v. Bar, <extracted-citation url="http://cite.case.law/us/1/1/" index="0" case-ids="{target_case.id}">1 U.S. 1</extracted-citation>. Case text 2</p>\n'
         '    <footnote label="1">\n'
         '      <p id="b83-11">Case text 3</p>\n'
-        '    </footnote>\n'
-        '  </opinion>\n'
-        '</casebody>\n')
+        "    </footnote>\n"
+        "  </opinion>\n"
+        "</casebody>\n",
+    )
 
 @pytest.mark.django_db(databases=['capdb'])
 def test_update_decision_date_on_save(three_cases):
