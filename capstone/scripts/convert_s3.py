@@ -230,7 +230,6 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
 
     # add additional fields from reporter obj
     results["harvard_hollis_id"] = reporter.hollis
-    results["nominative_for_id"] = reporter.nominative_for_id
 
     # remove unnecessary fields
     results.pop("url", None)
@@ -284,6 +283,8 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         ] = volume.nominative_volume_number
     else:
         results["nominative_reporter"] = volume.nominative_reporter_id
+    results.pop("nominative_volume_number", None)
+    results.pop("nominative_name", None)
 
     # remove unnecessary fields
     results.pop("reporter", None)
