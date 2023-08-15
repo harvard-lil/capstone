@@ -281,6 +281,8 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         results["nominative_reporter"][
             "volume_number"
         ] = volume.nominative_volume_number
+        results.pop("nominative_volume_number", None)
+        results.pop("nominative_name", None)
     elif volume.nominative_reporter_id is None and (volume.nominative_volume_number or volume.nominative_name):
         results["nominative_reporter"] = {}
         results["nominative_reporter"]["volume_number"] = volume.nominative_volume_number
