@@ -77,7 +77,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
 
     # TODO: address reporters that share slug
     if reporter_id in reporter_slug_dict:
-        reporter_prefix = f"{reporter_slug_dict[reporter_id]}"
+        reporter_prefix = reporter_slug_dict[reporter_id]
     else:
         reporter_prefix = f"{reporter.short_name_slug}"
 
