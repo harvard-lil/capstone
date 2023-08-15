@@ -65,7 +65,7 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
     reporter = Reporter.objects.get(pk=reporter_id)
 
     # Make sure there are volumes in the reporter
-    if reporter.volume_count is None or reporter.volume_count == "":
+    if not reporter.volumes.exclude(out_of_scope=True):
         print("WARNING: Reporter '{}' contains NO VOLUMES.".format(reporter.full_name))
         return
 
@@ -76,7 +76,10 @@ def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
         return
 
     # TODO: address reporters that share slug
-    reporter_prefix = f"{reporter.short_name_slug}"
+    if reporter_id in reporter_slug_dict:
+        reporter_prefix = reporter_slug_dict[reporter_id]
+    else:
+        reporter_prefix = reporter.short_name_slug
 
     # set bucket name for all operations
     bucket = get_bucket_name(redacted)
@@ -212,6 +215,10 @@ def export_cases_by_volume(
 
 
 # Reporter-specific helper functions
+
+# Some reporters share a slug, so we have to differentiate with ids
+reporter_slug_dict = {"415":"us-ct-cl", "657":"wv-ct-cl",
+                      "580":"mass-app-div-annual", "576":"mass-app-div"}
 
 
 def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
