@@ -458,15 +458,24 @@ def export_cases_to_s3():
     by reporter and volume.
     """
     redacted = True
-    convert_s3.export_cases_to_s3(redacted, "996")
+    convert_s3.export_cases_to_s3(redacted, "528")
 
 
 @task
-def export_volumes_reporters_to_s3():
+def export_reporters_to_s3():
     """
-    Run export of all volumes and all reporters, unfiltered, to S3.
+    Run export of all reporters and their contents to S3.
     """
-    convert_s3.put_volumes_reporters_on_s3(redacted=True)
+    convert_s3.put_reporters_on_s3(redacted=True)
+
+
+@task
+def export_reporters_to_s3_trial():
+    """
+    Run export of all reporters  and their contents to S3
+    for first API page.
+    """
+    convert_s3.put_reporters_on_s3_trial(redacted=True)
 
 
 @task
