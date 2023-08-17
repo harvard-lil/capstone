@@ -15,47 +15,46 @@ from capdb.models import Reporter
 s3_client = boto3.client("s3")
 api_endpoint = "https://api.case.law/v1/"
 
-"""
-This script must be run with boto3 1.26+ rather than the default 1.17.
-"""
 
-
-def put_volumes_reporters_on_s3(redacted: bool) -> None:
+def put_reporters_on_s3_trial(redacted: bool) -> None:
     """
-    Save all reporter and volume metadata to files on S3.
+    Kicks off the full cascading S3 file creation series
+    for a subsection of reporters.
+    """
+    current_endpoint = f"{api_endpoint}reporters/"
+    print("Converting files from ", current_endpoint)
+    response = requests.get(current_endpoint)
+    results = response.json()
+    # write each entry into jsonl
+    for result in results["results"]:
+        # for each reporter, kick off cascading export to S3
+        export_cases_to_s3(redacted, result["id"])
+
+
+def put_reporters_on_s3(redacted: bool) -> None:
+    """
     Kicks off the full cascading file creation series.
     """
-    bucket = get_bucket_name(redacted)
+    current_endpoint = f"{api_endpoint}reporters/"
+    previous_cursor = None
+    current_cursor = ""
 
-    for file_type in ["reporters", "volumes"]:
-        current_endpoint = f"{api_endpoint}{file_type}/"
-        previous_cursor = None
-        current_cursor = ""
+    while current_endpoint:
+        print("Converting files from ", current_endpoint)
+        response = requests.get(current_endpoint)
+        results = response.json()
+        # write each entry into jsonl
+        for result in results["results"]:
+            # for each reporter, kick off cascading export to S3
+            export_cases_to_s3(redacted, result["id"])
 
-        while current_endpoint:
-            response = requests.get(current_endpoint)
-            results = response.json()
-            # write each entry into jsonl
-            for result in results["results"]:
-                metadata_content = json.dumps(result) + "\n"
-                # for each reporter, kick off cascading export to S3
-                if file_type == "reporters":
-                    export_cases_to_s3(redacted, result["id"])
+        # update cursor to access next endpoint
+        current_cursor = results["next"]
+        if current_cursor != previous_cursor:
+            print("Update next to: ", current_cursor)
 
-            # update cursor to access next endpoint
-            current_cursor = results["next"]
-            if current_cursor != previous_cursor:
-                print("Update next to: ", current_cursor)
-
-            previous_cursor = current_cursor
-            current_endpoint = current_cursor
-
-        try:
-            s3_client.put_object(
-                Body=metadata_content, Bucket=bucket, Key=f"{file_type}.jsonl"
-            )
-        except ClientError as err:
-            raise Exception(f"Error uploading {file_type}.jsonl: %s" % err)
+        previous_cursor = current_cursor
+        current_endpoint = current_cursor
 
 
 def export_cases_to_s3(redacted: bool, reporter_id: str) -> None:
