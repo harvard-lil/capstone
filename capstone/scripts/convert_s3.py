@@ -113,17 +113,21 @@ def export_cases_by_volume(
         "query_params": {"body_format": "text"},
     }
 
-    # open each volume and put case text or metadata into file based on format
-    cases_search = CaseDocument.raw_search().filter(
-        "term", volume__barcode=volume.barcode
-    )
     cases = list(volume.case_metadatas.select_related().order_by("case_id"))
 
     if len(cases) == 0:
         print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
         return
 
-    cases_by_id = {case.pk: case for case in cases}
+    # open each volume and put case text or metadata into file based on format
+    cases_search = CaseDocument.raw_search().filter(
+        "term", volume__barcode=volume.barcode
+    )
+
+    # create a dictionary to grab data from each CaseDocument search object
+    cases_search_by_id = {
+        case_search["_source"]["id"]: case_search for case_search in cases_search.scan()
+    }
 
     volume_prefix = f"{reporter_prefix}/{volume.volume_number}"
     put_volume_metadata(dest_bucket, volume, volume_prefix)
@@ -148,9 +152,9 @@ def export_cases_by_volume(
     metadata_contents = ""
 
     # store the serialized case data
-    for item in cases_search.scan():
-        # pass case in to add additional data to the CaseDocument
-        case = cases_by_id[item["_source"]["id"]]
+    for case in cases:
+        # identify associated search item to add additional data
+        item = cases_search_by_id[case.id]
 
         serializer = vars["serializer"](
             item["_source"],
@@ -216,8 +220,12 @@ def export_cases_by_volume(
 # Reporter-specific helper functions
 
 # Some reporters share a slug, so we have to differentiate with ids
-reporter_slug_dict = {"415":"us-ct-cl", "657":"wv-ct-cl",
-                      "580":"mass-app-div-annual", "576":"mass-app-div"}
+reporter_slug_dict = {
+    "415": "us-ct-cl",
+    "657": "wv-ct-cl",
+    "580": "mass-app-div-annual",
+    "576": "mass-app-div",
+}
 
 
 def put_reporter_metadata(bucket: str, reporter: object, key: str) -> None:
@@ -282,9 +290,13 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
         ] = volume.nominative_volume_number
         results.pop("nominative_volume_number", None)
         results.pop("nominative_name", None)
-    elif volume.nominative_reporter_id is None and (volume.nominative_volume_number or volume.nominative_name):
+    elif volume.nominative_reporter_id is None and (
+        volume.nominative_volume_number or volume.nominative_name
+    ):
         results["nominative_reporter"] = {}
-        results["nominative_reporter"]["volume_number"] = volume.nominative_volume_number
+        results["nominative_reporter"][
+            "volume_number"
+        ] = volume.nominative_volume_number
         results["nominative_reporter"]["nominative_name"] = volume.nominative_name
     else:
         results["nominative_reporter"] = None
