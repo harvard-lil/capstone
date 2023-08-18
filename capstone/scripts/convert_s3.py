@@ -29,15 +29,30 @@ def put_reporters_on_s3_trial(redacted: bool) -> None:
     response = requests.get(current_endpoint)
     results = response.json()
     reporters_metadata = ""
+    all_volumes_metadata = ""
+
     # write each entry into jsonl
     for result in results["results"]:
         # for each reporter, kick off cascading export to S3
-        reporter_metadata = export_cases_to_s3(bucket, redacted, result["id"])
+        reporter_metadata, subset_volumes_metadata = export_cases_to_s3(
+            bucket, redacted, result["id"]
+        )
         reporters_metadata += reporter_metadata
+        all_volumes_metadata += subset_volumes_metadata
+
+    # uploads all reporters metadata to top level
     hash_and_upload(
         reporters_metadata,
         bucket,
         "ReportersMetadata.jsonl",
+        "application/jsonl",
+    )
+
+    # uploads all volumes metadata to top level
+    hash_and_upload(
+        all_volumes_metadata,
+        bucket,
+        "VolumesMetadata.jsonl",
         "application/jsonl",
     )
 
@@ -53,6 +68,7 @@ def put_reporters_on_s3(redacted: bool) -> None:
     previous_cursor = None
     current_cursor = ""
     reporters_metadata = ""
+    all_volumes_metadata = ""
 
     while current_endpoint:
         print("Converting files from ", current_endpoint)
@@ -62,8 +78,11 @@ def put_reporters_on_s3(redacted: bool) -> None:
         # write each entry into jsonl
         for result in results["results"]:
             # for each reporter, kick off cascading export to S3
-            reporter_metadata = export_cases_to_s3(bucket, redacted, result["id"])
+            reporter_metadata, subset_volumes_metadata = export_cases_to_s3(
+                bucket, redacted, result["id"]
+            )
             reporters_metadata += reporter_metadata
+            all_volumes_metadata += subset_volumes_metadata
 
         # update cursor to access next endpoint
         current_cursor = results["next"]
@@ -73,7 +92,7 @@ def put_reporters_on_s3(redacted: bool) -> None:
         previous_cursor = current_cursor
         current_endpoint = current_cursor
 
-
+    # uploads all reporters metadata to top level
     hash_and_upload(
         reporters_metadata,
         bucket,
@@ -81,8 +100,16 @@ def put_reporters_on_s3(redacted: bool) -> None:
         "application/jsonl",
     )
 
+    # uploads all volumes metadata to top level
+    hash_and_upload(
+        all_volumes_metadata,
+        bucket,
+        "VolumesMetadata.jsonl",
+        "application/jsonl",
+    )
 
-def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> str:
+
+def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> tuple:
     """
     Write .jsonl file with all cases per reporter.
     """
@@ -91,13 +118,13 @@ def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> str:
     # Make sure there are volumes in the reporter
     if not reporter.volumes.exclude(out_of_scope=True):
         print("WARNING: Reporter '{}' contains NO VOLUMES.".format(reporter.full_name))
-        return ""
+        return ("", "")
 
     # Make sure there are cases in the reporter
     cases_search = CaseDocument.raw_search().filter("term", reporter__id=reporter.id)
     if cases_search.count() == 0:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
-        return ""
+        return ("", "")
 
     # TODO: address reporters that share slug
     if reporter_id in reporter_slug_dict:
@@ -109,19 +136,24 @@ def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> str:
     reporter_metadata = put_reporter_metadata(bucket, reporter, reporter_prefix)
 
     # get in-scope volumes with volume numbers in each reporter
+    subset_volumes_metadata = ""
     for volume in (
         reporter.volumes.exclude(volume_number=None)
         .exclude(volume_number="")
         .exclude(out_of_scope=True)
     ):
         # export volume metadata/cases
-        export_cases_by_volume(volume, reporter_prefix, bucket, redacted)
-    return reporter_metadata
+        volume_metadata = export_cases_by_volume(
+            volume, reporter_prefix, bucket, redacted
+        )
+        subset_volumes_metadata += volume_metadata
+
+    return (reporter_metadata, subset_volumes_metadata)
 
 
 def export_cases_by_volume(
     volume: object, reporter_prefix: str, dest_bucket: str, redacted: bool
-) -> None:
+) -> str:
     """
     Write a .json file for each case per volume.
     Write a .jsonl file with all cases' metadata per volume.
@@ -140,7 +172,7 @@ def export_cases_by_volume(
 
     if len(cases) == 0:
         print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
-        return
+        return ""
 
     # open each volume and put case text or metadata into file based on format
     cases_search = CaseDocument.raw_search().filter(
@@ -153,7 +185,7 @@ def export_cases_by_volume(
     }
 
     volume_prefix = f"{reporter_prefix}/{volume.volume_number}"
-    put_volume_metadata(dest_bucket, volume, volume_prefix)
+    volume_metadata = put_volume_metadata(dest_bucket, volume, volume_prefix)
 
     cases_key = f"{volume_prefix}/Cases/"
 
@@ -238,6 +270,8 @@ def export_cases_by_volume(
 
     # copies each volume PDF to new location if it doesn't already exist
     copy_volume_pdf(volume, volume_prefix, dest_bucket, redacted)
+    # return metadata for single volume
+    return volume_metadata
 
 
 # Reporter-specific helper functions
@@ -284,7 +318,7 @@ def put_reporter_metadata(bucket: str, reporter: object, key: str) -> str:
 # Volume-specific helper functions
 
 
-def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
+def put_volume_metadata(bucket: str, volume: object, key: str) -> str:
     """
     Write a .json file with just the single volume metadata.
     """
@@ -344,6 +378,7 @@ def put_volume_metadata(bucket: str, volume: object, key: str) -> None:
     hash_and_upload(
         volume_metadata, bucket, f"{key}/VolumeMetadata.json", "application/json"
     )
+    return volume_metadata
 
 
 def copy_volume_pdf(
