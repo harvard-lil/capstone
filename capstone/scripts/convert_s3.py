@@ -118,12 +118,14 @@ def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> tuple:
     # Make sure there are volumes in the reporter
     if not reporter.volumes.exclude(out_of_scope=True):
         print("WARNING: Reporter '{}' contains NO VOLUMES.".format(reporter.full_name))
+        # Returning empty string to have something to append to reporter metadata
         return ("", "")
 
     # Make sure there are cases in the reporter
     cases_search = CaseDocument.raw_search().filter("term", reporter__id=reporter.id)
     if cases_search.count() == 0:
         print("WARNING: Reporter '{}' contains NO CASES.".format(reporter.full_name))
+        # Returning empty string to have something to append to reporter metadata
         return ("", "")
 
     # TODO: address reporters that share slug
@@ -172,6 +174,7 @@ def export_cases_by_volume(
 
     if len(cases) == 0:
         print("WARNING: Volume '{}' contains NO CASES.".format(volume.barcode))
+        # Returning empty string to have something to append to volume metadata
         return ""
 
     # open each volume and put case text or metadata into file based on format
