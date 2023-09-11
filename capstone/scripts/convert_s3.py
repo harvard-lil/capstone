@@ -5,12 +5,13 @@ import json
 import requests
 from botocore.exceptions import ClientError
 from collections import namedtuple
+from celery import group, shared_task
 
 from capapi.documents import CaseDocument
 from capapi.serializers import (
     ConvertNoLoginCaseDocumentSerializer,
 )
-from capdb.models import Reporter
+from capdb.models import Reporter, VolumeMetadata
 
 s3_client = boto3.client("s3")
 api_endpoint = "https://api.case.law/v1/"
@@ -139,28 +140,40 @@ def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> tuple:
 
     # get in-scope volumes with volume numbers in each reporter
     subset_volumes_metadata = ""
-    for volume in (
-        reporter.volumes.exclude(volume_number=None)
-        .exclude(volume_number="")
-        .exclude(out_of_scope=True)
-    ):
-        # export volume metadata/cases
-        volume_metadata = export_cases_by_volume(
-            volume, reporter_prefix, bucket, redacted
+
+    job = group(
+        export_cases_by_volume.s(
+            volume=volume.barcode,
+            reporter_prefix=reporter_prefix,
+            dest_bucket=bucket,
+            redacted=redacted,
         )
+        for volume in (
+                reporter.volumes.exclude(volume_number=None)
+                .exclude(volume_number="")
+                .exclude(out_of_scope=True)
+        )
+    )
+
+    results = job.apply_async()
+
+    for volume_metadata in results.get():
         subset_volumes_metadata += volume_metadata
 
     return (reporter_metadata, subset_volumes_metadata)
 
 
+@shared_task
 def export_cases_by_volume(
-    volume: object, reporter_prefix: str, dest_bucket: str, redacted: bool
+    volume: str, reporter_prefix: str, dest_bucket: str, redacted: bool
 ) -> str:
     """
     Write a .json file for each case per volume.
     Write a .jsonl file with all cases' metadata per volume.
     Write a .jsonl file with all volume metadata for this collection.
     """
+
+    volume = VolumeMetadata.objects.get(pk=volume)
 
     case_file_name_index = 1
     prev_case_first_page = None
