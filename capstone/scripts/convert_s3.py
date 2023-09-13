@@ -272,10 +272,18 @@ def export_cases_by_volume(
 
     # remove files from S3 that would otherwise create repeats
     for s3_case_key in s3_contents_hashes:
-        s3_client.delete_object(
-            Bucket=dest_bucket,
-            Key=s3_case_key,
-        )
+        try:
+            s3_client.delete_object(
+                Bucket=dest_bucket,
+                Key=s3_case_key,
+            )
+        except ClientError as err:
+            if err.response['Error']['Code'] == 'NoSuchKey':
+                print(f"Couldn't delete {s3_case_key}, no such key")
+            else:
+                raise Exception(
+                    f"Couldn't delete {dest_bucket}/{s3_case_key}: %s" % err
+                )
 
     hash_and_upload(
         metadata_contents,
