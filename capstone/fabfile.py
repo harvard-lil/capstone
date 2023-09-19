@@ -452,13 +452,13 @@ def retry_export_cases(version_string):
 
 
 @task
-def export_cases_to_s3():
+def export_cases_to_s3(reporter="528"):
     """
     Export a version to S3 of all cases' texts and metadata
     by reporter and volume.
     """
     redacted = True
-    convert_s3.export_cases_to_s3(redacted, "528")
+    convert_s3.export_cases_to_s3(redacted, reporter)
 
 
 @task
