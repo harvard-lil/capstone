@@ -458,7 +458,8 @@ def export_cases_to_s3(reporter="528"):
     by reporter and volume.
     """
     redacted = True
-    convert_s3.export_cases_to_s3(redacted, reporter)
+    bucket = convert_s3.get_bucket_name(redacted)
+    convert_s3.export_cases_to_s3(bucket, redacted, reporter)
 
 
 @task
