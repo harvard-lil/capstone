@@ -225,7 +225,10 @@ def export_cases_by_volume(
     # store the serialized case data
     for case in cases:
         # identify associated search item to add additional data
-        item = cases_search_by_id[case.id]
+        try:
+            item = cases_search_by_id[case.id]
+        except KeyError:
+            continue
 
         serializer = vars["serializer"](
             item["_source"],
