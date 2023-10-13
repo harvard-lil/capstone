@@ -157,8 +157,16 @@ def export_cases_to_s3(bucket: str, redacted: bool, reporter_id: str) -> tuple:
 
     results = job.apply_async()
 
-    for volume_metadata in results.get():
-        subset_volumes_metadata += volume_metadata
+    for i in range(3):
+        try:
+            for volume_metadata in results.get():
+                subset_volumes_metadata += volume_metadata
+            break
+        except ClientError as err:
+            if err.response['Error']['Code'] == 'NoSuchKey':
+                print(f'NoSuchKey in {reporter_id} on try {i + 1}')
+            else:
+                raise
 
     return (reporter_metadata, subset_volumes_metadata)
 
