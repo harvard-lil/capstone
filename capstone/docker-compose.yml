@@ -1,7 +1,7 @@
 version: '2.2'
 services:
     db:
-        image: registry.lil.tools/harvardlil/cap-db:0.12-1e1d786a66cc14c317ff96ba4b52a100
+        image: registry.lil.tools/harvardlil/cap-db:0.13-355de4ae9825784849037c8870a24d41
         platform: linux/amd64
         environment:
             POSTGRES_PASSWORD: password
