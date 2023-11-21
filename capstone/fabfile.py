@@ -1758,6 +1758,7 @@ def calculate_pagerank_scores(
             if score > last_score:
                 percentile = i
             csv_output.writerow([id, score, percentile / total_rows])
+            last_score = score
 
 
 @task
