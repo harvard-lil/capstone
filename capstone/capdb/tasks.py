@@ -195,57 +195,7 @@ def sync_case_body_cache_for_vol(self, volume_id, rerender=True):
     """
     with record_task_status_for_volume(self, volume_id):
         volume = VolumeMetadata.objects.get(pk=volume_id)
-        to_update = []
-        to_create = []
-        all_analyses = []
-        all_cites_to_delete = []
-        all_cites_to_create = []
-        query = volume.case_metadatas.select_related('body_cache')
-
-        # full rendering of HTML/XML
-        if rerender:
-            pages = list(volume.page_structures.all())
-            blocks_by_id = PageStructure.blocks_by_id(pages)
-            fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
-            labels_by_block_id = PageStructure.labels_by_block_id(pages)
-            update_fields = ['html', 'xml', 'text', 'json']
-            query = query.select_related('structure', 'fastcase_import').prefetch_related('citations', 'extracted_citations')
-
-        # just rendering text/json
-        else:
-            query = query.exclude(body_cache=None)
-            blocks_by_id = fonts_by_id = labels_by_block_id = None
-            update_fields = ['text', 'json']
-
-        # do processing
-        for case_metadata in query:
-            changed, analyses, cites_to_delete, cites_to_create = case_metadata.sync_case_body_cache(
-                blocks_by_id,
-                fonts_by_id,
-                labels_by_block_id,
-                rerender=rerender,
-                save=False)
-            if changed:
-                all_analyses.extend(analyses)
-                body_cache = case_metadata.body_cache
-                if body_cache.id:
-                    to_update.append(body_cache)
-                else:
-                    to_create.append(body_cache)
-                all_cites_to_create += cites_to_create
-                all_cites_to_delete += cites_to_delete
-
-        # save
-        if to_create:
-            CaseBodyCache.objects.bulk_create(to_create)
-        if to_update:
-            CaseBodyCache.objects.bulk_update(to_update, update_fields)
-        if all_analyses:
-            CaseAnalysis.bulk_upsert(all_analyses)
-        if all_cites_to_delete:
-            ExtractedCitation.objects.filter(id__in=[c.id for c in all_cites_to_delete]).delete()
-        if all_cites_to_create:
-            ExtractedCitation.objects.bulk_create(all_cites_to_create)
+        volume.sync_case_body_caches(rerender=rerender)
 
 
 @shared_task(bind=True, acks_late=True)  # use acks_late for tasks that can be safely re-run if they fail

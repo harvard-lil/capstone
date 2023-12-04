@@ -36,6 +36,9 @@ def extract_citations(case, html, xml):
     eyecite_cites = []
     cite_home_url = reverse('cite_home').rstrip('/')
 
+    def no_cites_found():
+        return html, xml, [c.id for c in case.extracted_citations.all()], []
+
     # Annotation is faster if we extract paragraph by paragraph. So first get an index of each paragraph in the
     # html and xml to insert annotations into, and parse a cleaned version of the source html to extract citations
     # from:
@@ -75,8 +78,7 @@ def extract_citations(case, html, xml):
 
     # short circuit if no cites found
     if not extracted_els:
-        # delete all existing cites
-        return html, xml, list(case.extracted_citations.all()), []
+        return no_cites_found()
 
     # Look up cases referred to by cites. cases_by_cite gets populated like:
     #   cases_by_cite['cite']['1 U.S. 1'] = {(<case_id>, <decision_date_original>, <frontend_url>)}
@@ -240,25 +242,23 @@ def extract_citations(case, html, xml):
 
             found_cites.append(extracted_cite)
 
-    if found_cites:
-        # serialize annotated html and xml
-        html = serialize_html(html_pq)
-        xml = serialize_xml(xml_pq).decode('utf8')
+    if not found_cites:
+        return no_cites_found()
 
-        # compare newly found cites to existing ones in db
-        new_cites_lookup = {cite_key(c): c for c in found_cites}
-        cites_to_delete  = []
-        for e in case.extracted_citations.all():
-            key = cite_key(e)
-            if key in new_cites_lookup:
-                new_cites_lookup.pop(key)
-            else:
-                cites_to_delete.append(e)
-        cites_to_create = new_cites_lookup.values()
+    # serialize annotated html and xml
+    html = serialize_html(html_pq)
+    xml = serialize_xml(xml_pq).decode('utf8')
 
-    else:
-        cites_to_delete = list(case.extracted_citations.all())
-        cites_to_create = []
+    # compare newly found cites to existing ones in db
+    new_cites_lookup = {cite_key(c): c for c in found_cites}
+    cites_to_delete  = []
+    for e in case.extracted_citations.all():
+        key = cite_key(e)
+        if key in new_cites_lookup:
+            new_cites_lookup.pop(key)
+        else:
+            cites_to_delete.append(e.id)
+    cites_to_create = new_cites_lookup.values()
 
     return html, xml, cites_to_delete, cites_to_create
 
