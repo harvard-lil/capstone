@@ -385,6 +385,10 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_ROUTES = {
+    "scripts.export_cap_static.export_cases_by_volume": {"queue": "cap_static"},
+}
+
 
 ### CAP API settings ###
 

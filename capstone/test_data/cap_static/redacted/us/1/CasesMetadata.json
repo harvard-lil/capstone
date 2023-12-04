@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "name": "First Foo0 versus First Bar0",
+    "name_abbreviation": "Foo0 v. Bar0",
+    "decision_date": "1900-01-01",
+    "docket_number": "",
+    "first_page": "1",
+    "last_page": "5",
+    "citations": [
+      {
+        "type": "official",
+        "cite": "1 U.S. 1"
+      }
+    ],
+    "court": {
+      "name_abbreviation": "U.S.",
+      "id": 1,
+      "name": "United States Supreme Court"
+    },
+    "jurisdiction": {
+      "id": 1,
+      "name_long": "United States",
+      "name": "U.S."
+    },
+    "cites_to": [
+      {
+        "cite": "1 U.S. 1",
+        "category": null,
+        "reporter": null,
+        "opinion_index": -1
+      }
+    ],
+    "analysis": {},
+    "last_updated": "2023-12-01T01:01:01.0000001+00:00",
+    "provenance": {
+      "date_added": "2023-12-05",
+      "source": "Harvard",
+      "batch": "2018"
+    },
+    "first_page_order": 3,
+    "last_page_order": 7
+  },
+  {
+    "id": 2,
+    "name": "First Foo1 versus First Bar1",
+    "name_abbreviation": "Foo1 v. Bar1",
+    "decision_date": "1901-01-01",
+    "docket_number": "",
+    "first_page": "2",
+    "last_page": "6",
+    "citations": [
+      {
+        "type": "official",
+        "cite": "1 U.S. 2"
+      }
+    ],
+    "court": {
+      "name_abbreviation": "U.S.",
+      "id": 1,
+      "name": "United States Supreme Court"
+    },
+    "jurisdiction": {
+      "id": 1,
+      "name_long": "United States",
+      "name": "U.S."
+    },
+    "cites_to": [
+      {
+        "cite": "2 U.S. 2",
+        "category": null,
+        "reporter": null,
+        "opinion_index": -1
+      }
+    ],
+    "analysis": {},
+    "last_updated": "2023-12-01T01:01:01.0000001+00:00",
+    "provenance": {
+      "date_added": "2023-12-05",
+      "source": "Harvard",
+      "batch": "2018"
+    },
+    "first_page_order": 4,
+    "last_page_order": 8
+  },
+  {
+    "id": 3,
+    "name": "First Foo2 versus First Bar2",
+    "name_abbreviation": "Foo2 v. Bar2",
+    "decision_date": "1902-01-01",
+    "docket_number": "",
+    "first_page": "2",
+    "last_page": "6",
+    "citations": [
+      {
+        "type": "official",
+        "cite": "1 Mass. 1"
+      }
+    ],
+    "court": {
+      "name_abbreviation": "U.S.",
+      "id": 1,
+      "name": "United States Supreme Court"
+    },
+    "jurisdiction": {
+      "id": 2,
+      "name_long": "Massachusetts",
+      "name": "Mass."
+    },
+    "cites_to": [],
+    "analysis": {
+      "cardinality": 2,
+      "char_count": 14,
+      "ocr_confidence": 0,
+      "sha256": "8874c1d06c05904e12fef4e76fcdd0ce48b33013e2067d5ebba936f78b8c5d89",
+      "simhash": "1:0000000000000000",
+      "word_count": 2
+    },
+    "last_updated": "2023-12-01T01:01:01.0000001+00:00",
+    "provenance": {
+      "date_added": "2023-12-05",
+      "source": "Harvard",
+      "batch": "2018"
+    },
+    "first_page_order": 4,
+    "last_page_order": 8
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "id": 4,
+  "name": "First Foo3 versus First Bar3",
+  "name_abbreviation": "Foo3 v. Bar3",
+  "decision_date": "1903-01-01",
+  "docket_number": "",
+  "first_page": "1",
+  "last_page": "5",
+  "citations": [
+    {
+      "type": "official",
+      "cite": "1 U.S. 1"
+    }
+  ],
+  "court": {
+    "name_abbreviation": "U.S.",
+    "id": 1,
+    "name": "United States Supreme Court"
+  },
+  "jurisdiction": {
+    "id": 1,
+    "name_long": "United States",
+    "name": "U.S."
+  },
+  "cites_to": [
+    {
+      "cite": "4 U.S. 4",
+      "category": null,
+      "reporter": null,
+      "opinion_index": -1
+    }
+  ],
+  "analysis": {},
+  "last_updated": "2023-12-01T01:01:01.0000001+00:00",
+  "provenance": {
+    "date_added": "2023-12-05",
+    "source": "Harvard",
+    "batch": "2018"
+  },
+  "casebody": {
+    "judges": [
+      "Fearing, C.J., and Korsmo, J., concur."
+    ],
+    "parties": [
+      "In the Matter of the Marriage of Christy Lyle, Respondent, and Keith Lyle, Appellant."
+    ],
+    "opinions": [
+      {
+        "text": "Opinion text",
+        "type": "majority",
+        "author": "Pennell, J."
+      }
+    ],
+    "attorneys": [
+      "Matthew J. Dudley, for appellant.",
+      "Camerina I. Brokaw-Zorrozua (of Maxey Law Office PS), for respondent."
+    ],
+    "corrections": "",
+    "head_matter": "head matter"
+  },
+  "first_page_order": 3,
+  "last_page_order": 7
+}

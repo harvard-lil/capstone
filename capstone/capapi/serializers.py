@@ -546,49 +546,9 @@ class NoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
         return super(DocumentSerializer, self).data
 
 
-class ConvertCaseDocumentSerializer(CaseDocumentSerializer):
-    first_page_order = serializers.CharField()
-    last_page_order = serializers.CharField()
-
-    def to_representation(self, instance):
-        first_page_order = self.context.get("first_page_order")
-        last_page_order = self.context.get("last_page_order")
-
-        data = super().to_representation(instance)
-
-        data.pop("reporter", None)
-        data.pop("volume", None)
-        data.pop("url", None)
-        data.pop("frontend_url", None)
-        data.pop("frontend_pdf_url", None)
-        try:
-            data["court"].pop("slug", None)
-            data["court"].pop("url", None)
-        except KeyError as err:
-            print(f"Cannot pop field {err} because 'court' doesn't exist")
-        try:
-            data["jurisdiction"].pop("slug", None)
-            data["jurisdiction"].pop("whitelisted", None)
-            data["jurisdiction"].pop("url", None)
-        except KeyError as err:
-            print(f"Cannot pop field {err} because 'jurisdiction' doesn't exist")
-
-        if "preview" in data:
-            data.pop("preview")
-        data["first_page_order"] = first_page_order
-        data["last_page_order"] = last_page_order
-        return data
-
-
 class ConvertNoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
-    first_page_order = serializers.CharField()
-    last_page_order = serializers.CharField()
-
     def to_representation(self, instance, check_permissions=False):
         """Tell get_casebody not to check for case download permissions."""
-        first_page_order = self.context.get("first_page_order")
-        last_page_order = self.context.get("last_page_order")
-
         data = super().to_representation(instance, check_permissions=check_permissions)
         try:
             data["casebody"] = data["casebody"]["data"]
@@ -615,8 +575,6 @@ class ConvertNoLoginCaseDocumentSerializer(CaseDocumentSerializerWithCasebody):
 
         data.pop("preview", None)
 
-        data["first_page_order"] = first_page_order
-        data["last_page_order"] = last_page_order
         return data
 
     @property

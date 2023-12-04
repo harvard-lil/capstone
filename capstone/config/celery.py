@@ -17,7 +17,7 @@ app = Celery('config', include=[
     'scripts.update_snippets',
     'scripts.refactor_xml',
     'scripts.make_pdf',
-    'scripts.convert_s3',
+    'scripts.export_cap_static',
 ])
 
 # Using a string here means the worker doesn't have to serialize

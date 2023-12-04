@@ -3,7 +3,6 @@ import lzma
 import tempfile
 import zipfile
 from io import StringIO
-from collections import namedtuple
 from datetime import date
 from pathlib import Path
 from celery import shared_task
@@ -13,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from capapi.documents import CaseDocument
+from capapi.resources import call_serializer
 from capapi.serializers import NoLoginCaseDocumentSerializer, CaseDocumentSerializer
 from capdb.models import Jurisdiction, Reporter
 from capdb.storages import download_files_storage
@@ -155,12 +155,6 @@ def export_case_documents(cases, zip_path, filter_item, public=False):
                 "Bagging-Date: %s\n"
             ) % (filter_item, timezone.now().strftime("%Y-%m-%d"))
 
-            # fake Request object used for serializing cases with DRF's serializer
-            vars['fake_request'] = namedtuple('Request', ['query_params', 'accepted_renderer'])(
-                query_params=vars['query_params'],
-                accepted_renderer=None,
-            )
-
             # create new zip file in memory
             vars['out_spool'] = tempfile.TemporaryFile()
             vars['archive'] = zipfile.ZipFile(vars['out_spool'], 'w', zipfile.ZIP_STORED)
@@ -171,8 +165,8 @@ def export_case_documents(cases, zip_path, filter_item, public=False):
         # write each case
         for item in cases.scan():
             for format_name, vars in formats.items():
-                serializer = vars['serializer'](item['_source'], context={'request': vars['fake_request']})
-                vars['compressed_data_file'].write(bytes(json.dumps(serializer.data), 'utf8') + b'\n')
+                data = call_serializer(vars['serializer'], item['_source'], vars['query_params'])
+                vars['compressed_data_file'].write(bytes(json.dumps(data), 'utf8') + b'\n')
 
         # finish bag for each format
         for format_name, vars in formats.items():

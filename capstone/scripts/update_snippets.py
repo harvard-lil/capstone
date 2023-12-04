@@ -112,6 +112,11 @@ def update_map_numbers():
     """ Write map_numbers snippet. """
     label = "map_numbers"
     snippet_format = "application/json"
+    output = get_map_numbers()
+    write_update(label, snippet_format, json.dumps(output))
+
+
+def get_map_numbers():
     cursor = connections['capdb'].cursor()
     cursor.execute(r"""
         SELECT 
@@ -121,16 +126,19 @@ def update_map_numbers():
           COUNT(DISTINCT c.reporter_id) AS reporter_count,
           SUM(CASE WHEN (c.first_page||c.last_page)~E'^\\d+$' THEN c.last_page::integer-c.first_page::integer+1 ELSE 1 END) AS page_count
         FROM capdb_jurisdiction j 
-          LEFT JOIN capdb_casemetadata c ON j.id=c.jurisdiction_id 
+          JOIN capdb_casemetadata c ON j.id=c.jurisdiction_id 
+          JOIN capdb_volumemetadata v ON c.volume_id=v.barcode
         WHERE
           c.in_scope IS True
+          AND v.out_of_scope IS False
         GROUP BY j.id;
     """)
     # get column names from sql query
     cols = [col[0] for col in cursor.description]
     # create output where each key is a jurisdiction and each value is a dict of values from the sql query
     output = {row[0]: dict(zip(cols[1:], row[1:])) for row in cursor.fetchall()}
-    write_update(label, snippet_format, json.dumps(output))
+    return output
+
 
 def search_jurisdiction_list():
     jurisdictions = [ (jurisdiction.slug, jurisdiction.name_long)

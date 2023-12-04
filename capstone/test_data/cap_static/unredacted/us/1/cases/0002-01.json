@@ -1,0 +1,58 @@
+{
+  "id": 2,
+  "name": "First Foo1 versus First Bar1",
+  "name_abbreviation": "Foo1 v. Bar1",
+  "decision_date": "1901-01-01",
+  "docket_number": "",
+  "first_page": "2",
+  "last_page": "6",
+  "citations": [
+    {
+      "type": "official",
+      "cite": "1 U.S. 2"
+    }
+  ],
+  "court": {
+    "name_abbreviation": "U.S.",
+    "id": 1,
+    "name": "United States Supreme Court"
+  },
+  "jurisdiction": {
+    "id": 1,
+    "name_long": "United States",
+    "name": "U.S."
+  },
+  "cites_to": [],
+  "analysis": {
+    "cardinality": 6,
+    "char_count": 47,
+    "ocr_confidence": 1.0,
+    "sha256": "da95df9d6d5d506285c9a8f9010560fa57905f64b3e94748b8854d678e18f0cc",
+    "simhash": "1:6e45862a08eb1d4c",
+    "word_count": 11
+  },
+  "last_updated": "2023-12-01T01:01:01.0000001+00:00",
+  "provenance": {
+    "date_added": "2023-12-05",
+    "source": "Harvard",
+    "batch": "2018"
+  },
+  "casebody": {
+    "judges": [],
+    "parties": [
+      "Case text 0"
+    ],
+    "opinions": [
+      {
+        "text": "Case text 1Case text 2\nCase text 3",
+        "type": "majority",
+        "author": null
+      }
+    ],
+    "attorneys": [],
+    "corrections": "",
+    "head_matter": "Case text 0"
+  },
+  "first_page_order": 4,
+  "last_page_order": 8
+}
