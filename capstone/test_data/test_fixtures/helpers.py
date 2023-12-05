@@ -1,5 +1,6 @@
 import difflib
 import hashlib
+import os
 from pathlib import Path
 
 from scripts.helpers import parse_xml, parse_html
@@ -114,3 +115,24 @@ def sort_nested_dict(d):
     if isinstance(d, (list, tuple)):
         return [sort_nested_dict(v) for v in d]
     return d
+
+
+def current_test_name():
+    return os.environ.get('PYTEST_CURRENT_TEST').split(':')[-1].split(' ')[0]
+
+
+def check_path(pytestconfig, new_contents, saved_path):
+    """
+    Either report a diff between new_contents and saved_path, or update saved_path to match new_contents, depending on pytest --recreate_files.
+    """
+    if isinstance(new_contents, Path):
+        new_contents = new_contents.read_text()
+    old_contents = saved_path.read_text() if saved_path.exists() else ''
+    if new_contents != old_contents:
+        if pytestconfig.getoption('recreate_files'):
+            saved_path.parent.mkdir(parents=True, exist_ok=True)
+            saved_path.write_text(new_contents)
+        elif old_contents:
+            assert new_contents == old_contents, f"File {saved_path} has changed. Run pytest -k {current_test_name()} --recreate_files to update."
+        else:
+            assert False, f"File {saved_path} does not exist. Run pytest -k {current_test_name()} --recreate_files to update."

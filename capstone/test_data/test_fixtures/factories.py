@@ -306,7 +306,7 @@ class ExtractedCitationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExtractedCitation
 
-    cite = factory.LazyAttribute(lambda o: "%s U.S. %s" % (random.randint(1,999), random.randint(1, 999)))
+    cite = factory.Sequence(lambda n: f'{n+1} U.S. {n+1}')
     # cited_by = factory.SubFactory(CaseFactory)
     opinion_id = 0
 

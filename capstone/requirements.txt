@@ -1105,9 +1105,9 @@ pandas==1.1.3 \
     --hash=sha256:df43ea0e9fd9f9672b0de9cac26d01255ad50481994bf3cb4687c21eec2d7bbc \
     --hash=sha256:fd6f05b6101d0e76f3e5c26a47be5be7be96ed84ef3981dc1852e76898e73594
     # via -r requirements.in
-paramiko==2.10.3 \
-    --hash=sha256:ac6593479f2b47a9422eca076b22cff9f795495e6733a64723efc75dd8c92101 \
-    --hash=sha256:ddb1977853aef82804b35d72a0e597b244fa326c404c350bd00c5b01dbfee71a
+paramiko==2.12.0 \
+    --hash=sha256:376885c05c5d6aa6e1f4608aac2a6b5b0548b1add40274477324605903d9cd49 \
+    --hash=sha256:b2df1a6325f6996ef55a8789d0462f5b502ea83b3c990cbb5bbe57345c6812c4
     # via fabric3
 parso==0.7.1 \
     --hash=sha256:97218d9159b2520ff45eb78028ba8b50d2bc61dcc062a9682666f2dc4bd331ea \

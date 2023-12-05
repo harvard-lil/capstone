@@ -739,31 +739,88 @@ class VolumeMetadata(models.Model):
         super().save(*args, **kwargs)
 
     @transaction.atomic(using='capdb')
-    def unredact(self, key=settings.REDACTION_KEY):
+    def sync_case_body_caches(self, rerender=True, page_structures=None):
+        """
+            Efficiently update case body caches for all cases in this volume.
+        """
+        to_update = []
+        to_create = []
+        all_analyses = []
+        all_cites_to_delete = []
+        all_cites_to_create = []
+        query = self.case_metadatas.select_related('body_cache')
+
+        # full rendering of HTML/XML
+        if rerender:
+            pages = page_structures or list(self.page_structures.all())
+            blocks_by_id = PageStructure.blocks_by_id(pages)
+            fonts_by_id = CaseFont.fonts_by_id(blocks_by_id)
+            labels_by_block_id = PageStructure.labels_by_block_id(pages)
+            update_fields = ['html', 'xml', 'text', 'json']
+            query = query.select_related('structure', 'fastcase_import').prefetch_related('citations', 'extracted_citations')
+
+        # just rendering text/json
+        else:
+            query = query.exclude(body_cache=None)
+            blocks_by_id = fonts_by_id = labels_by_block_id = None
+            update_fields = ['text', 'json']
+
+        # do processing
+        for case_metadata in query:
+            changed, analyses, cites_to_delete, cites_to_create = case_metadata.sync_case_body_cache(
+                blocks_by_id,
+                fonts_by_id,
+                labels_by_block_id,
+                rerender=rerender,
+                save=False)
+            if changed:
+                all_analyses.extend(analyses)
+                body_cache = case_metadata.body_cache
+                if body_cache.id:
+                    to_update.append(body_cache)
+                else:
+                    to_create.append(body_cache)
+                all_cites_to_create += cites_to_create
+                all_cites_to_delete += cites_to_delete
+
+        # save
+        if to_create:
+            CaseBodyCache.objects.bulk_create(to_create)
+        if to_update:
+            CaseBodyCache.objects.bulk_update(to_update, update_fields)
+        if all_analyses:
+            CaseAnalysis.bulk_upsert(all_analyses)
+        if all_cites_to_delete:
+            ExtractedCitation.objects.filter(id__in=all_cites_to_delete).delete()
+        if all_cites_to_create:
+            ExtractedCitation.objects.bulk_create(all_cites_to_create)
+
+    @transaction.atomic(using='capdb')
+    def unredact(self, key=settings.REDACTION_KEY, replace_pdf=True):
         """
             Decrypt encrypted text and remove all redaction flags from the pages and cases for this volume.
             Re-download an unredacted PDF if we're currently sharing a redacted one.
         """
         # decrypt pages
         to_save = []
-        for page in self.page_structures.all():
-            page.unredact(key)
-            to_save.append(page)
+        pages = list(self.page_structures.all())
+        for page in pages:
+            if page.unredact(key):
+                to_save.append(page)
         PageStructure.objects.bulk_update(to_save, ['blocks', 'encrypted_strings'])
 
         # remove case redaction markers
         to_save = []
         for case_structure in CaseStructure.objects.filter(metadata__volume=self):
-            case_structure.unredact()
-            to_save.append(case_structure)
+            if case_structure.unredact():
+                to_save.append(case_structure)
         CaseStructure.objects.bulk_update(to_save, ['opinions'])
 
         # regenerate cases
-        for case in self.case_metadatas.all():
-            case.sync_case_body_cache()
+        self.sync_case_body_caches(page_structures=pages)
 
         # overwrite redacted PDF with unredacted PDF
-        if self.pdf_file:
+        if replace_pdf and self.pdf_file:
             with pdf_storage.open(f"unredacted/{self.pk}.pdf", "rb") as source, \
                  download_files_storage.open(self.pdf_file.name, "wb") as target:
                 shutil.copyfileobj(source, target)
@@ -1234,9 +1291,8 @@ class CaseMetadata(models.Model):
             formats = format_fastcase_html(self)
 
         else:
-            structure = self.structure
             if not blocks_by_id or not labels_by_block_id:
-                pages = list(structure.pages.all())
+                pages = list(self.structure.pages.all())
             blocks_by_id = blocks_by_id or PageStructure.blocks_by_id(pages)
             fonts_by_id = fonts_by_id or CaseFont.fonts_by_id(blocks_by_id)
             labels_by_block_id = labels_by_block_id or PageStructure.labels_by_block_id(pages)
@@ -1268,7 +1324,7 @@ class CaseMetadata(models.Model):
             analyses = self.run_text_analysis(blocks_by_id, save=save)
             if save:
                 body_cache.save()
-                ExtractedCitation.objects.filter(id__in=[c.id for c in cites_to_delete]).delete()
+                ExtractedCitation.objects.filter(id__in=cites_to_delete).delete()
                 ExtractedCitation.objects.bulk_create(cites_to_create)
             return True, analyses, cites_to_delete, cites_to_create
         return False, [], [], []
@@ -2366,24 +2422,30 @@ class PageStructure(models.Model):
             ...     'redacted': True,
             ...     'tokens': [['redact'], ['foo'], 'foo', ['/foo'], ['/redact']],
             ... }])
-            >>> page.unredact()
+            >>> key = b'CGiDpvmQr8NlDnamAhr6Idv8NR+zwpY5i9zEfuWoZSI='
+            >>> page.encrypt(key)
+            >>> assert page.unredact(key) == True
             >>> assert page.blocks == [{
             ...     'unredacted': True,
             ...     'tokens': [['unredact'], ['foo'], 'foo', ['/foo'], ['/unredact']],
             ... }]
         """
-        if self.encrypted_strings:
-            self.decrypt(key)
-            self.encrypted_strings = None
-        token_filter = {'redact': ['unredact'], '/redact': ['/unredact']}
+        if not self.encrypted_strings:
+            return False
+
+        self.decrypt(key)
+        self.encrypted_strings = None
 
         # strip redaction markers from blocks attribute
+        token_filter = {'redact': ['unredact'], '/redact': ['/unredact']}
         for block in self.blocks:
             if 'redacted' in block:
                 del block['redacted']
                 block['unredacted'] = True
             if block.get('tokens', None):
                 block['tokens'] = [(t if type(t) is str else token_filter.get(t[0], t)) for t in block['tokens']]
+
+        return True
 
 
 class CaseStructure(models.Model):
@@ -2408,7 +2470,7 @@ class CaseStructure(models.Model):
             ...         'paragraphs': [{'redacted': True}],
             ...     }],
             ... }])
-            >>> case.unredact()
+            >>> assert case.unredact() is True
             >>> assert case.opinions == [{
             ...     'paragraphs': [{'unredacted': True}],
             ...     'footnotes': [{
@@ -2417,19 +2479,24 @@ class CaseStructure(models.Model):
             ...     }],
             ... }]
         """
+        changed = False
         for opinion in self.opinions:
             for paragraph in opinion.get("paragraphs", []):
                 if "redacted" in paragraph:
+                    changed = True
                     del paragraph["redacted"]
                     paragraph["unredacted"] = True
             for footnote in opinion.get("footnotes", []):
                 if "redacted" in footnote:
+                    changed = True
                     del footnote["redacted"]
                     footnote["unredacted"] = True
                 for paragraph in footnote.get("paragraphs", []):
                     if "redacted" in paragraph:
+                        changed = True
                         del paragraph["redacted"]
                         paragraph["unredacted"] = True
+        return changed
 
 
 class CaseInitialMetadata(models.Model):

@@ -7,6 +7,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import traceback
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
@@ -61,8 +62,8 @@ from scripts import (
     validate_private_volumes as validate_private_volumes_script,
     export,
     update_snippets,
+    export_cap_static,
 )
-from scripts import convert_s3
 from scripts.helpers import (
     copy_file,
     volume_barcode_from_folder,
@@ -298,6 +299,7 @@ def import_web_volumes():
             try:
                 import_volume(f.name)
             except IntegrityError:
+                traceback.print_exc()
                 print(" - integrity error; volume already imported? skipping")
 
 
@@ -452,31 +454,30 @@ def retry_export_cases(version_string):
 
 
 @task
-def export_cases_to_s3(reporter="528"):
+def export_cap_static_volumes(dest_dir="/tmp/cap_exports", reporter=None, volume=None, last_run_before=None):
     """
-    Export a version to S3 of all cases' texts and metadata
-    by reporter and volume.
+    First step of the static files export process: export cases, one celery task per volume.
     """
-    redacted = True
-    bucket = convert_s3.get_bucket_name(redacted)
-    convert_s3.export_cases_to_s3(bucket, redacted, reporter)
+    print("Scheduling tasks to reindex volumes")
+    volumes = VolumeMetadata.objects.exclude(out_of_scope=True)
+    if volume:
+        volumes = volumes.filter(pk=volume)
+    if reporter:
+        volumes = volumes.filter(reporter_id=reporter)
+    tasks.run_task_for_volumes(
+        export_cap_static.export_cases_by_volume,
+        volumes,
+        last_run_before=last_run_before,
+        dest_dir=dest_dir,
+    )
 
 
 @task
-def export_reporters_to_s3():
+def summarize_cap_static(dest_dir="/tmp/cap_exports"):
     """
-    Run export of all reporters and their contents to S3.
+    Second step of the static files export process: add summary files at the reporter level and top level.
     """
-    convert_s3.put_reporters_on_s3(redacted=True)
-
-
-@task
-def export_reporters_to_s3_trial():
-    """
-    Run export of all reporters  and their contents to S3
-    for first API page.
-    """
-    convert_s3.put_reporters_on_s3_trial(redacted=True)
+    export_cap_static.finalize_reporters(dest_dir)
 
 
 @task

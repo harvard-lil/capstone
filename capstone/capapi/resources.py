@@ -1,6 +1,6 @@
 import hashlib
 import concurrent.futures
-from copy import copy 
+from copy import copy
 from functools import reduce
 
 import rest_framework.request
@@ -13,6 +13,7 @@ from django.db import connections
 from django.db.models import QuerySet
 from django.http import QueryDict
 from django.test.utils import CaptureQueriesContext
+from django.test.client import RequestFactory
 from django.utils.functional import SimpleLazyObject
 from django_hosts import reverse as django_hosts_reverse
 from elasticsearch import Elasticsearch
@@ -269,3 +270,11 @@ def api_request(request, viewset, method, url_kwargs={}, get_params={}):
     api_request.GET.update(get_params)
 
     return viewset.as_view({'get': method})(api_request, **url_kwargs)
+
+
+def call_serializer(Serializer, item, query_params=None):
+    """
+        Make a fake DRF request so we can call a DRF serializer with the expected context.
+    """
+    request = rest_framework.request.Request(RequestFactory().get('/', query_params))
+    return Serializer(item, context={'request': request}).data

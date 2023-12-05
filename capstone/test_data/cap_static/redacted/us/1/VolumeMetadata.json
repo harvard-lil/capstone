@@ -1,0 +1,28 @@
+{
+  "volume_number": "1",
+  "title": null,
+  "publisher": null,
+  "publication_year": null,
+  "start_year": null,
+  "end_year": null,
+  "series_volume_number": null,
+  "jurisdictions": [
+    {
+      "id": 2,
+      "name": "Mass.",
+      "name_long": "Massachusetts"
+    },
+    {
+      "id": 1,
+      "name": "U.S.",
+      "name_long": "United States"
+    }
+  ],
+  "id": "1234567891",
+  "harvard_hollis_id": null,
+  "spine_start_year": null,
+  "spine_end_year": null,
+  "publication_city": null,
+  "second_part_of_id": null,
+  "nominative_reporter": null
+}

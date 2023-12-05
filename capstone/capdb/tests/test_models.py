@@ -93,96 +93,8 @@ def test_volume_save_slug_update(volume_metadata):
 
 
 @pytest.mark.django_db(databases=["capdb"])
-def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
-    # set up a redacted case
-    case = case_factory(volume__redacted=True, volume__pdf_file="redacted_volume.pdf")
-    structure = case.structure
-    page = structure.pages.first()
-    structure.opinions = [
-        # redacted paragraph
-        {
-            "type": "head",
-            "paragraphs": [
-                {
-                    "class": "parties",
-                    "block_ids": ["BL_1.1"],
-                    "id": "b1-1",
-                    "redacted": True,
-                }
-            ],
-        },
-        {
-            "type": "majority",
-            "paragraphs": [
-                # redacted content blocks
-                {
-                    "class": "p",
-                    "block_ids": ["BL_1.2", "BL_1.3"],
-                    "id": "b1-2",
-                },
-                # redacted image block
-                {
-                    "class": "image",
-                    "block_ids": ["BL_1.4"],
-                    "id": "b1-3",
-                },
-            ],
-            # redacted footnote
-            "footnotes": [
-                {
-                    # redacted footnote paragraph
-                    "paragraphs": [
-                        {
-                            "class": "p",
-                            "block_ids": ["BL_1.5"],
-                            "id": "b1-4",
-                        }
-                    ],
-                    "label": "1",
-                    "id": "footnote_1_1",
-                    "redacted": True,
-                }
-            ],
-        },
-    ]
-    structure.save()
-    page.blocks = [
-        {
-            "id": "BL_1.1",
-            "class": "p",
-            "tokens": ["Text 1"],
-            "rect": [25, 11, 300, 490],
-        },
-        {
-            "id": "BL_1.2",
-            "class": "p",
-            "tokens": ["Text 2"],
-            "redacted": True,
-            "rect": [4, 32, 100, 100],
-        },
-        {
-            "id": "BL_1.3",
-            "class": "p",
-            "tokens": [["redact"], "Text 3", ["/redact"]],
-            "rect": [225, 11, 430, 290],
-        },
-        {
-            "id": "BL_1.4",
-            "format": "image",
-            "redacted": True,
-            "class": "image",
-            "data": "image data",
-            "rect": [0, 0, 100, 100],
-        },
-        {
-            "id": "BL_1.5",
-            "class": "p",
-            "tokens": ["Text 4"],
-            "rect": [190, 312, 330, 490],
-        },
-    ]
-    page.encrypt()
-    page.save()
+def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path, redacted_case_factory):
+    case = redacted_case_factory()
 
     # set up volume pdfs
     volume = case.volume
@@ -194,15 +106,16 @@ def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
     download_files_storage.save(volume.pdf_file.name, StringIO("redacted"))
 
     # verify redacted case contents
-    case.sync_case_body_cache()
-    case.refresh_from_db()
-    assert case.body_cache.text == "\n\n"
+    assert case.body_cache.text == "\nnot redacted\n"
     assert xml_equal(
         case.body_cache.html,
-        '<section class="casebody" data-case-id="00000000" data-firstpage="4" data-lastpage="8">\n'
-        '  <section class="head-matter"/>\n'
-        '  <article class="opinion" data-type="majority"/>\n'
-        "</section>",
+        '<section class="casebody" data-case-id="00000000" data-firstpage="4" '
+        'data-lastpage="8">\n'
+        '  <section class="head-matter"></section>\n'
+        '  <article class="opinion" data-type="majority">\n'
+        '    <p id="b1-2" data-blocks=\'[["BL_1.2",0,[4,32,100,100]],["BL_1.3",0,[225,11,430,290]]]\'>not redacted</p>\n'
+        '  </article>\n'
+        '</section>\n',
     )
 
     # unredact
@@ -210,7 +123,7 @@ def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
     volume.refresh_from_db()
     case.body_cache.refresh_from_db()
     assert volume.redacted is False
-    assert case.body_cache.text == "Text 1\nText 2Text 3\nText 4\n"
+    assert case.body_cache.text == "Text 1\nText 2Text 3not redacted\nText 4\n"
     assert html_equal(
         case.body_cache.html,
         dedent(
@@ -220,7 +133,7 @@ def test_volume_unredact(reset_sequences, case_factory, monkeypatch, tmp_path):
             <h4 class="parties" id="b1-1" data-blocks='[["BL_1.1",0,[25,11,300,490]]]'>Text 1</h4>
           </section>
           <article class="opinion" data-type="majority">
-            <p id="b1-2" data-blocks='[["BL_1.2",0,[4,32,100,100]],["BL_1.3",0,[225,11,430,290]]]'>Text 2Text 3</p>
+            <p id="b1-2" data-blocks='[["BL_1.2",0,[4,32,100,100]],["BL_1.3",0,[225,11,430,290]]]'>Text 2Text 3not redacted</p>
             <p class="image" id="b1-3" data-blocks='[["BL_1.4",0,[0,0,100,100]]]'>
               <img src="data:image%20data" class="image" width="100" height="100">
             </p>

@@ -13,7 +13,7 @@ from capdb.tasks import update_elasticsearch_from_queue
 from fabfile import refresh_case_body_cache
 from scripts.fastcase import ingest_fastcase
 from scripts.fastcase.format_fastcase import segment_paragraphs
-from test_data.test_fixtures.helpers import sort_nested_dict
+from test_data.test_fixtures.helpers import sort_nested_dict, check_path
 
 
 @pytest.mark.parametrize("input,expected", [
@@ -66,19 +66,6 @@ def test_fastcase_ingest(tmp_path, pytestconfig, elasticsearch):
     copy_tree(str(fastcase_dir), str(tmp_path))
     management.call_command('loaddata', 'capdb/fixtures/jurisdiction.capdb.json.gz', 'capdb/fixtures/reporter.capdb.json.gz', database='capdb')
 
-    # helper to check whether files have changed
-    def check_path(new_contents, saved_path):
-        if isinstance(new_contents, Path):
-            new_contents = new_contents.read_text()
-        old_contents = saved_path.read_text() if saved_path.exists() else ''
-        if new_contents != old_contents:
-            if pytestconfig.getoption('recreate_fastcase_files'):
-                saved_path.write_text(new_contents)
-            elif old_contents:
-                assert new_contents == old_contents, f"File {saved_path} has changed. Run pytest -k test_fastcase_ingest --recreate_fastcase_files to update."
-            else:
-                assert False, f"File {saved_path} does not exist. Run pytest -k test_fastcase_ingest --recreate_fastcase_files to update."
-
     # run the ingest
     ingest_fastcase.pack_volumes(tmp_path, recreate=True)
     ingest_fastcase.main(batch='test_batch', base_dir=tmp_path)
@@ -104,10 +91,11 @@ def test_fastcase_ingest(tmp_path, pytestconfig, elasticsearch):
             case_data['has_body_cache'] = bool(case.body_cache)
             cases[case.case_id] = case_data
             # check case html for changes
-            check_path(case.body_cache.html, fastcase_dir.joinpath(case.fastcase_import.path).with_suffix('.html'))
+            check_path(pytestconfig, case.body_cache.html,
+                       fastcase_dir.joinpath(case.fastcase_import.path).with_suffix('.html'))
         volume_data['cases'] = cases
         data[volume.pk] = volume_data
     data = sort_nested_dict(data)
 
     # check metadata files for changes
-    check_path(yaml.dump(data), fastcase_dir / 'data.yml')
+    check_path(pytestconfig, yaml.dump(data), fastcase_dir / 'data.yml')

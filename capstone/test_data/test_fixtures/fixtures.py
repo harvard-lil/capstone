@@ -33,7 +33,7 @@ from .factories import *
 ### Pytest setup ###
 
 def pytest_addoption(parser):
-    parser.addoption("--recreate_fastcase_files", action="store_true", default=False, help="Recreate files in test_data/fastcase rather than testing existing files")
+    parser.addoption("--recreate_files", action="store_true", default=False, help="Recreate files in test_data/ rather than testing existing files")
 
 
 ### Database setup ###
@@ -410,3 +410,101 @@ def urls(live_server):
 @pytest.fixture
 def map_data():
     management.call_command('loaddata', ('jurisdiction', 'reporter', 'snippet'), database='capdb')
+
+
+@pytest.fixture
+def redacted_case_factory(case_factory):
+    def factory(**kwargs):
+        # set up a redacted case
+        case = case_factory(volume__redacted=True, volume__pdf_file="redacted_volume.pdf", **kwargs)
+        structure = case.structure
+        page = structure.pages.first()
+        structure.opinions = [
+            # redacted paragraph
+            {
+                "type": "head",
+                "paragraphs": [
+                    {
+                        "class": "parties",
+                        "block_ids": ["BL_1.1"],
+                        "id": "b1-1",
+                        "redacted": True,
+                    }
+                ],
+            },
+            {
+                "type": "majority",
+                "paragraphs": [
+                    # redacted content blocks
+                    {
+                        "class": "p",
+                        "block_ids": ["BL_1.2", "BL_1.3"],
+                        "id": "b1-2",
+                    },
+                    # redacted image block
+                    {
+                        "class": "image",
+                        "block_ids": ["BL_1.4"],
+                        "id": "b1-3",
+                    },
+                ],
+                # redacted footnote
+                "footnotes": [
+                    {
+                        # redacted footnote paragraph
+                        "paragraphs": [
+                            {
+                                "class": "p",
+                                "block_ids": ["BL_1.5"],
+                                "id": "b1-4",
+                            }
+                        ],
+                        "label": "1",
+                        "id": "footnote_1_1",
+                        "redacted": True,
+                    }
+                ],
+            },
+        ]
+        structure.save()
+        page.blocks = [
+            {
+                "id": "BL_1.1",
+                "class": "p",
+                "tokens": ["Text 1"],
+                "rect": [25, 11, 300, 490],
+            },
+            {
+                "id": "BL_1.2",
+                "class": "p",
+                "tokens": ["Text 2"],
+                "redacted": True,
+                "rect": [4, 32, 100, 100],
+            },
+            {
+                "id": "BL_1.3",
+                "class": "p",
+                "tokens": [["redact"], "Text 3", ["/redact"], "not redacted"],
+                "rect": [225, 11, 430, 290],
+            },
+            {
+                "id": "BL_1.4",
+                "format": "image",
+                "redacted": True,
+                "class": "image",
+                "data": "image data",
+                "rect": [0, 0, 100, 100],
+            },
+            {
+                "id": "BL_1.5",
+                "class": "p",
+                "tokens": ["Text 4"],
+                "rect": [190, 312, 330, 490],
+            },
+        ]
+        page.encrypt()
+        page.save()
+        case.sync_case_body_cache()
+        case.refresh_from_db()
+        return case
+    return factory
