@@ -1076,6 +1076,9 @@ class CaseMetadata(models.Model):
     custom_footer_message = models.TextField(blank=True, null=True,
                                              help_text="If not provided, custom footer will be filled with default text if elisions or redactions exist")
 
+    # fields for static export
+    static_file_name = models.CharField(blank=True, null=True, max_length=255, help_text="Name of static file to export case to")
+
     objects = CaseMetadataQuerySet.as_manager()
     history = TemporalHistoricalRecords()
     tracker = FieldTracker()

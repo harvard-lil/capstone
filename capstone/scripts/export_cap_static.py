@@ -14,7 +14,8 @@ from tqdm import tqdm
 from capapi.documents import CaseDocument
 from capapi.resources import call_serializer
 from capapi.serializers import VolumeSerializer, NoLoginCaseDocumentSerializer, ReporterSerializer
-from capdb.models import Reporter, VolumeMetadata, Jurisdiction
+from capdb.models import Reporter, VolumeMetadata, Jurisdiction, CaseMetadata
+from scripts.helpers import parse_html, serialize_html
 from scripts.update_snippets import get_map_numbers
 
 
@@ -113,6 +114,30 @@ def export_cases_by_volume(volume: str, dest_dir: str) -> None:
             export_volume(volume, dest_dir / "unredacted")
             transaction.set_rollback(True, using='capdb')
 
+
+def set_case_static_file_names(missing_only=True) -> None:
+    """
+    Set static_file_name for all cases.
+    If two cases start on page 123, they will be named '0123-01' and '0123-02'.
+    """
+    volumes = VolumeMetadata.objects.select_related("reporter").filter(out_of_scope=False)
+    if missing_only:
+        volumes = volumes.filter(case_metadatas__static_file_name=None).select_related('reporter').distinct()
+    for volume in tqdm(volumes):
+        reporter_prefix = reporter_slug_dict.get(volume.reporter_id, volume.reporter.short_name_slug)
+        prev_first_page = None
+        case_file_name_index = 1
+        cases = list(volume.case_metadatas.filter(in_scope=True).order_by('case_id').only("id", "first_page"))
+        for case in cases:
+            if prev_first_page != case.first_page:
+                case_file_name_index = 1
+                prev_first_page = case.first_page
+            else:
+                case_file_name_index += 1
+            case.static_file_name = f"/{reporter_prefix}/{volume.volume_number}/{case.first_page:0>4}-{case_file_name_index:0>2}"
+        CaseMetadata.objects.bulk_update(cases, ["static_file_name"])
+
+
 def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
     """
     Write a .json file for each case per volume.
@@ -120,7 +145,6 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
     Write a .json file with all case metadata per volume.
     Write a .json file with all volume metadata for this collection.
     """
-
     # set up vars
     print("Exporting volume", volume.get_frontend_url())
     reporter_prefix = reporter_slug_dict.get(volume.reporter_id, volume.reporter.short_name_slug)
@@ -136,6 +160,10 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
         print(f"WARNING: Volume '{volume.barcode}' contains NO CASES.")
         return
 
+    # fetch paths of cited cases
+    cited_case_ids = {i for c in cases for e in c.extracted_citations.all() for i in e.target_cases or []}
+    case_paths_by_id = dict(CaseMetadata.objects.filter(id__in=cited_case_ids).values_list("id", "static_file_name"))
+
     # set up temp volume dir
     temp_dir = tempfile.TemporaryDirectory()
     temp_volume_dir = Path(temp_dir.name)
@@ -147,13 +175,14 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
     write_json(temp_volume_dir / "VolumeMetadata.json", volume_metadata)
 
     # variables for case export loop
-    case_file_name_index = 1
-    prev_case_first_page = None
     case_metadatas = []
     case_doc = CaseDocument()
 
     # store the serialized case data
     for case in cases:
+        if not case.static_file_name:
+            raise Exception("All cases must have static_file_name set by fab set_case_static_file_names")
+
         # convert case model to search index format
         search_item = case_doc.prepare(case)
         search_item['last_updated'] = search_item['last_updated'].isoformat()
@@ -165,6 +194,7 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
         # update case_data to match our output format:
         if "casebody" in case_data:
             case_data["casebody"] = case_data["casebody"]["data"]
+        case_data["file_name"] = case.static_file_name.rsplit("/", 1)[-1]
         case_data["first_page_order"] = case.first_page_order
         case_data["last_page_order"] = case.last_page_order
         remove_keys(case_data, [
@@ -180,26 +210,39 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
         ])
         for cite in case_data["cites_to"]:
             cite["opinion_index"] = cite.pop("opinion_id")
+            if "case_ids" in cite:
+                cite["case_paths"] = [case_paths_by_id[i] for i in cite["case_ids"] if i in case_paths_by_id]
 
-        # calculate casefile name
-        first_page = case_data["first_page"]
-        if prev_case_first_page == first_page:
-            case_file_name_index += 1
-        else:
-            case_file_name_index = 1
-        prev_case_first_page = first_page
-        case_file_name = f"{first_page:0>4}-{case_file_name_index:0>2}.json"
+        # fake dates for consistent test files
+        if settings.TESTING:
+            case_data["last_updated"] = "2023-12-01T01:01:01.0000001+00:00"
+            case_data["provenance"]["date_added"] = "2023-12-01"
 
         # write casefile
-        write_json(cases_dir / case_file_name, case_data)
+        write_json(cases_dir / (case_data["file_name"] + ".json"), case_data)
 
         # write metadata without 'casebody'
         case_data.pop("casebody", None)
         case_metadatas.append(case_data)
 
         # write html file
-        html_file_path = (html_dir / case_file_name).with_suffix(".html")
-        html_file_path.write_text(search_item["casebody_data"]["html"])
+        # update the urls inserted by scripts.extract_cites.extract_citations()
+        html = search_item["casebody_data"]["html"]
+        pq_html = parse_html(html)
+        for el in pq_html("a.citation"):
+            el_case_paths = []
+            if "data-case-ids" in el.attrib:
+                el_case_ids = [int(i) for i in el.attrib["data-case-ids"].split(",")]
+                el_case_paths = [case_paths_by_id[i] for i in el_case_ids if i in case_paths_by_id]
+            if el_case_paths:
+                el.attrib["href"] = el_case_paths[0]
+                el.attrib["data-case-paths"] = ",".join(el_case_paths)
+            elif "/citations/?q=" in el.attrib["href"]:
+                el.attrib["href"] = "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1]
+            else:
+                el.attrib["href"] = ""
+        html_file_path = html_dir / (case_data["file_name"] + ".html")
+        html_file_path.write_text(serialize_html(pq_html))
 
     # write metadata file
     write_json(temp_volume_dir / "CasesMetadata.json", case_metadatas)

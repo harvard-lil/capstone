@@ -453,6 +453,15 @@ def retry_export_cases(version_string):
     export.export_all(version_string)
 
 
+### cap static export tasks ###
+
+
+@task
+def set_case_static_file_names():
+    """ Export tasks assume this has been run for all cases. """
+    export_cap_static.set_case_static_file_names()
+
+
 @task
 def export_cap_static_volumes(dest_dir="/tmp/cap_exports", reporter=None, volume=None, last_run_before=None):
     """
@@ -478,6 +487,9 @@ def summarize_cap_static(dest_dir="/tmp/cap_exports"):
     Second step of the static files export process: add summary files at the reporter level and top level.
     """
     export_cap_static.finalize_reporters(dest_dir)
+
+
+### end cap static export tasks ###
 
 
 @task
