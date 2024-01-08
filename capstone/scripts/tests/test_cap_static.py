@@ -33,11 +33,15 @@ def test_export_cap_static(reset_sequences, case_factory, jurisdiction_factory, 
     with django_assert_num_queries(select=8):
         summarize_cap_static(str(tmp_path))
 
-    # fix up last_updated timestamps for consistent comparison
+    # fix up last_updated and date_added timestamps for consistent comparison
     for path in tmp_path.rglob('*/*/*/**/*.json'):
         path.write_text(re.sub(
             r'"last_updated": "[^"]+"',
             '"last_updated": "2023-12-01T01:01:01.0000001+00:00"',
+            path.read_text()))
+        path.write_text(re.sub(
+            r'"date_added": "[^"]+"',
+            '"date_added": "2023-12-01"',
             path.read_text()))
 
     # compare temp dir to test_data/cap_static
