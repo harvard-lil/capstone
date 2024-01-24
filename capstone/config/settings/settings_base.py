@@ -612,3 +612,6 @@ TESTING = False
 
 # max year for which we have caselaw
 CASE_MAX_YEAR = 2020
+
+# setting for temporary usage assessment
+USAGE_LOG_PATH = None
