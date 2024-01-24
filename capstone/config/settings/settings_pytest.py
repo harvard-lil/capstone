@@ -25,3 +25,5 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 # https://github.com/pytest-dev/pytest-django/blob/fba51531f067a985ec6b6be4aec9a2ed5766d69c/pytest_django/live_server_helper.py#L35
 INSTALLED_APPS.remove('django.contrib.staticfiles')
+
+USAGE_LOG_PATH = '/tmp/pytest_access.log'
