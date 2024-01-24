@@ -86,6 +86,9 @@ MIDDLEWARE = [
     # docs say this should come "first", though we're not putting it quite that early
     'django_hosts.middleware.HostsRequestMiddleware',
 
+    # before cache_header_middleware so accessing user won't affect caching
+    'capapi.middleware.access_log_middleware',
+
     # cache middleware should come before:
     # - CsrfViewMiddleware, to skip caching on views that use csrf
     # - SessionMiddleware, to skip caching on views that set session cookies

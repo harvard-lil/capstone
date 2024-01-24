@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.middleware import AuthenticationMiddleware as DjangoAuthenticationMiddleware
@@ -10,6 +12,26 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from .resources import wrap_user
 from config.logging import logger
+
+
+### access log middleware ###
+# temporary middleware to log access, including user account, to understand usage patterns
+def access_log_middleware(get_response):
+    def middleware(request):
+        response = get_response(request)
+        if settings.USAGE_LOG_PATH:
+            user_log = [
+                datetime.now().isoformat(),
+                request.META.get('HTTP_CF_CONNECTING_IP'),
+                request.path,
+                request.user.email if request.user.is_authenticated else None,
+                request.META.get('HTTP_USER_AGENT'),
+                request.META.get('HTTP_REFERER'),
+            ]
+            with open(settings.USAGE_LOG_PATH, 'a') as f:
+                f.write('\t'.join(u or '' for u in user_log) + '\n')
+        return response
+    return middleware
 
 
 ### cache_header_middleware ###
