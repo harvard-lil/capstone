@@ -19,7 +19,7 @@ from config.logging import logger
 def access_log_middleware(get_response):
     def middleware(request):
         response = get_response(request)
-        if settings.USAGE_LOG_PATH:
+        if settings.get('USAGE_LOG_PATH'):
             user_log = [
                 datetime.now().isoformat(),
                 request.META.get('HTTP_CF_CONNECTING_IP'),
