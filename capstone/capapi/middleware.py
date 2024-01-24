@@ -24,7 +24,7 @@ def access_log_middleware(get_response):
                 datetime.now().isoformat(),
                 request.META.get('HTTP_CF_CONNECTING_IP'),
                 request.path,
-                request.user.email if request.user.is_authenticated else None,
+                request.user.email if hasattr(request, 'user') and request.user.is_authenticated else None,
                 request.META.get('HTTP_USER_AGENT'),
                 request.META.get('HTTP_REFERER'),
             ]
