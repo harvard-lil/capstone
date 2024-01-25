@@ -38,6 +38,7 @@
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0001-01",
     "first_page_order": 3,
     "last_page_order": 7
   },
@@ -80,6 +81,7 @@
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0002-01",
     "first_page_order": 4,
     "last_page_order": 8
   },
@@ -122,6 +124,7 @@
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0002-02",
     "first_page_order": 4,
     "last_page_order": 8
   }

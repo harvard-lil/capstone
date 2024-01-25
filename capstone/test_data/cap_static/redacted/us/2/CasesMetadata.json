@@ -38,6 +38,7 @@
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0001-01",
     "first_page_order": 3,
     "last_page_order": 7
   },
@@ -67,19 +68,35 @@
     },
     "cites_to": [
       {
-        "cite": "5 U.S. 5",
-        "category": null,
-        "reporter": null,
-        "opinion_index": -1
+        "cite": "1 U.S. 1",
+        "category": "reporters:federal",
+        "reporter": "U.S.",
+        "case_ids": [
+          1,
+          4
+        ],
+        "opinion_index": 0,
+        "case_paths": [
+          "/us/1/0001-01",
+          "/us/2/0001-01"
+        ]
       }
     ],
-    "analysis": {},
+    "analysis": {
+      "cardinality": 8,
+      "char_count": 41,
+      "ocr_confidence": 1.0,
+      "sha256": "80b0ddd514390e9b9bcb01dd39769ac929bc17ec071f9c28d2347f0f234b39b9",
+      "simhash": "1:c04f00b584bf2008",
+      "word_count": 11
+    },
     "last_updated": "2023-12-01T01:01:01.0000001+00:00",
     "provenance": {
       "date_added": "2023-12-01",
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0002-01",
     "first_page_order": 4,
     "last_page_order": 8
   },
@@ -122,6 +139,7 @@
       "source": "Harvard",
       "batch": "2018"
     },
+    "file_name": "0002-02",
     "first_page_order": 4,
     "last_page_order": 8
   }
