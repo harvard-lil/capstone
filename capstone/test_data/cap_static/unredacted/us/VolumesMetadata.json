@@ -25,7 +25,9 @@
     "spine_end_year": null,
     "publication_city": null,
     "second_part_of_id": null,
-    "nominative_reporter": null
+    "redacted": false,
+    "nominative_reporter": null,
+    "reporter_slug": "us"
   },
   {
     "volume_number": "2",
@@ -53,6 +55,8 @@
     "spine_end_year": null,
     "publication_city": null,
     "second_part_of_id": null,
-    "nominative_reporter": null
+    "redacted": false,
+    "nominative_reporter": null,
+    "reporter_slug": "us"
   }
 ]

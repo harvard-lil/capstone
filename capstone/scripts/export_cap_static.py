@@ -61,7 +61,8 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
         # write reporter-level VolumesMetadata.json
         print("Writing VolumesMetadata.json")
         volumes_metadata = [json.loads(f.read_text()) for f in natsorted(reporter_dir.glob("*/VolumeMetadata.json"))]
-        for volume in volumes_metadata: volume["reporter_slug"] = reporter_dir.name
+        for volume in volumes_metadata:
+            volume["reporter_slug"] = reporter_dir.name
         write_json(reporter_dir / "VolumesMetadata.json", volumes_metadata)
         all_volumes.extend(volumes_metadata)
 
