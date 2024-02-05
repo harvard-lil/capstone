@@ -237,9 +237,12 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
                 el_case_ids = [int(i) for i in el.attrib["data-case-ids"].split(",")]
                 el_case_paths = [case_paths_by_id[i] for i in el_case_ids if i in case_paths_by_id]
             if el_case_paths:
-                el.attrib["href"] = el_case_paths[0]
-                el.attrib["data-case-paths"] = ",".join(el_case_paths)
-            elif "/citations/?q=" in el.attrib["href"]:
+                try:
+                    el.attrib["href"] = el_case_paths[0]
+                    el.attrib["data-case-paths"] = ",".join(el_case_paths)
+                except TypeError:
+                    el.attrib["href"] = ""
+            elif "href" in el.attrib and "/citations/?q=" in el.attrib["href"]:
                 el.attrib["href"] = "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1]
             else:
                 el.attrib["href"] = ""
