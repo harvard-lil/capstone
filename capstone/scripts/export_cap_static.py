@@ -15,6 +15,7 @@ from capapi.documents import CaseDocument
 from capapi.resources import call_serializer
 from capapi.serializers import VolumeSerializer, NoLoginCaseDocumentSerializer, ReporterSerializer
 from capdb.models import Reporter, VolumeMetadata, Jurisdiction, CaseMetadata
+from capdb.tasks import record_task_status_for_volume
 from scripts.helpers import parse_html, serialize_html
 from scripts.update_snippets import get_map_numbers
 
@@ -102,19 +103,20 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
     write_json(dest_dir / "VolumesMetadata.json", all_volumes)
 
 
-@shared_task
-def export_cases_by_volume(volume: str, dest_dir: str) -> None:
-    volume = VolumeMetadata.objects.select_related("reporter").get(pk=volume)
-    dest_dir = Path(dest_dir)
-    export_volume(volume, dest_dir / "redacted")
+@shared_task(bind=True)
+def export_cases_by_volume(self, volume_id: str, dest_dir: str) -> None:
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.select_related("reporter").get(pk=volume_id)
+        dest_dir = Path(dest_dir)
+        export_volume(volume, dest_dir / "redacted")
 
-    # export unredacted version of redacted volumes
-    if settings.REDACTION_KEY and volume.redacted:
-        # use a transaction to temporarily unredact the volume, then roll back
-        with transaction.atomic('capdb'):
-            volume.unredact(replace_pdf=False)
-            export_volume(volume, dest_dir / "unredacted")
-            transaction.set_rollback(True, using='capdb')
+        # export unredacted version of redacted volumes
+        if settings.REDACTION_KEY and volume.redacted:
+            # use a transaction to temporarily unredact the volume, then roll back
+            with transaction.atomic('capdb'):
+                volume.unredact(replace_pdf=False)
+                export_volume(volume, dest_dir / "unredacted")
+                transaction.set_rollback(True, using='capdb')
 
 
 def set_case_static_file_names(missing_only=True) -> None:

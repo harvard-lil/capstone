@@ -32,7 +32,7 @@ def test_export_cap_static(reset_sequences, case_factory, jurisdiction_factory, 
     VolumeMetadata.objects.exclude(pk__in=[v.pk for v in volumes]).update(out_of_scope=True)
 
     # run export to temp dir
-    with django_assert_num_queries(select=39, update=8, insert=2, delete=2, rollback=2):
+    with django_assert_num_queries(select=41, update=10, insert=2, delete=2, rollback=2):
         export_cap_static_volumes(dest_dir=str(tmp_path))
     with django_assert_num_queries(select=8):
         summarize_cap_static(str(tmp_path))
