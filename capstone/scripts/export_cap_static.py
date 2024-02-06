@@ -164,7 +164,11 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
 
     # fetch paths of cited cases
     cited_case_ids = {i for c in cases for e in c.extracted_citations.all() for i in e.target_cases or []}
-    case_paths_by_id = dict(CaseMetadata.objects.filter(id__in=cited_case_ids).values_list("id", "static_file_name"))
+    case_paths_by_id = dict(CaseMetadata.objects.filter(
+        id__in=cited_case_ids,
+        in_scope=True,
+        volume__out_of_scope=False,
+    ).exclude(static_file_name=None).values_list("id", "static_file_name"))
 
     # set up temp volume dir
     temp_dir = tempfile.TemporaryDirectory()
@@ -232,17 +236,26 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
         html = search_item["casebody_data"]["html"]
         pq_html = parse_html(html)
         for el in pq_html("a.citation"):
+            # handle citations to documents outside our collection
+            if "/citations/?q=" in el.attrib["href"]:
+                el.set("href", "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1])
+                continue
+            if "data-case-ids" not in el.attrib:
+                # shouldn't happen
+                continue
             el_case_paths = []
-            if "data-case-ids" in el.attrib:
-                el_case_ids = [int(i) for i in el.attrib["data-case-ids"].split(",")]
-                el_case_paths = [case_paths_by_id[i] for i in el_case_ids if i in case_paths_by_id]
+            el_case_ids = []
+            for i in el.attrib["data-case-ids"].split(","):
+                i = int(i)
+                if i in case_paths_by_id:
+                    el_case_paths.append(case_paths_by_id[i])
+                    el_case_ids.append(i)
             if el_case_paths:
                 el.attrib["href"] = el_case_paths[0]
                 el.attrib["data-case-paths"] = ",".join(el_case_paths)
-            elif "/citations/?q=" in el.attrib["href"]:
-                el.attrib["href"] = "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1]
             else:
                 el.attrib["href"] = ""
+                el.attrib.pop("data-case-ids")
         html_file_path = html_dir / (case_data["file_name"] + ".html")
         html_file_path.write_text(serialize_html(pq_html))
 
