@@ -15,6 +15,7 @@ from capapi.documents import CaseDocument
 from capapi.resources import call_serializer
 from capapi.serializers import VolumeSerializer, NoLoginCaseDocumentSerializer, ReporterSerializer
 from capdb.models import Reporter, VolumeMetadata, Jurisdiction, CaseMetadata
+from capdb.tasks import record_task_status_for_volume
 from scripts.helpers import parse_html, serialize_html
 from scripts.update_snippets import get_map_numbers
 
@@ -102,19 +103,20 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
     write_json(dest_dir / "VolumesMetadata.json", all_volumes)
 
 
-@shared_task
-def export_cases_by_volume(volume: str, dest_dir: str) -> None:
-    volume = VolumeMetadata.objects.select_related("reporter").get(pk=volume)
-    dest_dir = Path(dest_dir)
-    export_volume(volume, dest_dir / "redacted")
+@shared_task(bind=True)
+def export_cases_by_volume(self, volume_id: str, dest_dir: str) -> None:
+    with record_task_status_for_volume(self, volume_id):
+        volume = VolumeMetadata.objects.select_related("reporter").get(pk=volume_id)
+        dest_dir = Path(dest_dir)
+        export_volume(volume, dest_dir / "redacted")
 
-    # export unredacted version of redacted volumes
-    if settings.REDACTION_KEY and volume.redacted:
-        # use a transaction to temporarily unredact the volume, then roll back
-        with transaction.atomic('capdb'):
-            volume.unredact(replace_pdf=False)
-            export_volume(volume, dest_dir / "unredacted")
-            transaction.set_rollback(True, using='capdb')
+        # export unredacted version of redacted volumes
+        if settings.REDACTION_KEY and volume.redacted:
+            # use a transaction to temporarily unredact the volume, then roll back
+            with transaction.atomic('capdb'):
+                volume.unredact(replace_pdf=False)
+                export_volume(volume, dest_dir / "unredacted")
+                transaction.set_rollback(True, using='capdb')
 
 
 def set_case_static_file_names(missing_only=True) -> None:
@@ -164,7 +166,11 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
 
     # fetch paths of cited cases
     cited_case_ids = {i for c in cases for e in c.extracted_citations.all() for i in e.target_cases or []}
-    case_paths_by_id = dict(CaseMetadata.objects.filter(id__in=cited_case_ids).values_list("id", "static_file_name"))
+    case_paths_by_id = dict(CaseMetadata.objects.filter(
+        id__in=cited_case_ids,
+        in_scope=True,
+        volume__out_of_scope=False,
+    ).exclude(static_file_name=None).values_list("id", "static_file_name"))
 
     # set up temp volume dir
     temp_dir = tempfile.TemporaryDirectory()
@@ -232,17 +238,26 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
         html = search_item["casebody_data"]["html"]
         pq_html = parse_html(html)
         for el in pq_html("a.citation"):
+            # handle citations to documents outside our collection
+            if "/citations/?q=" in el.attrib["href"]:
+                el.set("href", "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1])
+                continue
+            if "data-case-ids" not in el.attrib:
+                # shouldn't happen
+                continue
             el_case_paths = []
-            if "data-case-ids" in el.attrib:
-                el_case_ids = [int(i) for i in el.attrib["data-case-ids"].split(",")]
-                el_case_paths = [case_paths_by_id[i] for i in el_case_ids if i in case_paths_by_id]
+            el_case_ids = []
+            for i in el.attrib["data-case-ids"].split(","):
+                i = int(i)
+                if i in case_paths_by_id:
+                    el_case_paths.append(case_paths_by_id[i])
+                    el_case_ids.append(i)
             if el_case_paths:
                 el.attrib["href"] = el_case_paths[0]
                 el.attrib["data-case-paths"] = ",".join(el_case_paths)
-            elif "/citations/?q=" in el.attrib["href"]:
-                el.attrib["href"] = "/citations/?q=" + el.attrib["href"].split("/citations/?q=", 1)[1]
             else:
                 el.attrib["href"] = ""
+                el.attrib.pop("data-case-ids")
         html_file_path = html_dir / (case_data["file_name"] + ".html")
         html_file_path.write_text(serialize_html(pq_html))
 
