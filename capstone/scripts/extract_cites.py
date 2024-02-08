@@ -185,7 +185,15 @@ def extract_citations(case, html, xml):
         # annotate paragraph in html and xml
         if html_annotations:
             for annot_el, annotations in ((xml_els[el_id], xml_annotations), (html_els[el_id], html_annotations)):
-                annot_el.html(annotate(el_text, annotations, annot_el.html(), annotator=annotator))
+                # for annotation to work reliably, we want to replace long html blocks like page numbers
+                # with single unicode characters so the diff between text and html is reliable in the annotate function.
+                # then once we get the result we replace back.
+                el_html = annot_el.html()
+                strings_to_protect = re.findall(r'<a[^>]*>.*?</a>|<[^>]+>', el_html)
+                el_html, char_mapping = encode_strings_as_unicode(el_html, strings_to_protect)
+                el_html = annotate(el_text, annotations, el_html, annotator=partial(annotator, char_mapping))
+                el_html = decode_unicode_to_strings(el_html, char_mapping)
+                annot_el.html(el_html)
 
     # make each ExtractedCitation
     for resolution, cluster in clusters.items():
@@ -338,17 +346,32 @@ def clean_text(text):
     return text
 
 
-def annotator(before, text, after):
+def encode_strings_as_unicode(big_string, substrings):
+    """ Replace substrings in big_string with unique characters in the unicode private use range. """
+    char_mapping = []
+    for i, substring in enumerate(substrings):
+        unicode_char = chr(0xE000 + i)  # start of the private use range
+        char_mapping.append([substring, unicode_char])
+        big_string = big_string.replace(substring, unicode_char)
+    return big_string, char_mapping
+
+
+def decode_unicode_to_strings(big_string, char_mapping):
+    """Undo encode_strings_as_unicode by replacing each pair in char_mapping."""
+    for s, c in char_mapping:
+        big_string = big_string.replace(c, s)
+    return big_string
+
+
+def annotator(char_mapping, before, encoded_text, after):
     """
         Attach annotation tags to a stretch of citation text. If text contains a link or an unbalanced tag, wrap
-        those tags:
-        >>> assert annotator("<tag>", "foo", "</tag>") == "<tag>foo</tag>"
-        >>> assert annotator("<tag>", "foo<em>bar", "</tag>") == "<tag>foo</tag><em><tag>bar</tag>"
-        >>> assert annotator("<tag>", "foo<a>bar</a>baz", "</tag>") == "<tag>foo</tag><a>bar</a><tag>baz</tag>"
+        those tags.
     """
+    text = decode_unicode_to_strings(encoded_text, char_mapping)
     if '<a' in text or not is_balanced_html(text):
-        text = re.sub(r"<a[^>]*>.*?</a>|<[^>]+>", rf"{after}\g<0>{before}", text)
-    return before + text + after
+        encoded_text = re.sub(r'[\uE000-\uF8FF]', rf"{after}\g<0>{before}", encoded_text)
+    return before + encoded_text + after
 
 
 def cite_key(extracted_cite):
