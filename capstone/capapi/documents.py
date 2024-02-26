@@ -172,6 +172,8 @@ class CaseDocument(Document):
 
     restricted = fields.BooleanField()
 
+    search = FTSField()
+
     def prepare_provenance(self, instance):
         return {
             "date_added": instance.date_added.strftime('%Y-%m-%d'),
@@ -223,6 +225,27 @@ class CaseDocument(Document):
 
     def prepare_name_abbreviation(self, instance):
         return instance.redact_obj(instance.name_abbreviation)
+
+    def prepare_search(self, instance):
+        # It seems more efficient to pull the search fields manually, 
+        # as casebody and jurisdiction data is extracted differently 
+        # from the other fields.
+        text_body = self.prepare_casebody_data(instance)['text']
+        
+        text_set = ' '.join(["{} {}".format(blob['author'],blob['text']) 
+            for blob in text_body['opinions']])
+
+        filter_set = [
+            self.prepare_name(instance),
+            self.prepare_name_abbreviation(instance),
+            instance.docket_number,
+            instance.jurisdiction.name_long,
+            instance.court.name,
+            text_set,
+            text_body['corrections'],
+        ]
+
+        return ' '.join(filter_set)
 
     class Django:
         model = CaseMetadata
