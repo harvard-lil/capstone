@@ -287,7 +287,7 @@ def test_sync_case_body_cache(
         '    <h4 class="parties" id="b81-4" data-blocks=\'[["BL_81.3",0,[226,1320,752,926]]]\'>Case text 0</h4>\n'
         "  </section>\n"
         '  <article class="opinion" data-type="majority">\n'
-        f'    <p id="b83-6" data-blocks=\'[["BL_83.6",0,[226,1320,752,926]],["BL_83.7",0,[226,1320,752,926]]]\'>Foo v. Bar, <a href="http://cite.case.law/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}">1 U.S. 1</a>. Case text 2</p>\n'
+        f'    <p id="b83-6" data-blocks=\'[["BL_83.6",0,[226,1320,752,926]],["BL_83.7",0,[226,1320,752,926]]]\'>Foo v. Bar, <a href="http://cite.case.law/us/1/1/" class="citation" data-index="0" data-case-ids="{target_case.id}" data-cite="1 U.S. 1">1 U.S. 1</a>. Case text 2</p>\n'
         '    <aside class="footnote" data-label="1" id="footnote_1_1">\n'
         '      <a href="#ref_footnote_1_1">1</a>\n'
         '      <p id="b83-11" data-blocks=\'[["BL_83.16",0,[226,1320,752,926]]]\'>Case text 3</p>\n'

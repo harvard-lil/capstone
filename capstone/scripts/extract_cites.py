@@ -140,14 +140,15 @@ def extract_citations(case, html, xml):
 
             resolution = resolution_by_cite[eyecite_cite]
             first_cite = clusters[resolution][0]
+            corrected_cite = first_cite.corrected_citation()
             case_ids_attr = None
 
             # get URL attributes for link annotation
             if isinstance(resolution, Resource):
-                target_url = cite_home_url + "/citations/?q=" + urllib.parse.quote(first_cite.corrected_citation())
+                target_url = cite_home_url + "/citations/?q=" + urllib.parse.quote(corrected_cite)
             else:
                 # cite resolved to a tuple of CaseMetadata objects
-                case_ids_attr = ','.join(str(r.id) for r in resolution)
+                case_ids_attr = ','.join(sorted(str(r.id) for r in resolution))
                 if len(resolution) == 1:
                     # attempt to jump directly to cited page, if pin cite starts with digits
                     pin_cite = ''
@@ -170,7 +171,7 @@ def extract_citations(case, html, xml):
             span = eyecite_cite.span()
             html_annotations.append((
                 span,
-                f'<a href="{target_url}" class="citation" data-index="{cite_index}"' +
+                f'<a href="{target_url}" class="citation" data-index="{cite_index}" data-cite="{corrected_cite}"' +
                 (f' data-case-ids="{case_ids_attr}"' if case_ids_attr else '') + '>',
                 '</a>'
             ))
@@ -189,7 +190,7 @@ def extract_citations(case, html, xml):
                 # with single unicode characters so the diff between text and html is reliable in the annotate function.
                 # then once we get the result we replace back.
                 el_html = annot_el.html()
-                strings_to_protect = re.findall(r'<a[^>]*>.*?</a>|<[^>]+>', el_html)
+                strings_to_protect = re.findall(r'<a[^>]*>.*?</a>|<[^>]+>', el_html, flags=re.S)
                 el_html, char_mapping = encode_strings_as_unicode(el_html, strings_to_protect)
                 el_html = annotate(el_text, annotations, el_html, annotator=partial(annotator, char_mapping))
                 el_html = decode_unicode_to_strings(el_html, char_mapping)
@@ -352,7 +353,7 @@ def encode_strings_as_unicode(big_string, substrings):
     for i, substring in enumerate(substrings):
         unicode_char = chr(0xE000 + i)  # start of the private use range
         char_mapping.append([substring, unicode_char])
-        big_string = big_string.replace(substring, unicode_char)
+        big_string = big_string.replace(substring, unicode_char, 1)
     return big_string, char_mapping
 
 

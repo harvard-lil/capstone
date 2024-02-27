@@ -288,18 +288,18 @@ def test_extract_citations(reset_sequences, case_factory, elasticsearch, client,
     # check html
     assert (
         """
-    <p id="b83-6" data-blocks=\'[["BL_83.6",3,[226,1320,752,926]],["BL_83.7",3,[226,1320,752,926]]]\'>
-        correct: Foo v. Bar, <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="0" data-case-ids="1">1 U.S. 1</a>, 12 (2000) (overruling).
-        extra cruft matched: <a href="http://cite.case.test:8000/citations/?q=2%20F.%20Supp.%202" class="citation" data-index="1">2 F.-'Supp.- 2</a>
-        custom reporters: <a href="http://cite.case.test:8000/citations/?q=125%20Vt.%20152" class="citation" data-index="2">125 Yt. 152</a>
-        statutes: <a href="http://cite.case.test:8000/citations/?q=Ala.%20Code%20%C2%A7%2092.979" class="citation" data-index="3">Ala. Code § 92.979</a>
-        law journals: <a href="http://cite.case.test:8000/citations/?q=1%20Minn.%20L.%20Rev.%201" class="citation" data-index="4">1 Minn. L. Rev. 1</a>
+    <p id="b83-6" data-blocks='[["BL_83.6",3,[226,1320,752,926]],["BL_83.7",3,[226,1320,752,926]]]'>
+        correct: Foo v. Bar, <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="0" data-cite="1 U.S. 1" data-case-ids="1">1 U.S. 1</a>, 12 (2000) (overruling).
+        extra cruft matched: <a href="http://cite.case.test:8000/citations/?q=2%20F.%20Supp.%202" class="citation" data-index="1" data-cite="2 F. Supp. 2">2 F.-'Supp.- 2</a>
+        custom reporters: <a href="http://cite.case.test:8000/citations/?q=125%20Vt.%20152" class="citation" data-index="2" data-cite="125 Vt. 152">125 Yt. 152</a>
+        statutes: <a href="http://cite.case.test:8000/citations/?q=Ala.%20Code%20%C2%A7%2092.979" class="citation" data-index="3" data-cite="Ala. Code § 92.979">Ala. Code § 92.979</a>
+        law journals: <a href="http://cite.case.test:8000/citations/?q=1%20Minn.%20L.%20Rev.%201" class="citation" data-index="4" data-cite="1 Minn. L. Rev. 1">1 Minn. L. Rev. 1</a>
     </p>
     <aside data-label="1" class="footnote" id="footnote_1_1">
       <a href="#ref_footnote_1_1">1</a>
-      <p id="b83-11" data-blocks=\'[["BL_83.16",3,[226,1320,752,926]]]\'>
-        normalized: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="5" data-case-ids="2,3">2 US 2</a>
-        short cites: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="6" data-case-ids="2,3">id.</a> <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="7" data-case-ids="1">1 U.S. at 153</a>.
+      <p id="b83-11" data-blocks='[["BL_83.16",3,[226,1320,752,926]]]'>
+        normalized: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="5" data-cite="2 U.S. 2" data-case-ids="2,3">2 US 2</a>
+        short cites: <a href="http://cite.case.test:8000/us/2/2/" class="citation" data-index="6" data-cite="2 U.S. 2" data-case-ids="2,3">id.</a> <a href="http://cite.case.test:8000/us/1/1/#p12" class="citation" data-index="7" data-cite="1 U.S. 1" data-case-ids="1">1 U.S. at 153</a>.
         ignored, too much cruft: 125 f. supp.-' 152
     </p>
     </aside>
