@@ -4,10 +4,6 @@
     "slug": "mass",
     "name": "Mass.",
     "name_long": "Massachusetts",
-    "case_count": 2,
-    "volume_count": 2,
-    "reporter_count": 1,
-    "page_count": 10,
     "reporters": [
       {
         "id": 1,
@@ -18,17 +14,17 @@
         "harvard_hollis_id": [],
         "slug": "us"
       }
-    ]
+    ],
+    "case_count": 2,
+    "volume_count": 2,
+    "reporter_count": 1,
+    "page_count": 10
   },
   {
     "id": 1,
     "slug": "us",
     "name": "U.S.",
     "name_long": "United States",
-    "case_count": 4,
-    "volume_count": 2,
-    "reporter_count": 1,
-    "page_count": 20,
     "reporters": [
       {
         "id": 1,
@@ -39,6 +35,10 @@
         "harvard_hollis_id": [],
         "slug": "us"
       }
-    ]
+    ],
+    "case_count": 4,
+    "volume_count": 2,
+    "reporter_count": 1,
+    "page_count": 20
   }
 ]
