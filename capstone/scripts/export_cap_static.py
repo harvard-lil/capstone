@@ -2,12 +2,11 @@ import shutil
 import tempfile
 from pathlib import Path
 
-import boto3
 import json
-from botocore.exceptions import ClientError
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Count, Q
 from natsort import natsorted
 from tqdm import tqdm
 
@@ -16,9 +15,9 @@ from capapi.resources import call_serializer
 from capapi.serializers import VolumeSerializer, NoLoginCaseDocumentSerializer, ReporterSerializer
 from capdb.models import Reporter, VolumeMetadata, Jurisdiction, CaseMetadata
 from capdb.tasks import record_task_status_for_volume
+from capweb.helpers import select_raw_sql
 from scripts.helpers import parse_html, serialize_html
 from scripts.update_snippets import get_map_numbers
-
 
 # steps:
 # - export volumes: fab export_cap_static_volumes calls export_cases_by_volume()
@@ -38,13 +37,10 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
 
     # write missing reporter metadata
     print("Writing missing reporter metadata")
-    all_volumes = []
     for reporter_dir in tqdm(dest_dir.iterdir()):
         if not reporter_dir.is_dir():
             continue
         reporter_metadata_path = reporter_dir / "ReporterMetadata.json"
-        if reporter_metadata_path.exists():
-            continue
 
         # fetch reporter object
         if reporter_dir.name in reporter_slug_dict_reverse:
@@ -65,7 +61,6 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
         for volume in volumes_metadata:
             volume["reporter_slug"] = reporter_dir.name
         write_json(reporter_dir / "VolumesMetadata.json", volumes_metadata)
-        all_volumes.extend(volumes_metadata)
 
     # write ReportersMetadata.json
     print("Writing ReportersMetadata.json")
@@ -79,28 +74,75 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
     jurisdictions = {}
     jurisdiction_counts = get_map_numbers()
     for jurisdiction in Jurisdiction.objects.all():
-        if jurisdiction.slug not in jurisdiction_counts:
-            continue
         jurisdictions[jurisdiction.id] = {
             "id": jurisdiction.pk,
             "slug": jurisdiction.slug,
             "name": jurisdiction.name,
             "name_long": jurisdiction.name_long,
-            **jurisdiction_counts[jurisdiction.slug],
             "reporters": [],
         }
+        if jurisdiction.slug in jurisdiction_counts:
+            jurisdictions[jurisdiction.id].update(jurisdiction_counts[jurisdiction.slug])
 
     for reporter in reporters_metadata:
         reporter_jurisdictions = reporter.pop("jurisdictions")
         for jurisdiction in reporter_jurisdictions:
             jurisdictions[jurisdiction["id"]]["reporters"].append(reporter)
+    for jurisdiction_id in list(jurisdictions.keys()):
+        if not jurisdictions[jurisdiction_id]["reporters"]:
+            jurisdictions.pop(jurisdiction_id)
 
     jurisdictions = [j for j in sorted(jurisdictions.values(), key=lambda j: j["name_long"])]
     write_json(dest_dir / "JurisdictionsMetadata.json", jurisdictions)
 
     # write top-level VolumesMetadata.json
     print("Writing VolumesMetadata.json")
+    all_volumes = []
+    for v in dest_dir.glob('*/VolumesMetadata.json'):
+        all_volumes.extend(json.loads(v.read_text()))
     write_json(dest_dir / "VolumesMetadata.json", all_volumes)
+
+
+def crosscheck_reporters_dir(dest_dir: Path) -> None:
+    """
+    Check that all volumes in the database are in the expected location in dest_dir.
+    Check expected case counts.
+    Check expected reporter-level files.
+    """
+    volumes = VolumeMetadata.objects.exclude(out_of_scope=True).annotate(
+        # add count of case_metadatas with in_scope = True
+        case_count=Count('case_metadatas', filter=Q(case_metadatas__in_scope=True))
+    ).select_related("reporter")
+    reporter_dirs = set()
+    # suspicious_volumes = []
+    for volume in tqdm(volumes):
+        if not volume.case_count:
+            continue
+        reporter_prefix, volume_prefix = get_prefixes(volume)
+        reporter_dirs.add(reporter_prefix)
+        volume_dir = dest_dir / reporter_prefix / volume_prefix
+        if not volume_dir.exists():
+            print(f"Volume {volume.barcode} is missing from {volume_dir}")
+            continue
+        volume_metadata = json.loads((volume_dir / "VolumeMetadata.json").read_text())
+        if volume_metadata["id"] != volume.pk:
+            print(f"Volume {volume.barcode} has mismatched id {volume_metadata['id']} in {volume_dir}.")
+            continue
+        case_count = len(list(volume_dir.glob("cases/*.json")))
+        html_count = len(list(volume_dir.glob("html/*.html")))
+        if case_count != volume.case_count:
+            print(f"Volume {volume.barcode} has {case_count} cases in {volume_dir}, but {volume.case_count} in the database.")
+        if html_count != case_count:
+            print(f"Volume {volume.barcode} has {html_count} html files in {volume_dir}, but {case_count} cases.")
+        if not (volume_dir / "CasesMetadata.json").exists():
+            print(f"Volume {volume.barcode} is missing CasesMetadata.json in {volume_dir}")
+        if not (volume_dir / "VolumeMetadata.json").exists():
+            print(f"Volume {volume.barcode} is missing CasesMetadata.json in {volume_dir}")
+    for reporter_prefix in reporter_dirs:
+        reporter_dir = dest_dir / reporter_prefix
+        for fname in ("ReporterMetadata.json", "VolumesMetadata.json"):
+            if not (reporter_dir / fname).exists():
+                print(f"Reporter {reporter_prefix} is missing {fname} in {reporter_dir}")
 
 
 @shared_task(bind=True)
@@ -128,17 +170,18 @@ def set_case_static_file_names(missing_only=True) -> None:
     if missing_only:
         volumes = volumes.filter(case_metadatas__static_file_name=None).select_related('reporter').distinct()
     for volume in tqdm(volumes):
-        reporter_prefix = reporter_slug_dict.get(volume.reporter_id, volume.reporter.short_name_slug)
+        reporter_prefix, volume_prefix = get_prefixes(volume)
         prev_first_page = None
         case_file_name_index = 1
-        cases = list(volume.case_metadatas.filter(in_scope=True).order_by('case_id').only("id", "first_page"))
+        cases = volume.case_metadatas.filter(in_scope=True).only("id", "first_page", "case_id")
+        cases = natsorted(cases, key=lambda c: (c.first_page, c.case_id))
         for case in cases:
             if prev_first_page != case.first_page:
                 case_file_name_index = 1
                 prev_first_page = case.first_page
             else:
                 case_file_name_index += 1
-            case.static_file_name = f"/{reporter_prefix}/{volume.volume_number}/{case.first_page:0>4}-{case_file_name_index:0>2}"
+            case.static_file_name = f"/{reporter_prefix}/{volume_prefix}/{case.first_page:0>4}-{case_file_name_index:0>2}"
         CaseMetadata.objects.bulk_update(cases, ["static_file_name"])
 
 
@@ -151,8 +194,8 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
     """
     # set up vars
     print("Exporting volume", volume.get_frontend_url())
-    reporter_prefix = reporter_slug_dict.get(volume.reporter_id, volume.reporter.short_name_slug)
-    volume_dir = dest_dir / reporter_prefix / volume.volume_number
+    reporter_prefix, volume_prefix = get_prefixes(volume)
+    volume_dir = dest_dir / reporter_prefix / volume_prefix
 
     # don't overwrite existing volumes
     if volume_dir.exists():
@@ -317,50 +360,6 @@ def volume_to_dict(volume: VolumeMetadata) -> dict:
     return volume_data
 
 
-def copy_volume_pdf(
-    volume: object, volume_prefix: str, dest_bucket: str, redacted: bool
-) -> None:
-    """
-    Copy PDF volume from original location to destination bucket
-    """
-    s3_client = boto3.client("s3")
-
-    if redacted:
-        source_prefix = "pdf/redacted"
-    else:
-        source_prefix = "pdf/unredacted"
-
-    try:
-        s3_client.head_object(Bucket=dest_bucket, Key=f"{volume_prefix}/Volume.pdf")
-        print(f"{dest_bucket}/{volume_prefix}/Volume.pdf already uploaded!")
-    except ClientError as err:
-        if err.response["Error"]["Code"] == "404":
-            # "With a copy command, the checksum of the object is a direct checksum of the full object."
-            # https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html
-            copy_source = {
-                "Bucket": "harvard-cap-archive",
-                "Key": f"{source_prefix}/{volume.barcode}.pdf",
-            }
-            copy_object_params = {
-                "Bucket": dest_bucket,
-                "Key": f"{volume_prefix}/Volume.pdf",
-                "CopySource": copy_source,
-            }
-
-            s3_client.copy_object(**copy_object_params)
-            print(
-                f"Copied {source_prefix}/{volume.barcode}.pdf to \
-                {volume_prefix}/Volume.pdf"
-            )
-        else:
-            raise Exception(
-                f"Cannot upload {source_prefix}/{volume.barcode}.pdf to \
-                {volume_prefix}/Volume.pdf: %s"
-                % err
-            )
-
-
-
 ### helpers ###
 
 # Some reporters share a slug, so we have to differentiate with ids
@@ -395,3 +394,55 @@ def write_json(path: Path, contents) -> None:
     Write contents to path
     """
     path.write_text(json.dumps(contents, indent=2) + "\n")
+
+
+def get_prefixes(volume):
+    reporter_prefix = reporter_slug_dict.get(volume.reporter_id, volume.reporter.short_name_slug)
+    volume_prefix = (
+        f"{volume.volume_number}-2" if volume.second_part_of_id
+        else colliding_volumes[volume.pk] if volume.pk in colliding_volumes
+        else volume.volume_number
+    )
+    return reporter_prefix, volume_prefix
+
+
+def get_colliding_volumes():
+    # find volumes that have identical reporter and volume number, and don't have second_part_of
+    # this is either early N.C., which is known to be messed up, or A.3d where we got volumes
+    # donated from Fastcase redundant with volumes we already had
+    counts = {}
+    lookup = {}
+    for row in select_raw_sql("""
+        SELECT v2.barcode AS id, v2.volume_number, v2.reporter_id
+        FROM capdb_volumemetadata v1
+        JOIN capdb_volumemetadata v2 ON v1.volume_number = v2.volume_number
+                                      AND v1.reporter_id = v2.reporter_id
+                                      AND v1.barcode < v2.barcode
+        WHERE v1.out_of_scope = FALSE
+        AND v2.out_of_scope = FALSE
+        AND v1.second_part_of_id IS NULL
+        AND v2.second_part_of_id IS NULL
+        AND EXISTS (
+            SELECT 1 FROM capdb_casemetadata c1
+            WHERE c1.volume_id = v1.barcode
+            AND c1.in_scope = TRUE
+        )
+        AND EXISTS (
+            SELECT 1 FROM capdb_casemetadata c2
+            WHERE c2.volume_id = v2.barcode
+            AND c2.in_scope = TRUE
+        )
+        ORDER BY v2.barcode
+    """, using="capdb"):
+        if row.id in lookup:
+            continue
+        count_key = (row.reporter_id, row.volume_number)
+        if count_key in counts:
+            counts[count_key] += 1
+        else:
+            counts[count_key] = 1
+        lookup[row.id] = f"{row.volume_number}-{1+counts[count_key]}"
+    return lookup
+
+# hardcoding this for now to avoid running get_colliding_volumes()
+colliding_volumes = {'32044133499640': '60-2', 'A3d_138': '138-2', 'A3d_139': '139-2', 'A3d_140': '140-2', 'A3d_141': '141-2', 'A3d_142': '142-2', 'A3d_143': '143-2', 'A3d_144': '144-2', 'A3d_145': '145-2', 'A3d_146': '146-2', 'A3d_147': '147-2', 'A3d_148': '148-2', 'A3d_149': '149-2', 'A3d_150': '150-2', 'A3d_151': '151-2', 'A3d_152': '152-2', 'A3d_153': '153-2', 'A3d_154': '154-2', 'A3d_155': '155-2', 'A3d_156': '156-2', 'A3d_157': '157-2', 'A3d_158': '158-2', 'A3d_159': '159-2', 'A3d_160': '160-2', 'A3d_161': '161-2', 'A3d_162': '162-2', 'A3d_163': '163-2', 'A3d_164': '164-2', 'A3d_165': '165-2', 'A3d_166': '166-2', 'A3d_167': '167-2', 'A3d_168': '168-2', 'A3d_169': '169-2', 'A3d_170': '170-2', 'A3d_171': '171-2', 'A3d_172': '172-2', 'A3d_173': '173-2', 'A3d_174': '174-2', 'A3d_175': '175-2', 'A3d_176': '176-2', 'A3d_177': '177-2', 'A3d_178': '178-2', 'NOTALEPH000015': '5-2', 'NOTALEPH000021': '1-2', 'NOTALEPH000022': '4-2', 'NOTALEPH000032': '1-3'}
