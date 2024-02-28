@@ -136,6 +136,7 @@ API_HOST_OVERRIDE = None
 # API_HOST_OVERRIDE = 'https://api.case.law'
 
 DOCS_SHOW_DRAFTS = False
+SHOW_DEPRECATION_BANNER = False
 
 TEMPLATES = [
     {
@@ -160,6 +161,7 @@ TEMPLATES = [
 
 TEMPLATE_VISIBLE_SETTINGS = (
     'CASE_MAX_YEAR',
+    'SHOW_DEPRECATION_BANNER',
 )
 
 WSGI_APPLICATION = 'config.wsgi.application'

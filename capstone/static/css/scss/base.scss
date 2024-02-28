@@ -60,6 +60,13 @@ body {
   flex-direction: column;
 }
 
+.deprecation-banner {
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.2;
+  background-color: $color-yellow;
+}
+
 // BUTTONS & LINKS
 a, button, .btn,
 .btn-primary, .btn-secondary, .btn-tertiary {
