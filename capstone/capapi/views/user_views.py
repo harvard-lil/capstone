@@ -32,6 +32,9 @@ def register_user(request):
     if not request.user.is_anonymous:
         return HttpResponseRedirect(reverse('user-details'))
 
+    if settings.DISABLE_SIGNUPS:
+        return HttpResponseRedirect('/')
+
     form = form_for_request(request, RegisterUserForm)
     if request.method == 'POST' and form.is_valid():
         form.save()

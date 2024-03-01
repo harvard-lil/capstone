@@ -68,6 +68,12 @@
   </head>
   <body class="hamburger-menu-closed" tabindex="-1">
 
+    {% if SHOW_DEPRECATION_BANNER %}
+      <div class="deprecation-banner">
+        <strong>Deprecation Notice</strong>: As part of the transition of Caselaw Access Project data to a static state, new CAP accounts are no longer available and the CAP API will sunset on September 1, 2024. You are currently viewing the legacy version of the Caselaw Access Project's website.
+      </div>
+    {% endif %}
+
     {% include "includes/nav.html" %}
     <div id="content-and-footer" tabindex="-1">
       <main class="all-content flex-xl-nowrap {% block all_content_style %}{% endblock %}" id="main">

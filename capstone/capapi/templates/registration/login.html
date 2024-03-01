@@ -23,11 +23,13 @@
     </button>
     <input type="hidden" name="next" value="{{next}}" />
   </form>
+  {% if not DISABLE_SIGNUPS %}
   <p>
     Don't have an account?
     <a href="{%  url 'register'  %}"
        class="">Sign up</a>
   </p>
+  {% endif %}
   <p>
     Lost your password?
     <a href="{% url 'password_reset' %}"
