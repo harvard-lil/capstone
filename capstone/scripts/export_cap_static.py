@@ -46,7 +46,7 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
         if reporter_dir.name in reporter_slug_dict_reverse:
             reporter = Reporter.objects.get(pk=reporter_slug_dict_reverse[reporter_dir.name])
         else:
-            reporter = Reporter.objects.get(short_name_slug=reporter_dir.name)
+            reporter = Reporter.objects.filter(short_name_slug=reporter_dir.name).exclude(start_year=None).get()
 
         # export reporter metadata
         reporter_dict = call_serializer(ReporterSerializer, reporter)
@@ -57,9 +57,12 @@ def finalize_reporters_dir(dest_dir: Path) -> None:
 
         # write reporter-level VolumesMetadata.json
         print("Writing VolumesMetadata.json")
-        volumes_metadata = [json.loads(f.read_text()) for f in natsorted(reporter_dir.glob("*/VolumeMetadata.json"))]
-        for volume in volumes_metadata:
+        volumes_metadata = []
+        for f in natsorted(reporter_dir.glob("*/VolumeMetadata.json")):
+            volume = json.loads(f.read_text())
+            volume["volume_folder"] = f.parent.name
             volume["reporter_slug"] = reporter_dir.name
+            volumes_metadata.append(volume)
         write_json(reporter_dir / "VolumesMetadata.json", volumes_metadata)
 
     # write ReportersMetadata.json
@@ -114,7 +117,6 @@ def crosscheck_reporters_dir(dest_dir: Path) -> None:
         case_count=Count('case_metadatas', filter=Q(case_metadatas__in_scope=True))
     ).select_related("reporter")
     reporter_dirs = set()
-    # suspicious_volumes = []
     for volume in tqdm(volumes):
         if not volume.case_count:
             continue
@@ -223,6 +225,7 @@ def export_volume(volume: VolumeMetadata, dest_dir: Path) -> None:
     html_dir = temp_volume_dir / "html"
     html_dir.mkdir()
     volume_metadata = volume_to_dict(volume)
+    volume_metadata["volume_folder"] = volume_prefix
     write_json(temp_volume_dir / "VolumeMetadata.json", volume_metadata)
 
     # variables for case export loop

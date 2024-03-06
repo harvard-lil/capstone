@@ -27,6 +27,7 @@
     "second_part_of_id": null,
     "redacted": true,
     "nominative_reporter": null,
+    "volume_folder": "1",
     "reporter_slug": "us"
   },
   {
@@ -57,6 +58,7 @@
     "second_part_of_id": null,
     "redacted": true,
     "nominative_reporter": null,
+    "volume_folder": "2",
     "reporter_slug": "us"
   }
 ]
