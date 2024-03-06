@@ -32,15 +32,6 @@
 {% endblock %}
 
 {% block title_section %}
-  {% if not request.user.is_authenticated %}
-    <div class="alert alert-success m-0" role="alert">
-      Welcome to the Caselaw Access Project! We allow free access to up to 500 cases per person per day &mdash; see
-      our
-      <a href="{% url 'terms' %}">terms of use</a> for details. <a href="{% url 'register' %}">Sign up for an
-      account</a>
-      to use our API or apply for unlimited research scholar access.
-    </div>
-  {% endif %}
   <div class="sr-only sr-only-focusable" tabindex="0">
     Press Ctrl + / (Windows, Chrome OS) or ⌘ + / (Mac) to jump to the Tools menu.
     Press escape to return to last selected case text.
