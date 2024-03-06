@@ -76,16 +76,17 @@ class RawSearch(Search):
 class CaseDocument(Document):
     # IMPORTANT: If you change what values are indexed here, also change the "CaseLastUpdate triggers"
     # section in set_up_postgres.py to keep Elasticsearch updated.
-    name_abbreviation = SuggestField(analyzer='english')
-    name = fields.TextField(index_phrases=True, analyzer='english')
+    name_abbreviation = SuggestField(analyzer='english', copy_to="multi_field_content")
+    name = fields.TextField(index_phrases=True, analyzer='english', copy_to="multi_field_content")
     frontend_url = fields.KeywordField()
     frontend_pdf_url = fields.KeywordField()
     last_page = fields.KeywordField()
     first_page = fields.KeywordField()
     decision_date_original = fields.KeywordField()
     docket_numbers = fields.TextField(multi=True)
-    docket_number = fields.TextField()
+    docket_number = fields.TextField(copy_to="multi_field_content")
     last_updated = fields.KeywordField()
+    multi_field_content = fields.TextField()
 
     volume = fields.ObjectField(properties={
         "barcode": fields.KeywordField(),
@@ -105,7 +106,7 @@ class CaseDocument(Document):
     court = fields.ObjectField(properties={
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
-        "name": fields.TextField(),
+        "name": fields.TextField(copy_to="multi_field_content"),
         "name_abbreviation": SuggestField(),
     })
 
@@ -120,7 +121,7 @@ class CaseDocument(Document):
         "id": fields.IntegerField(),
         "slug": fields.KeywordField(),
         "name": fields.KeywordField(),
-        "name_long": SuggestField(),
+        "name_long": SuggestField(copy_to="multi_field_content"),
         "whitelisted": fields.BooleanField()
     })
 
@@ -132,8 +133,8 @@ class CaseDocument(Document):
             'judges': fields.TextField(multi=True),
             'parties': fields.TextField(multi=True),
             'opinions': fields.NestedField(multi=True, properties={
-                'author': FTSField(),
-                'text': FTSField(),
+                'author': FTSField(copy_to=["multi_field_content"]),
+                'text': FTSField(copy_to=["multi_field_content"]),
                 'type': fields.KeywordField(),
                 'extracted_citations': fields.NestedField(properties={
                     "cite": fields.KeywordField(),
@@ -153,7 +154,8 @@ class CaseDocument(Document):
                     "opinion_id": fields.IntegerField(),
                 })  
             }),
-            'corrections': fields.TextField(),
+            'corrections': fields.TextField(copy_to="multi_field_content"),
+            'head_matter': fields.TextField(copy_to="multi_field_content")
         }),
     })
 
@@ -171,6 +173,9 @@ class CaseDocument(Document):
     })
 
     restricted = fields.BooleanField()
+
+    def prepare_multi_field_content(self, instance):
+        pass
 
     def prepare_provenance(self, instance):
         return {
