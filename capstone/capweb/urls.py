@@ -86,7 +86,6 @@ urlpatterns = [
     path('user/delete-account', user_views.delete_account, name='delete_account'),
 
     # research access requests
-    path('user/research/', TemplateView.as_view(template_name='research_request/index.html'), name='research-options'),
     path('user/research/approve/', user_views.approve_research_access, name='research-approval'),
     path('user/research/apply/', user_views.request_research_access,
          name='research-request'),
@@ -95,13 +94,18 @@ urlpatterns = [
          name='research-request-success'),
     path('user/research/harvard-intro/', user_views.request_harvard_research_access_intro,
          name='harvard-research-request-intro'),
-    path('user/research/non-harvard-email/',
-         TemplateView.as_view(template_name='research_request/non_harvard_email.html'), name='non-harvard-email'),
     path('user/research/harvard/', user_views.request_harvard_research_access, name='harvard-research-request'),
     path('user/research/harvard-success/',
          TemplateView.as_view(template_name='research_request/harvard_research_request_success.html'),
          name='harvard-research-request-success'),
 ]
+
+if not settings.DISABLE_SIGNUPS:
+    urlpatterns += [
+        path('user/research/', TemplateView.as_view(template_name='research_request/index.html'), name='research-options'),
+        path('user/research/non-harvard-email/',
+        TemplateView.as_view(template_name='research_request/non_harvard_email.html'), name='non-harvard-email'),
+    ]
 
 if settings.DEBUG:
     # debugging routes to see error pages

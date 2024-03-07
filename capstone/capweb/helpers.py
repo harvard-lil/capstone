@@ -172,13 +172,19 @@ def send_contact_email(title, content, from_address):
     ).send(fail_silently=False)
 
 
-def user_has_harvard_email(failure_url='non-harvard-email'):
+def user_has_harvard_email(failure_url=None):
     """
         Decorator to forward user if they don't have Harvard email. E.g.:
 
         @user_has_harvard_email()
         def my_view(request):
     """
+    if not failure_url:
+        if settings.DISABLE_SIGNUPS:
+            failure_url = '/'
+        else:
+            failure_url = 'non-harvard-email'
+
     return user_passes_test(
         test_func=lambda u: bool(re.search(r'[.@]harvard.edu$', u.email)),
         login_url=failure_url)
