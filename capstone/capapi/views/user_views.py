@@ -167,6 +167,9 @@ def user_history(request):
 @user_has_harvard_email()
 def request_harvard_research_access_intro(request):
     """ Warning shown before Harvard access page """
+    if settings.DISABLE_SIGNUPS:
+        return HttpResponseRedirect('/')
+
     return render(request, 'research_request/harvard_research_request_intro.html')
 
 
@@ -174,6 +177,9 @@ def request_harvard_research_access_intro(request):
 @user_has_harvard_email()
 def request_harvard_research_access(request):
     """ Sign Harvard-email based contract """
+    if settings.DISABLE_SIGNUPS:
+        return HttpResponseRedirect('/')
+
     name = "%s %s" % (request.user.first_name, request.user.last_name)
     form = form_for_request(request, HarvardContractForm, initial={'name': name, 'email': request.user.email})
 
@@ -207,6 +213,9 @@ def request_harvard_research_access(request):
 @login_required
 def request_research_access(request):
     """ Sign academic/nonprofit based contract """
+    if settings.DISABLE_SIGNUPS:
+        return HttpResponseRedirect('/')
+
     name = "%s %s" % (request.user.first_name, request.user.last_name)
     form = form_for_request(request, ResearchContractForm, initial={'name': name, 'email': request.user.email})
 
