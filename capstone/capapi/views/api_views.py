@@ -1,9 +1,6 @@
-import bisect
 import urllib
 import re
 from datetime import datetime
-from collections import defaultdict
-from pathlib import Path
 
 from django.utils.functional import partition
 from django_filters.utils import translate_validation
@@ -25,7 +22,6 @@ from capapi.middleware import add_cache_header
 from capapi.resources import api_request
 from capdb import models
 from capdb.models import CaseMetadata
-from capdb.storages import ngram_kv_store_ro
 from capweb.helpers import cache_func
 from scripts.helpers import alphanum_lower
 from user_data.models import UserHistory
@@ -232,10 +228,11 @@ class CaseDocumentViewSet(BaseDocumentViewSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.valid_query_fields = [
-            *[field.name for backend in self.query_filter_backends 
-                for field in backend().get_schema_fields(self)],
-            *[backend.search_param for backend in self.query_filter_backends 
-                if hasattr(backend, 'search_param')]
+            # get_schema_fields() doesn't work in python 3.11, so this would need another approach if we want it:
+            # *[field.name for backend in self.query_filter_backends
+            #     for field in backend().get_schema_fields(self)],
+            # *[backend.search_param for backend in self.query_filter_backends
+            #     if hasattr(backend, 'search_param')]
         ]
 
     def is_full_case_request(self):
@@ -414,27 +411,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         self.jurisdiction_id_to_slug = dict(models.Jurisdiction.objects.values_list('pk', 'slug'))
         self.jurisdiction_id_to_slug[None] = 'total'
         self.jurisdiction_slug_to_id = {v:k for k,v in self.jurisdiction_id_to_slug.items()}
-        self.totals_by_jurisdiction_year_length = self.load_totals()
-
-    @staticmethod
-    def load_totals():
-        # populate self.totals_by_jurisdiction_year_length, a mapping of jurisdiction-year-length to counts, like:
-        #   {
-        #       (<jur_id>, <year>, <length>): (<word count>, <document count>),
-        #   }
-        if not Path(ngram_kv_store_ro.db_path()).exists():
-            return {}
-        totals_by_jurisdiction_year_length = defaultdict(lambda: [0,0])
-        for k, v in ngram_kv_store_ro.get_prefix(b'totals', packed=True):
-            jur, year, n = ngram_kv_store_ro.unpack(k[len(b'totals'):])
-            totals_by_jurisdiction_year_length[(jur, year, n)] = v
-            for total in (
-                totals_by_jurisdiction_year_length[(None, year, n)],
-                totals_by_jurisdiction_year_length[(None, None, n)]
-            ):
-                total[0] += v[0]
-                total[1] += v[1]
-        return totals_by_jurisdiction_year_length
 
     @staticmethod
     def query_params_are_filters(query_body):
@@ -454,27 +430,6 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 raise ValidationError({'error': f'{key} is not a valid API parameter.'})
 
         return True
-
-
-    def get_query_data_from_api_query(self, q):
-        # given an `api(...)` query, return a structured list of filters and aggregations
-        # validate whether a case ID exists in the corpus
-        # check if the supplied item is a valid case id
-        if not q or not (q.startswith('api(') and q.endswith(')')):
-            return False
-    
-        query_body = None
-        try:
-            query_body = QueryDict(q[4:-1], mutable=True)
-        except Exception:
-            raise ValidationError({'error': 'Query is not in a URL parameter format.'})
-
-        self.query_params_are_filters(query_body)
-
-        query_body['page_size'] = 1
-        query_body['facet'] = 'decision_date'
-
-        return query_body
 
     @staticmethod
     def create_timeline_entries(bucket_entries, total_dict, jurisdiction):
@@ -561,117 +516,24 @@ class NgramViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if not q:
             return Response({})
 
-        # check if we're querying for a case as opposed to a word
-        # default to keyword search if value is empty 
-        api_query_body = self.get_query_data_from_api_query(q)
+        if q.startswith('api(') and q.endswith(')'):
+            q = q[4:-1]
 
-        # prepend word count as first byte. only applicable for n-grams
-        words = q.lower().split(' ')[:3]  # use first 3 words
-        q_len = len(words)
-        q_sig = bytes([q_len]) + ' '.join(words).encode('utf8')
+        try:
+            api_query_body = QueryDict(q, mutable=True)
+        except Exception:
+            raise ValidationError({'error': 'Query is not in a URL parameter format.'})
 
-        if api_query_body:
-            try:
-                results = self.get_citation_data(request, api_query_body, q)
-            except filters.TooManyJoinedResultsException:
-                raise ValidationError({'error': 'The set of cases to cite to is too large. Consider \
-                    narrowing this group to contain less than 20000 cases.'})
-            pairs = []
-        elif q_sig.endswith(b' *'):
-            results = {}
-            # wildcard search
-            pairs = ngram_kv_store_ro.get_prefix(q_sig[:-1], packed=True)
-        else:
-            results = {}
-            # non-wildcard search
-            value = ngram_kv_store_ro.get(q_sig, packed=True)
-            if value:
-                pairs = [(q_sig, value)]
-            else:
-                pairs = []
+        self.query_params_are_filters(api_query_body)
 
-        ## format results
-        if pairs:
-            # prepare jurisdiction_filter from jurisdiction= query param
-            jurisdictions = request.GET.getlist('jurisdiction')
-            if '*' in jurisdictions:
-                jurisdiction_filter = None
-            else:
-                jurisdiction_filter = set(self.jurisdiction_slug_to_id[j] for j in jurisdictions if j in self.jurisdiction_slug_to_id)
-                if not jurisdiction_filter:
-                    jurisdiction_filter.add(None)
+        api_query_body['page_size'] = 1
+        api_query_body['facet'] = 'decision_date'
 
-            # prepare year_filter from year= query param
-            year_filter = set()
-            for year in request.GET.getlist('year'):
-                if year.isdigit():
-                    year_filter.add(int(year))
-
-            # get top 10 pairs
-            top_pairs = []
-            for gram, data in pairs:
-                total_jur = data[None]
-                sort_count = total_jur[None][0]
-                bisect.insort_right(top_pairs, (sort_count, gram, data))
-                top_pairs = top_pairs[-10:]
-
-            # Reformat stored gram data for delivery.
-            # top_pairs will look like:
-            #   [
-            #     (<sort_count>, b'<wordcount><gram>', {
-            #       <jur_id>: [
-            #         <year - 1900>, <instance_count>, <document_count>,
-            #         <year - 1900>, <instance_count>, <document_count>, ...
-            #     ]),
-            #  ]
-            # this reformats to:
-            #  {
-            #    <jurisdiction slug>: [
-            #      {
-            #        'year': <year>,
-            #        'count': [<instance_count>, <total instances>],
-            #        'doc_count': [<instance_count>, <total instances>],
-            #      }
-            #    ]
-            #  }
-            for _, gram, data in reversed(top_pairs):
-                out = {}
-                for jur_id, years in data.items():
-
-                    # apply jurisdiction_filter
-                    if jurisdiction_filter and jur_id not in jurisdiction_filter:
-                        continue
-
-                    years_out = []
-                    jur_slug = self.jurisdiction_id_to_slug[jur_id]
-                    if jur_id is None:
-                        years = [i for k, v in years.items() for i in [k]+v]
-                    for i in range(0, len(years), 3):
-                        year, count, doc_count = years[i:i+3]
-
-                        # filter out total
-                        if year is None:
-                            continue
-
-                        # years will be -1900 for msgpack compression -- add 1900 back in
-                        year += 1900
-
-                        # apply year filter
-                        if year_filter and year not in year_filter:
-                            continue
-
-                        totals = self.totals_by_jurisdiction_year_length[(jur_id, year, q_len)]
-                        years_out.append({
-                            "year": str(year) if year else "total",
-                            "count": [count, totals[0]],
-                            "doc_count": [doc_count, totals[1]]
-                        })
-
-                    years_out.sort(key=lambda y: y["year"])
-                    out[jur_slug] = years_out
-
-                if out:
-                    results[gram[1:].decode('utf8')] = out
+        try:
+            results = self.get_citation_data(request, api_query_body, q)
+        except filters.TooManyJoinedResultsException:
+            raise ValidationError({'error': 'The set of cases to cite to is too large. Consider \
+                narrowing this group to contain less than 20000 cases.'})
 
         paginated = {
             "count": len(results),

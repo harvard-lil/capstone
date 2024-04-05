@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'db_file_storage', # for CMS images
     'simple_history',   # model versioning
     'bootstrap4',   # bootstrap form rendering
-    'drf_yasg',   # API specification
     'django_hosts',     # subdomain routing
     'django_vite',  # vite assets
     'elasticsearch_dsl',

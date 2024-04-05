@@ -1,8 +1,8 @@
-FROM python:3.7-buster
+FROM python:3.11.9-bookworm
 ENV PYTHONUNBUFFERED 1
 
 # Enable apt-get -t buster-backports
-RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+#RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
 
 # Get build dependencies and packages required by the app
 # FIRST LINE:
@@ -22,9 +22,9 @@ RUN echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sou
 # htmltidy for fastcase ingest
 RUN apt-get update \
     && apt-get install -y redis-server postgresql-client libtiff-tools pdftk \
-    && apt-get install -y librocksdb5.17 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
+    && apt-get install -y librocksdb7.8 librocksdb-dev libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev rocksdb-tools \
     && apt-get install -y libx11-xcb1 libxtst6 libgtk-3-0 libnss3 \
-    && echo libhyperscan5 libhyperscan/cpu-ssse3 boolean true | debconf-set-selections && apt-get -t buster-backports install -y libhyperscan-dev \
+    && echo libhyperscan5 libhyperscan/cpu-ssse3 boolean true | debconf-set-selections && apt-get install -y libhyperscan-dev \
     && apt-get install -y tidy \
     && apt-get install -y libdrm2 libgbm-dev \
     && apt-get install --no-install-recommends libdbus-glib-1-2
@@ -33,7 +33,7 @@ RUN apt-get update \
 RUN mkdir /app
 WORKDIR /app
 COPY requirements.txt /app
-RUN pip install pip==21.3.1 \
+RUN pip install pip==24.0 \
     && pip install -r requirements.txt --src /usr/local/src \
     && rm requirements.txt
 
@@ -44,9 +44,8 @@ RUN echo "--modules-folder /node_modules" > /.yarnrc
 COPY package.json /app
 COPY yarn.lock /app
 # pin node version -- see https://github.com/nodesource/distributions/issues/33
-RUN curl -o nodejs.deb https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.21.3-1nodesource1_amd64.deb \
-    && dpkg -i ./nodejs.deb \
-    && rm nodejs.deb \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -  \
+    && apt-get install -y nodejs=20.12.0-1nodesource1 \
     && npm install -g yarn@1.22.5 \
     && yarn install --frozen-lockfile \
     && rm package.json \

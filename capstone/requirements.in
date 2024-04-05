@@ -23,14 +23,12 @@ pycurl              # let celery talk to SQS queue
 # xml
 lxml
 xmltodict
-# pyquery
-https://github.com/gawel/pyquery/archive/ca82465e8c049ea5f0c18586a32169338125cffe.zip#egg=pyquery  # Until version >= 2.0.0.dev0 is released
+pyquery
 
 # database
 psycopg2            # postgres connector
 redis               # redis connector
 python-redis-lock   # cross-process locks
-https://github.com/bensteinberg/python-rocksdb/archive/0bf7dbeffa7aafd82835fc25c23f200b3eff48fa.zip#egg=python-rocksdb  # key-value store for ngrams; fork pins Cython
 msgpack             # for storing data in KV store
 
 # Django stuff
@@ -64,7 +62,6 @@ moto
 flake8
 factory-boy        # mocking
 bagit              # validate BagIt bag
-flaky              # retry flaky tests
 retry              # re-run blocks of code until the ES index updates, but fail if they don't end up working
 pathlib2           # to keep --require-hashes happy; from pytest
 beautifulsoup4
@@ -76,8 +73,6 @@ libsasscompiler     # for compiling scss in pipeline
 # API
 djangorestframework
 django-filter           # API filters
-drf-yasg                # expose API specification
-swagger_spec_validator  # optional package for schema validation by drf-yasg
 https://github.com/jcushman/email-normalize/archive/6b5088bd05de247a9a33ad4e5c7911b676d6daf2.zip#egg=email-normalize  # Fix issues related to https://github.com/gmr/email-normalize/pull/3 (https://github.com/harvard-lil/capstone/issues/745)
 pandas                  # json-to-csv export
 flatten_json            # json-to-csv export
@@ -90,6 +85,8 @@ Pillow
 diff_match_patch_python
 Markdown
 PyMuPDF
+PyYAML
+jsonschema
 
 # maintenance page
 webpage2html # save target page as string
@@ -106,6 +103,6 @@ aiohttp>=3,<4
 
 # citation extraction
 # eyecite
-https://github.com/jcushman/eyecite/archive/3a1ff2ac3c910f48ee6f8af3a5947156647c7084.zip#egg=eyecite  # until > 2.2.0
+https://github.com/freelawproject/eyecite/archive/a1d7b8f9a41723dd0af82fbddb22dbb0a7ce1be7.zip#egg=eyecite  # until eyecite > 2.6.2
 hyperscan
 networkx

@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 # Create a command to autoreload celery beat for elasticsearch indexing
 def autoreload_celery(*args, **kwargs):
-    celery_worker_cmd = "celery worker -A config.celery.app -c 1 -B --uid=nobody --gid=nogroup"
+    celery_worker_cmd = "celery -A config.celery.app -c 1 -B --uid=nobody --gid=nogroup worker"
     print("Kill lingering celery worker...")
     subprocess.run(shlex.split(f'pkill -f "{celery_worker_cmd}"'))
     print("Start celery worker...")
