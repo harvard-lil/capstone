@@ -1,4 +1,3 @@
-version: '2.2'
 services:
     db:
         image: registry.lil.tools/harvardlil/cap-db:0.13-355de4ae9825784849037c8870a24d41
@@ -10,7 +9,7 @@ services:
     redis:
         image: redis:6.0.15
     elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.21
         environment:
           - node.name=es01
           - bootstrap.memory_lock=true
