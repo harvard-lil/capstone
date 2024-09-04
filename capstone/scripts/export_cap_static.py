@@ -404,7 +404,7 @@ def get_prefixes(volume):
     volume_prefix = (
         f"{volume.volume_number}-2" if volume.second_part_of_id
         else colliding_volumes[volume.pk] if volume.pk in colliding_volumes
-        else volume.volume_number
+        else volume.volume_number_slug
     )
     return reporter_prefix, volume_prefix
 

@@ -25,25 +25,25 @@ jobs:
 
       ### run tests ###
 
-      - name: docker-compose up
+      - name: docker compose up
         run: |
           sudo sysctl -w vm.max_map_count=262144            # for elasticsearch's bootstrap check
           # separate pull so downloads run in parallel, with
           # --ignore-pull-failures for PRs with new images that haven't been pushed yet:
-          docker-compose -f docker-compose.yml pull --ignore-pull-failures || true
-          docker-compose -f docker-compose.yml up -d        # use -f to suppress docker-compose.override.yml
+          docker compose -f docker-compose.yml pull --ignore-pull-failures || true
+          docker compose -f docker-compose.yml up -d        # use -f to suppress docker-compose.override.yml
           docker ps -a                                      # show running containers
-          docker-compose logs                               # show logs
+          docker compose logs                               # show logs
 
       - name: Collect static files
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
-        run: docker-compose exec web ./manage.py collectstatic --noinput   # collect static files
+        run: docker compose exec web ./manage.py collectstatic --noinput   # collect static files
 
       - name: Run tests
         shell: 'script -q -e -c "bash --noprofile --norc -eo pipefail {0}"'  # avoid docker-compose "the input device is not a TTY" -- see https://github.com/actions/runner/issues/241#issuecomment-745902718
         run: |
           set -x
-          docker-compose exec web pytest \
+          docker compose exec web pytest \
             `# disabling these in case it helps with intermittent test timeouts:` \
             `#-n 2                                           # run tests in parallel for speed` \
             `#--junitxml=junit/pytest/test-results.xml       # write junit test results so they can be displayed somewhere later?` \
@@ -65,7 +65,7 @@ jobs:
           set -x
           git config user.email "lil@law.harvard.edu"
           git config user.name "Github Actions"
-          docker-compose exec web yarn build
+          docker compose exec web yarn build
           if [[ `git status docker-compose.yml docker-compose.override.yml --porcelain` ]] ; then
             git add docker-compose.yml docker-compose.override.yml
             git commit -m "Bump image version [skip ci]"
