@@ -222,16 +222,7 @@ def file_storage(tmpdir):
 
 
 @pytest.fixture
-def mock_ngram_storage(tmpdir):
-    with mock.patch('capdb.storages.ngram_kv_store._wrapped', SimpleLazyObject(lambda: capdb.storages.NgramRocksDB(path=str(tmpdir)))), \
-            mock.patch('capdb.storages.ngram_kv_store_ro._wrapped', SimpleLazyObject(lambda: capdb.storages.NgramRocksDB(path=str(tmpdir), read_only=True))):
-        yield None
-
-
-@pytest.fixture
-def ngrammed_cases(mock_ngram_storage, case_factory, jurisdiction_factory):
-    import scripts.ngrams
-
+def ngrammed_cases(case_factory, jurisdiction_factory):
     # set up two jurisdictions
     jur0 = jurisdiction_factory(slug='jur0')
     jur1 = jurisdiction_factory(slug='jur1')
@@ -246,10 +237,6 @@ def ngrammed_cases(mock_ngram_storage, case_factory, jurisdiction_factory):
         case_factory(jurisdiction=jur, decision_date=datetime(2000, 1, 1), body_cache__text=text)
         for (jur, text) in case_settings
     ]
-
-    # run ngram code
-    scripts.ngrams.ngram_jurisdictions()
-    scripts.ngrams.ngram_kv_store_ro.open()  # re-open so we can see the new values
 
     return cases
 

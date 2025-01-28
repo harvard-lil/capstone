@@ -796,14 +796,6 @@ def list_missing_captar_volumes():
 
 
 @task
-def ngram_jurisdictions(slug=None):
-    """Generate ngrams for all jurisdictions, or for single jurisdiction if jurisdiction slug is provided."""
-    from scripts.ngrams import ngram_jurisdictions
-
-    ngram_jurisdictions(slug)
-
-
-@task
 def url_to_js_string(
     target_url="http://case.test:8000/maintenance/?no_toolbar",
     out_path="maintenance.html",

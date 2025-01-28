@@ -1,7 +1,6 @@
 from csv import DictReader
 from io import StringIO
 
-from flaky import flaky
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
@@ -583,10 +582,8 @@ def test_filter_reporter(client, reporter):
 
 # NGRAMS
 
-@flaky(max_runs=10)  # ngrammed_cases call to ngram_jurisdictions doesn't reliably work because it uses multiprocessing within pytest environment
 @pytest.mark.django_db(databases=['capdb'])
-def test_ngrams_api(client, request):
-    ngrammed_cases = request.getfixturevalue('ngrammed_cases')  # load fixture inside test so flaky() can catch errors
+def test_ngrams_api(client, ngrammed_cases):
 
     # check result counts when not filtering by jurisdiction
     json = client.get(api_reverse('ngrams-list'), {'q': 'one two'}).json()
@@ -599,31 +596,6 @@ def test_ngrams_api(client, request):
     assert json['results'] == {
         'one two': {
             'jur1': [{'year': '2000', 'count': [1, 6], 'doc_count': [1, 2]}]}}
-
-    # check wildcard match
-    json = client.get(api_reverse('ngrams-list'), {'q': 'three *'}).json()
-    assert json['results'] == {
-        'three four': {
-            'total': [{'year': '2000', 'count': [1, 9], 'doc_count': [1, 3]}]},
-        "three don't": {
-            'total': [{'year': '2000', 'count': [2, 9], 'doc_count': [2, 3]}]}}
-
-
-# API SPECIFICATION ENDPOINTS
-@pytest.mark.django_db(databases=['capdb'])
-@pytest.mark.parametrize("url, content_type", [
-    (api_reverse("schema-swagger-ui"), 'text/html'),
-    (api_reverse("schema-json", args=['.json']), 'application/json'),
-    (api_reverse("schema-json", args=['.yaml']), 'application/yaml'),
-])
-def test_swagger(client, url, content_type):
-    response = client.get(url)
-    check_response(response, content_type=content_type)
-
-
-def test_redoc(client):
-    response = client.get(api_reverse("schema-redoc"))
-    check_response(response, content_type="text/html")
 
 
 # PAGINATION

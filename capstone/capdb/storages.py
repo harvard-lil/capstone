@@ -2,17 +2,13 @@ import csv
 import gzip
 import hashlib
 import shutil
-import traceback
 import types
-from contextlib import contextmanager
 
-import msgpack
 import os
 import itertools
 from pathlib import Path
 
 import redis
-import rocksdb
 
 from django.conf import settings
 from django.core.files import File
@@ -20,7 +16,6 @@ from django.core.files.storage import FileSystemStorage, Storage
 from django.utils.deconstruct import deconstructible
 from django.utils.functional import SimpleLazyObject
 from pipeline.storage import PipelineMixin
-from rocksdb.interfaces import MergeOperator
 from storages.backends.s3boto3 import S3Boto3Storage
 from whitenoise.storage import CompressedManifestStaticFilesStorage
 
@@ -402,169 +397,6 @@ for storage_name in settings.STORAGES:
 
 redis_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DEFAULT_DB))
 redis_ingest_client = SimpleLazyObject(lambda: redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_INGEST_DB))
-
-
-### K/V stores ###
-
-class KVDB:
-    """ Base key-value store wrapper. """
-    def __init__(self, path=settings.STORAGES['ngram_storage']['kwargs']['location'], name=None, read_only=False):
-        self.path = path
-        self.read_only = read_only
-        if name:
-            self.name = name
-
-    @staticmethod
-    def unpack(v, packed=True):
-        return msgpack.unpackb(v) if packed and v is not None else v
-
-    @staticmethod
-    def pack(v, packed=True):
-        return msgpack.packb(v) if packed and v is not None else v
-
-    def open(self):
-        raise NotImplementedError
-
-    _db = None
-    @property
-    def db(self):
-        """ Open database connection on first use. """
-        if not self._db:
-            self.open()
-        return self._db
-
-
-class NgramRocksDB(KVDB):
-    """ Wrapper for RocksDB. """
-    name = 'rocksdb'
-    batch = None
-
-    ## helpers
-
-    def db_path(self):
-        return os.path.join(self.path, self.name+".db")
-
-    def open(self):
-        # initial "production ready" settings via https://python-rocksdb.readthedocs.io/en/latest/tutorial/index.html
-        opts = rocksdb.Options()
-        opts.create_if_missing = True
-        opts.max_open_files = 300000
-        opts.write_buffer_size = 64 * 2**20  # 64MB
-        opts.max_write_buffer_number = 3
-        opts.target_file_size_base = 64 * 2**20  # 64MB
-        opts.merge_operator = self.NgramMergeOperator()
-        opts.compression = rocksdb.CompressionType.lz4_compression
-
-        # fast ingest stuff
-        # via https://github.com/facebook/rocksdb/wiki/RocksDB-FAQ -- "Q: What's the fastest way to load data into RocksDB?"
-        # these settings require manual compaction after ingest
-        opts.max_background_flushes = 8
-        opts.level0_file_num_compaction_trigger = -1
-        opts.level0_slowdown_writes_trigger = -1
-        opts.level0_stop_writes_trigger = 2 ** 16  # default is 24 -- we want to avoid hitting this until it's done
-        opts.write_buffer_size = 32 * 2**20  # default is 4 * 2 ** 20
-        opts.max_write_buffer_number = 8  # default is 2
-
-        opts.table_factory = rocksdb.BlockBasedTableFactory(
-            filter_policy=rocksdb.BloomFilterPolicy(10),
-            block_cache=rocksdb.LRUCache(2 * 2 ** 30),  # 2GB
-            block_cache_compressed=rocksdb.LRUCache(500 * 2 ** 20))  # 500MB
-
-        self._db = rocksdb.DB(self.db_path(), opts, read_only=self.read_only)
-
-    def db_or_batch(self, batch=None):
-        return batch or self.batch or self.db
-
-    @contextmanager
-    def in_transaction(self, *args, **kwargs):
-        """
-            This is not really a RocksDB transaction, which python-rocksdb doesn't seem to support, but a WriteBatch,
-            which is effectively the same for write-only transactions that fit in RAM.
-        """
-        self.batch = rocksdb.WriteBatch(*args, **kwargs)
-        try:
-            yield self.batch
-            self.db.write(self.batch)
-        finally:
-            self.batch = None
-
-    ## writers
-
-    def put(self, k, v, packed=False, batch=None):
-        self.db_or_batch(batch).put(k, self.pack(v, packed))
-
-    class NgramMergeOperator(MergeOperator):
-        def full_merge(self, key, existing_value, ops):
-            """
-                Our mergable keys contain the counts for all jurisdiction-years and totals for an ngram, like this:
-                    existing_value == self.pack({
-                        <jurisdiction_id>: [
-                            <year>, <instance_count>, <document_count>,
-                            <year>, <instance_count>, <document_count>,
-                            ...
-                        ],
-                        None: {
-                            <year>: [<instance_count>, <document_count>],
-                            ...,
-                            None: [<instance_count>, <document_count>],
-                        }
-                    })
-                This function merges in new observations, in the form:
-                    ops == [
-                        self.pack((<jurisdiction_id>, <year>, <instance_count>, <document_count>)),
-                        ...
-                    ]
-            """
-            try:
-                # get target for merge
-                value = KVDB.unpack(existing_value) if existing_value else {
-                    None: {
-                        None: [0, 0],
-                    }
-                }
-                for new_value in ops:
-                    # get values to merge
-                    new_value = KVDB.unpack(new_value)
-                    jurisdiction_id, storage_year, instance_count, document_count = new_value
-                    # merge in individual jurisdiction-year value
-                    value.setdefault(jurisdiction_id, []).extend((storage_year, instance_count, document_count))
-                    # merge in running total for year
-                    totals = value[None]
-                    totals_year = totals.setdefault(storage_year, [0,0])
-                    totals_year[0] += instance_count
-                    totals_year[1] += document_count
-                    # merge in running total for all years combined
-                    total = totals[None]
-                    total[0] += instance_count
-                    total[1] += document_count
-                return (True, KVDB.pack(value))
-            except Exception:
-                # rocksdb swallows this stack trace, so print before raising
-                traceback.print_exc()
-                raise
-
-        def name(self):
-            return b'ngram_merge'
-
-    def merge(self, k, v, packed=False, batch=None):
-        self.db_or_batch(batch).merge(k, self.pack(v, packed))
-
-    ## readers
-
-    def get(self, k, packed=False):
-        return self.unpack(self.db.get(k), packed)
-
-    def get_prefix(self, prefix, packed=False):
-        it = self.db.iteritems()
-        it.seek(prefix)
-        for k, v in it:
-            if not k.startswith(prefix):
-                return
-            yield k, self.unpack(v, packed)
-
-# using SimpleLazyObject lets our tests mock the wrapped object after import
-ngram_kv_store = SimpleLazyObject(lambda: NgramRocksDB())
-ngram_kv_store_ro = SimpleLazyObject(lambda: NgramRocksDB(read_only=True))
 
 
 ### static asset storages ###

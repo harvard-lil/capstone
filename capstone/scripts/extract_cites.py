@@ -8,9 +8,9 @@ import urllib.parse
 from django.conf import settings
 from django.db.models import Q
 from django.utils.text import slugify
-from eyecite import annotate, resolve_citations
-from eyecite.find_citations import get_citations
-from eyecite.models import FullCaseCitation, CaseCitation, NonopinionCitation, FullCitation, Resource
+from eyecite import annotate_citations, resolve_citations
+from eyecite.find import get_citations
+from eyecite.models import FullCaseCitation, CaseCitation, UnknownCitation, FullCitation, Resource
 from eyecite.resolve import resolve_full_citation
 from eyecite.tokenizers import HyperscanTokenizer, EXTRACTORS
 from eyecite.utils import is_balanced_html
@@ -192,7 +192,7 @@ def extract_citations(case, html, xml):
                 el_html = annot_el.html()
                 strings_to_protect = re.findall(r'<a[^>]*>.*?</a>|<[^>]+>', el_html, flags=re.S)
                 el_html, char_mapping = encode_strings_as_unicode(el_html, strings_to_protect)
-                el_html = annotate(el_text, annotations, el_html, annotator=partial(annotator, char_mapping))
+                el_html = annotate_citations(el_text, annotations, el_html, annotator=partial(annotator, char_mapping))
                 el_html = decode_unicode_to_strings(el_html, char_mapping)
                 annot_el.html(el_html)
 
@@ -286,7 +286,7 @@ def extract_citations_normalized(text):
     return list(dict.fromkeys(cites).keys())  # remove dupes while retaining order
 
 
-def extract_whole_cite(text, require_classes=(CaseCitation,), ignore_classes=(NonopinionCitation,)):
+def extract_whole_cite(text, require_classes=(CaseCitation,), ignore_classes=(UnknownCitation,)):
     """Return eyecite cite only if entire text is matched as a single cite. Otherwise return None."""
     cites = list(extract_citations_from_text(text, require_classes, ignore_classes))
     if len(cites) == 1 and cites[0].matched_text() == text:
@@ -296,7 +296,7 @@ def extract_whole_cite(text, require_classes=(CaseCitation,), ignore_classes=(No
 
 ### INTERNAL CITE EXTRACTION HELPERS ###
 
-def extract_citations_from_text(text, require_classes=(CaseCitation,), ignore_classes=(NonopinionCitation,)):
+def extract_citations_from_text(text, require_classes=(CaseCitation,), ignore_classes=(UnknownCitation,)):
     """Do the actual work of fetching each eyecite cite object."""
     cite_extractor = get_cite_extractor()
     for cite in cite_extractor(text):
